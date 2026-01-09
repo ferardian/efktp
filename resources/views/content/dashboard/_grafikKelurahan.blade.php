@@ -74,7 +74,7 @@
         }
 
         function dataGrafikKelurahan(tgl1 = '', tgl2 = '') {
-            $.get(`/efktp/registrasi/kelurahan`, {
+            $.get(`{{ url('/registrasi/kelurahan') }}`, {
                 tgl1: tgl1,
                 tgl2: tgl2,
             }).done((response) => {

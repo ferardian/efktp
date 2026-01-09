@@ -100,7 +100,7 @@
                     scrollY: '50vh',
                     scrollX: true,
                     ajax: {
-                        url: `/efktp/lab/permintaan/get`,
+                        url: `{{ url('/lab/permintaan/get') }}`,
                         data: {
                             dataTable: keyword,
                         },
@@ -268,7 +268,7 @@
         }
 
         function getDetailItemPermintaanLab(noorder) {
-            return $.get(`/efktp/lab/permintaan/detail/${noorder}`)
+            return $.get(`{{ url('/lab/permintaan/detail') }}/${noorder}`)
         }
 
         function setNilaiRujukan(item, jk, umur) {

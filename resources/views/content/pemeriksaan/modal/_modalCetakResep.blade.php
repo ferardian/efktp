@@ -33,7 +33,7 @@
                 }
 
             })
-            modalCetakResep.find("#print").removeAttr('src').attr('src', `/efktp/resep/print?no_rawat=${no_rawat}`)
+            modalCetakResep.find("#print").removeAttr('src').attr('src', `{{ url('/resep/print') }}?no_rawat=${no_rawat}`)
         }
         modalCetakResep.on('hidden.bs.modal', () => {
             modalCetakResep.find("#print").removeAttr('src');

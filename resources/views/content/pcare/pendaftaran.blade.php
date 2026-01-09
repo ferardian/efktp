@@ -258,10 +258,10 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     loadingAjax('Sedang data pendaftaran di Pcare');
-                    $.post(`/efktp/bridging/pcare/pendaftaran/delete`, parameter).done((response) => {
+                    $.post(`{{ url('/bridging/pcare/pendaftaran/delete') }}`, parameter).done((response) => {
                         alertSuccessAjax('Berhasil menghapus data di Pcare').then(() => {
                             loadingAjax('Menghapus data internal');
-                            $.post(`/efktp/pcare/pendaftaran/delete`, {
+                            $.post(`{{ url('/pcare/pendaftaran/delete') }}`, {
                                 'noUrut': parameter.noUrut,
                                 'no_rawat': parameter.no_rawat,
                             }).done((response) => [

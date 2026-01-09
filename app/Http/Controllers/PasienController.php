@@ -47,6 +47,14 @@ class PasienController extends Controller
             $pasien = $pasien->where('no_rkm_medis', $request->no_rkm_medis)->first();
         }
         if ($request->datatable) {
+            if ($pasien->count() == 0) {
+                return response()->json([
+                    'draw' => 1,
+                    'recordsTotal' => 0,
+                    'recordsFiltered' => 0,
+                    'data' => []
+                ]);
+            }
             return DataTables::of($pasien)
                 ->filter(function ($query) use ($request) {
                     if ($request->has('search') && $request->get('search')['value']) {

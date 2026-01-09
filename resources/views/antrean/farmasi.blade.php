@@ -116,7 +116,7 @@
 @push('script')
     <script>
         $(document).ready(() => {
-            $.get(`/efktp/setting/antrean/video`).done((response) => {
+            $.get(`{{ url('/setting/antrean/video') }}`).done((response) => {
                 if (response) {
                     $('#videoAntrean').html(response.content);
                 } else {
@@ -171,7 +171,7 @@
 
         function getDataResep() {
 
-            $.get(`/efktp/farmasi/resep/get`).done((response) => {
+            $.get(`{{ url('/farmasi/resep/get') }}`).done((response) => {
                 const currentResep = localStorage.getItem('no_resep');
 
                 // Pisahkan data yg sedang dipanggil dan yg lain

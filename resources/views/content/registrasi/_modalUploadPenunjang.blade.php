@@ -53,11 +53,11 @@
     </div>
 </div>
 @push('script')
-    <link rel="stylesheet" href="{{ asset('public/css/dropzone5.9.2/dropzone.min.css') }}">
-    <script src="{{ asset('public/js/dropzone5.9.2/dropzone.min.js') }}" type="text/javascript"></script>
+    <link rel="stylesheet" href="{{ asset('css/dropzone5.9.2/dropzone.min.css') }}">
+    <script src="{{ asset('js/dropzone5.9.2/dropzone.min.js') }}" type="text/javascript"></script>
 
-    <link rel="stylesheet" href="{{ asset('public/css/magnify/jquery.magnify.css') }}">
-    <script src="{{ asset('public/js/magnify/jquery.magnify.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ asset('css/magnify/jquery.magnify.css') }}">
+    <script src="{{ asset('js/magnify/jquery.magnify.min.js') }}"></script>
 
     <script>
         const modalUpload = $('#modalUploadPenunjang')
@@ -177,12 +177,12 @@
                     const filetype = item.file.split('.').pop()
                     let content = '';
                     if (filetype !== 'pdf' && filetype !== 'PDF') {
-                        content = ` <a class="d-block" data-magnify="gallery" data-src="" data-caption="${item.kategori.kategori} ${item.created_at}" data-group="a" href="{{ asset('public/storage/penunjang/images/') }}/${item.file}">
-                                            <img style="width: 100%;height: 200px;object-fit:cover" src="{{ asset('public/storage/penunjang/images') }}/${item.file}" class="card-img-top">
+                        content = ` <a class="d-block" data-magnify="gallery" data-src="" data-caption="${item.kategori.kategori} ${item.created_at}" data-group="a" href="{{ asset('storage/penunjang/images/') }}/${item.file}">
+                                            <img style="width: 100%;height: 200px;object-fit:cover" src="{{ asset('storage/penunjang/images') }}/${item.file}" class="card-img-top">
                                          </a>`;
                     } else {
-                        content = ` <a class="d-block" href="{{ asset('public/storage/penunjang/pdf') }}/${item.file}" target="_blank">
-                                            <img style="width: 100%;height: 200px;object-fit:cover" src="{{ asset('public/img/logo-pdf.png') }}" class="card-img-top">
+                        content = ` <a class="d-block" href="{{ asset('storage/penunjang/pdf') }}/${item.file}" target="_blank">
+                                            <img style="width: 100%;height: 200px;object-fit:cover" src="{{ asset('img/logo-pdf.png') }}" class="card-img-top">
                                          </a>`;
                     }
                     // <button class="btn btn-outline-success btn-sm w-100"></button>

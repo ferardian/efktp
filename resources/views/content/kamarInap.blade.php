@@ -10,8 +10,20 @@
                 </div>
             </div>
             <div class="card-footer">
-                <div class="row d-none-sm d-none-md">
-                    <div class="col-xl-2 col-lg-2 col-md-6 col-sm-12">
+                <div class="row d-none-sm d-none-md align-items-center">
+                    <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12">
+                        <div class="btn-group" role="group">
+                            <input type="radio" class="btn-check" name="filterType" id="filterBelumPulang" value="Belum Pulang" checked>
+                            <label class="btn btn-outline-primary" for="filterBelumPulang">Belum Pulang</label>
+
+                            <input type="radio" class="btn-check" name="filterType" id="filterMasuk" value="Masuk">
+                            <label class="btn btn-outline-primary" for="filterMasuk">Masuk</label>
+
+                            <input type="radio" class="btn-check" name="filterType" id="filterPulang" value="Pulang">
+                            <label class="btn btn-outline-primary" for="filterPulang">Pulang</label>
+                        </div>
+                    </div>
+                    <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12" id="dateRangeFilter" style="display: none;">
                         <div class="input-group">
                             <input class="form-control filterTangal" placeholder="Select a date" id="tglAwal"
                                    name="tglAwal" value="{{ date('d-m-Y') }}">
@@ -19,13 +31,6 @@
                             <input class="form-control filterTangal" placeholder="Select a date" id="tglAkhir"
                                    name="tglAkhir" value="{{ date('d-m-Y') }}">
                         </div>
-                    </div>
-                    <div class="col-xl-1 col-lg-1 col-md-6 col-sm-12">
-                        <select class="form-select" id="selectPulang">
-                            <option value="Semua" selected>Semua</option>
-                            <option value="Belum Pulang">Belum Pulang</option>
-                            <option value="Pulang">Pulang</option>
-                        </select>
                     </div>
                     <div class="col-xl-2 col-lg-2 col-md-6 col-sm-12">
                         <button class="btn btn-primary" type="submit" id="btnFilterRanap"><i
@@ -46,20 +51,42 @@
 @push('script')
     <script>
         $(document).ready(() => {
-            loadTbKamarInap();
             var tglAwal = localStorage.getItem('tglAwalRanap') ? localStorage.getItem('tglAwalRanap') : tanggal;
             var tglAkhir = localStorage.getItem('tglAkhirRanap') ? localStorage.getItem('tglAkhirRanap') : tanggal;
+            
+            // Always default to Belum Pulang on page load
+            var filterType = 'Belum Pulang';
 
             $('#tglAwal').val(tglAwal)
             $('#tglAkhir').val(tglAkhir)
+            
+            // Set radio button to Belum Pulang
+            $(`input[name="filterType"][value="Belum Pulang"]`).prop('checked', true);
 
-            loadTbKamarInap(tglAwal, tglAkhir)
+            // Hide date range by default
+            toggleDateRange(filterType);
 
-
+            // Load table with Belum Pulang filter
+            loadTbKamarInap('', '', 'Belum Pulang');
         })
 
+        // Handle filter type change
+        $('input[name="filterType"]').on('change', function() {
+            const filterType = $(this).val();
+            toggleDateRange(filterType);
+            // Don't save to localStorage - always reset to Belum Pulang on page load
+        });
+
+        function toggleDateRange(filterType) {
+            if (filterType === 'Belum Pulang') {
+                $('#dateRangeFilter').hide();
+            } else {
+                $('#dateRangeFilter').show();
+            }
+        }
+
         function getCpptRanap(no_rawat, tgl_perawatan = '', jam_rawat = '') {
-            const pemeriksaan = $.get(`/efktp/pemeriksaan/ranap`, {
+            const pemeriksaan = $.get(`{{ url('/pemeriksaan/ranap') }}`, {
                 no_rawat: no_rawat,
                 tgl_perawatan: tgl_perawatan,
                 jam_rawat: jam_rawat,
@@ -69,14 +96,18 @@
 
 
         $('#btnFilterRanap').on('click', () => {
-            tglAwal = $('#tglAwal').val();
-            tglAkhir = $('#tglAkhir').val();
-            pulang = $('#selectPulang').val();
+            const filterType = $('input[name="filterType"]:checked').val();
+            let tglAwal = '';
+            let tglAkhir = '';
+            
+            if (filterType !== 'Belum Pulang') {
+                tglAwal = $('#tglAwal').val();
+                tglAkhir = $('#tglAkhir').val();
+                localStorage.setItem('tglAwalRanap', tglAwal);
+                localStorage.setItem('tglAkhirRanap', tglAkhir);
+            }
 
-            loadTbKamarInap(tglAwal, tglAkhir, pulang);
-
-            localStorage.setItem('tglAwalRanap', tglAwal);
-            localStorage.setItem('tglAkhirRanap', tglAkhir);
+            loadTbKamarInap(tglAwal, tglAkhir, filterType);
         });
 
 
@@ -90,7 +121,7 @@
                 scrollY: setTableHeight(),
                 scrollX: true,
                 ajax: {
-                    url: `/efktp/kamar/inap/get`,
+                    url: `{{ url('/kamar/inap/get') }}`,
                     data: {
                         dataTable: true,
                         tglAwal: tglAwal,

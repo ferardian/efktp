@@ -63,7 +63,7 @@
         }
 
         function dataGrafikTahunan(tahun = '') {
-            $.get(`/efktp/registrasi/grafik/tahun`, {
+            $.get(`{{ url('/registrasi/grafik/tahun') }}`, {
                 tahun: tahun,
             }).done((response) => {
                 const data = {

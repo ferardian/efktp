@@ -151,7 +151,7 @@
         const dataInfoPasien = $('#dataInfoPasien');
 
         function riwayat(no_rkm_medis) {
-            $.get(`/efktp/registrasi/pasien/${no_rkm_medis}`).done((response) => {
+            $.get(`{{ url('/registrasi/pasien') }}/${no_rkm_medis}`).done((response) => {
                 if (!response) {
                     Swal.fire({
                         icon: 'warning',
@@ -334,7 +334,7 @@
 
         function renderBerkasPenunjang(no_rawat) {
 
-            $.get(`/efktp/upload`, {
+            $.get(`{{ url('/upload') }}`, {
                 no_rawat: no_rawat,
             }).done((response) => {
                 const berkas = response.map((item, index) => {

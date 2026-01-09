@@ -19,6 +19,6 @@ class Alergi extends Controller
 	public function get($keyword)
 	{
 		$bpjs = $this->bpjs;
-		return $bpjs->index($keyword);
+		return $bpjs->jenis($keyword)->index();
 	}
 }

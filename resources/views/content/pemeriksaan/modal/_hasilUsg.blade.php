@@ -597,7 +597,7 @@
         })
 
         function setHasilUsg(no_rawat) {
-            $.get(`/efktp/hasil-usg`, {
+            $.get(`{{ url('/hasil-usg') }}`, {
                 no_rawat: no_rawat
             }).done((response) => {
                 const data = response.data
@@ -690,7 +690,7 @@
                 data['jenis_kelamin2'] = null
             }
 
-            $.post(`/efktp/hasil-usg`, data).done((response) => {
+            $.post(`{{ url('/hasil-usg') }}`, data).done((response) => {
                 showToast('Hasil USG berhasil')
                 setHasilUsg(no_rawat)
                 riwayatHasilUsg(data['no_rkm_medis'])

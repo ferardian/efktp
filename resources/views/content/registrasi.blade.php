@@ -55,6 +55,7 @@
     @include('content.registrasi._modalRiwayat')
     @include('content.registrasi._modalBuktiRegister')
     @include('content.laboratorium.modal._modalPermintaanLab')
+    @include('content.registrasi._modalKamarInap')
 @endsection
 @push('script')
     <script>
@@ -111,7 +112,7 @@
                 if (penjab.png_jawab.includes('BPJS')) {
                     periksaPendaftaran.removeClass('d-none')
                     periksaPendaftaran.find('input').prop('disabled', false)
-                    $.get(`/efktp/mapping/pcare/poliklinik`, {
+                    $.get(`{{ url('/mapping/pcare/poliklinik') }}`, {
                         kdPoli: poliklinik.kd_poli
                     }).done((response) => {
                         formRegistrasiPoli.find('input[name=kd_poli_pcare]').val(response.kd_poli_pcare)
@@ -154,7 +155,7 @@
                 confirmButtonText: 'Ya, Ubah Data!'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    $.post(`/efktp/registrasi/update`, {
+                    $.post(`{{ url('/registrasi/update') }}`, {
                         no_rawat: data['no_rawat'],
                         no_rkm_medis: data['no_rkm_medis'],
                         kd_pj: data['kd_pj'],

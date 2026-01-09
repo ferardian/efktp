@@ -73,7 +73,7 @@
         }
 
         function dataGrafikKecamatan(tgl1 = '', tgl2 = '') {
-            $.get(`/efktp/registrasi/kecamatan`, {
+            $.get(`{{ url('/registrasi/kecamatan') }}`, {
                 tgl1: tgl1,
                 tgl2: tgl2,
             }).done((response) => {

@@ -64,7 +64,7 @@
         </div>
         <div class="col-12 col-lg-6 col-xl-8 d-none d-lg-block">
             <!-- Photo -->
-            <div class="bg-cover h-100 min-vh-100" style="background-image: url('{{ asset('public/static/photos/doctor-typing-on-them-laptop.jpg') }}')"></div>
+            <div class="bg-cover h-100 min-vh-100" style="background-image: url('{{ asset('static/photos/doctor-typing-on-them-laptop.jpg') }}')"></div>
         </div>
     </div>
 @endsection

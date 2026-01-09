@@ -77,7 +77,7 @@
             const hari = setHari(date.getDay());
             $('#tanggal').html(`${hari}, ${formatTanggal(tanggal)}`);
             setInterval(() => {
-                $.get(`/efktp/registrasi/get/panggil`).done((response) => {
+                $.get(`{{ url('/registrasi/get/panggil') }}`).done((response) => {
                     if (Object.keys(response).length) {
                         $('#nomor').html(response.no_reg)
                         $('#nama').html(response.pasien.nm_pasien)

@@ -61,7 +61,7 @@
     {{-- <script src="https://code.responsivevoice.org/responsivevoice.js?key=Alg0GPi9"></script> --}}
     <script>
         $(document).ready(() => {
-            $.get(`/efktp/setting/antrean/video`).done((response) => {
+            $.get(`{{ url('/setting/antrean/video') }}`).done((response) => {
                 if (response) {
                     $('#videoAntrean').html(response.content);
                 } else {
@@ -89,7 +89,7 @@
 
             setInterval(() => {
                 const currentSpeech = $('#speech').val()
-                $.get(`/efktp/registrasi/get/panggil`).done((response) => {
+                $.get(`{{ url('/registrasi/get/panggil') }}`).done((response) => {
                     if (Object.keys(response).length) {
                         if (response.pcare_pendaftaran) {
                             $('#nomor').html(response.pcare_pendaftaran.noUrut)

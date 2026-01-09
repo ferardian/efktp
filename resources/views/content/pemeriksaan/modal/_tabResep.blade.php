@@ -49,7 +49,7 @@
 @push('script')
     <script>
         function createResepObat(no_rawat, status, kd_dokter) {
-            const resep = $.post(`/efktp/resep/create`, {
+            const resep = $.post(`{{ url('/resep/create') }}`, {
                 no_rawat: no_rawat,
                 kd_dokter: kd_dokter,
                 status: status,
@@ -59,13 +59,13 @@
         }
 
         function getResep(data) {
-            const resep = $.get(`/efktp/resep/get`, data)
+            const resep = $.get(`{{ url('/resep/get') }}`, data)
             return resep
         }
 
 
         function deleteResep(no_rawat) {
-            const resepDokter = $.post(`/efktp/resep/delete`, {
+            const resepDokter = $.post(`{{ url('/resep/delete') }}`, {
                 no_rawat: no_rawat
             })
             return resepDokter;
@@ -167,7 +167,7 @@
                     destroy: true,
                     processing: true,
                     ajax: {
-                        url: "/efktp/paket-obat/datatable",
+                        url: "{{ url('/paket-obat/datatable') }}",
                     },
                     columns: [{
                         title: 'Paket',
@@ -261,7 +261,7 @@
                         const no_rawat = formCpptRajal.find('input[name=no_rawat]').val();
                         const kd_dokter = formCpptRajal.find('input[name=nip]').val();
 
-                        $.post('/efktp/resep/create-form-paket', {
+                        $.post('{{ url('/resep/create-form-paket') }}', {
                             no_rawat: no_rawat,
                             kd_dokter: kd_dokter,
                             status: 'ralan',

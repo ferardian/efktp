@@ -9,8 +9,11 @@ class MappingPoliklinikPcare extends Model
 {
     use HasFactory;
     protected $table = 'maping_poliklinik_pcare';
+    protected $primaryKey = 'kd_poli_rs';
+    public $incrementing = false;
+    protected $keyType = 'string';
     protected $guarded = [];
-    public $timestamp = false;
+    public $timestamps = false;
 
     function poliklinik()
     {

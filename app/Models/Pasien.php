@@ -20,6 +20,8 @@ class Pasien extends Model
     protected $guarded = [];
     public $timestamps = false;
     protected $hidden = ['laravel_through_key'];
+    protected $primaryKey = 'no_rkm_medis';
+    protected $keyType = 'string';
 
     function regPeriksa()
     {

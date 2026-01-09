@@ -82,7 +82,7 @@
                 scrollY: '13vh',
                 scrollX: true,
                 ajax: {
-                    url: `/efktp/surat/sehat`,
+                    url: `{{ url('/surat/sehat') }}`,
                     data: {
                         dataTable: true,
                         tgl_pertama: tglAwal,
@@ -207,11 +207,11 @@
 
             })
             modalCetakSuratSehat.modal('show');
-            modalCetakSuratSehat.find('#print').removeAttr('src').attr('src', `/efktp/surat/sehat/print/${no_surat}`)
+            modalCetakSuratSehat.find('#print').removeAttr('src').attr('src', `{{ url('/surat/sehat/print') }}/${no_surat}`)
         }
 
         function setNoSuratSehat(tgl_surat = '') {
-            const tanggal = $.get(`/efktp/surat/sehat/setnomor`, {
+            const tanggal = $.get(`{{ url('/surat/sehat/setnomor') }}`, {
                 tgl_surat: tgl_surat,
             })
 
@@ -219,7 +219,7 @@
         }
 
         function setSuratSehat(no_surat) {
-            $.get(`/efktp/surat/sehat/${no_surat}`).done((response) => {
+            $.get(`{{ url('/surat/sehat') }}/${no_surat}`).done((response) => {
                 const regPeriksa = response.reg_periksa;
                 const pasien = regPeriksa.pasien;
 
@@ -248,7 +248,7 @@
         $('#btnSimpanSuratSehat').on('click', (e) => {
             e.preventDefault();
             const data = getDataForm('formSuratSehat', ['input', 'select']);
-            $.post(`/efktp/surat/sehat`, data).done((response) => {
+            $.post(`{{ url('/surat/sehat') }}`, data).done((response) => {
                 alertSuccessAjax().then(() => {
                     const tgl1 = localStorage.getItem('tglSuratSehat1')
                     const tgl2 = localStorage.getItem('tglSuratSehat2')
@@ -269,7 +269,7 @@
                 cancelButtonText: "Tidak, Batalkan"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    $.post(`/efktp/surat/sehat/delete/${no_surat}`).done((response) => {
+                    $.post(`{{ url('/surat/sehat/delete') }}/${no_surat}`).done((response) => {
                         alertSuccessAjax().then(() => {
                             const tgl1 = localStorage.getItem('tglSuratSehat1')
                             const tgl2 = localStorage.getItem('tglSuratSehat2')

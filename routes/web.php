@@ -318,6 +318,8 @@ Route::middleware('auth')->group(function () {
 		return view('content.kamarInap');
 	});
 	Route::get('kamar/inap/get', [KamarInapController::class, 'get']);
+	Route::post('kamar/inap/create', [KamarInapController::class, 'create']);
+	Route::get('kamar/ketersediaan', [KamarInapController::class, 'getKamarKosong']);
 
 	Route::get('pemeriksaan/ranap', [PemeriksaanRanapController::class, 'get']);
 	Route::post('pemeriksaan/ranap', [PemeriksaanRanapController::class, 'create']);
@@ -371,7 +373,13 @@ Route::middleware('auth')->group(function () {
 
 	// MAPPING
 	Route::get('mapping/pcare/poliklinik', [MappingPoliklinikPcareController::class, 'get']);
+	Route::get('mapping/pcare/poliklinik/table', [MappingPoliklinikPcareController::class, 'getPoliklinikForMapping']);
+	Route::post('mapping/pcare/poliklinik', [MappingPoliklinikPcareController::class, 'store']);
+	Route::post('mapping/pcare/poliklinik/delete', [MappingPoliklinikPcareController::class, 'delete']);
 	Route::get('mapping/pcare/dokter', [MapingDokterController::class, 'get']);
+	Route::get('mapping/pcare/dokter/table', [MapingDokterController::class, 'getDokterForMapping']);
+	Route::post('mapping/pcare/dokter', [MapingDokterController::class, 'store']);
+	Route::post('mapping/pcare/dokter/delete', [MapingDokterController::class, 'delete']);
 	Route::get('mapping/pcare/obat', [MappingObatPcareController::class, 'get']);
 	Route::post('mapping/pcare/obat', [MappingObatPcareController::class, 'create']);
 	Route::post('mapping/pcare/obat/delete/{kdBarang}', [MappingObatPcareController::class, 'delete']);
@@ -401,7 +409,7 @@ Route::middleware('auth')->group(function () {
 	Route::get('pasien/alergi', [EfktpPcareAlergiController::class, 'get']);
 
 	// BRIDGING
-	Route::get('/bridging/pcare/dokter', [Bridging\Dokter::class, 'dokter']);
+	Route::get('/bridging/pcare/dokter/{start?}/{limit?}', [Bridging\Dokter::class, 'dokter']);
 	Route::get('/bridging/pcare/alergi/{keyword?}', [Bridging\Alergi::class, 'get']);
 	Route::get('/bridging/pcare/prognosa', [Bridging\Prognosa::class, 'get']);
 
@@ -428,7 +436,7 @@ Route::middleware('auth')->group(function () {
 	Route::get('/bridging/pcare/spesialis/rujukan/khusus', [Bridging\Spesialis::class, 'getFaskesKhusus']);
 
 	// POLI FKTP
-	Route::get('/bridging/pcare/fktp/poli', [Bridging\Poli::class, 'index']);
+	Route::get('/bridging/pcare/fktp/poli/{start?}/{limit?}', [Bridging\Poli::class, 'index']);
 	Route::get('/bridging/pcare/tacc', [Bridging\Poli::class, 'tacc']);
 
 	//REFERENSI SPESIALIS KHUSUS

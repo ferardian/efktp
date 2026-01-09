@@ -159,7 +159,7 @@
         function getPermintaanLab(no_rawat) {
             const isVisible = tableHasilPermintaan.hasClass('d-none')
             if (isVisible) {
-                $.get(`/efktp/lab/permintaan/get`, {
+                $.get(`{{ url('/lab/permintaan/get') }}`, {
                     no_rawat: no_rawat
                 }).done((response) => {
                     let contentPermintaan = '';
@@ -217,7 +217,7 @@
         }
 
         function getNomorPermintaan() {
-            return $.get(`/efktp/lab/permintaan/noorder`).done((response) => {
+            return $.get(`{{ url('/lab/permintaan/noorder') }}`).done((response) => {
                 formPermintaanLab.find('#noorder').val(response)
             })
         }
@@ -225,7 +225,7 @@
         selectJenisPeriksaLab.select2({
             tags: false,
             ajax: {
-                url: `/efktp/lab/jenis/get`,
+                url: `{{ url('/lab/jenis/get') }}`,
                 dataType: 'JSON',
 
                 data: (params) => {
@@ -251,7 +251,7 @@
 
         selectJenisPeriksaLab.on('select2:select', (e) => {
             const data = selectJenisPeriksaLab.val();
-            $.get(`/efktp/lab/jenis/template/get`, {
+            $.get(`{{ url('/lab/jenis/template/get') }}`, {
                 kode: data
             }).done((response) => {
                 let subPemeriksaan = '';
@@ -278,7 +278,7 @@
         selectJenisPeriksaLab.on('select2:unselect', (e) => {
             const data = selectJenisPeriksaLab.val();
             if (data.length) {
-                $.get(`/efktp/lab/jenis/template/get`, {
+                $.get(`{{ url('/lab/jenis/template/get') }}`, {
                     kode: data
                 }).done((response) => {
                     let subPemeriksaan = '';
@@ -412,7 +412,7 @@
 
 
             if (dataDetailPermintaan.length) {
-                $.post(`/efktp/lab/permintaan`, data).done((response) => {
+                $.post(`{{ url('/lab/permintaan') }}`, data).done((response) => {
                     dataPemeriksaan.forEach(item => {
                         item.noorder = response.data
                     });
@@ -436,7 +436,7 @@
         }
 
         function createPermintaanPemeriksaanLab(data) {
-            return $.post(`/efktp/lab/permintaan/pemeriksaan`, {
+            return $.post(`{{ url('/lab/permintaan/pemeriksaan') }}`, {
                 data: data,
             }).fail((error) => {
                 alertErrorAjax(error)
@@ -444,7 +444,7 @@
         }
 
         function createDetailPermintaanLab(data) {
-            return $.post(`/efktp/lab/permintaan/detail`, {
+            return $.post(`{{ url('/lab/permintaan/detail') }}`, {
                 data: data,
             }).done((response) => {
                 toast('Permintaan lab dibuat');
@@ -481,7 +481,7 @@
                 cancelButtonText: "Tidak, Batalkan",
             }).then((result) => {
                 if (result.isConfirmed) {
-                    $.post(`/efktp/lab/permintaan/delete/${noorder}`)
+                    $.post(`{{ url('/lab/permintaan/delete') }}/${noorder}`)
                         .done((response) => {
                             toast('Permintaan lab di hapus');
                             const no_rawat = formPermintaanLab.find('#no_rawat').val();

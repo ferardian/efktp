@@ -1,6 +1,6 @@
 // AJAX
 function getRegPeriksa(startDate = '', endDate = '') {
-    return $.get('registrasi/get', {
+    return $.get(`${baseUrl}/registrasi/get`, {
         startDate: startDate,
         endDate: endDate
     })
@@ -422,7 +422,7 @@ function dateDiff(date1, date2) {
 }
 
 function getSukuBangsa(suku) {
-    return bangsa = $.get(`/efktp/suku`, {
+    return bangsa = $.get(`${baseUrl}/suku`, {
         suku: suku,
     });
 }
@@ -434,7 +434,7 @@ function selectSukuBangsa(element, parrent, initVal = '-') {
         tags: true,
         scrollAfterSelect: true,
         ajax: {
-            url: `/efktp/suku`,
+            url: `${baseUrl}/suku`,
             dataType: 'JSON',
 
             data: (params) => {
@@ -476,7 +476,7 @@ function selectAlergi(element, parent) {
         tags: true,
         scrollAfterSelect: true,
         ajax: {
-            url: `/efktp/pasien/alergi`,
+            url: `${baseUrl}/pasien/alergi`,
             dataType: 'JSON',
 
             data: (params) => {
@@ -506,7 +506,7 @@ function selectAlergi(element, parent) {
 }
 
 function getBahasa(bahasa) {
-    return bahasa = $.get(`/efktp/bahasa`, {
+    return bahasa = $.get(`${baseUrl}/bahasa`, {
         bahasa: bahasa,
     });
 }
@@ -528,7 +528,7 @@ function selectBahasaPasien(element, parrent, initVal = '-') {
         tags: true,
         scrollAfterSelect: true,
         ajax: {
-            url: `/efktp/bahasa`,
+            url: `${baseUrl}/bahasa`,
             dataType: 'JSON',
 
             data: (params) => {
@@ -563,7 +563,7 @@ function selectBahasaPasien(element, parrent, initVal = '-') {
 }
 
 function getCacatFisik(cacat) {
-    return bahasa = $.get(`/efktp/cacat`, {
+    return bahasa = $.get(`${baseUrl}/cacat`, {
         cacat: cacat,
     });
 }
@@ -576,7 +576,7 @@ function selectCacatFisik(element, parrent, initVal = '-') {
         tags: true,
         scrollAfterSelect: true,
         ajax: {
-            url: `/efktp/cacat`,
+            url: `${baseUrl}/cacat`,
             dataType: 'JSON',
 
             data: (params) => {
@@ -617,7 +617,7 @@ function selectPenjab(element, parrent) {
         tags: false,
         scrollAfterSelect: true,
         ajax: {
-            url: `/efktp/penjab`,
+            url: `${baseUrl}/penjab`,
             dataType: 'JSON',
 
             data: (params) => {
@@ -653,7 +653,7 @@ function selectDataBarang(element, parrent) {
         delay: 250, // biar lebih optimal
         scrollAfterSelect: true,
         ajax: {
-            url: `/efktp/barang/get`,
+            url: `${baseUrl}/barang/get`,
             dataType: 'JSON',
             data: (params) => ({
                 barang: params.term
@@ -712,7 +712,7 @@ function selectDokter(element, parrent) {
         tags: true,
         placeholder: 'Pilin dokter',
         ajax: {
-            url: `/efktp/dokter/get`,
+            url: `${baseUrl}/dokter/get`,
             dataType: 'JSON',
 
             data: (params) => {
@@ -752,7 +752,7 @@ function selectMappingDokterPcare(element, parrent) {
         tags: false,
         placeholder: 'Pilin dokter',
         ajax: {
-            url: `efktp /mapping/pcare / dokter`,
+            url: `${baseUrl}/mapping/pcare/dokter`,
             dataType: 'JSON',
 
             data: (params) => {
@@ -790,7 +790,7 @@ function selectKelurahan(element, parrent) {
         scrollAfterSelect: true,
         tags: true,
         ajax: {
-            url: `/efktp/kelurahan`,
+            url: `${baseUrl}/kelurahan`,
             dataType: 'JSON',
 
             data: (params) => {
@@ -828,7 +828,7 @@ function selectKecamatan(element, parrent) {
         scrollAfterSelect: true,
         tags: true,
         ajax: {
-            url: `/efktp/kecamatan`,
+            url: `${baseUrl}/kecamatan`,
             dataType: 'JSON',
 
             data: (params) => {
@@ -866,7 +866,7 @@ function selectKabupaten(element, parrent) {
         scrollAfterSelect: true,
         tags: true,
         ajax: {
-            url: `/efktp/kabupaten`,
+            url: `${baseUrl}/kabupaten`,
             dataType: 'JSON',
 
             data: (params) => {
@@ -904,7 +904,7 @@ function selectPropinsi(element, parrent) {
         scrollAfterSelect: true,
         tags: true,
         ajax: {
-            url: `/efktp/propinsi`,
+            url: `${baseUrl}/propinsi`,
             dataType: 'JSON',
 
             data: (params) => {
@@ -942,7 +942,7 @@ function selectPerusahaan(element, parrent) {
         scrollAfterSelect: true,
         tags: true,
         ajax: {
-            url: `/efktp/perusahaan`,
+            url: `${baseUrl}/perusahaan`,
             dataType: 'JSON',
 
             data: (params) => {
@@ -980,7 +980,7 @@ function selectPoliklinik(element, parrent) {
         delay: 2,
         scrollAfterSelect: true,
         ajax: {
-            url: `/efktp/poliklinik`,
+            url: `${baseUrl}/poliklinik`,
             dataType: 'JSON',
 
             data: (params) => {
@@ -1015,7 +1015,7 @@ function selectPegawai(element, parrent) {
         delay: 2,
         scrollAfterSelect: true,
         ajax: {
-            url: `/efktp/pegawai`,
+            url: `${baseUrl}/pegawai`,
             dataType: 'JSON',
 
             data: (params) => {
@@ -1052,7 +1052,7 @@ function selectPenyakit(element, parrent) {
         delay: 2,
         scrollAfterSelect: true,
         ajax: {
-            url: `/efktp/penyakit/get`,
+            url: `${baseUrl}/penyakit/get`,
             dataType: 'JSON',
 
             data: (params) => {
@@ -1089,7 +1089,7 @@ function selectTindakan(element, parrent) {
         delay: 2,
         scrollAfterSelect: true,
         ajax: {
-            url: `/efktp/tindakan/get`,
+            url: `${baseUrl}/tindakan/get`,
             dataType: 'JSON',
 
             data: (params) => {
@@ -1187,6 +1187,13 @@ $.contextMenu({
                                 rujukEksternal(`${no_rawat}`);
                             }
                         },
+                    }
+                },
+                "kamarInap": {
+                    name: "Kamar Inap",
+                    icon: "fas fa-bed",
+                    callback: function (item, option, e, x, y) {
+                        kamarInap(no_rawat)
                     }
                 },
                 "PeriksaGigi": {
@@ -1673,7 +1680,7 @@ function selectMetode(element, parrent) {
         delay: 1,
         tags: true,
         ajax: {
-            url: `/efktp/metode/racik/get`,
+            url: `${baseUrl}/metode/racik/get`,
             dataType: 'JSON',
 
             data: (params) => {
@@ -1701,3 +1708,4 @@ function selectMetode(element, parrent) {
     })
     element.val('R01').trigger('change')
 }
+

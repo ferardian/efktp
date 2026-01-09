@@ -144,8 +144,36 @@ class RegPeriksaController extends Controller
 			return DataTables::of($regPeriksa)
 				->filter(function ($query) use ($req) {
 					if ($req->has('search') && $req->get('search')['value']) {
-						$query->whereHas('pasien', function ($q) use ($req) {
-							return $q->where('nm_pasien', 'like', '%' . $req->get('search')['value'] . '%');
+						$searchValue = $req->get('search')['value'];
+						
+						$query->where(function ($q) use ($searchValue) {
+							// Search in reg_periksa table
+							$q->where('no_rawat', 'like', '%' . $searchValue . '%')
+							  ->orWhere('no_rkm_medis', 'like', '%' . $searchValue . '%')
+							  ->orWhere('no_reg', 'like', '%' . $searchValue . '%')
+							  
+							  // Search in pasien table
+							  ->orWhereHas('pasien', function ($pasienQuery) use ($searchValue) {
+								  $pasienQuery->where('nm_pasien', 'like', '%' . $searchValue . '%')
+											  ->orWhere('alamat', 'like', '%' . $searchValue . '%')
+											  ->orWhere('no_ktp', 'like', '%' . $searchValue . '%')
+											  ->orWhere('no_peserta', 'like', '%' . $searchValue . '%');
+							  })
+							  
+							  // Search in dokter table
+							  ->orWhereHas('dokter', function ($dokterQuery) use ($searchValue) {
+								  $dokterQuery->where('nm_dokter', 'like', '%' . $searchValue . '%');
+							  })
+							  
+							  // Search in poliklinik table
+							  ->orWhereHas('poliklinik', function ($poliQuery) use ($searchValue) {
+								  $poliQuery->where('nm_poli', 'like', '%' . $searchValue . '%');
+							  })
+							  
+							  // Search in penjab table
+							  ->orWhereHas('penjab', function ($penjabQuery) use ($searchValue) {
+								  $penjabQuery->where('png_jawab', 'like', '%' . $searchValue . '%');
+							  });
 						});
 					}
 

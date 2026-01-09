@@ -93,7 +93,7 @@
             $('#tanggal').html(`${hari}, ${formatTanggal(tanggal)}`);
             const panggilanCounter = {};
             setInterval(() => {
-                $.get(`/efktp/registrasi/get/panggil`).done((response) => {
+                $.get(`{{ url('/registrasi/get/panggil') }}`).done((response) => {
                     if (Object.keys(response).length) {
                         $('#nomor').html(response.no_reg)
                         $('#nama').html(response.pasien.nm_pasien)
@@ -107,7 +107,7 @@
                         }
 
                         if (panggilanCounter[response.no_rawat] >= 2) {
-                            $.post(`/efktp/registrasi/update/status`, {
+                            $.post(`{{ url('/registrasi/update/status') }}`, {
                                     no_rawat: response.no_rawat,
                                     stts: 'Dirawat'
                                 })
@@ -125,7 +125,7 @@
                         blinkText($('#nomor'));
                     }
                 })
-                $.get(`/efktp/registrasi/get`, {
+                $.get(`{{ url('/registrasi/get') }}`, {
                     stts: 'Dirawat'
                 }).done((response) => {
                     Object.values(response).map(element => {

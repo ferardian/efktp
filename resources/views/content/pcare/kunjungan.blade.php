@@ -194,7 +194,7 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     loadingAjax();
-                    $.post(`/efktp/bridging/pcare/kunjungan/delete/${noKunjungan}`).done((resDelete) => {
+                    $.post(`{{ url('/bridging/pcare/kunjungan/delete') }}/${noKunjungan}`).done((resDelete) => {
                         if (resDelete.metaData.code === 200) {
                             alertSuccessAjax(`${resDelete.response}`).then(() => {
                                 $.post(`kunjungan/delete/${noKunjungan}`).fail((request) => {
@@ -234,7 +234,7 @@
 
             })
             modalPrintKunjungan.find('#noKunjungan').val(noKunjungan)
-            modalPrintKunjungan.find('#print').attr('src', `/efktp/pcare/kunjungan/rujuk/subspesialis/print?noKunjungan=${noKunjungan}`);
+            modalPrintKunjungan.find('#print').attr('src', `{{ url('/pcare/kunjungan/rujuk/subspesialis/print') }}?noKunjungan=${noKunjungan}`);
             modalPrintKunjungan.modal('show');
         }
 

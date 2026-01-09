@@ -140,7 +140,7 @@
                 destroy: true,
                 processing: true,
                 scrollY: setTableHeight(),
-                ajax: {url: "/efktp/paket-obat/datatable"},
+                ajax: {url: "{{ url('/paket-obat/datatable') }}"},
                 columns: [
                     {title: 'Paket', data: 'nama', width: '15%'},
                     {title: 'Poliklinik', data: 'poliklinik.nm_poli', width: '20%'},
@@ -197,7 +197,7 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
-                        url: `/efktp/paket-obat/${id}`,
+                        url: `{{ url('/paket-obat') }}/${id}`,
                         type: 'DELETE',
                         success: () => {
                             showToast('Berhasil Hapus Paket Obat');
@@ -214,7 +214,7 @@
         function editPaketObat(id) {
             const form = $('#formPaketObat');
 
-            $.get(`/efktp/paket-obat/${id}`).done((response) => {
+            $.get(`{{ url('/paket-obat') }}/${id}`).done((response) => {
                 const {data} = response;
                 if (!data) return;
 
@@ -227,7 +227,7 @@
         function createPaketObat() {
             const data = collectFormData();
 
-            $.post(`/efktp/paket-obat`, data)
+            $.post(`{{ url('/paket-obat') }}`, data)
                 .done(() => {
                     resetFormPaketObat();
                     renderTablePaketObat();
@@ -351,7 +351,7 @@
                 placeholder: 'Pilih Template Racikan...',
                 width: '100%',
                 ajax: {
-                    url: '/efktp/resep/racikan/template/search',
+                    url: '{{ url('/resep/racikan/template/search') }}',
                     dataType: 'JSON',
                     data: params => ({nm_racik: params.term}),
                     processResults: data => ({

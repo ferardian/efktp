@@ -8,19 +8,19 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <x-title/>
     <!-- CSS files -->
-    <link href="{{ asset('public/css/tabler.min.css') }}" rel="stylesheet"/>
-    <link href="{{ asset('public/css/demo.min.css') }}" rel="stylesheet"/>
-    <link rel="icon" type="image/x-icon" href="{{ asset('public/img/icon-app.svg') }}">
-    <link href="{{ asset('public/css/datatable/dataTables.bootstrap5.min.css') }}" rel="stylesheet"/>
-    <link href="{{ asset('public/css/datatable/bootstrap-datepicker.min.css') }}" rel="stylesheet"/>
-    <link rel="stylesheet" href="{{ asset('public/css/tabler-icon/tabler-icons.min.css') }}">
+    <link href="{{ asset('css/tabler.min.css') }}" rel="stylesheet"/>
+    <link href="{{ asset('css/demo.min.css') }}" rel="stylesheet"/>
+    <link rel="icon" type="image/x-icon" href="{{ asset('img/icon-app.svg') }}">
+    <link href="{{ asset('css/datatable/dataTables.bootstrap5.min.css') }}" rel="stylesheet"/>
+    <link href="{{ asset('css/datatable/bootstrap-datepicker.min.css') }}" rel="stylesheet"/>
+    <link rel="stylesheet" href="{{ asset('css/tabler-icon/tabler-icons.min.css') }}">
 
-    <link href="{{ asset('public/css/select2/select2.min.css') }}" rel="stylesheet"/>
-    <link href="{{ asset('public/css/select2-custom-darkmode.css') }}" rel="stylesheet"/>
+    <link href="{{ asset('css/select2/select2.min.css') }}" rel="stylesheet"/>
+    <link href="{{ asset('css/select2-custom-darkmode.css') }}" rel="stylesheet"/>
 
-    <link rel="stylesheet" href="{{ asset('public/css/jquery.contextMenu.min.css') }}"/>
-    <link rel="stylesheet" href="{{ asset('public/css/font-awesome/all.min.css') }}"/>
-    <script type="text/javascript" src="{{ asset('public/js/sweetalert/sweetalert2@11.js') }}"></script>
+    <link rel="stylesheet" href="{{ asset('css/jquery.contextMenu.min.css') }}"/>
+    <link rel="stylesheet" href="{{ asset('css/font-awesome/all.min.css') }}"/>
+    <script type="text/javascript" src="{{ asset('js/sweetalert/sweetalert2@11.js') }}"></script>
     <style>
         /* @import url('https://rsms.me/inter/inter.css'); */
 
@@ -126,13 +126,13 @@
         }
 
         .gigi_posterior {
-            background: url({{ asset('public/img/gigi/posterior.png') }});
+            background: url({{ asset('img/gigi/posterior.png') }});
             background-repeat: no-repeat;
             background-size: 100% 100%;
         }
 
         .gigi_anterior {
-            background: url({{ asset('public/img/gigi/anterior.png') }});
+            background: url({{ asset('img/gigi/anterior.png') }});
             background-repeat: no-repeat;
             background-size: 100% 100%;
         }
@@ -307,7 +307,7 @@
 
 <body class="layout-fluid">
 
-<script src="{{ asset('public/js/demo-theme.min.js') }}"></script>
+<script src="{{ asset('js/demo-theme.min.js') }}"></script>
 
 <div class="page-wrapper">
     <div class="toast-container position-fixed top-0 end-0 p-3">
@@ -335,21 +335,24 @@
      aria-modal="true" role="dialog">
     @include('components.offcanvas')
 </div>
-<script src="{{ asset('public/js/jQuery/jquery.min.js') }}"></script>
+<script src="{{ asset('js/jQuery/jquery.min.js') }}"></script>
 {{-- Datatable --}}
-<script src="{{ asset('public/js/dataTable/jquery.dataTables.min.js') }}"></script>
-<script src="{{ asset('public/js/dataTable/dataTables.bootstrap5.min.js') }}"></script>
-<script src="{{ asset('public/js/dataTable/dataTables.fixedColumns.min.js') }}"></script>
+<script src="{{ asset('js/dataTable/jquery.dataTables.min.js') }}"></script>
+<script src="{{ asset('js/dataTable/dataTables.bootstrap5.min.js') }}"></script>
+<script src="{{ asset('js/dataTable/dataTables.fixedColumns.min.js') }}"></script>
 {{-- Datepicker --}}
-<script src="{{ asset('public/js/bootstrap-datepicker.min.js') }}"></script>
+<script src="{{ asset('js/bootstrap-datepicker.min.js') }}"></script>
 {{-- Select2 --}}
-<script src="{{ asset('public/js/select2/select2.min.js') }}"></script>
-<script src="{{ asset('public/js/demo.min.js') }}" defer></script>
-<script src="{{ asset('public/js/tabler.min.js') }}" defer></script>
-<script src="{{ asset('public/libs/tinymce/tinymce.js') }}" defer></script>
-<script src="{{ asset('public/js/contextMenu/jquery.contextMenu.min.js') }}" defer></script>
-<script src="{{ asset('public/js/contextMenu/jquery.ui.position.js') }}" defer></script>
-<script src="{{ asset('public/js/utility.js') }}" defer></script>
+<script src="{{ asset('js/select2/select2.min.js') }}"></script>
+<script src="{{ asset('js/demo.min.js') }}" defer></script>
+<script src="{{ asset('js/tabler.min.js') }}" defer></script>
+<script src="{{ asset('libs/tinymce/tinymce.js') }}" defer></script>
+<script src="{{ asset('js/contextMenu/jquery.contextMenu.min.js') }}" defer></script>
+<script src="{{ asset('js/contextMenu/jquery.ui.position.js') }}" defer></script>
+<script>
+    const baseUrl = "{{ url('/') }}";
+</script>
+<script src="{{ asset('js/utility.js') }}" defer></script>
 <script>
     window.showToast = function (message, type = 'success', delay = 3000) {
         const toastEl = document.getElementById('toast-simple');
@@ -475,7 +478,7 @@
     }
 
     function setStatusLayan(no_rawat, status) {
-        return $.post(`/efktp/registrasi/update/status`, {
+        return $.post(`{{ url('/registrasi/update/status') }}`, {
             stts: status,
             no_rawat: no_rawat
         }).done(() => {
@@ -515,19 +518,19 @@
     }
 
     function getRegDetail(no_rawat) {
-        const registrasi = $.get(`/efktp/registrasi/get/detail`, {
+        const registrasi = $.get(`{{ url('/registrasi/get/detail') }}`, {
             no_rawat: no_rawat,
         })
         return registrasi;
     }
 
     function getRegPeriksa(...params) {
-        const registrasi = $.get(`/efktp/registrasi/get`, params)
+        const registrasi = $.get(`{{ url('/registrasi/get') }}`, params)
         return registrasi;
     }
 
     function createAlergi(data) {
-        const alergi = $.post(`/efktp/pasien/alergi`, {
+        const alergi = $.post(`{{ url('/pasien/alergi') }}`, {
             no_rkm_medis: data.no_rkm_medis,
             alergi: data.alergi
         });
@@ -535,7 +538,7 @@
     }
 
     function getPemeriksaanRalan(no_rawat, nip = '') {
-        return $.get(`/efktp/pemeriksaan/ralan/show`, {
+        return $.get(`{{ url('/pemeriksaan/ralan/show') }}`, {
             no_rawat: no_rawat,
             nip: nip
         })
@@ -543,7 +546,7 @@
 
     function riwayatIcare(no_peserta) {
         loadingAjax();
-        $.get(`/efktp/icare`, {
+        $.get(`{{ url('/icare') }}`, {
             no_peserta: no_peserta,
         }).done((response) => {
             if (response.metaData.code === 200) {

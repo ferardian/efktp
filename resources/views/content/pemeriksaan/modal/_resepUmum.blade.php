@@ -26,14 +26,14 @@
         var bodyResepUmum = tabelResepUmum.find('tbody')
 
         function getResepDokter(no_resep) {
-            const resepDokter = $.get(`/efktp/resep/dokter/get`, {
+            const resepDokter = $.get(`{{ url('/resep/dokter/get') }}`, {
                 no_resep: no_resep
             })
             return resepDokter;
         }
 
         function deleteResepDokter(no_resep, kode_brng) {
-            const resepDokter = $.post(`/efktp/resep/dokter/delete`, {
+            const resepDokter = $.post(`{{ url('/resep/dokter/delete') }}`, {
                 no_resep: no_resep,
                 kode_brng: kode_brng,
             })
@@ -193,7 +193,7 @@
                 aturan_pakai: $(`#aturan${id}`).val()
             }
 
-            $.post('resep/dokter/update', data).done((response) => {
+            $.post(`{{ url('/resep/dokter/update') }}`, data).done((response) => {
                 setResepDokter(data.no_resep)
                 tulisPlan(data.no_resep)
             }).fail((request) => {
@@ -262,7 +262,7 @@
                 }
             }
 
-            $.post(`/efktp/resep/dokter/create`, {
+            $.post(`{{ url('/resep/dokter/create') }}`, {
                 dataObat
             }).done((response) => {
                 const no_rawat = $('#formCpptRajal input[name=no_rawat]').val()
@@ -306,7 +306,7 @@
                 }
             }
 
-            $.post(`/efktp/resep/dokter/create`, {
+            $.post(`{{ url('/resep/dokter/create') }}`, {
                 dataObat
             }).done((response) => {
                 const no_rawat = $('#formCpptRajal input[name=no_rawat]').val()

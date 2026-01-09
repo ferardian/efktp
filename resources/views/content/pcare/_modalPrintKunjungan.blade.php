@@ -47,7 +47,7 @@
                 }
 
             })
-            modalPrintKunjungan.find('#print').removeAttr('src').attr('src', `/efktp/pcare/kunjungan/rujuk/subspesialis/print?noKunjungan=${noKunjungan}${size}`);
+            modalPrintKunjungan.find('#print').removeAttr('src').attr('src', `{{ url('/pcare/kunjungan/rujuk/subspesialis/print') }}?noKunjungan=${noKunjungan}${size}`);
         }
 
         selectSize.on('change', (e) => {

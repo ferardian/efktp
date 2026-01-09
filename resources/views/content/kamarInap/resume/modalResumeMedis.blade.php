@@ -335,7 +335,7 @@
 
             })
 
-            $.get(`/efktp/resume/medis`, {
+            $.get(`{{ url('/resume/medis') }}`, {
                 no_rawat: no_rawat,
             }).done((response) => {
                 const option = new Option('-', '-', true, true);
@@ -367,12 +367,12 @@
         }
 
         function getDiagnosaRanap(params) {
-            $.get(`/efktp/penyakit/get`).done((response) => {})
+            $.get(`{{ url('/penyakit/get') }}`).done((response) => {})
         }
 
         function createResumeMedis() {
             const data = getDataForm('formResumeMedis', ['input', 'textarea', 'select']);
-            $.post(`/efktp/resume/medis`, data).done((response) => {
+            $.post(`{{ url('/resume/medis') }}`, data).done((response) => {
                 alertSuccessAjax();
                 modalResumeMedis.modal('hide');
             })
@@ -401,7 +401,7 @@
             placeholder: 'Pilih / Isikan Diagnosa',
             scrollAfterSelect: true,
             ajax: {
-                url: `/efktp/penyakit/get`,
+                url: `{{ url('/penyakit/get') }}`,
                 dataType: 'JSON',
 
                 data: (params) => {
@@ -444,7 +444,7 @@
             placeholder: 'Pilih / Isikan Diagnosa',
             scrollAfterSelect: true,
             ajax: {
-                url: `/efktp/tindakan/get`,
+                url: `{{ url('/tindakan/get') }}`,
                 dataType: 'JSON',
 
                 data: (params) => {

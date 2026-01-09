@@ -46,7 +46,7 @@
     <script>
         function simpanPemeriksaanGigi() {
             const data = getDataForm('formPemeriksaanGigi', ['input', 'select']);
-            $.post(`/efktp/pemeriksaan/gigi`,
+            $.post(`{{ url('/pemeriksaan/gigi') }}`,
                 data
             ).done((response) => {
                 alertSuccessAjax('Berhasil').then(() => {
@@ -61,7 +61,7 @@
 
         function pemeriksaanGigi(no_rawat) {
             formPemeriksaanGigi.trigger('reset');
-            $.get(`/efktp/registrasi/get/detail`, {
+            $.get(`{{ url('/registrasi/get/detail') }}`, {
                 no_rawat: no_rawat
             }).done((response) => {
                 formPemeriksaanGigi.find('input[name="no_rawat"]').val(no_rawat)
@@ -73,7 +73,7 @@
                 loadRiwayatGigi(response.no_rkm_medis)
             })
 
-            $.get(`/efktp/pemeriksaan/gigi`, {
+            $.get(`{{ url('/pemeriksaan/gigi') }}`, {
                 no_rawat: no_rawat,
             }).done((response) => {
                 if (Object.values(response).length) {
@@ -99,7 +99,7 @@
 
         function renderHasilGigi(no_rawat) {
             $('.tb-odonto').find('td').html('');
-            $.get(`/efktp/pemeriksaan/gigi/hasil`, {
+            $.get(`{{ url('/pemeriksaan/gigi/hasil') }}`, {
                 no_rawat: no_rawat
             }).done((response) => {
                 response.map((item) => {

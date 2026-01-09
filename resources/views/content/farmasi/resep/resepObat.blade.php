@@ -58,7 +58,7 @@
                 pageLength: 50,
                 scrollX: true,
                 ajax: {
-                    url: `/efktp/resep/get`,
+                    url: `{{ url('/resep/get') }}`,
                     data: {
                         dataTable: true,
                         tgl_awal: tgl_awal,
@@ -185,7 +185,7 @@
         }
 
         function showDetailResep(no_resep) {
-            $.get(`/efktp/farmasi/resep/get`, {
+            $.get(`{{ url('/farmasi/resep/get') }}`, {
                 no_resep: no_resep
             }).done((response) => {
                 if (response.resep_dokter.length || response.resep_racikan.length) {
@@ -213,7 +213,7 @@
         }
 
         function setPenyerahanResep(no_resep) {
-            $.post(`/efktp/farmasi/resep/set/penyerahan`, {
+            $.post(`{{ url('/farmasi/resep/set/penyerahan') }}`, {
                 no_resep: no_resep
             }).done((response) => {
                 localStorage.removeItem('no_resep');
@@ -230,7 +230,7 @@
             localStorage.setItem('no_resep', no_resep);
             localStorage.setItem('nm_pasien', nm_pasien);
             localStorage.setItem('panggil', 'yes')
-            $.get(`/efktp/resep/get`, {
+            $.get(`{{ url('/resep/get') }}`, {
                 no_resep: no_resep
             }).done((response) => {
                 localStorage.setItem('resepPoliklinik', response.reg_periksa.poliklinik.nm_poli);
