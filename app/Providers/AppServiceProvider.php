@@ -21,9 +21,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         if (!app()->runningInConsole()) {
+            // 1. Deteksi Protokol
             $protocol = 'http';
-
-            // 1. Deteksi HTTPS - Sangat penting untuk server publik
             if (
                 (isset($_SERVER['HTTPS']) && ($_SERVER['HTTPS'] === 'on' || $_SERVER['HTTPS'] === '1')) ||
                 (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') ||
@@ -38,6 +37,7 @@ class AppServiceProvider extends ServiceProvider
             $requestUri = $_SERVER['REQUEST_URI'] ?? '';
             
             $path = '';
+            // Jika ada kata /efktp di awal URL, masukkan ke jalur utama
             if (strpos($requestUri, '/efktp') === 0) {
                 $path = '/efktp';
             }
@@ -45,17 +45,24 @@ class AppServiceProvider extends ServiceProvider
             $baseUri = "$protocol://$host$path";
             config(['app.url' => $baseUri]);
 
-            // 3. LOGIKA ASSET PALING SEDERHANA:
-            // Kita cek apakah ada folder 'public' di sebelah file index.php yang sedang jalan.
-            // dirname(__SERVER['SCRIPT_FILENAME']) memberikan lokasi folder index.php saat ini.
+            // 3. LOGIKA ASSET EKSTREM (Sangat Spesifik):
             $currentDir = dirname($_SERVER['SCRIPT_FILENAME'] ?? '');
+            $isPublicDomain = (strpos($host, 'fktp.dokteraci.my.id') !== false);
             
-            if (is_dir($currentDir . '/public')) {
-                // Berarti index.php ada di ROOT (seperti di server publik/lokal Anda)
+            // Aturan :
+            // Jika ini domain publik, PASTI butuh /public karena kita pakai index.php di root.
+            if ($isPublicDomain) {
                 config(['app.asset_url' => "$baseUri/public"]);
-            } else {
-                // Berarti index.php ada di dalam folder PUBLIC (seperti di Docker Sail)
-                config(['app.asset_url' => $baseUri]);
+            }
+            // Jika bukan domain publik (misal: localhost atau IP lokal), cek folder fisik
+            else {
+                if (is_dir($currentDir . '/public')) {
+                    // Jika ada folder public, berarti kita di root (Butuh /public)
+                    config(['app.asset_url' => "$baseUri/public"]);
+                } else {
+                    // Jika tidak ada folder public, berarti kita sudah di dalam public (Gak butuh /public)
+                    config(['app.asset_url' => $baseUri]);
+                }
             }
         }
     }
