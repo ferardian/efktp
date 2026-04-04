@@ -191,10 +191,26 @@ class Kunjungan extends Controller
 			}
 		}
 		try {
+			// Use library but modify feature to include V1
 			$bpjs = $this->bpjs;
+			
+			// Use reflection to set the protected $feature property to kunjungan/V1
+			$reflection = new \ReflectionClass($bpjs);
+			$property = $reflection->getProperty('feature');
+			$property->setAccessible(true);
+			$property->setValue($bpjs, 'kunjungan/V1');
+			
 			return $bpjs->update($data);
 		} catch (QueryException $e) {
 			return $e->errorInfo;
+		} catch (\Exception $e) {
+			return [
+				'metaData' => [
+					'code' => 500,
+					'message' => 'FAILED'
+				],
+				'response' => $e->getMessage()
+			];
 		}
 	}
 

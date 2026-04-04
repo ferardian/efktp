@@ -220,6 +220,26 @@ class RegPeriksaController extends Controller
 		return response()->json(['Berhasil mengubah data registrasi', $request->no_rawat]);
 	}
 
+	function delete(Request $request): JsonResponse
+	{
+		$isValidate = $request->validate([
+			'no_rawat' => 'required',
+		]);
+
+		try {
+			$regPeriksa = $this->regPeriksa->where('no_rawat', $request->no_rawat)->first();
+			if ($regPeriksa) {
+				$this->regPeriksa->where('no_rawat', $request->no_rawat)->delete();
+				$this->deleteSql(new RegPeriksa(), [
+					'no_rawat' => $request->no_rawat,
+				]);
+				return response()->json('SUKSES');
+			}
+			return response()->json('Data tidak ditemukan', 404);
+		} catch (QueryException $e) {
+			return response()->json($e->errorInfo, 500);
+		}
+	}
 
 	function create(Request $request): JsonResponse
 	{

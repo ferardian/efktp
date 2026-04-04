@@ -164,6 +164,7 @@ Route::middleware('auth')->group(function () {
 	Route::get('/registrasi/set/norawat', [RegPeriksaController::class, 'setNoRawat']);
 	Route::post('/registrasi', [RegPeriksaController::class, 'create']);
 	Route::post('/registrasi/update', [RegPeriksaController::class, 'update']);
+	Route::post('/registrasi/delete', [RegPeriksaController::class, 'delete']);
 
 
 	Route::get('/registrasi', function () {

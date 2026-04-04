@@ -107,7 +107,7 @@
                     </fieldset>
                     <div class="mb-2">
                         <label class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" checked="" id="switchPendaftaranPcare">
+                            <input class="form-check-input" type="checkbox" id="switchPendaftaranPcare">
                             <span class="form-check-label">Kirim Pendaftaran ke Pcare </span>
                         </label>
                     </div>
@@ -588,6 +588,7 @@
 
                 if (noUrut) {
                     periksaPendaftaran.removeClass('d-none');
+
                     response['noUrut'] = noUrut;
                     const kdPoli = formRegistrasiPoli.find('select[name=kd_poli]').val();
                     formRegistrasiPoli.find('input[name=bridging]').val(true);
@@ -597,6 +598,7 @@
                     setMappingDokterPcare(kd_dokter.val())
                 } else if (response.penjab.png_jawab.includes('BPJS')) {
                     periksaPendaftaran.removeClass('d-none');
+
                     const kdPoli = formRegistrasiPoli.find('select[name=kd_poli]').val();
                     setMappingPoliPcare(kdPoli)
                     selectMappingDokterPcare(kd_dokter, modalRegistrasi)

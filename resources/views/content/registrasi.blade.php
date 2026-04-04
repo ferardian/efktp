@@ -111,6 +111,7 @@
 
                 if (penjab.png_jawab.includes('BPJS')) {
                     periksaPendaftaran.removeClass('d-none')
+                    switchPendaftaranPcare.prop('checked', true)
                     periksaPendaftaran.find('input').prop('disabled', false)
                     $.get(`{{ url('/mapping/pcare/poliklinik') }}`, {
                         kdPoli: poliklinik.kd_poli
@@ -193,6 +194,39 @@
                 }
             })
 
+        }
+
+        function hapusRegistrasi(no_rawat) {
+            Swal.fire({
+                title: 'Apakah anda yakin?',
+                text: "Data registrasi " + no_rawat + " akan dihapus secara permanen!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya, hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post(`{{ url('/registrasi/delete') }}`, {
+                        no_rawat: no_rawat
+                    }).done((response) => {
+                        Swal.fire(
+                            'Terhapus!',
+                            'Data registrasi berhasil dihapus.',
+                            'success'
+                        )
+                        loadTabelRegistrasi(inputTglAwal.val(), inputTglAkhir.val(), selectFilterStts.val(), selectFilterDokter.val());
+                    }).fail((error, status, code) => {
+                        let msg = error.responseJSON ? error.responseJSON : 'Terjadi kesalahan saat menghapus data.';
+                        Swal.fire(
+                            'Gagal!',
+                            msg,
+                            'error'
+                        )
+                    })
+                }
+            })
         }
     </script>
 @endpush

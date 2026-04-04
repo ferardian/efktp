@@ -1368,26 +1368,13 @@ $.contextMenu({
                         ubahRegistrasi(no_rawat)
                     }
                 },
-
-                // "hapusRegistrasi": {
-                //     name: "Hapus & Ubah Data",
-                //     items : {
-                //         "ubah" : {
-                //             name : 'Ubah',
-                //             icon : "fas fa-pencil",
-                //             callback : ()=>{
-                //                 ubahRegistrasi(no_rawat)
-                //             }
-                //         },
-                //         "hapus" : {
-                //             name : 'Hapus',
-                //             icon : "fas fa-trash",
-                //             callback : ()=>{
-                //                 hapusRegistrasi(no_rawat)
-                //             }
-                //         },
-                //     }
-                // },
+                "hapus": {
+                    name: 'Hapus Data',
+                    icon: "fas fa-trash",
+                    callback: () => {
+                        hapusRegistrasi(no_rawat)
+                    }
+                },
             }
         }
     }

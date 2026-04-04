@@ -927,13 +927,18 @@
             }
             loadingAjax('Tunggu sebentar...');
 
-            $.post(`{{ url('/bridging/pcare/kunjungan/post') }}`, data).done((response) => {
-                if (response.metaData.code == 201 && response.metaData.message) {
+            // Detect if this is create or edit based on noKunjungan
+            const isEdit = data.noKunjungan && data.noKunjungan !== '';
+            const url = isEdit ? `{{ url('/bridging/pcare/kunjungan/update') }}` : `{{ url('/bridging/pcare/kunjungan/post') }}`;
+            const successMessage = isEdit ? 'Berhasil mengupdate data kunjungan' : 'Berhasil membuat data kunjungan';
+
+            $.post(url, data).done((response) => {
+                if ((isEdit && response.metaData.code == 200) || (!isEdit && response.metaData.code == 201 && response.metaData.message)) {
                     const noKunjungan = response.response.map((res) => {
                         return res.message;
                     }).join(',');
                     data['noKunjungan'] = noKunjungan
-                    alertSuccessAjax('Berhasil membuat data kunjungan').then(() => {
+                    alertSuccessAjax(successMessage).then(() => {
                         if (tabelRegistrasi.length) {
                             loadTabelRegistrasi(tglAwal, tglAkhir, statusLocal, dokterLocal.kd_dokter)
                         } else if (tabelPcarePendaftaran.length) {
