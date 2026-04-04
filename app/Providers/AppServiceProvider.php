@@ -23,7 +23,7 @@ class AppServiceProvider extends ServiceProvider
         if (!app()->runningInConsole()) {
             $protocol = 'http';
 
-            // 1. Deteksi HTTPS
+            // 1. Deteksi HTTPS - Sangat penting untuk server publik
             if (
                 (isset($_SERVER['HTTPS']) && ($_SERVER['HTTPS'] === 'on' || $_SERVER['HTTPS'] === '1')) ||
                 (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') ||
@@ -33,36 +33,29 @@ class AppServiceProvider extends ServiceProvider
                 URL::forceScheme('https');
             }
 
-            // 2. Deteksi Host & Path
+            // 2. Deteksi Host & Subfolder
             $host = $_SERVER['HTTP_X_FORWARDED_HOST'] ?? $_SERVER['HTTP_HOST'] ?? 'localhost';
             $requestUri = $_SERVER['REQUEST_URI'] ?? '';
             
             $path = '';
-            // Jika diakses lewat /efktp, pastikan base URL juga mengandung /efktp
             if (strpos($requestUri, '/efktp') === 0) {
                 $path = '/efktp';
             }
 
-            $dynamicUrl = "$protocol://$host$path";
-            config(['app.url' => $dynamicUrl]);
+            $baseUri = "$protocol://$host$path";
+            config(['app.url' => $baseUri]);
 
-            // 3. LOGIKA ASSET SUPER AKURAT:
-            // Cek lokasi file fisik index.php yang sedang dieksekusi
-            $scriptFileName = realpath($_SERVER['SCRIPT_FILENAME'] ?? '');
-            $rootIndexFile = realpath(base_path('index.php'));
-            $publicIndexFile = realpath(public_path('index.php'));
-
-            // Jika yang jalan adalah index.php di folder PUBLIC (seperti di Docker Sail)
-            if ($scriptFileName === $publicIndexFile) {
-                config(['app.asset_url' => $dynamicUrl]);
-            } 
-            // Jika yang jalan adalah index.php di folder ROOT (seperti di Apache Subfolder)
-            elseif ($scriptFileName === $rootIndexFile) {
-                config(['app.asset_url' => "$dynamicUrl/public"]);
-            }
-            // Fallback default
-            else {
-                config(['app.asset_url' => $dynamicUrl]);
+            // 3. LOGIKA ASSET PALING SEDERHANA:
+            // Kita cek apakah ada folder 'public' di sebelah file index.php yang sedang jalan.
+            // dirname(__SERVER['SCRIPT_FILENAME']) memberikan lokasi folder index.php saat ini.
+            $currentDir = dirname($_SERVER['SCRIPT_FILENAME'] ?? '');
+            
+            if (is_dir($currentDir . '/public')) {
+                // Berarti index.php ada di ROOT (seperti di server publik/lokal Anda)
+                config(['app.asset_url' => "$baseUri/public"]);
+            } else {
+                // Berarti index.php ada di dalam folder PUBLIC (seperti di Docker Sail)
+                config(['app.asset_url' => $baseUri]);
             }
         }
     }
