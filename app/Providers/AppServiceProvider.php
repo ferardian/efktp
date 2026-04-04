@@ -23,7 +23,7 @@ class AppServiceProvider extends ServiceProvider
         if (!app()->runningInConsole()) {
             $protocol = 'http';
 
-            // Deteksi HTTPS
+            // 1. Deteksi HTTPS
             if (
                 (isset($_SERVER['HTTPS']) && ($_SERVER['HTTPS'] === 'on' || $_SERVER['HTTPS'] === '1')) ||
                 (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') ||
@@ -33,44 +33,31 @@ class AppServiceProvider extends ServiceProvider
                 URL::forceScheme('https');
             }
 
-            // Ambil host
+            // 2. Deteksi Host & Path
             $host = $_SERVER['HTTP_X_FORWARDED_HOST'] ?? $_SERVER['HTTP_HOST'] ?? 'localhost';
-
-            // Deteksi apakah sedang diakses via subfolder /efktp
-            // Kita cek SCRIPT_NAME atau REQUEST_URI
             $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
             $requestUri = $_SERVER['REQUEST_URI'] ?? '';
             
             $path = '';
-            
-            // Logika 1: Jika diakses via Apache konvensional (localhost/efktp)
-            if (strpos($scriptName, '/efktp') === 0) {
-                $path = '/efktp';
-            } 
-            // Logika 2: Jika diakses via Docker tapi user memaksa /efktp di URL
-            elseif (strpos($requestUri, '/efktp') === 0) {
+            if (strpos($requestUri, '/efktp') === 0) {
                 $path = '/efktp';
             }
 
             $dynamicUrl = "$protocol://$host$path";
-
             config(['app.url' => $dynamicUrl]);
+
+            // 3. LOGIKA ASSET PINTAR:
+            // Cek apakah file index.php yang sedang berjalan berada di folder 'public' atau tidak
+            $scriptFileName = $_SERVER['SCRIPT_FILENAME'] ?? '';
             
-            // Asset handling
-            // Jika ada $path (/efktp), kita perlu cek apakah folder public masuk dalam URL
-            // Di Docker Sail, biasanya public diserve di root. 
-            // Di Apache konvensional, index.php di root memanggil folder public secara internal.
-            
-            // Kita asumsikan untuk konsistensi: jika ada /efktp, asset juga lewat /efktp/public
-            // KECUALI jika index.php sudah ada di root (seperti setup Anda saat ini)
-            
-            if (!empty($path)) {
-                // Jika setup Anda index.php di root, maka aset diakses via /efktp/public/...
-                // karena kita mengembalikan folder aset ke dalam public/ tadi.
-                config(['app.asset_url' => "$dynamicUrl/public"]);
-            } else {
-                // Jika di root (seperti di Docker Sail saat ini)
+            // Jika jalur file fisik mengandung '/public/index.php', 
+            // artinya webserver (seperti di server publik Anda) sudah mengarah ke PUBLIC.
+            if (strpos($scriptFileName, '/public/index.php') !== false) {
+                // Jangan tambahkan /public lagi
                 config(['app.asset_url' => $dynamicUrl]);
+            } else {
+                // Jika tidak (berarti index.php di root dijalankan), tambahkan /public
+                config(['app.asset_url' => "$dynamicUrl/public"]);
             }
         }
     }
