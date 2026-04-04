@@ -35,7 +35,6 @@ class AppServiceProvider extends ServiceProvider
 
             // 2. Deteksi Host & Path
             $host = $_SERVER['HTTP_X_FORWARDED_HOST'] ?? $_SERVER['HTTP_HOST'] ?? 'localhost';
-            $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
             $requestUri = $_SERVER['REQUEST_URI'] ?? '';
             
             $path = '';
@@ -46,17 +45,20 @@ class AppServiceProvider extends ServiceProvider
             $dynamicUrl = "$protocol://$host$path";
             config(['app.url' => $dynamicUrl]);
 
-            // 3. LOGIKA ASSET PINTAR:
-            // Cek apakah file index.php yang sedang berjalan berada di folder 'public' atau tidak
-            $scriptFileName = $_SERVER['SCRIPT_FILENAME'] ?? '';
+            // 3. LOGIKA ASSET:
+            // Kita cek SCRIPT_NAME. Jika SCRIPT_NAME mengandung '/public/index.php',
+            // artinya index.php yang dijalankan memang berada di subfolder public.
+            $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
             
-            // Jika jalur file fisik mengandung '/public/index.php', 
-            // artinya webserver (seperti di server publik Anda) sudah mengarah ke PUBLIC.
-            if (strpos($scriptFileName, '/public/index.php') !== false) {
-                // Jangan tambahkan /public lagi
+            // Cek apakah URL yang sedang diakses saat ini mengandung '/public/'
+            // Jika kita mengakses lewat index.php di root, SCRIPT_NAME biasanya adalah '/index.php' atau '/efktp/index.php'
+            // Jika kita mengakses lewat folder public, SCRIPT_NAME biasanya adalah '/public/index.php' atau '/efktp/public/index.php'
+            
+            if (strpos($scriptName, '/public/index.php') !== false) {
+                // Jika sudah ada 'public' di script yang dijalankan, maka aset dipanggil tanpa /public lagi
                 config(['app.asset_url' => $dynamicUrl]);
             } else {
-                // Jika tidak (berarti index.php di root dijalankan), tambahkan /public
+                // Jika index.php yang dijalankan ada di root, maka aset WAJIB pakai /public
                 config(['app.asset_url' => "$dynamicUrl/public"]);
             }
         }
