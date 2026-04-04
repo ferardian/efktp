@@ -9,7 +9,7 @@
 
 @include('content.pcare.pendaftaran._modalPasien')
 @push('script')
-    <script type="" src="{{asset('public/libs/list.js/dist/list.min.js')}}"></script>
+    <script type="" src="{{asset('libs/list.js/dist/list.min.js')}}"></script>
     <script>
         const formFilterRegistrasi = $('#formFilterRegistrasi')
         const inputTglAwal = $('#tglAwal')
