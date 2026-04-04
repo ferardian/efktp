@@ -37,7 +37,7 @@ class AppServiceProvider extends ServiceProvider
             $requestUri = $_SERVER['REQUEST_URI'] ?? '';
             
             $path = '';
-            // Jika ada kata /efktp di awal URL, masukkan ke jalur utama
+            // Jika diakses lewat /efktp, kita set path-nya
             if (strpos($requestUri, '/efktp') === 0) {
                 $path = '/efktp';
             }
@@ -45,24 +45,14 @@ class AppServiceProvider extends ServiceProvider
             $baseUri = "$protocol://$host$path";
             config(['app.url' => $baseUri]);
 
-            // 3. LOGIKA ASSET EKSTREM (Sangat Spesifik):
-            $currentDir = dirname($_SERVER['SCRIPT_FILENAME'] ?? '');
-            $isPublicDomain = (strpos($host, 'fktp.dokteraci.my.id') !== false);
-            
-            // Aturan :
-            // Jika ini domain publik, PASTI butuh /public karena kita pakai index.php di root.
-            if ($isPublicDomain) {
+            // 3. LOGIKA ASSET SEDERHANA & AMPUH:
+            if (!empty($path)) {
+                // Jika akses via /efktp (Lokal Mac atau Publik), aset selalu butuh /public
+                // karena kita meletakkan index.php di root.
                 config(['app.asset_url' => "$baseUri/public"]);
-            }
-            // Jika bukan domain publik (misal: localhost atau IP lokal), cek folder fisik
-            else {
-                if (is_dir($currentDir . '/public')) {
-                    // Jika ada folder public, berarti kita di root (Butuh /public)
-                    config(['app.asset_url' => "$baseUri/public"]);
-                } else {
-                    // Jika tidak ada folder public, berarti kita sudah di dalam public (Gak butuh /public)
-                    config(['app.asset_url' => $baseUri]);
-                }
+            } else {
+                // Jika akses langsung (Docker Sail), aset langsung di root
+                config(['app.asset_url' => $baseUri]);
             }
         }
     }
