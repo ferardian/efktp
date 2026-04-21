@@ -276,6 +276,41 @@
 </div>
 @include('content.registrasi._modalRegistrasiPasien')
 @include('content.registrasi._modalPesertaBpjs')
+
+<div class="modal modal-blur fade" id="modalMergePasien" tabindex="-1" aria-modal="false" role="dialog" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content rounded-3">
+            <div class="modal-header">
+                <h5 class="modal-title m-0">Gabung Data Rekam Medis</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-3">
+                <form id="formMergePasien">
+                    <div class="mb-3">
+                        <label class="form-label">Pasien Sumber (Akan Dihapus)</label>
+                        <input type="text" id="mergeOldRmText" class="form-control" readonly>
+                        <input type="hidden" name="old_rm" id="mergeOldRm">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label required">No. R.M Tujuan (Target Utama)</label>
+                        <div class="input-group">
+                            <input type="text" name="new_rm" id="mergeNewRm" class="form-control" autocomplete="off" placeholder="Input No. RM Tujuan...">
+                            <button type="button" class="btn btn-indigo" id="btnCariTargetMerge"><i class="ti ti-search"></i></button>
+                        </div>
+                        <input type="text" id="mergeNewRmNm" class="form-control mt-2" readonly placeholder="Nama Pasien Tujuan...">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-link link-secondary me-auto" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-success" id="btnProsesMerge" onclick="processMerge()">
+                    <i class="ti ti-device-floppy me-2"></i>Proses Gabung
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('script')
     <script>
         let formPasien = $('#formPasien');
@@ -658,8 +693,9 @@
                         title: '',
                         data: 'no_rkm_medis',
                         render: (data, type, row, meta) => {
-                            return `<button class="btn btn-primary btn-sm" onclick="registrasiPoli('${data}')"><i class="ti ti-plus"></i></button>
-                            <button class="btn btn-yellow btn-sm" onclick="editPasien('${data}')"><i class="ti ti-pencil"></i></button>`;
+                            return `<button class="btn btn-primary btn-sm" onclick="registrasiPoli('${data}')" title="Registrasi"><i class="ti ti-plus"></i></button>
+                            <button class="btn btn-yellow btn-sm" onclick="editPasien('${data}')" title="Edit"><i class="ti ti-pencil"></i></button>
+                            <button class="btn btn-info btn-sm" onclick="showModalMerge('${data}', '${row.nm_pasien}')" title="Gabung RM"><i class="ti ti-arrows-join"></i></button>`;
                         }
 
                     }, {
@@ -851,6 +887,86 @@
 
                 } else {
                     alertErrorBpjs(response);
+                }
+            });
+        }
+
+        function showModalMerge(no_rkm_medis, nm_pasien) {
+            $('#mergeOldRm').val(no_rkm_medis);
+            $('#mergeOldRmText').val(no_rkm_medis + ' - ' + nm_pasien);
+            $('#mergeNewRm').val('');
+            $('#mergeNewRmNm').val('');
+            $('#modalMergePasien').modal('show');
+        }
+
+        $('#btnCariTargetMerge').on('click', function() {
+            const no_rkm_medis = $('#mergeNewRm').val();
+            if (no_rkm_medis.trim() == '') {
+                toast('warning', 'Silahkan isi No. RM Tujuan');
+                return;
+            }
+            $.get(`{{ url('/pasien') }}`, {
+                no_rkm_medis: no_rkm_medis
+            }).done((response) => {
+                if (response && response.nm_pasien) {
+                    $('#mergeNewRmNm').val(response.nm_pasien);
+                } else {
+                    $('#mergeNewRmNm').val('');
+                    toast('error', 'Data pasien tidak ditemukan');
+                }
+            });
+        });
+
+        $('#mergeNewRm').on('keypress', function(e) {
+            if (e.which == 13) {
+                $('#btnCariTargetMerge').trigger('click');
+            }
+        });
+
+        function processMerge() {
+            const oldRm = $('#mergeOldRm').val();
+            const newRm = $('#mergeNewRm').val();
+            const newRmNm = $('#mergeNewRmNm').val();
+
+            if (newRm.trim() == '' || newRmNm.trim() == '') {
+                toast('warning', 'Silahkan cari No. RM Tujuan yang valid');
+                return;
+            }
+
+            if (oldRm == newRm) {
+                toast('warning', 'No. RM tujuan tidak boleh sama dengan sumber');
+                return;
+            }
+
+            Swal.fire({
+                title: 'Konfirmasi Gabung RM',
+                html: `Anda akan menggabungkan data rekam medis pasien:<br><b>${$('#mergeOldRmText').val()}</b><br>Ke dalam pasien:<br><b>${newRm} - ${newRmNm}</b><br><br><span class="text-danger">Aksi ini akan menghapus data pasien sumber secara permanen!</span>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya, Gabungkan!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    loadingAjax('Sedang memproses penggabungan data...');
+                    $.post(`{{ url('/pasien/merge') }}`, {
+                        old_rm: oldRm,
+                        new_rm: newRm,
+                        _token: '{{ csrf_token() }}'
+                    }).done((response) => {
+                        loadingAjax().close();
+                        if (response == 'SUKSES') {
+                            alertSuccessAjax('Data rekam medis berhasil digabungkan');
+                            $('#modalMergePasien').modal('hide');
+                            renderTbPasien();
+                        } else {
+                            Swal.fire('Gagal', response, 'error');
+                        }
+                    }).fail((xhr) => {
+                        loadingAjax().close();
+                        alertErrorAjax(xhr);
+                    });
                 }
             });
         }

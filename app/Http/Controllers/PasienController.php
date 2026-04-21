@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\setNoRkmMedis;
 use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
 
 class PasienController extends Controller
@@ -243,5 +244,55 @@ class PasienController extends Controller
         }
         $data = $data->orderBy('count', 'DESC')->limit(10)->get();
         return response()->json($data);
+    }
+
+    public function merge(Request $request)
+    {
+        $oldRm = $request->old_rm;
+        $newRm = $request->new_rm;
+
+        if ($oldRm == $newRm) {
+            return response()->json('No. RM tujuan tidak boleh sama', 400);
+        }
+
+        $tables = [
+            'reg_periksa',
+            'catatan_pasien',
+            'pasien_mati',
+            'resume_medis',
+            'rujuk',
+            'resep_obat',
+            'diagnosa_pasien',
+            'prosedur_pasien',
+            'tindakan_dokter',
+            'pemeriksaan_ralan',
+            'pemeriksaan_ranap',
+            'pcare_pendaftaran',
+            'pcare_kunjungan',
+            'efktp_hasil_usg',
+            'efktp_pcare_alergi',
+            'pemeriksaan_gigi',
+            'upload_penunjang',
+            'penilaian_awal_keperawatan_ralan'
+        ];
+
+        DB::beginTransaction();
+        try {
+            foreach ($tables as $table) {
+                // Periksa apakah tabel dan kolom ada sebelum update untuk menghindari error
+                if (Schema::hasTable($table) && Schema::hasColumn($table, 'no_rkm_medis')) {
+                    DB::table($table)->where('no_rkm_medis', $oldRm)->update(['no_rkm_medis' => $newRm]);
+                }
+            }
+
+            // Hapus data pasien lama
+            Pasien::where('no_rkm_medis', $oldRm)->delete();
+
+            DB::commit();
+            return response()->json('SUKSES', 200);
+        } catch (QueryException $e) {
+            DB::rollBack();
+            return response()->json($e->getMessage(), 500);
+        }
     }
 }

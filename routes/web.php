@@ -112,6 +112,7 @@ Route::middleware('auth')->group(function () {
 	Route::get('/pasien/riwayat', [PasienController::class, 'getRiwayat']);
 	Route::post('/pasien', [PasienController::class, 'create']);
 	Route::get('/pasien', [PasienController::class, 'get']);
+	Route::post('/pasien/merge', [PasienController::class, 'merge']);
 	Route::get('/pasien/exist', [PasienController::class, 'isExistPasien']);
 	Route::get('/pasien/get/nokartu/{noKartu}', [PasienController::class, 'getByNoka']);
 
