@@ -36,11 +36,9 @@ class AppServiceProvider extends ServiceProvider
             $host = $_SERVER['HTTP_X_FORWARDED_HOST'] ?? $_SERVER['HTTP_HOST'] ?? 'localhost';
             $requestUri = $_SERVER['REQUEST_URI'] ?? '';
             
-            $path = '';
-            // Jika diakses lewat /efktp, kita set path-nya
-            if (strpos($requestUri, '/efktp') === 0) {
-                $path = '/efktp';
-            }
+            // Deteksi Subfolder secara dinamis
+            $scriptPath = dirname($_SERVER['SCRIPT_NAME'] ?? '');
+            $path = ($scriptPath === '/' || $scriptPath === '\\' || empty($scriptPath)) ? '' : $scriptPath;
 
             $baseUri = "$protocol://$host$path";
             config(['app.url' => $baseUri]);
