@@ -43,14 +43,20 @@ class AppServiceProvider extends ServiceProvider
             $baseUri = "$protocol://$host$path";
             config(['app.url' => $baseUri]);
 
-            // 3. LOGIKA ASSET SEDERHANA & AMPUH:
+            // Force the root URL for the URL generator
+            URL::forceRootUrl($baseUri);
+
+            // 3. LOGIKA ASSET:
             if (!empty($path)) {
-                // Jika akses via /efktp (Lokal Mac atau Publik), aset selalu butuh /public
-                // karena kita meletakkan index.php di root.
+                // Asset butuh /public karena index.php di root subfolder
                 config(['app.asset_url' => "$baseUri/public"]);
             } else {
-                // Jika akses langsung (Docker Sail), aset langsung di root
                 config(['app.asset_url' => $baseUri]);
+            }
+
+            // Garansi: Paksa generator URL menggunakan asset_url yang baru diset
+            if (config('app.asset_url')) {
+                app('url')->setAssetRoot(config('app.asset_url'));
             }
         }
     }

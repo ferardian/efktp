@@ -58,6 +58,7 @@ use App\Http\Controllers\SuratSehatController;
 use App\Http\Controllers\UploadController;
 use App\Models\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
@@ -456,6 +457,14 @@ Route::middleware('auth')->group(function () {
 
 	//    Diagnosa
 	Route::get('/bridging/pcare/diagnosa/{diagnosa}', [Bridging\Diagnosa::class, 'get']);
+});
+
+Route::get('/clear-all-cache', function() {
+    Artisan::call('config:clear');
+    Artisan::call('cache:clear');
+    Artisan::call('view:clear');
+    Artisan::call('route:clear');
+    return "All cache cleared!";
 });
 
 Route::get('/test/{no_resep}', [ResepObatController::class, 'copyResep']);
