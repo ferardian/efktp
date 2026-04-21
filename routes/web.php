@@ -111,6 +111,7 @@ Route::middleware('auth')->group(function () {
 	// pasien
 	Route::get('/pasien/riwayat', [PasienController::class, 'getRiwayat']);
 	Route::post('/pasien', [PasienController::class, 'create']);
+	Route::post('/pasien/delete', [PasienController::class, 'delete']);
 	Route::get('/pasien', [PasienController::class, 'get']);
 	Route::post('/pasien/merge', [PasienController::class, 'merge']);
 	Route::get('/pasien/exist', [PasienController::class, 'isExistPasien']);

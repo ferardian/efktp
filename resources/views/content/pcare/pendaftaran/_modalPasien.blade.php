@@ -685,6 +685,7 @@
                 createdRow: (row, data, index) => {
                     $(row).addClass('rows-pasien');
                     $(row).attr('data-id', data.no_rkm_medis);
+                    $(row).attr('data-nama', data.nm_pasien);
                     asuransi = data.penjab.png_jawab.includes('BPJS') ? 'BPJS' : data.penjab.png_jawab;
                     $(row).attr('data-poli', asuransi);
                     $(row).attr('data-peserta', data.no_peserta);
@@ -694,8 +695,7 @@
                         data: 'no_rkm_medis',
                         render: (data, type, row, meta) => {
                             return `<button class="btn btn-primary btn-sm" onclick="registrasiPoli('${data}')" title="Registrasi"><i class="ti ti-plus"></i></button>
-                            <button class="btn btn-yellow btn-sm" onclick="editPasien('${data}')" title="Edit"><i class="ti ti-pencil"></i></button>
-                            <button class="btn btn-info btn-sm" onclick="showModalMerge('${data}', '${row.nm_pasien}')" title="Gabung RM"><i class="ti ti-arrows-join"></i></button>`;
+                            <button class="btn btn-yellow btn-sm" onclick="editPasien('${data}')" title="Edit"><i class="ti ti-pencil"></i></button>`;
                         }
 
                     }, {

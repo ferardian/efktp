@@ -246,6 +246,54 @@ class PasienController extends Controller
         return response()->json($data);
     }
 
+    protected $patientTables = [
+        'reg_periksa',
+        'catatan_pasien',
+        'pasien_mati',
+        'resume_medis',
+        'rujuk',
+        'resep_obat',
+        'diagnosa_pasien',
+        'prosedur_pasien',
+        'tindakan_dokter',
+        'pemeriksaan_ralan',
+        'pemeriksaan_ranap',
+        'pcare_pendaftaran',
+        'pcare_kunjungan',
+        'efktp_hasil_usg',
+        'efktp_pcare_alergi',
+        'pemeriksaan_gigi',
+        'upload_penunjang',
+        'penilaian_awal_keperawatan_ralan',
+        'bayar_piutang',
+        'booking_periksa_diterima',
+        'booking_registrasi',
+        'bridging_dukcapil',
+        'diagnosa_corona',
+        'pasien_bayi',
+        'pasien_corona',
+        'pasien_polri',
+        'pasien_tni',
+        'pcare_peserta_kegiatan_kelompok',
+        'peminjaman_berkas',
+        'pengaduan',
+        'penjualan',
+        'personal_pasien',
+        'piutang',
+        'piutang_pasien',
+        'referensi_mobilejkn_bpjs_batal',
+        'retensi_pasien',
+        'returjual',
+        'riwayat_imunisasi',
+        'riwayat_persalinan_pasien',
+        'returpiutang',
+        'rujukanranap_dokter_rs',
+        'sidikjaripasien',
+        'skdp_bpjs',
+        'skrining_rawat_jalan',
+        'tagihan_bpd_jateng'
+    ];
+
     public function merge(Request $request)
     {
         $oldRm = $request->old_rm;
@@ -255,31 +303,9 @@ class PasienController extends Controller
             return response()->json('No. RM tujuan tidak boleh sama', 400);
         }
 
-        $tables = [
-            'reg_periksa',
-            'catatan_pasien',
-            'pasien_mati',
-            'resume_medis',
-            'rujuk',
-            'resep_obat',
-            'diagnosa_pasien',
-            'prosedur_pasien',
-            'tindakan_dokter',
-            'pemeriksaan_ralan',
-            'pemeriksaan_ranap',
-            'pcare_pendaftaran',
-            'pcare_kunjungan',
-            'efktp_hasil_usg',
-            'efktp_pcare_alergi',
-            'pemeriksaan_gigi',
-            'upload_penunjang',
-            'penilaian_awal_keperawatan_ralan'
-        ];
-
         DB::beginTransaction();
         try {
-            foreach ($tables as $table) {
-                // Periksa apakah tabel dan kolom ada sebelum update untuk menghindari error
+            foreach ($this->patientTables as $table) {
                 if (Schema::hasTable($table) && Schema::hasColumn($table, 'no_rkm_medis')) {
                     DB::table($table)->where('no_rkm_medis', $oldRm)->update(['no_rkm_medis' => $newRm]);
                 }
@@ -292,6 +318,33 @@ class PasienController extends Controller
             return response()->json('SUKSES', 200);
         } catch (QueryException $e) {
             DB::rollBack();
+            return response()->json($e->getMessage(), 500);
+        }
+    }
+
+    public function delete(Request $request)
+    {
+        $no_rkm_medis = $request->no_rkm_medis;
+
+        // Exhaustive check across all patient-related tables
+        foreach ($this->patientTables as $table) {
+            if (Schema::hasTable($table) && Schema::hasColumn($table, 'no_rkm_medis')) {
+                $exists = DB::table($table)->where('no_rkm_medis', $no_rkm_medis)->exists();
+                if ($exists) {
+                    return response()->json("Pasien tidak bisa dihapus karena data masih digunakan di tabel {$table}.", 422);
+                }
+            }
+        }
+
+        try {
+            $pasien = Pasien::where('no_rkm_medis', $no_rkm_medis)->first();
+            if (!$pasien) {
+                return response()->json('Data pasien tidak ditemukan.', 404);
+            }
+
+            $pasien->delete();
+            return response()->json('SUKSES', 200);
+        } catch (QueryException $e) {
             return response()->json($e->getMessage(), 500);
         }
     }

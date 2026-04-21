@@ -1477,11 +1477,54 @@ $.contextMenu({
                     disabled: () => {
                         return poli == 'BPJS' ? false : true;
                     },
-
                     callback: function (item, option, e, x, y) {
-                        getPeserta(`${peserta}`)
+                        getPesertaPasien(`${peserta}`)
                     }
-                }
+                },
+                "mergeRM": {
+                    name: "Gabung No. RM",
+                    icon: 'fas fa-exchange-alt',
+                    callback: function (item, option, e, x, y) {
+                        const nmPasien = element.data('nama');
+                        showModalMerge(`${no_rkm_medis}`, nmPasien);
+                    }
+                },
+                "delete": {
+                    name: "Hapus Pasien",
+                    icon: 'fas fa-trash',
+                    callback: function (item, option, e, x, y) {
+                        const nmPasien = element.data('nama');
+                        Swal.fire({
+                            title: 'Hapus Pasien',
+                            html: `Apakah Anda yakin ingin menghapus data pasien:<br><b>${no_rkm_medis} - ${nmPasien}</b>?`,
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#d33',
+                            cancelButtonColor: '#3085d6',
+                            confirmButtonText: 'Ya, Hapus!',
+                            cancelButtonText: 'Batal'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                loadingAjax('Sedang menghapus data pasien...');
+                                $.post(`${baseUrl}/pasien/delete`, {
+                                    no_rkm_medis: no_rkm_medis,
+                                    _token: $('meta[name="csrf-token"]').attr('content')
+                                }).done((response) => {
+                                    loadingAjax().close();
+                                    if (response == 'SUKSES') {
+                                        alertSuccessAjax('Data pasien berhasil dihapus');
+                                        renderTbPasien();
+                                    } else {
+                                        Swal.fire('Gagal', response, 'error');
+                                    }
+                                }).fail((xhr) => {
+                                    loadingAjax().close();
+                                    alertErrorAjax(xhr);
+                                });
+                            }
+                        });
+                    }
+                },
             }
         }
     }
