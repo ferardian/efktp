@@ -55,6 +55,5 @@ class AppServiceProvider extends ServiceProvider
                 config(['app.asset_url' => $baseUri]);
             }
         }
-        }
     }
 }
