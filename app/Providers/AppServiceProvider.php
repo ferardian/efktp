@@ -47,17 +47,14 @@ class AppServiceProvider extends ServiceProvider
             URL::forceRootUrl($baseUri);
 
             // 3. LOGIKA ASSET:
-            if (!empty($path)) {
+            // 3. LOGIKA ASSET:
+            if ($path !== '') {
                 // Asset butuh /public karena index.php di root subfolder
-                config(['app.asset_url' => "$baseUri/public"]);
+                config(['app.asset_url' => $baseUri . '/public']);
             } else {
                 config(['app.asset_url' => $baseUri]);
             }
-
-            // Garansi: Paksa generator URL menggunakan asset_url yang baru diset
-            if (config('app.asset_url')) {
-                app('url')->setAssetRoot(config('app.asset_url'));
-            }
+        }
         }
     }
 }
