@@ -955,7 +955,7 @@
                         new_rm: newRm,
                         _token: '{{ csrf_token() }}'
                     }).done((response) => {
-                        loadingAjax().close();
+                        Swal.close();
                         if (response == 'SUKSES') {
                             alertSuccessAjax('Data rekam medis berhasil digabungkan');
                             $('#modalMergePasien').modal('hide');
@@ -964,7 +964,7 @@
                             Swal.fire('Gagal', response, 'error');
                         }
                     }).fail((xhr) => {
-                        loadingAjax().close();
+                        Swal.close();
                         alertErrorAjax(xhr);
                     });
                 }

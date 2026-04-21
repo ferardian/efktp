@@ -1510,7 +1510,7 @@ $.contextMenu({
                                     no_rkm_medis: no_rkm_medis,
                                     _token: $('meta[name="csrf-token"]').attr('content')
                                 }).done((response) => {
-                                    loadingAjax().close();
+                                    Swal.close();
                                     if (response == 'SUKSES') {
                                         alertSuccessAjax('Data pasien berhasil dihapus');
                                         renderTbPasien();
@@ -1518,7 +1518,7 @@ $.contextMenu({
                                         Swal.fire('Gagal', response, 'error');
                                     }
                                 }).fail((xhr) => {
-                                    loadingAjax().close();
+                                    Swal.close();
                                     alertErrorAjax(xhr);
                                 });
                             }
