@@ -459,6 +459,17 @@ Route::middleware('auth')->group(function () {
 	Route::get('/bridging/pcare/diagnosa/{diagnosa}', [Bridging\Diagnosa::class, 'get']);
 });
 
+Route::get('/debug-paths', function() {
+    return [
+        'app_url' => config('app.url'),
+        'asset_url' => config('app.asset_url'),
+        'asset_test' => asset('css/test.css'),
+        'script_name' => $_SERVER['SCRIPT_NAME'] ?? 'N/A',
+        'request_uri' => $_SERVER['REQUEST_URI'] ?? 'N/A',
+        'cwd' => getcwd(),
+    ];
+});
+
 Route::get('/clear-all-cache', function() {
     Artisan::call('config:clear');
     Artisan::call('cache:clear');
