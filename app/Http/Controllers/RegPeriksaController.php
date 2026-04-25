@@ -195,7 +195,7 @@ class RegPeriksaController extends Controller
 
 	function update(Request $request): JsonResponse
 	{
-		$data = $request->except(['token', 'umur', 'no_rkm_medis']);
+		$data = $request->except(['token', 'umur', 'no_rkm_medis', 'no_rawat']);
 		$data['tgl_registrasi'] = date('Y-m-d', strtotime($request->tgl_registrasi));
 
 		$isValidate = $request->validate([
