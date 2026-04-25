@@ -958,6 +958,15 @@
                         syncData['kunjunganSakit'] = pendaftaranBPJS.kunjSakit ? 'Kunjungan Sakit' : 'Kunjungan Sehat';
                         syncData['kdTkp'] = pendaftaranBPJS.tkp.kdTkp;
                         syncData['tkp'] = pendaftaranBPJS.tkp.nmTkp;
+
+                        // Parse tensi for sync
+                        if (data.tensi && data.tensi.includes('/')) {
+                            syncData['sistole'] = data.tensi.split('/')[0];
+                            syncData['diastole'] = data.tensi.split('/')[1];
+                        } else {
+                            syncData['sistole'] = 0;
+                            syncData['diastole'] = 0;
+                        }
                         
                         await $.post(`{{ url('/pcare/pendaftaran') }}`, syncData);
                         showToast('Berhasil sinkronisasi pendaftaran dari server BPJS');
