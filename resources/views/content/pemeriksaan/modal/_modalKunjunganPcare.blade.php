@@ -226,16 +226,18 @@
                                         </select>
                                     </div>
                                     <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12">
-                                        <label class="form-label">Terapi Obat</label>
-                                        <input autocomplete="off" onfocus="return removeZero(this)"
-                                            onblur="isEmpty(this)" onkeypress="return hanyaAngka(this)" type="text"
-                                            class="form-control" name="rtl">
+                                        <label class="form-label">Terapi Obat <small class="text-muted" id="rtl-counter"></small></label>
+                                        <input autocomplete="off"
+                                            onblur="isEmpty(this)" type="text"
+                                            class="form-control" name="rtl" maxlength="500"
+                                            oninput="updateCounter(this, 'rtl-counter', 500)">
                                     </div>
                                     <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12">
-                                        <label class="form-label">Terapi Non-obat</label>
-                                        <input autocomplete="off" onfocus="return removeZero(this)"
-                                            onblur="isEmpty(this)" onkeypress="return hanyaAngka(this)" type="text"
-                                            class="form-control" name="instruksi">
+                                        <label class="form-label">Terapi Non-obat <small class="text-muted" id="instruksi-counter"></small></label>
+                                        <input autocomplete="off"
+                                            onblur="isEmpty(this)" type="text"
+                                            class="form-control" name="instruksi" maxlength="500"
+                                            oninput="updateCounter(this, 'instruksi-counter', 500)">
                                     </div>
                                 </div>
                             </div>
@@ -269,10 +271,11 @@
                                         </div>
                                     </div>
                                     <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12">
-                                        <label class="form-label">Anamnesa</label>
+                                        <label class="form-label">Anamnesa <small class="text-muted" id="anamnesa-counter"></small></label>
                                         <input autocomplete="off" type="text" class="form-control" name="anamnesa"
                                             id="anamnesa" value="-" onblur="isEmpty(this)"
-                                            onfocus="return removeZero(this)">
+                                            onfocus="return removeZero(this)" maxlength="500"
+                                            oninput="updateCounter(this, 'anamnesa-counter', 500)">
                                     </div>
                                     <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12">
                                         <label class="form-label">Status Pulang</label>
@@ -913,6 +916,14 @@
             renderReferensiSpesialisKhusus()
         })
 
+        function updateCounter(input, counterId, max) {
+            const len = input.value.length;
+            const el = document.getElementById(counterId);
+            if (!el) return;
+            el.textContent = `(${len}/${max})`;
+            el.style.color = len >= max ? 'red' : (len >= max * 0.9 ? 'orange' : '');
+        }
+
         async function createKunjungan() {
             const element = ['input', 'select'];
             const data = getDataForm('formKunjunganPcare', element);
@@ -945,6 +956,28 @@
             }
 
             loadingAjax('Tunggu sebentar...');
+
+            // Validasi panjang karakter
+            const fieldLimits = [
+                { name: 'anamnesa',  label: 'Anamnesa',       min: 10, max: 500 },
+                { name: 'rtl',       label: 'Terapi Obat',    min: 10, max: 500 },
+                { name: 'instruksi', label: 'Terapi Non-obat', min: 10, max: 500 },
+            ];
+            for (const f of fieldLimits) {
+                const val = $('#formKunjunganPcare input[name=' + f.name + ']').val() || '';
+                if (val.length < f.min) {
+                    Swal.close();
+                    alertError(`${f.label} minimal ${f.min} karakter (saat ini ${val.length} karakter).`);
+                    $(`#formKunjunganPcare input[name=${f.name}]`).focus();
+                    return;
+                }
+                if (val.length > f.max) {
+                    Swal.close();
+                    alertError(`${f.label} melebihi batas ${f.max} karakter (saat ini ${val.length} karakter). Harap dipersingkat.`);
+                    $(`#formKunjunganPcare input[name=${f.name}]`).focus();
+                    return;
+                }
+            }
 
             try {
                 // 1. Cek apakah sudah terdaftar di pendaftaran pcare (Lokal)
