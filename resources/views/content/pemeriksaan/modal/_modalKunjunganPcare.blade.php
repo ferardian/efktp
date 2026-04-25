@@ -731,9 +731,15 @@
                 let kunjungan = '';
                 if (Object.values(response).length) {
                     kunjungan = response.kdStatusPulang
-                    $('#btnSimpanKunjungan').removeAttr('onclick').attr('onclick', 'editKunjungan()').html('<i class="ti ti-device-floppy me-2"></i> Ubah Kunjungan');
-                    formKunjunganPcare.find('input[name=noKunjungan]').val(response.noKunjungan)
-                    formKunjunganPcare.find('input[name=noKunjungan]').addClass('is-valid')
+                    if (response.noKunjungan && response.noKunjungan != '-') {
+                        $('#btnSimpanKunjungan').removeAttr('onclick').attr('onclick', 'editKunjungan()').html('<i class="ti ti-device-floppy me-2"></i> Ubah Kunjungan');
+                        formKunjunganPcare.find('input[name=noKunjungan]').val(response.noKunjungan)
+                        formKunjunganPcare.find('input[name=noKunjungan]').addClass('is-valid')
+                    } else {
+                        $('#btnSimpanKunjungan').removeAttr('onclick').attr('onclick', 'createKunjungan()').html('<i class="ti ti-device-floppy me-2"></i> Simpan Kunjungan');
+                        formKunjunganPcare.find('input[name=noKunjungan]').val('')
+                        formKunjunganPcare.find('input[name=noKunjungan]').removeClass('is-valid')
+                    }
                     formKunjunganPcare.find('input[name=tglPulang]').val(splitTanggal(response.tglPulang))
                     formKunjunganPcare.find('input[name=tglKunjungan]').val(splitTanggal(response.tglPulang))
                     if (response.kdStatusPulang == 4 && response.rujuk_subspesialis) {
@@ -1030,7 +1036,9 @@
                 const response = await $.post(url, data);
                 console.log('Bridging Response:', response);
 
-                if (response && response.metaData && ((isEdit && response.metaData.code == 200) || (!isEdit && response.metaData.code == 201))) {
+                const isSuccess = response && response.metaData && (response.metaData.code == 200 || response.metaData.code == 201);
+
+                if (isSuccess) {
                     let noKunjungan = '';
                     if (response.response && Array.isArray(response.response)) {
                         noKunjungan = response.response.map((res) => {
@@ -1040,6 +1048,13 @@
                         noKunjungan = response.response.message;
                     } else {
                         noKunjungan = data.noKunjungan || '';
+                    }
+
+                    // Jika ini record baru tapi noKunjungan masih kosong, anggap gagal BPJS
+                    if (!isEdit && (!noKunjungan || noKunjungan == '')) {
+                        Swal.close();
+                        alertErrorBpjs({ metaData: { message: 'BPJS mengembalikan sukses tapi No. Kunjungan kosong. Silahkan cek di web PCare.', code: 201 } });
+                        return;
                     }
                     
                     data['noKunjungan'] = noKunjungan;
