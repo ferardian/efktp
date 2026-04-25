@@ -424,6 +424,7 @@ Route::middleware('auth')->group(function () {
 	Route::get('/bridging/pcare/pendaftaran/nourut/{noUrut}', [Bridging\Pendaftaran::class, 'getUrut']);
 
 	// KUNJUNGAN
+	Route::get('/bridging/pcare/kunjungan/nokunjungan', [Bridging\Kunjungan::class, 'getNoKunjungan']);
 	Route::get('/bridging/pcare/kunjungan/{nokartu}', [Bridging\Kunjungan::class, 'get']);
 	Route::delete('/bridging/pcare/kunjungan/{nokartu}', [Bridging\Kunjungan::class, 'get']);
 	Route::post('/bridging/pcare/kunjungan/post', [Bridging\Kunjungan::class, 'post']);

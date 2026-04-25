@@ -25,6 +25,29 @@ class Kunjungan extends Controller
 		return $bpjs->riwayat($nokartu)->index();
 	}
 
+	public function getNoKunjungan(Request $request)
+	{
+		$bpjs = $this->bpjs;
+		$noKartu = $request->noKartu;
+		$tglDaftar = $request->tglDaftar; // format: dd-mm-yyyy
+
+		$riwayat = $bpjs->riwayat($noKartu)->index();
+
+		if (!isset($riwayat['metaData']) || $riwayat['metaData']['code'] != 200) {
+			return response()->json(['noKunjungan' => null, 'riwayat' => $riwayat]);
+		}
+
+		$list = $riwayat['response']['list'] ?? [];
+		$match = collect($list)->filter(function ($item) use ($tglDaftar) {
+			return isset($item['tglDaftar']) && $item['tglDaftar'] === $tglDaftar;
+		})->sortByDesc('noUrut')->first();
+
+		return response()->json([
+			'noKunjungan' => $match['noKunjungan'] ?? null,
+			'match' => $match,
+		]);
+	}
+
 	public function post(Request $request)
 	{
 		$data = $request->all();

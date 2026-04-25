@@ -1050,11 +1050,27 @@
                         noKunjungan = data.noKunjungan || '';
                     }
 
-                    // Jika ini record baru tapi noKunjungan masih kosong, anggap gagal BPJS
+                    // Jika ini record baru tapi noKunjungan masih kosong, coba fetch dari riwayat BPJS
                     if (!isEdit && (!noKunjungan || noKunjungan == '')) {
-                        Swal.close();
-                        alertErrorBpjs({ metaData: { message: 'BPJS mengembalikan sukses tapi No. Kunjungan kosong. Silahkan cek di web PCare.', code: 201 } });
-                        return;
+                        loadingAjax('Mengambil No. Kunjungan dari BPJS...');
+                        try {
+                            const resNoKunjungan = await $.get(`{{ url('/bridging/pcare/kunjungan/nokunjungan') }}`, {
+                                noKartu: data.no_peserta,
+                                tglDaftar: data.tgl_daftar,
+                            });
+                            console.log('Fetch noKunjungan Result:', resNoKunjungan);
+                            if (resNoKunjungan && resNoKunjungan.noKunjungan) {
+                                noKunjungan = resNoKunjungan.noKunjungan;
+                            } else {
+                                Swal.close();
+                                alertErrorBpjs({ metaData: { message: 'Kunjungan terkirim ke BPJS tapi No. Kunjungan tidak ditemukan. Silahkan refresh dan cek kembali.', code: 201 } });
+                                return;
+                            }
+                        } catch (e) {
+                            Swal.close();
+                            alertError('Gagal mengambil No. Kunjungan dari BPJS: ' + (e.message || ''));
+                            return;
+                        }
                     }
                     
                     data['noKunjungan'] = noKunjungan;
