@@ -955,8 +955,9 @@
                         syncData['noUrut'] = pendaftaranBPJS.noUrut;
                         syncData['kdProviderPeserta'] = kdProviderPeserta;
                         syncData['status'] = 'Terkirim';
-                        syncData['kunjSakit'] = pendaftaranBPJS.kunjSakit ? 'Kunjungan Sakit' : 'Kunjungan Sehat';
-                        syncData['kdTkp'] = pendaftaranBPJS.tkp.kdTkp + ' ' + pendaftaranBPJS.tkp.nmTkp;
+                        syncData['kunjunganSakit'] = pendaftaranBPJS.kunjSakit ? 'Kunjungan Sakit' : 'Kunjungan Sehat';
+                        syncData['kdTkp'] = pendaftaranBPJS.tkp.kdTkp;
+                        syncData['tkp'] = pendaftaranBPJS.tkp.nmTkp;
                         
                         await $.post(`{{ url('/pcare/pendaftaran') }}`, syncData);
                         showToast('Berhasil sinkronisasi pendaftaran dari server BPJS');
@@ -982,8 +983,7 @@
 
                         // Panggil API Bridging Pendaftaran
                         const resBridgingPendaftaran = await $.post(`{{ url('/bridging/pcare/pendaftaran') }}`, pendaftaranData);
-                        
-                        if (resBridgingPendaftaran && resBridgingPendaftaran.metaData && resBridgingPendaftaran.metaData.code == 201) {
+                                                if (resBridgingPendaftaran && resBridgingPendaftaran.metaData && resBridgingPendaftaran.metaData.code == 201) {
                             pendaftaranData['noUrut'] = resBridgingPendaftaran.response ? resBridgingPendaftaran.response.message : '';
                             pendaftaranData['status'] = 'Terkirim';
                             
@@ -991,7 +991,7 @@
                             await $.post(`{{ url('/pcare/pendaftaran') }}`, pendaftaranData);
                             showToast('Berhasil mendaftarkan pasien ke PCare secara otomatis');
                         } else {
-                            loadingAjax().close();
+                            Swal.close();
                             alertErrorBpjs(resBridgingPendaftaran || { metaData: { message: 'Gagal Bridging Pendaftaran', code: 500 } });
                             return; // Berhenti jika pendaftaran gagal
                         }
@@ -1042,15 +1042,22 @@
                             modalKunjunganPcare.modal('hide');
 
                         }).fail((request) => {
+                            Swal.close();
                             alertErrorAjax(request)
                         })
                     })
                 } else {
+                    Swal.close();
                     alertErrorBpjs(response)
                 }
             } catch (error) {
-                loadingAjax().close();
-                alertErrorAjax(error.responseText || error.message || error);
+                Swal.close();
+                console.error(error);
+                if (error.responseJSON) {
+                    alertErrorAjax(error);
+                } else {
+                    alertError(error.message || error || 'Terjadi kesalahan sistem');
+                }
             }
         }
 
@@ -1107,20 +1114,15 @@
                                 });
                             })
                         } else {
-                            // const statusCode = response.metaData.code;
-                            // const statusText = response.metaData.message.split('response:')[1];
-                            // const errorMsg = {
-                            //     status: statusCode,
-                            //     statusText: statusText,
-                            // }
-                            // alertErrorAjax(errorMsg)
+                            Swal.close();
                             alertErrorBpjs(response)
                         }
                     }).fail((request) => {
+                        Swal.close();
                         alertErrorAjax(request)
                     })
                 }
-            });
+            });;
 
 
         }
