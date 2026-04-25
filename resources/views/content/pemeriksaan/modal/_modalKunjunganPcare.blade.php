@@ -1017,7 +1017,7 @@
 
                 const response = await $.post(url, data);
 
-                if ((isEdit && response.metaData.code == 200) || (!isEdit && response.metaData.code == 201 && response.metaData.message)) {
+                if ((isEdit && response.metaData.code == 200) || (!isEdit && response.metaData.code == 201)) {
                     const noKunjungan = response.response.map((res) => {
                         return res.message;
                     }).join(',');
