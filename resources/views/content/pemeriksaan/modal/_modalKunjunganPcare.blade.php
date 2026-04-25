@@ -955,29 +955,27 @@
                 data['kdTacc'] = formRujukanSpesialis.find('#kdTacc').val();
             }
 
-            loadingAjax('Tunggu sebentar...');
-
-            // Validasi panjang karakter
+            // Validasi panjang karakter (sebelum loading, agar dialog error tampil benar)
             const fieldLimits = [
-                { name: 'anamnesa',  label: 'Anamnesa',       min: 10, max: 500 },
-                { name: 'rtl',       label: 'Terapi Obat',    min: 10, max: 500 },
+                { name: 'anamnesa',  label: 'Anamnesa',        min: 10, max: 500 },
+                { name: 'rtl',       label: 'Terapi Obat',     min: 10, max: 500 },
                 { name: 'instruksi', label: 'Terapi Non-obat', min: 10, max: 500 },
             ];
             for (const f of fieldLimits) {
                 const val = $('#formKunjunganPcare input[name=' + f.name + ']').val() || '';
                 if (val.length < f.min) {
-                    Swal.close();
                     alertError(`${f.label} minimal ${f.min} karakter (saat ini ${val.length} karakter).`);
                     $(`#formKunjunganPcare input[name=${f.name}]`).focus();
                     return;
                 }
                 if (val.length > f.max) {
-                    Swal.close();
                     alertError(`${f.label} melebihi batas ${f.max} karakter (saat ini ${val.length} karakter). Harap dipersingkat.`);
                     $(`#formKunjunganPcare input[name=${f.name}]`).focus();
                     return;
                 }
             }
+
+            loadingAjax('Tunggu sebentar...');
 
             try {
                 // 1. Cek apakah sudah terdaftar di pendaftaran pcare (Lokal)
