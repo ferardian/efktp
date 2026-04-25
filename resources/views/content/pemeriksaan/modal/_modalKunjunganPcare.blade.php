@@ -1030,9 +1030,17 @@
                 const response = await $.post(url, data);
 
                 if ((isEdit && response.metaData.code == 200) || (!isEdit && response.metaData.code == 201)) {
-                    const noKunjungan = response.response.map((res) => {
-                        return res.message;
-                    }).join(',');
+                    let noKunjungan = '';
+                    if (response.response && Array.isArray(response.response)) {
+                        noKunjungan = response.response.map((res) => {
+                            return res.message;
+                        }).join(',');
+                    } else if (response.response && response.response.message) {
+                        noKunjungan = response.response.message;
+                    } else {
+                        noKunjungan = data.noKunjungan || '';
+                    }
+                    
                     data['noKunjungan'] = noKunjungan;
                     data['status'] = 'Terkirim';
 
