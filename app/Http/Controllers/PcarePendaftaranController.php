@@ -43,7 +43,7 @@ class PcarePendaftaranController extends Controller
             'tglDaftar' => date('Y-m-d', strtotime($request->tgl_registrasi)),
             'no_rkm_medis' => $request->no_rkm_medis,
             'nm_pasien' => $request->nm_pasien,
-            'kdProviderPeserta' => $request->nm_pasien,
+            'kdProviderPeserta' => $request->kdProviderPeserta,
             'noKartu' => $request->no_peserta,
             'kdPoli' => $request->kd_poli_pcare,
             'nmPoli' => $request->nm_poli_pcare,

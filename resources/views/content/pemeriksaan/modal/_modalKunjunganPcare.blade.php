@@ -907,7 +907,7 @@
             renderReferensiSpesialisKhusus()
         })
 
-        function createKunjungan() {
+        async function createKunjungan() {
             const element = ['input', 'select'];
             const data = getDataForm('formKunjunganPcare', element);
             const isNonSpesialis = $('#nonSpesialis').hasClass('d-none')
@@ -925,23 +925,76 @@
                 data['alasanTacc'] = formRujukanSpesialis.find('#alasanTacc').val();
                 data['kdTacc'] = formRujukanSpesialis.find('#kdTacc').val();
             }
+
             loadingAjax('Tunggu sebentar...');
 
-            // Detect if this is create or edit based on noKunjungan
-            const isEdit = data.noKunjungan && data.noKunjungan !== '';
-            const url = isEdit ? `{{ url('/bridging/pcare/kunjungan/update') }}` : `{{ url('/bridging/pcare/kunjungan/post') }}`;
-            const successMessage = isEdit ? 'Berhasil mengupdate data kunjungan' : 'Berhasil membuat data kunjungan';
+            try {
+                // 1. Cek apakah sudah terdaftar di pendaftaran pcare (Lokal)
+                const checkPendaftaran = await $.get(`{{ url('/pcare/pendaftaran/get') }}`, {
+                    no_rawat: data.no_rawat
+                });
 
-            $.post(url, data).done((response) => {
+                if (!checkPendaftaran || Object.keys(checkPendaftaran).length === 0) {
+                    loadingAjax('Mendaftarkan pasien ke PCare secara otomatis...');
+                    
+                    // Persiapkan data pendaftaran
+                    const pendaftaranData = { ...data };
+                    pendaftaranData['tgl_registrasi'] = data.tgl_daftar;
+                    pendaftaranData['kunjunganSakit'] = $('#formKunjunganPcare input[name=kunjSakit]:checked').parent().text().trim();
+                    pendaftaranData['kdTkp'] = $('#formKunjunganPcare input[name=kdTkp]:checked').val();
+                    pendaftaranData['tkp'] = $('#formKunjunganPcare input[name=kdTkp]:checked').parent().text().trim();
+                    
+                    // Ambil kdProviderPeserta dari setting
+                    const kdProviderPeserta = await $.get(`{{ url('/setting/pcare/user') }}`);
+                    pendaftaranData['kdProviderPeserta'] = kdProviderPeserta;
+
+                    // Parse tensi
+                    if (data.tensi && data.tensi.includes('/')) {
+                        pendaftaranData['sistole'] = data.tensi.split('/')[0];
+                        pendaftaranData['diastole'] = data.tensi.split('/')[1];
+                    } else {
+                        pendaftaranData['sistole'] = 0;
+                        pendaftaranData['diastole'] = 0;
+                    }
+
+                    // Panggil API Bridging Pendaftaran
+                    const resBridgingPendaftaran = await $.post(`{{ url('/bridging/pcare/pendaftaran') }}`, pendaftaranData);
+                    
+                    if (resBridgingPendaftaran.metaData.code == 201) {
+                        pendaftaranData['noUrut'] = resBridgingPendaftaran.response.message;
+                        pendaftaranData['status'] = 'Terkirim';
+                        
+                        // Simpan Pendaftaran ke Lokal
+                        await $.post(`{{ url('/pcare/pendaftaran') }}`, pendaftaranData);
+                        showToast('Berhasil mendaftarkan pasien ke PCare secara otomatis');
+                    } else {
+                        loadingAjax().close();
+                        alertErrorBpjs(resBridgingPendaftaran);
+                        return; // Berhenti jika pendaftaran gagal
+                    }
+                }
+
+                // 2. Lanjut proses Kunjungan
+                loadingAjax('Mengirim data kunjungan ke PCare...');
+                
+                // Detect if this is create or edit based on noKunjungan
+                const isEdit = data.noKunjungan && data.noKunjungan !== '';
+                const url = isEdit ? `{{ url('/bridging/pcare/kunjungan/update') }}` : `{{ url('/bridging/pcare/kunjungan/post') }}`;
+                const successMessage = isEdit ? 'Berhasil mengupdate data kunjungan' : 'Berhasil membuat data kunjungan';
+
+                const response = await $.post(url, data);
+
                 if ((isEdit && response.metaData.code == 200) || (!isEdit && response.metaData.code == 201 && response.metaData.message)) {
                     const noKunjungan = response.response.map((res) => {
                         return res.message;
                     }).join(',');
-                    data['noKunjungan'] = noKunjungan
+                    data['noKunjungan'] = noKunjungan;
+                    data['status'] = 'Terkirim';
+
                     alertSuccessAjax(successMessage).then(() => {
-                        if (tabelRegistrasi.length) {
+                        if (typeof tabelRegistrasi !== 'undefined' && tabelRegistrasi.length) {
                             loadTabelRegistrasi(tglAwal, tglAkhir, statusLocal, dokterLocal.kd_dokter)
-                        } else if (tabelPcarePendaftaran.length) {
+                        } else if (typeof tabelPcarePendaftaran !== 'undefined' && tabelPcarePendaftaran.length) {
                             loadTbPcarePendaftaran(tglAwal, tglAkhir)
                         }
 
@@ -962,20 +1015,19 @@
                                 setStatusLayan(data['no_rawat'], 'Sudah');
                             };
                             $('#modalCppt').modal('hide');
+                            modalKunjunganPcare.modal('hide');
 
                         }).fail((request) => {
                             alertErrorAjax(request)
                         })
-
                     })
                 } else {
                     alertErrorBpjs(response)
                 }
-            }).fail((error) => {
-                alertErrorAjax(error)
-            })
-
-
+            } catch (error) {
+                loadingAjax().close();
+                alertErrorAjax(error.responseText || error.message || error);
+            }
         }
 
         function editKunjungan() {
