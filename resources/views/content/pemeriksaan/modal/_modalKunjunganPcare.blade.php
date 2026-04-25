@@ -918,6 +918,18 @@
             data['nmSadar'] = $('#formKunjunganPcare select[name=kesadaran] option:selected').text()
             data['no_resep'] = $('#modalCppt input[name=no_resep]').val()
 
+            // New fields mapping
+            data['KdAlergiMakanan'] = $('#formKunjunganPcare select[name=alergiMakan]').val()
+            data['NmAlergiMakanan'] = $('#formKunjunganPcare select[name=alergiMakan] option:selected').text()
+            data['KdAlergiUdara'] = $('#formKunjunganPcare select[name=alergiUdara]').val()
+            data['NmAlergiUdara'] = $('#formKunjunganPcare select[name=alergiUdara] option:selected').text()
+            data['KdAlergiObat'] = $('#formKunjunganPcare select[name=alergiObat]').val()
+            data['NmAlergiObat'] = $('#formKunjunganPcare select[name=alergiObat] option:selected').text()
+            data['KdPrognosa'] = $('#formKunjunganPcare select[name=kdPrognosa]').val()
+            data['NmPrognosa'] = $('#formKunjunganPcare select[name=kdPrognosa] option:selected').text()
+            data['terapi_non_obat'] = $('#formKunjunganPcare input[name=instruksi]').val()
+            data['bmhp'] = '-' // Default value for now
+
             if (isNonSpesialis) {
                 data['alasanTacc'] = null;
                 data['kdTacc'] = '-1';
@@ -955,9 +967,9 @@
                         syncData['noUrut'] = pendaftaranBPJS.noUrut;
                         syncData['kdProviderPeserta'] = kdProviderPeserta;
                         syncData['status'] = 'Terkirim';
-                        syncData['kunjunganSakit'] = pendaftaranBPJS.kunjSakit ? 'Kunjungan Sakit' : 'Kunjungan Sehat';
+                        syncData['kunjunganSakit'] = pendaftaranBPJS.kunjSakit === true || pendaftaranBPJS.kunjSakit === 'Kunjungan Sakit' ? 'Kunjungan Sakit' : 'Kunjungan Sehat';
                         syncData['kdTkp'] = pendaftaranBPJS.tkp.kdTkp;
-                        syncData['tkp'] = pendaftaranBPJS.tkp.nmTkp;
+                        syncData['tkp'] = pendaftaranBPJS.tkp.nmTkp === 'RJTP' ? 'Rawat Jalan' : (pendaftaranBPJS.tkp.nmTkp === 'RITP' ? 'Rawat Inap' : pendaftaranBPJS.tkp.nmTkp);
 
                         // Parse tensi for sync
                         if (data.tensi && data.tensi.includes('/')) {
@@ -1024,7 +1036,7 @@
                     data['noKunjungan'] = noKunjungan;
                     data['status'] = 'Terkirim';
 
-                    alertSuccessAjax(successMessage).then(() => {
+                    alertSuccessAjax(successMessage).then(async () => {
                         if (typeof tabelRegistrasi !== 'undefined' && tabelRegistrasi.length) {
                             loadTabelRegistrasi(tglAwal, tglAkhir, statusLocal, dokterLocal.kd_dokter)
                         } else if (typeof tabelPcarePendaftaran !== 'undefined' && tabelPcarePendaftaran.length) {
@@ -1093,6 +1105,19 @@
                     data['kdStatusPulang'] = $('#formKunjunganPcare select[name=sttsPulang]').val()
                     data['nmSadar'] = $('#formKunjunganPcare select[name=kesadaran] option:selected').text()
                     data['no_resep'] = $('#modalCppt input[name=no_resep]').val()
+
+                    // New fields mapping
+                    data['KdAlergiMakanan'] = $('#formKunjunganPcare select[name=alergiMakan]').val()
+                    data['NmAlergiMakanan'] = $('#formKunjunganPcare select[name=alergiMakan] option:selected').text()
+                    data['KdAlergiUdara'] = $('#formKunjunganPcare select[name=alergiUdara]').val()
+                    data['NmAlergiUdara'] = $('#formKunjunganPcare select[name=alergiUdara] option:selected').text()
+                    data['KdAlergiObat'] = $('#formKunjunganPcare select[name=alergiObat]').val()
+                    data['NmAlergiObat'] = $('#formKunjunganPcare select[name=alergiObat] option:selected').text()
+                    data['KdPrognosa'] = $('#formKunjunganPcare select[name=kdPrognosa]').val()
+                    data['NmPrognosa'] = $('#formKunjunganPcare select[name=kdPrognosa] option:selected').text()
+                    data['terapi_non_obat'] = $('#formKunjunganPcare input[name=instruksi]').val()
+                    data['bmhp'] = '-' // Default value for now
+
                     const isNonSpesialis = $('#nonSpesialis').hasClass('d-none')
 
                     if (isNonSpesialis) {

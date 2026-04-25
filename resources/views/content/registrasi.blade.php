@@ -60,8 +60,8 @@
 @push('script')
     <script>
         //Script Reistrasi
-        let selectStatusLayan = formFilterRegistrasi.find('select[name="stts"'); //get data from selection filter stts
-        let selectDokterPoli = formFilterRegistrasi.find('select[name="dokter"'); //get data from selection filter stts
+        let selectStatusLayan = $('#formFilterRegistrasi').find('select[name="stts"]'); //get data from selection filter stts
+        let selectDokterPoli = $('#formFilterRegistrasi').find('select[name="dokter"]'); //get data from selection filter stts
 
 
         selectDokterPoli.on('select2:unselect', function (e) {
