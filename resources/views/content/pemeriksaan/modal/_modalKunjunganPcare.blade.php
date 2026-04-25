@@ -935,42 +935,66 @@
                 });
 
                 if (!checkPendaftaran || Object.keys(checkPendaftaran).length === 0) {
-                    loadingAjax('Mendaftarkan pasien ke PCare secara otomatis...');
+                    loadingAjax('Mengecek pendaftaran di server BPJS...');
                     
-                    // Persiapkan data pendaftaran
-                    const pendaftaranData = { ...data };
-                    pendaftaranData['tgl_registrasi'] = data.tgl_daftar;
-                    pendaftaranData['kunjunganSakit'] = $('#formKunjunganPcare input[name=kunjSakit]:checked').parent().text().trim();
-                    pendaftaranData['kdTkp'] = $('#formKunjunganPcare input[name=kdTkp]:checked').val();
-                    pendaftaranData['tkp'] = $('#formKunjunganPcare input[name=kdTkp]:checked').parent().text().trim();
+                    // 1.1 Cek apakah sudah terdaftar di server BPJS (biar tidak double)
+                    const resListPendaftaran = await $.get(`{{ url('/bridging/pcare/pendaftaran/tglDaftar') }}/${data.tgl_daftar}`);
                     
-                    // Ambil kdProviderPeserta dari setting
-                    const kdProviderPeserta = await $.get(`{{ url('/setting/pcare/user') }}`);
-                    pendaftaranData['kdProviderPeserta'] = kdProviderPeserta;
-
-                    // Parse tensi
-                    if (data.tensi && data.tensi.includes('/')) {
-                        pendaftaranData['sistole'] = data.tensi.split('/')[0];
-                        pendaftaranData['diastole'] = data.tensi.split('/')[1];
-                    } else {
-                        pendaftaranData['sistole'] = 0;
-                        pendaftaranData['diastole'] = 0;
+                    let pendaftaranBPJS = null;
+                    if (resListPendaftaran && resListPendaftaran.metaData && resListPendaftaran.metaData.code == 200 && resListPendaftaran.response && resListPendaftaran.response.list) {
+                        pendaftaranBPJS = resListPendaftaran.response.list.find(item => item.peserta.noKartu === data.no_peserta);
                     }
 
-                    // Panggil API Bridging Pendaftaran
-                    const resBridgingPendaftaran = await $.post(`{{ url('/bridging/pcare/pendaftaran') }}`, pendaftaranData);
-                    
-                    if (resBridgingPendaftaran.metaData.code == 201) {
-                        pendaftaranData['noUrut'] = resBridgingPendaftaran.response.message;
-                        pendaftaranData['status'] = 'Terkirim';
+                    const kdProviderPeserta = await $.get(`{{ url('/setting/pcare/user') }}`);
+
+                    if (pendaftaranBPJS) {
+                        loadingAjax('Sinkronisasi data pendaftaran PCare...');
+                        // Pasien sudah terdaftar di BPJS (misal via Mobile JKN), kita sinkronkan ke lokal
+                        const syncData = { ...data };
+                        syncData['tgl_registrasi'] = data.tgl_daftar;
+                        syncData['noUrut'] = pendaftaranBPJS.noUrut;
+                        syncData['kdProviderPeserta'] = kdProviderPeserta;
+                        syncData['status'] = 'Terkirim';
+                        syncData['kunjSakit'] = pendaftaranBPJS.kunjSakit ? 'Kunjungan Sakit' : 'Kunjungan Sehat';
+                        syncData['kdTkp'] = pendaftaranBPJS.tkp.kdTkp + ' ' + pendaftaranBPJS.tkp.nmTkp;
                         
-                        // Simpan Pendaftaran ke Lokal
-                        await $.post(`{{ url('/pcare/pendaftaran') }}`, pendaftaranData);
-                        showToast('Berhasil mendaftarkan pasien ke PCare secara otomatis');
+                        await $.post(`{{ url('/pcare/pendaftaran') }}`, syncData);
+                        showToast('Berhasil sinkronisasi pendaftaran dari server BPJS');
                     } else {
-                        loadingAjax().close();
-                        alertErrorBpjs(resBridgingPendaftaran);
-                        return; // Berhenti jika pendaftaran gagal
+                        loadingAjax('Mendaftarkan pasien ke PCare secara otomatis...');
+                        
+                        // Persiapkan data pendaftaran
+                        const pendaftaranData = { ...data };
+                        pendaftaranData['tgl_registrasi'] = data.tgl_daftar;
+                        pendaftaranData['kunjunganSakit'] = $('#formKunjunganPcare input[name=kunjSakit]:checked').parent().text().trim();
+                        pendaftaranData['kdTkp'] = $('#formKunjunganPcare input[name=kdTkp]:checked').val();
+                        pendaftaranData['tkp'] = $('#formKunjunganPcare input[name=kdTkp]:checked').parent().text().trim();
+                        pendaftaranData['kdProviderPeserta'] = kdProviderPeserta;
+
+                        // Parse tensi
+                        if (data.tensi && data.tensi.includes('/')) {
+                            pendaftaranData['sistole'] = data.tensi.split('/')[0];
+                            pendaftaranData['diastole'] = data.tensi.split('/')[1];
+                        } else {
+                            pendaftaranData['sistole'] = 0;
+                            pendaftaranData['diastole'] = 0;
+                        }
+
+                        // Panggil API Bridging Pendaftaran
+                        const resBridgingPendaftaran = await $.post(`{{ url('/bridging/pcare/pendaftaran') }}`, pendaftaranData);
+                        
+                        if (resBridgingPendaftaran && resBridgingPendaftaran.metaData && resBridgingPendaftaran.metaData.code == 201) {
+                            pendaftaranData['noUrut'] = resBridgingPendaftaran.response ? resBridgingPendaftaran.response.message : '';
+                            pendaftaranData['status'] = 'Terkirim';
+                            
+                            // Simpan Pendaftaran ke Lokal
+                            await $.post(`{{ url('/pcare/pendaftaran') }}`, pendaftaranData);
+                            showToast('Berhasil mendaftarkan pasien ke PCare secara otomatis');
+                        } else {
+                            loadingAjax().close();
+                            alertErrorBpjs(resBridgingPendaftaran || { metaData: { message: 'Gagal Bridging Pendaftaran', code: 500 } });
+                            return; // Berhenti jika pendaftaran gagal
+                        }
                     }
                 }
 
