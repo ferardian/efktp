@@ -1031,7 +1031,11 @@
                             loadTbPcarePendaftaran(tglAwal, tglAkhir)
                         }
 
-                        $.post(`{{ url('pcare/kunjungan') }}`, data).done((response) => {
+                        // UPDATE OR CREATE LOCAL KUNJUNGAN
+                        const checkKunjunganLokal = await $.get(`{{ url('pcare/kunjungan/get') }}`, { no_rawat: data.no_rawat });
+                        const urlSaveKunjungan = (checkKunjunganLokal && Object.keys(checkKunjunganLokal).length > 0) ? `{{ url('pcare/kunjungan/update') }}` : `{{ url('pcare/kunjungan') }}`;
+
+                        $.post(urlSaveKunjungan, data).done((response) => {
                             if (data['kdStatusPulang'] == 4 || data['kdStatusPulang'] == 6) {
                                 data['nmSubSpesialis'] = formRujukanSpesialis.find('input[name=subSpesialis]').val();
                                 data['kdSubSpesialis'] = formRujukanSpesialis.find('input[name=kdSubSpesialis]').val();

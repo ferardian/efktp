@@ -111,6 +111,17 @@ class PcareKunjunganController extends Controller
             "nmDiag2" => $request->diagnosa2,
             "kdDiag3" => $request->kdDiagnosa3,
             "nmDiag3" => $request->diagnosa3,
+            "status" => $request->status,
+            "KdAlergiMakanan" => $request->KdAlergiMakanan ?? '-',
+            "NmAlergiMakanan" => $request->NmAlergiMakanan ?? '-',
+            "KdAlergiUdara" => $request->KdAlergiUdara ?? '-',
+            "NmAlergiUdara" => $request->NmAlergiUdara ?? '-',
+            "KdAlergiObat" => $request->KdAlergiObat ?? '-',
+            "NmAlergiObat" => $request->NmAlergiObat ?? '-',
+            "KdPrognosa" => $request->KdPrognosa ?? '-',
+            "NmPrognosa" => $request->NmPrognosa ?? '-',
+            "terapi_non_obat" => $request->terapi_non_obat ?? '-',
+            "bmhp" => $request->bmhp ?? '-',
         ];
 
         $kunjungan = PcareKunjungan::where('noKunjungan', $data['noKunjungan']);
