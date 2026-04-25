@@ -23,9 +23,7 @@ class PcarePendaftaranController extends Controller
 
         if ($request->no_rawat) {
             $data = $pcare->where('no_rawat', $request->no_rawat)->first();
-        }
-
-        if ($request->tgl_awal || $request->tgl_akhir) {
+        } elseif ($request->tgl_awal || $request->tgl_akhir) {
             $data = $pcare->whereBetween('tglDaftar', [date('Y-m-d', strtotime($request->tgl_awal)), date('Y-m-d', strtotime($request->tgl_akhir))])->get();
         } else {
             $data = $pcare->where('tglDaftar', date('Y-m-d'))->get();
