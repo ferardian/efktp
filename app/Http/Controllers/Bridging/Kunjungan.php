@@ -130,7 +130,11 @@ class Kunjungan extends Controller
 			$property->setAccessible(true);
 			$property->setValue($bpjs, 'kunjungan/V1');
 			
-			return $bpjs->store($data);
+			\Log::info('[KUNJUNGAN POST] Payload ke BPJS:', $data);
+			$result = $bpjs->store($data);
+			\Log::info('[KUNJUNGAN POST] Respons BPJS:', (array) $result);
+			
+			return $result;
 		} catch (QueryException $e) {
 			return $e->errorInfo;
 		} catch (\Exception $e) {
