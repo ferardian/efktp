@@ -1028,8 +1028,9 @@
                 const successMessage = isEdit ? 'Berhasil mengupdate data kunjungan' : 'Berhasil membuat data kunjungan';
 
                 const response = await $.post(url, data);
+                console.log('Bridging Response:', response);
 
-                if ((isEdit && response.metaData.code == 200) || (!isEdit && response.metaData.code == 201)) {
+                if (response && response.metaData && ((isEdit && response.metaData.code == 200) || (!isEdit && response.metaData.code == 201))) {
                     let noKunjungan = '';
                     if (response.response && Array.isArray(response.response)) {
                         noKunjungan = response.response.map((res) => {

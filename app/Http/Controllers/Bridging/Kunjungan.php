@@ -57,7 +57,7 @@ class Kunjungan extends Controller
 			"terapiNonObat" => $data['instruksi'],
 			"bmhp" => "-",
 			"suhu" => $data['suhu_tubuh'],
-			"kdPoliRujukInternal" => $request->kdInnternal ? $request->kdInnternal : null,
+			"kdPoliRujukInternal" => $request->kdInternal ? $request->kdInternal : null,
 		];
 
 		if ($request->jenisRujukan) {
@@ -85,7 +85,7 @@ class Kunjungan extends Controller
 					],
 				];
 				$data['kdTacc'] = $request->kdTacc ? $request->kdTacc : '0';
-				$data['alasanTacc'] = $request->kalasanTacc ? $request->kalasanTacc : null;
+				$data['alasanTacc'] = $request->alasanTacc ? $request->alasanTacc : null;
 			} else if ($request->jenisRujukan == 'internal') {
 				$data['rujukLanjut'] = [
 					"kdppk" => $request->kdPpkRujukan,
@@ -152,7 +152,7 @@ class Kunjungan extends Controller
 			"terapiNonObat" => $request->instruksi,
 			"bmhp" => "-",
 			"suhu" => $request->suhu_tubuh,
-			"kdPoliRujukInternal" => $request->kdInnternal ? $request->kdInnternal : null,
+			"kdPoliRujukInternal" => $request->kdInternal ? $request->kdInternal : null,
 		];
 		if ($request->jenisRujukan) {
 			if ($request->jenisRujukan == 'spesialis') {
@@ -166,7 +166,7 @@ class Kunjungan extends Controller
 					'khusus' => null,
 				];
 				$data['kdTacc'] = $request->kdTacc;
-				$data['alasanTacc'] = $request->kalasanTacc;
+				$data['alasanTacc'] = $request->alasanTacc;
 			} else if ($request->jenisRujukan == 'khusus') {
 				$data['rujukLanjut'] = [
 					"kdppk" => $request->kdPpkRujukan,
@@ -187,7 +187,7 @@ class Kunjungan extends Controller
 					"subSpesialis" => null,
 				];
 				$data['kdTacc'] = $request->kdTacc;
-				$data['alasanTacc'] = $request->kalasanTacc;
+				$data['alasanTacc'] = $request->alasanTacc;
 			}
 		}
 		try {
