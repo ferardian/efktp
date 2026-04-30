@@ -2,291 +2,211 @@
 
 namespace App\Http\Controllers\Bridging;
 
-use AamDsam\Bpjs\PCare;
-use App\Http\Controllers\Controller;
-use App\Traits\PcareConfig;
-use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use App\Http\Controllers\Controller;
+use App\Models\PcareRujukSubspesialis;
+use App\Services\Bpjs\PCare\PCareKunjungan;
+use Illuminate\Support\Facades\Log;
 
 class Kunjungan extends Controller
 {
-	use PcareConfig;
+    protected PCareKunjungan $kunjungan;
 
-	public $bpjs;
+    public function __construct()
+    {
+        $this->kunjungan = new PCareKunjungan();
+    }
 
-	public function __construct()
-	{
-		$this->bpjs = new PCare\Kunjungan($this->config());
-	}
+    /**
+     * Ambil riwayat kunjungan berdasarkan no kartu
+     */
+    public function get(string $nokartu): array
+    {
+        return $this->kunjungan->getRiwayat($nokartu);
+    }
 
-	public function get($nokartu)
-	{
-		$bpjs = $this->bpjs;
-		return $bpjs->riwayat($nokartu)->index();
-	}
+    /**
+     * Ambil noKunjungan dari riwayat BPJS berdasarkan noKartu + tglDaftar
+     */
+    public function getNoKunjungan(Request $request): JsonResponse
+    {
+        $noKartu   = $request->noKartu;
+        $tglDaftar = $request->tglDaftar; // format: dd-mm-yyyy
 
-	public function getNoKunjungan(Request $request)
-	{
-		$bpjs = $this->bpjs;
-		$noKartu = $request->noKartu;
-		$tglDaftar = $request->tglDaftar; // format: dd-mm-yyyy
+        $riwayat = $this->kunjungan->getRiwayat($noKartu);
 
-		$riwayat = $bpjs->riwayat($noKartu)->index();
+        if (($riwayat['metaData']['code'] ?? 0) != 200) {
+            return response()->json(['noKunjungan' => null, 'riwayat' => $riwayat]);
+        }
 
-		if (!isset($riwayat['metaData']) || $riwayat['metaData']['code'] != 200) {
-			return response()->json(['noKunjungan' => null, 'riwayat' => $riwayat]);
-		}
+        $list  = $riwayat['response']['list'] ?? [];
+        $match = collect($list)
+            ->filter(fn($item) => ($item['tglDaftar'] ?? '') === $tglDaftar)
+            ->sortByDesc('noUrut')
+            ->first();
 
-		$list = $riwayat['response']['list'] ?? [];
-		$match = collect($list)->filter(function ($item) use ($tglDaftar) {
-			return isset($item['tglDaftar']) && $item['tglDaftar'] === $tglDaftar;
-		})->sortByDesc('noUrut')->first();
+        return response()->json([
+            'noKunjungan' => $match['noKunjungan'] ?? null,
+            'match'       => $match,
+        ]);
+    }
 
-		return response()->json([
-			'noKunjungan' => $match['noKunjungan'] ?? null,
-			'match' => $match,
-		]);
-	}
+    /**
+     * Kirim kunjungan baru ke BPJS PCare.
+     * Jika ada jenisRujukan, simpan juga ke pcare_rujuk_subspesialis.
+     */
+    public function post(Request $request): mixed
+    {
+        $data = $request->all();
 
-	public function post(Request $request)
-	{
-		$data = $request->all();
-		$data = [
-			"noKunjungan" => null,
-			"noKartu" => $data['no_peserta'],
-			"tglDaftar" => $data['tgl_daftar'],
-			"kdPoli" => $data['kd_poli_pcare'],
-			"keluhan" => $data['keluhan'],
-			"kdSadar" => $data['kesadaran'],
-			"sistole" => $data['tensi'] != '-' ? explode('/', $data['tensi'])[0] : '0',
-			"diastole" => $data['tensi'] != '-' ? explode('/', $data['tensi'])[1] : '0',
-			"beratBadan" => $data['berat'],
-			"tinggiBadan" => $data['tinggi'],
-			"respRate" => $data['respirasi'],
-			"heartRate" => $data['nadi'],
-			"lingkarPerut" => $data['lingkar_perut'],
-			"kdStatusPulang" => $data['sttsPulang'],
-			"tglPulang" => $data['tglPulang'],
-			"kdDokter" => $data['kd_dokter_pcare'],
-			"kdDiag1" => $data['kdDiagnosa1'],
-			"kdDiag2" => $data['kdDiagnosa2'],
-			"kdDiag3" => $data['kdDiagnosa3'],
-			"anamnesa" => $data['anamnesa'],
-			"alergiMakan" => $data['alergiMakan'],
-			"alergiUdara" => $data['alergiUdara'],
-			"alergiObat" => $data['alergiObat'],
-			"kdPrognosa" => $data['kdPrognosa'],
-			"terapiObat" => $data['rtl'],
-			"terapiNonObat" => $data['instruksi'],
-			"bmhp" => "-",
-			"suhu" => $data['suhu_tubuh'],
-			"kdPoliRujukInternal" => $request->kdInternal ? $request->kdInternal : null,
-		];
+        try {
+            Log::info('[KUNJUNGAN POST] Payload ke BPJS:', $data);
+            $result = $this->kunjungan->create($data);
+            Log::info('[KUNJUNGAN POST] Respons BPJS:', $result);
 
-		if ($request->jenisRujukan) {
-			if ($request->jenisRujukan == 'spesialis') {
-				$data['rujukLanjut'] = [
-					"kdppk" => $request->kdPpkRujukan,
-					"tglEstRujuk" => $request->tglEstRujukan,
-					"subSpesialis" => [
-						"kdSubSpesialis1" => $request->kdSubSpesialis,
-						"kdSarana" => $request->kdSarana,
-					],
-					'khusus' => null,
-				];
-				$data['kdTacc'] = $request->kdTacc;
-				$data['alasanTacc'] = $request->alasanTacc;
-			} else if ($request->jenisRujukan == 'khusus') {
-				$data['rujukLanjut'] = [
-					"kdppk" => $request->kdPpkRujukan,
-					"tglEstRujuk" => $request->tglEstRujukan,
-					"subSpesialis" => null,
-					'khusus' => [
-						'kdKhusus' => $request->kdKhusus,
-						'kdSubSpesialis' => $request->kdKhususSub,
-						'catatan' => $request->catatanKhusus,
-					],
-				];
-				$data['kdTacc'] = $request->kdTacc ? $request->kdTacc : '0';
-				$data['alasanTacc'] = $request->alasanTacc ? $request->alasanTacc : null;
-			} else if ($request->jenisRujukan == 'internal') {
-				$data['rujukLanjut'] = [
-					"kdppk" => $request->kdPpkRujukan,
-					"tglEstRujuk" => $request->tglEstRujukan,
-					"subSpesialis" => null,
-				];
-				$data['kdTacc'] = $request->kdTacc;
-				$data['alasanTacc'] = $request->alasanTacc;
-			}
-		}
+            // Simpan ke pcare_rujuk_subspesialis jika ada rujukan
+            if ($request->jenisRujukan && !empty($request->no_rawat)) {
+                $noKunjungan = $result['response']['message'] ?? $result['response']['noKunjungan'] ?? null;
+                $this->simpanRujukan($request, $noKunjungan);
+            }
 
-		try {
-			// Use library but modify feature to include V1
-			$bpjs = $this->bpjs;
-			
-			// Use reflection to set the protected $feature property to kunjungan/V1
-			$reflection = new \ReflectionClass($bpjs);
-			$property = $reflection->getProperty('feature');
-			$property->setAccessible(true);
-			$property->setValue($bpjs, 'kunjungan/V1');
-			
-			\Log::info('[KUNJUNGAN POST] Payload ke BPJS:', $data);
-			$result = $bpjs->store($data);
-			\Log::info('[KUNJUNGAN POST] Respons BPJS:', (array) $result);
-			
-			return $result;
-		} catch (QueryException $e) {
-			return $e->errorInfo;
-		} catch (\Exception $e) {
-			return [
-				'metaData' => [
-					'code' => 500,
-					'message' => 'FAILED'
-				],
-				'response' => $e->getMessage()
-			];
-		}
-	}
+            return $result;
+        } catch (\Exception $e) {
+            Log::error('[KUNJUNGAN POST] Error: ' . $e->getMessage());
+            return ['metaData' => ['code' => 500, 'message' => $e->getMessage()]];
+        }
+    }
 
-	public function put(Request $request)
-	{
+    /**
+     * Update kunjungan yang sudah ada di BPJS PCare.
+     * Jika ada jenisRujukan, update juga pcare_rujuk_subspesialis.
+     */
+    public function put(Request $request): mixed
+    {
+        $data = $request->all();
 
-		$data = [
-			"noKunjungan" => $request->noKunjungan,
-			"noKartu" => $request->no_peserta,
-			"tglDaftar" => $request->tgl_daftar,
-			"keluhan" => $request->keluhan,
-			"kdSadar" => $request->kesadaran,
-			"sistole" => $request->tensi != '-' ? explode('/', $request->tensi)[0] : '',
-			"diastole" => $request->tensi != '-' ? explode('/', $request->tensi)[1] : '',
-			"beratBadan" => $request->berat,
-			"tinggiBadan" => $request->tinggi,
-			"respRate" => $request->respirasi,
-			"heartRate" => $request->nadi,
-			"lingkarPerut" => $request->lingkar_perut,
-			"kdStatusPulang" => $request->sttsPulang,
-			"tglPulang" => $request->tglPulang,
-			"kdDokter" => $request->kd_dokter_pcare,
-			"kdDiag1" => $request->kdDiagnosa1,
-			"kdDiag2" => $request->kdDiagnosa2,
-			"kdDiag3" => $request->kdDiagnosa3,
-			"anamnesa" => $request->anamnesa,
-			"alergiMakan" => $request->alergiMakan,
-			"alergiUdara" => $request->alergiUdara,
-			"alergiObat" => $request->alergiObat,
-			"kdPrognosa" => $request->kdPrognosa,
-			"terapiObat" => $request->rtl,
-			"terapiNonObat" => $request->instruksi,
-			"bmhp" => "-",
-			"suhu" => $request->suhu_tubuh,
-			"kdPoliRujukInternal" => $request->kdInternal ? $request->kdInternal : null,
-		];
-		if ($request->jenisRujukan) {
-			if ($request->jenisRujukan == 'spesialis') {
-				$data['rujukLanjut'] = [
-					"kdppk" => $request->kdPpkRujukan,
-					"tglEstRujuk" => $request->tglEstRujukan,
-					"subSpesialis" => [
-						"kdSubSpesialis1" => $request->kdSubSpesialis,
-						"kdSarana" => $request->kdSarana,
-					],
-					'khusus' => null,
-				];
-				$data['kdTacc'] = $request->kdTacc;
-				$data['alasanTacc'] = $request->alasanTacc;
-			} else if ($request->jenisRujukan == 'khusus') {
-				$data['rujukLanjut'] = [
-					"kdppk" => $request->kdPpkRujukan,
-					"tglEstRujuk" => $request->tglEstRujukan,
-					"subSpesialis" => null,
-					'khusus' => [
-						'kdKhusus' => $request->kdKhusus,
-						'kdSubSpesialis' => $request->kdKhususSub,
-						'catatan' => $request->catatanKhusus,
-					],
-				];
-				$data['kdTacc'] = 0;
-				$data['alasanTacc'] = null;
-			} else if ($request->jenisRujukan == 'internal') {
-				$data['rujukLanjut'] = [
-					"kdppk" => $request->kdPpkRujukan,
-					"tglEstRujuk" => $request->tglEstRujukan,
-					"subSpesialis" => null,
-				];
-				$data['kdTacc'] = $request->kdTacc;
-				$data['alasanTacc'] = $request->alasanTacc;
-			}
-		}
-		try {
-			// Use library but modify feature to include V1
-			$bpjs = $this->bpjs;
-			
-			// Use reflection to set the protected $feature property to kunjungan/V1
-			$reflection = new \ReflectionClass($bpjs);
-			$property = $reflection->getProperty('feature');
-			$property->setAccessible(true);
-			$property->setValue($bpjs, 'kunjungan/V1');
-			
-			return $bpjs->update($data);
-		} catch (QueryException $e) {
-			return $e->errorInfo;
-		} catch (\Exception $e) {
-			return [
-				'metaData' => [
-					'code' => 500,
-					'message' => 'FAILED'
-				],
-				'response' => $e->getMessage()
-			];
-		}
-	}
+        try {
+            Log::info('[KUNJUNGAN PUT] Payload ke BPJS:', $data);
+            $result = $this->kunjungan->update($data);
+            Log::info('[KUNJUNGAN PUT] Respons BPJS:', $result);
 
-	public function delete($noKunjungan)
-	{
-		try {
-			$bpjs = $this->bpjs;
-			return $bpjs->destroy($noKunjungan);
-		} catch (QueryException $e) {
-			return $e->errorInfo;
-		}
-	}
+            // Update pcare_rujuk_subspesialis jika ada rujukan
+            if ($request->jenisRujukan && !empty($request->no_rawat)) {
+                $noKunjungan = $request->noKunjungan;
+                $this->simpanRujukan($request, $noKunjungan, update: true);
+            }
 
-	public function getRujukan($noKunjungan)
-	{
-		$bpjs = $this->bpjs;
-		$rujukan = $bpjs->rujukan($noKunjungan)->index();
+            return $result;
+        } catch (\Exception $e) {
+            Log::error('[KUNJUNGAN PUT] Error: ' . $e->getMessage());
+            return ['metaData' => ['code' => 500, 'message' => $e->getMessage()]];
+        }
+    }
 
-		if ($rujukan['metaData']['code'] !== 200) {
-			return response()->json($rujukan);
-		}
-		$encode = json_encode($rujukan['response']);
-		$response = json_decode($encode);
-		$data = [
-			'noKunjungan' => $response->noRujukan,
-			'kdPpkAsal' => $response->ppk->kdPPK,
-			'nmPpkAsal' => $response->ppk->nmPPK,
-			'kdKR' => $response->ppk->kc->kdKR->kdKR,
-			'nmKR' => $response->ppk->kc->kdKR->nmKR,
-			'kdKC' => $response->ppk->kc->kdKC,
-			'nmKC' => $response->ppk->kc->nmKC,
-			'tglKunjungan' => date('Y-m-d', strtotime($response->tglKunjungan)),
-			'noKartu' => $response->nokaPst,
-			'nm_pasien' => $response->nmPst,
-			'kdDiag1' => $response->diag1->kdDiag,
-			'nmDiag1' => $response->diag1->nmDiag,
-			'kdDokter' => $response->dokter->kdDokter,
-			'nmDokter' => $response->dokter->nmDokter,
-			'tglEstRujuk' => date('Y-m-d', strtotime($response->tglEstRujuk)),
-			'tglAkhirRujuk' => date('Y-m-d', strtotime($response->tglAkhirRujuk)),
-			'jadwal' => $response->jadwal,
-			'kdPPK' => $response->ppkRujuk->kdPPK,
-			'nmPPK' => $response->ppkRujuk->nmPPK,
-			'kdPoli' => $response->poli->kdPoli,
-			'nmPoli' => $response->poli->nmPoli,
-			'catatanRujuk' => $response->catatanRujuk,
+    /**
+     * Ambil data rujukan dari BPJS berdasarkan noKunjungan
+     */
+    public function getRujukan(string $noKunjungan): JsonResponse
+    {
+        // Endpoint rujukan masih pakai riwayat — ambil dari data lokal dulu
+        $lokal = PcareRujukSubspesialis::where('noKunjungan', $noKunjungan)->first();
+        if ($lokal) {
+            return response()->json($lokal);
+        }
 
-		];
+        return response()->json(['message' => 'Data rujukan tidak ditemukan.'], 404);
+    }
 
-		return response()->json($data);
-	}
+    /**
+     * Hapus kunjungan di server BPJS PCare
+     */
+    public function delete(string $noKunjungan): mixed
+    {
+        try {
+            Log::info("[KUNJUNGAN DELETE] Menghapus No. Kunjungan: $noKunjungan");
+            $result = $this->kunjungan->hapus($noKunjungan);
+            Log::info("[KUNJUNGAN DELETE] Respons BPJS:", $result);
+
+            return $result;
+        } catch (\Exception $e) {
+            Log::error("[KUNJUNGAN DELETE] Error: " . $e->getMessage());
+            return ['metaData' => ['code' => 500, 'message' => $e->getMessage()]];
+        }
+    }
+
+    // -------------------------------------------------------------------------
+
+    /**
+     * Simpan atau update data ke tabel pcare_rujuk_subspesialis
+     */
+    private function simpanRujukan(Request $request, ?string $noKunjungan, bool $update = false): void
+    {
+        $dataRujuk = [
+            'noKunjungan'    => $noKunjungan,
+            'tglDaftar'      => $request->tgl_daftar
+                                ? date('Y-m-d', strtotime(str_replace('-', '/', $request->tgl_daftar)))
+                                : null,
+            'no_rkm_medis'   => $request->no_rkm_medis,
+            'nm_pasien'      => $request->nm_pasien,
+            'noKartu'        => $request->no_peserta,
+            'kdPoli'         => $request->kd_poli_pcare,
+            'nmPoli'         => $request->nm_poli_pcare,
+            'keluhan'        => $request->keluhan,
+            'kdSadar'        => $request->kesadaran,
+            'nmSadar'        => $request->nmSadar,
+            'sistole'        => $request->tensi != '-' ? explode('/', $request->tensi)[0] : '0',
+            'diastole'       => $request->tensi != '-' ? explode('/', $request->tensi)[1] : '0',
+            'beratBadan'     => $request->berat,
+            'tinggiBadan'    => $request->tinggi,
+            'respRate'       => $request->respirasi,
+            'heartRate'      => $request->nadi,
+            'lingkarPerut'   => $request->lingkar_perut,
+            'terapi'         => $request->rtl,
+            'kdStatusPulang' => $request->sttsPulang,
+            'nmStatusPulang' => $request->nmStatusPulang,
+            'tglPulang'      => $request->tglPulang
+                                ? date('Y-m-d', strtotime(str_replace('-', '/', $request->tglPulang)))
+                                : null,
+            'kdDokter'       => $request->kd_dokter_pcare,
+            'nmDokter'       => $request->nm_dokter,
+            'kdDiag1'        => $request->kdDiagnosa1,
+            'nmDiag1'        => $request->diagnosa1,
+            'kdDiag2'        => $request->kdDiagnosa2,
+            'nmDiag2'        => $request->diagnosa2,
+            'kdDiag3'        => $request->kdDiagnosa3,
+            'nmDiag3'        => $request->diagnosa3,
+            'tglEstRujuk'    => $request->tglEstRujukan
+                                ? date('Y-m-d', strtotime(str_replace('-', '/', $request->tglEstRujukan)))
+                                : null,
+            'kdPPK'          => $request->kdPpkRujukan,
+            'nmPPK'          => $request->ppkRujukan,
+            'kdSubSpesialis' => $request->kdSubSpesialis,
+            'nmSubSpesialis' => $request->spesialis,
+            'kdSarana'       => $request->kdSarana,
+            'nmSarana'       => $request->sarana,
+            'kdTACC'         => $request->kdTacc,
+            'nmTACC'         => $request->nmTacc,
+            'alasanTACC'     => $request->alasanTacc,
+            'KdAlergiMakanan'=> $request->alergiMakan,
+            'NmAlergiMakanan'=> $request->nmAlergiMakan ?? '',
+            'KdAlergiUdara'  => $request->alergiUdara,
+            'NmAlergiUdara'  => $request->nmAlergiUdara ?? '',
+            'KdAlergiObat'   => $request->alergiObat,
+            'NmAlergiObat'   => $request->nmAlergiObat ?? '',
+            'KdPrognosa'     => $request->kdPrognosa,
+            'NmPrognosa'     => $request->nmPrognosa ?? '',
+            'terapi_non_obat'=> $request->instruksi,
+            'bmhp'           => '-',
+        ];
+
+        if ($update) {
+            PcareRujukSubspesialis::where('no_rawat', $request->no_rawat)->update($dataRujuk);
+        } else {
+            PcareRujukSubspesialis::updateOrCreate(
+                ['no_rawat' => $request->no_rawat],
+                $dataRujuk
+            );
+        }
+    }
 }

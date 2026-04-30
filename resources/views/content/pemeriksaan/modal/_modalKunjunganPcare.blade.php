@@ -1200,7 +1200,7 @@
                     }
 
                     loadingAjax('Mengubah data kunjungan...');
-                    $.post(`/efktp/bridging/pcare/kunjungan/update`, data).done((response) => {
+                    $.post(`{{ url('/bridging/pcare/kunjungan/update') }}`, data).done((response) => {
                         if (response.metaData.code == 200) {
                             // UPDATE KUNJUNGAN UMUM LOCAL
                             updateKunjunganUmum(data).done((resKunjungan) => {

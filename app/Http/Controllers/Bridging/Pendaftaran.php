@@ -2,80 +2,141 @@
 
 namespace App\Http\Controllers\Bridging;
 
-use AamDsam\Bpjs\PCare;
-use App\Http\Controllers\Controller;
-use App\Traits\PcareConfig;
-use Exception;
-use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use App\Http\Controllers\Controller;
+use App\Services\Bpjs\PCare\PCarePendaftaran;
+use App\Services\Bpjs\Antrian\AntrianService;
 
 class Pendaftaran extends Controller
 {
-    use PcareConfig;
-    public $bpjs;
+    protected PCarePendaftaran $pendaftaran;
+    protected AntrianService $antrian;
 
     public function __construct()
     {
-        $this->bpjs = new Pcare\Pendaftaran($this->config());
-    }
-    public function get(Request $request)
-    {
-        $row = $request->start ? $request->start : 0;
-        $limit = $request->length ? $request->length : 0;
-        $bpjs = $this->bpjs;
-        return $bpjs->tanggalDaftar(date('d-m-Y'))->index($row, $limit);
+        $this->pendaftaran = new PCarePendaftaran();
+        $this->antrian     = new AntrianService();
     }
 
-    public function getByTanggal($tgl = '', $start = 0, $limit = 15)
+    /**
+     * Ambil daftar pendaftaran hari ini
+     */
+    public function get(Request $request): array
     {
-        $bpjs = $this->bpjs;
-        $tgl = $tgl ? $tgl : date('d-m-Y');
-        return $bpjs->tanggalDaftar($tgl)->index($start, $limit);
+        $start = $request->start ?? 0;
+        $limit = $request->length ?? 15;
+        return $this->pendaftaran->getByTanggal(date('d-m-Y'), $start, $limit);
     }
-    public function getUrut($noUrut)
+
+    /**
+     * Ambil pendaftaran berdasarkan tanggal
+     */
+    public function getByTanggal(string $tgl = '', int $start = 0, int $limit = 15): array
     {
-        $tanggal = date('d-m-Y');
-        $bpjs = $this->bpjs;
-        return $bpjs->nomorUrut($noUrut)->tanggalDaftar($tanggal)->index();
+        return $this->pendaftaran->getByTanggal($tgl ?: date('d-m-Y'), $start, $limit);
     }
-    public function delete(Request $request)
+
+    /**
+     * Ambil pendaftaran berdasarkan nomor urut
+     */
+    public function getUrut(string $noUrut): array
     {
-        $bpjs = $this->bpjs;
-        $bpjs->peserta($request->noKartu)
-            ->tanggalDaftar($request->tglDaftar)
-            ->nomorUrut($request->noUrut)
-            ->kodePoli($request->kdPoli);
-        try {
-            return $bpjs->destroy();
-        } catch (QueryException $e) {
-            return response()->json($e->errorInfo);
+        return $this->pendaftaran->getByNoUrut($noUrut, date('d-m-Y'));
+    }
+
+    /**
+     * Hapus pendaftaran
+     */
+    public function delete(Request $request): mixed
+    {
+        return $this->pendaftaran->hapus(
+            $request->noKartu,
+            $request->tglDaftar,
+            $request->noUrut,
+            $request->kdPoli
+        );
+    }
+
+    /**
+     * Kirim pendaftaran PCare.
+     * Jika ANTRIAN_ENABLED=true, kirim antrian dulu.
+     * Jika antrian gagal, kembalikan error + flag requires_confirm.
+     * Jika skip_antrian=true (user konfirmasi), langsung daftar PCare.
+     */
+    public function post(Request $request): JsonResponse
+    {
+        $antrianEnabled = config('bpjs.antrian.enabled', false);
+        $antrianResult  = null;
+
+        // --- Kirim Antrian (jika enabled dan belum di-skip) ---
+        if ($antrianEnabled && !$request->boolean('skip_antrian')) {
+            $antrianPayload = [
+                'nomorkartu'    => $request->no_peserta ?? '',
+                'nik'           => $request->no_ktp ?? '',
+                'nohp'          => $request->no_tlp ?? '',
+                'kodepoli'      => $request->kd_poli_pcare,
+                'namapoli'      => $request->nm_poli_pcare,
+                'norm'          => $request->no_rkm_medis,
+                'tanggalperiksa'=> date('Y-m-d', strtotime($request->tgl_registrasi)),
+                'kodedokter'    => (int) $request->kd_dokter_pcare,
+                'namadokter'    => $request->nm_dokter ?? 'Dokter Faskes',
+                'jampraktek'    => $request->jampraktek ?? '08:00-14:00',
+                'nomorantrean'  => $request->no_reg,
+                'angkaantrean'  => (int) $request->no_reg,
+                'keterangan'    => 'Peserta harap 30 menit lebih awal guna pencatatan administrasi.',
+            ];
+
+            $antrianResult = $this->antrian->add($antrianPayload);
+            $antrianCode   = $antrianResult['metadata']['code']
+                          ?? $antrianResult['metaData']['code']
+                          ?? 500;
+
+            // Antrian gagal → kembalikan response khusus untuk konfirmasi frontend
+            if ($antrianCode != 200) {
+                $antrianMessage = $antrianResult['metadata']['message']
+                               ?? $antrianResult['metaData']['message']
+                               ?? 'Gagal terhubung ke server Antrian BPJS.';
+
+                return response()->json([
+                    'antrian_error'   => $antrianMessage,
+                    'requires_confirm'=> true,
+                    'antrian_response'=> $antrianResult,
+                ], 200);
+            }
         }
-    }
-    public function post(Request $request)
-    {
 
-        $bpjs = $this->bpjs;
+        // --- Kirim Pendaftaran PCare ---
         $data = [
-            "kdProviderPeserta" => $request->kdProviderPeserta,
-            "tglDaftar" => $request->tgl_registrasi,
-            "noKartu" => $request->no_peserta,
-            "kdPoli" => $request->kd_poli_pcare,
-            "keluhan" => $request->keluhan,
-            "kunjSakit" => true,
-            "sistole" => (int) $request->sistole,
-            "diastole" => (int) $request->diastole,
-            "beratBadan" => (int) $request->berat,
-            "tinggiBadan" => (int) $request->tinggi,
-            "respRate" => (int) $request->respirasi,
-            "lingkarPerut" => (int) $request->lingkar_perut,
-            "heartRate" => (int) $request->nadi,
-            "rujukBalik" => 0,
-            "kdTkp" => $request->kdTkp,
+            'kdProviderPeserta' => $request->kdProviderPeserta,
+            'tgl_daftar'        => $request->tgl_registrasi
+                                    ? date('d-m-Y', strtotime($request->tgl_registrasi))
+                                    : date('d-m-Y'),
+            'no_peserta'        => $request->no_peserta,
+            'kd_poli_pcare'     => $request->kd_poli_pcare,
+            'keluhan'           => $request->keluhan,
+            'sistole'           => $request->sistole,
+            'diastole'          => $request->diastole,
+            'berat'             => $request->berat,
+            'tinggi'            => $request->tinggi,
+            'respirasi'         => $request->respirasi,
+            'lingkar_perut'     => $request->lingkar_perut,
+            'nadi'              => $request->nadi,
+            'kdTkp'             => $request->kdTkp ?? '10',
         ];
-        try {
-            return $bpjs->store($data);
-        } catch (Exception $e) {
-            return response()->json($e->getMessage());
+
+        $pendaftaranResult = $this->pendaftaran->create($data);
+
+        // Jika respons kosong sama sekali
+        if (empty($pendaftaranResult)) {
+            return response()->json([
+                'metaData' => ['code' => 500, 'message' => 'Gagal mendapatkan respons dari server PCare BPJS.']
+            ], 200);
         }
+
+        return response()->json([
+            'antrian'    => $antrianResult,
+            'pendaftaran'=> $pendaftaranResult,
+        ]);
     }
 }

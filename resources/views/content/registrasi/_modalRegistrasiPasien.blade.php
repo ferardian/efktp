@@ -98,6 +98,7 @@
                                                     style="width:50%"></select>
                                             <input type="text" class="form-control w-50" name="no_peserta"
                                                    id="no_peserta" value="-"/>
+                                            <input type="hidden" name="no_tlp" id="no_tlp" value="-"/>
                                         </div>
                                     </div>
                                 </div>
@@ -337,41 +338,56 @@
         })
 
         function createPendaftaranPcare(data) {
-            $.post(`{{ url('/bridging/pcare/pendaftaran') }}`, data).done((resPendaftaran) => {
+            $.post(`{{ url('/bridging/pcare/pendaftaran') }}`, data).done((res) => {
+                // HANDLE ANTRIAN GAGAL (Butuh Konfirmasi)
+                if (res.requires_confirm) {
+                    Swal.close();
+                    Swal.fire({
+                        title: "Antrian Gagal",
+                        html: `<span class="text-danger">${res.antrian_error}</span><br><br>Gagal mengirim data ke Antrol BPJS. Tetap lanjut daftar PCare tanpa Antrol?`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: "#3085d6",
+                        cancelButtonColor: "#d33",
+                        confirmButtonText: "Ya, Lanjut Daftar PCare",
+                        cancelButtonText: "Tidak, Perbaiki Data"
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Kirim ulang dengan flag skip_antrian
+                            data['skip_antrian'] = true;
+                            loadingAjax('Mendaftarkan ke PCare...');
+                            createPendaftaranPcare(data);
+                        }
+                    });
+                    return;
+                }
 
-                if (resPendaftaran.metaData.code === 201 && resPendaftaran.metaData.message === 'CREATED') {
+                // HANDLE PCare Pendaftaran Result
+                const resPendaftaran = res.pendaftaran;
+                if (resPendaftaran && resPendaftaran.metaData && resPendaftaran.metaData.code === 201) {
                     data['noUrut'] = resPendaftaran.response.message;
                     $.post(`{{ url('/pcare/pendaftaran') }}`, data).fail((error) => {
                         alertErrorAjax(error)
                     })
                     alertSuccessAjax("Berhasil mendaftarkan pasien di PCare").then(() => {
-                        if (modalRegistrasi.length) {
-                            modalRegistrasi.modal('hide');
-                        }
-
-                        if (modalPasien.length) {
-                            modalPasien.modal('hide');
-                        }
+                        if (modalRegistrasi.length) modalRegistrasi.modal('hide');
+                        if (modalPasien.length) modalPasien.modal('hide');
+                        if (typeof loadTabelRegistrasi === "function") loadTabelRegistrasi();
                     });
                 } else {
-                    alertErrorBpjs(resPendaftaran).then((result) => {
+                    Swal.close();
+                    alertErrorBpjs(resPendaftaran || res).then((result) => {
+                        // Hapus registrasi lokal jika pendaftaran pcare gagal total
                         $.post(`{{ url('/registrasi/delete') }}`, {
                             no_rawat: data.no_rawat
-                        }).done((response) => {
-                            showToast('Menghapus data pasien dari registrasi ')
-                            if (tabelRegistrasi.length) {
-                                loadTabelRegistrasi()
-                            } else if (tabelPcarePendaftaran.length) {
-                                loadTbPcarePendaftaran()
-                            }
-                        }).fail((error) => {
-                            alertErrorAjax(error)
-                        })
-                    })
-
-
+                        }).done(() => {
+                            showToast('Registrasi dibatalkan karena gagal daftar PCare');
+                            if (typeof loadTabelRegistrasi === "function") loadTabelRegistrasi();
+                        });
+                    });
                 }
             }).fail((error) => {
+                Swal.close();
                 alertErrorAjax(error)
             })
         }
@@ -417,32 +433,40 @@
 
         function checkPesertaPcare(data) {
             $.get(`{{ url('/bridging/pcare/peserta') }}/${data.no_peserta}`).done((result) => {
-                $.get(`{{ url('/setting/ppk') }}`).done((kode) => {
-                    data['kdProviderPeserta'] = result.response.kdProviderPst.kdProvider;
-                    if (kode !== data['kdProviderPeserta']) {
-                        Swal.fire({
-                            title: "Peringatan ?",
-                            html: "Pasien tidak terdaftar sebagai peserta Anda, tetap lanjutkan ?",
-                            icon: 'warning',
-                            showCancelButton: true,
-                            confirmButtonColor: "#3085d6",
-                            cancelButtonColor: "#d33",
-                            confirmButtonText: "Iya, Lanjutkan",
-                            cancelButtonText: "Tidak, Batalkan"
-                        }).then((res) => {
-                            loadingAjax()
-                            if (res.isConfirmed) {
-                                createPendaftaranPcare(data)
-                            } else {
-                                resetFormRegistrasi();
-                                loadingAjax().close();
-                            }
-                        });
-                    } else {
-                        createPendaftaranPcare(data)
-                    }
-                })
-            })
+                if (result && result.metaData && result.metaData.code == 200) {
+                    $.get(`{{ url('/setting/ppk') }}`).done((kode) => {
+                        data['kdProviderPeserta'] = result.response.kdProviderPst.kdProvider;
+                        if (kode !== data['kdProviderPeserta']) {
+                            Swal.close();
+                            Swal.fire({
+                                title: "Peringatan ?",
+                                html: "Pasien tidak terdaftar sebagai peserta Anda, tetap lanjutkan ?",
+                                icon: 'warning',
+                                showCancelButton: true,
+                                confirmButtonColor: "#3085d6",
+                                cancelButtonColor: "#d33",
+                                confirmButtonText: "Iya, Lanjutkan",
+                                cancelButtonText: "Tidak, Batalkan"
+                            }).then((res) => {
+                                if (res.isConfirmed) {
+                                    loadingAjax('Mendaftarkan ke PCare...')
+                                    createPendaftaranPcare(data)
+                                } else {
+                                    resetFormRegistrasi();
+                                }
+                            });
+                        } else {
+                            createPendaftaranPcare(data)
+                        }
+                    })
+                } else {
+                    Swal.close();
+                    alertErrorBpjs(result);
+                }
+            }).fail((error) => {
+                Swal.close();
+                alertErrorAjax(error);
+            });
         }
 
         function createRegPeriksa() {
@@ -558,6 +582,7 @@
                 formRegistrasiPoli.find('input[name=p_jawab]').val(response.namakeluarga)
                 formRegistrasiPoli.find('input[name=alamatpj]').val(response.alamatpj)
                 formRegistrasiPoli.find('input[name=no_peserta]').val(response.penjab.png_jawab.includes('BPJS') ? response.no_peserta : '-')
+                formRegistrasiPoli.find('input[name=no_tlp]').val(response.no_tlp)
                 formRegistrasiPoli.find('input[name=tgl_lahir]').val(response.tgl_lahir);
                 formRegistrasiPoli.find('input[name=umur]').val(setUmur(response.tgl_lahir));
 

@@ -1,3 +1,10 @@
+<style>
+    .highlight-success {
+        background-color: #d4edda !important;
+        border-color: #c3e6cb !important;
+        transition: background-color 0.5s ease;
+    }
+</style>
 <div class="modal modal-blur fade" id="modalPasien" tabindex="-1" aria-modal="false" role="dialog" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl" role="document">
         <div class="modal-content rounded-3">
@@ -181,7 +188,12 @@
                                                     </div>
                                                     <div class="col-xl-5 col-md-6 col-sm-12">
                                                         <label for="no_ktp" class="form-label">No. KTP/SIM</label>
-                                                        <input name="no_ktp" id="no_ktp" class="form-control" onfocus="return removeZero(this)" onblur="isEmpty(this)" value="-" />
+                                                        <div class="input-group">
+                                                            <input name="no_ktp" id="no_ktp" class="form-control" onfocus="return removeZero(this)" onblur="isEmpty(this)" value="-" />
+                                                            <button class="btn btn-primary" type="button" onclick="getPesertaPasien('noKTP')">
+                                                                <i class="ti ti-search"></i>
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                     <div class="col-xl-3 col-md-6 col-sm-12">
                                                         <label for="tgl_daftar" class="form-label">Tgl. Daftar</label>
@@ -783,8 +795,8 @@
             $('#formPasien').trigger('reset');
             $.get(`{{ url('/set/norm') }}`).done((response) => {
                 formPasien.find('input[name=no_rkm_medis]').val(response)
-                formPasien.find('input').removeClass('is-valid')
-                formPasien.find('select').removeClass('is-valid')
+                formPasien.find('input').removeClass('is-valid highlight-success')
+                formPasien.find('select').removeClass('is-valid highlight-success')
             })
         }
 
@@ -848,10 +860,10 @@
         }
 
         function getPesertaPasien(findBy) {
-
             const noKartu = findBy == 'noKartu' ? formPasien.find('#no_peserta').val() : formPasien.find('#no_ktp').val();
+            const type = findBy == 'noKartu' ? 'noka' : 'nik';
             loadingAjax();
-            $.get(`{{ url('/bridging/pcare/peserta') }}/${noKartu}`).done((response) => {
+            $.get(`{{ url('/bridging/pcare/peserta') }}/${noKartu}/${type}`).done((response) => {
                 if (response.metaData.code == 200) {
                     loadingAjax().close();
                     const result = response.response;
@@ -875,14 +887,14 @@
                         }
                         const umur = hitungUmur(splitTanggal(result.tglLahir));
                         const textUmur = `${umur.split(';')[0]} Th ${umur.split(';')[1]} Bl ${umur.split(';')[2]} Hr`
-                        formPasien.find('#nm_pasien').val(result.nama).addClass('is-valid');
-                        formPasien.find('#no_ktp').val(result.noKTP).addClass('is-valid');
-                        formPasien.find('#umur').val(textUmur).addClass('is-valid');
-                        formPasien.find('#no_tlp').val(result.noHP).addClass('is-valid');
-                        formPasien.find('#tgl_lahir').val(result.tglLahir).addClass('is-valid');
-                        formPasien.find('#jk').val(result.sex).change().addClass('is-valid');
+                        formPasien.find('#nm_pasien').val(result.nama).addClass('is-valid highlight-success');
+                        formPasien.find('#no_ktp').val(result.noKTP).addClass('is-valid highlight-success');
+                        formPasien.find('#umur').val(textUmur).addClass('is-valid highlight-success');
+                        formPasien.find('#no_tlp').val(result.noHP).addClass('is-valid highlight-success');
+                        formPasien.find('#tgl_lahir').val(result.tglLahir).addClass('is-valid highlight-success');
+                        formPasien.find('#jk').val(result.sex).change().addClass('is-valid highlight-success');
                         const bpjs = new Option('BPJ - BPJS', 'BPJS', true, true);
-                        formPasien.find('#kd_pj').append(bpjs).trigger('change');
+                        formPasien.find('#kd_pj').append(bpjs).trigger('change').addClass('is-valid highlight-success');
                     })
 
                 } else {

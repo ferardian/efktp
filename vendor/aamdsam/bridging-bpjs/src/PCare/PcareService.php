@@ -1,5 +1,4 @@
 <?php
-
 namespace AamDsam\Bpjs\PCare;
 
 use GuzzleHttp\Client;
@@ -90,10 +89,10 @@ class PcareService
     public function __construct($configurations = [])
     {
         $this->clients = new Client([
-            'verify' => false,
+            'verify' => false
         ]);
 
-        foreach ($configurations as $key => $val) {
+        foreach ($configurations as $key => $val){
             if (property_exists($this, $key)) {
                 $this->$key = $val;
             }
@@ -109,57 +108,29 @@ class PcareService
         return $this;
     }
 
-    protected function failedResponse($response)
-    {
-        $failedResponse = explode('response:', $response);
-
-        if (is_array($failedResponse) && count($failedResponse) > 1) {
-            $responseString = $failedResponse[1];
-            if (strpos($responseString, ',"metaData":') !== false) {
-                $string = explode(',"metaData":', $responseString)[1] . "\"}";
-                $message = "FAILED";
-            } else {
-                $string = preg_replace('/,"metaData".*/', '', $responseString);
-                $message = "FAILED";
-
-            }
-        } else {
-            $string = $response;
-            $message = "FAILED";
-        }
-
-        $response = json_decode($string, true) ?? ['response' => $string];
-        $responseMessage = $message ?? '';
-
-        return [
-            "response" => $response['response'],
-            'metaData' => [
-                "message" => $responseMessage,
-                "code" => 500,
-            ],
-        ];
-
-    }
-
     public function responseDecoded($response)
     {
-
+        // ubah ke array
         $responseArray = json_decode($response, true);
-
+        // dd($response);
         if (!is_array($responseArray)) {
-
-            return $this->failedResponse($response);
+            return [
+                "metaData" => [
+                    "message" => $responseArray,
+                    "code" => 201
+                ]
+            ];
         }
 
-        if (!isset($responseArray["response"]) || $responseArray['metaData']['code'] == 401) {
+        if (!isset($responseArray["response"]) || $responseArray["response"] == []) {
             return $responseArray;
         }
-
+        
         $responseDecrypt = $this->stringDecrypt($responseArray["response"]);
         $responseArrayDecrypt = json_decode($responseDecrypt, true);
 
         // apabila bukan array
-        if (!is_array($responseArrayDecrypt) || $responseDecrypt == '') {
+        if (!is_array($responseArrayDecrypt) || $responseDecrypt==''){
             return $responseArray;
         }
 
@@ -176,7 +147,7 @@ class PcareService
         } else {
             $response = $this->get("{$feature}");
         }
-
+        // dd($response);
         return $this->responseDecoded($response);
     }
 
@@ -194,8 +165,9 @@ class PcareService
     }
 
     public function store($data = [])
-    {
+    {                           
         $response = $this->post($this->feature, $data);
+        // dd($response);
         return $this->responseDecoded($response);
     }
 
@@ -207,10 +179,6 @@ class PcareService
 
     public function destroy($keyword = null, $parameters = [])
     {
-
-        if ($this->feature === 'kunjungan/V1') {
-            $this->feature = 'kunjungan';
-        }
         $response = $this->delete($this->feature, $keyword, $parameters);
         return $this->responseDecoded($response);
     }
@@ -218,9 +186,9 @@ class PcareService
     protected function setHeaders()
     {
         $this->headers = [
-            'X-cons-id' => $this->cons_id,
-            'X-Timestamp' => $this->timestamp,
-            'X-Signature' => $this->signature,
+            'X-cons-id'       => $this->cons_id,
+            'X-Timestamp'     => $this->timestamp,
+            'X-Signature'     => $this->signature,
             'X-Authorization' => $this->authorization,
             'user_key' => $this->user_key,
         ];
@@ -232,7 +200,7 @@ class PcareService
     {
         date_default_timezone_set('UTC');
         $this->timestamp = strval(time() - strtotime('1970-01-01 00:00:00'));
-
+        
         date_default_timezone_set(env('APP_TIMEZONE', 'Asia/Singapore'));
         return $this;
     }
@@ -242,7 +210,7 @@ class PcareService
         $data = "{$this->cons_id}&{$this->timestamp}";
         $signature = hash_hmac('sha256', $data, $this->secret_key, true);
         $encodedSignature = base64_encode($signature);
-        $this->key_decrypt = $this->cons_id . $this->secret_key . $this->timestamp;
+        $this->key_decrypt = "$this->cons_id$this->secret_key$this->timestamp";
         $this->signature = $encodedSignature;
         return $this;
     }
@@ -280,13 +248,12 @@ class PcareService
         return $this->service_name;
     }
 
-    function stringDecrypt($string)
-    {
+    function stringDecrypt($string){
         $encrypt_method = 'AES-256-CBC';
         $key_hash = hex2bin(hash('sha256', $this->key_decrypt));
         $iv = substr(hex2bin(hash('sha256', $this->key_decrypt)), 0, 16);
         $output = openssl_decrypt(base64_decode($string), $encrypt_method, $key_hash, OPENSSL_RAW_DATA, $iv);
-
+    
         return \LZCompressor\LZString::decompressFromEncodedURIComponent($output);
     }
 
@@ -294,12 +261,13 @@ class PcareService
     {
         $params = $this->getParams($parameters);
         $this->headers['Content-Type'] = 'application/json; charset=utf-8';
+        // $this->headers['Content-Type'] = 'text/plain';
         try {
             $response = $this->clients->request(
                 'GET',
-                "{$this->base_url}/{$this->service_name}{$feature}{$params}",
+                "{$this->base_url}/{$this->service_name}/{$feature}{$params}",
                 [
-                    'headers' => $this->headers,
+                    'headers' => $this->headers
                 ]
             )->getBody()->getContents();
         } catch (\Exception $e) {
@@ -315,7 +283,7 @@ class PcareService
         $this->headers['Accept'] = 'application/json';
         $this->headers['Content-Type'] = 'text/plain';
 
-        if (!empty($headers)) {
+        if (!empty($headers)){
             $this->headers = array_merge($this->headers, $headers);
         }
         try {
@@ -324,7 +292,7 @@ class PcareService
                 "{$this->base_url}/{$this->service_name}/{$feature}",
                 [
                     'headers' => $this->headers,
-                    'body' => json_encode($data),
+                    'body'    => json_encode($data),
                 ]
             )->getBody()->getContents();
         } catch (\Exception $e) {
@@ -338,13 +306,14 @@ class PcareService
         // $this->headers['Content-Type'] = 'application/json';
         $this->headers['Content-Type'] = 'text/plain';
         $this->headers['Accept'] = 'application/json';
+        // dd("{$this->base_url}/{$this->service_name}/{$feature}");
         try {
             $response = $this->clients->request(
                 'PUT',
                 "{$this->base_url}/{$this->service_name}/{$feature}",
                 [
                     'headers' => $this->headers,
-                    'body' => json_encode($data),
+                    'body'    => json_encode($data),
                 ]
             )->getBody()->getContents();
         } catch (\Exception $e) {

@@ -2,25 +2,30 @@
 
 namespace App\Http\Controllers\Bridging;
 
-use AamDsam\Bpjs\PCare;
-use App\Traits\PcareConfig;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Services\Bpjs\PCare\PCarePeserta;
 
 class Peserta extends Controller
 {
-    use PcareConfig;
-    public $bpjs;
+    protected PCarePeserta $peserta;
 
     public function __construct()
     {
-        $this->bpjs = new Pcare\Peserta($this->config());
+        $this->peserta = new PCarePeserta();
     }
-    function index($noKartu)
-    {
-        $bpjs = $this->bpjs;
 
-        // dd($bpjs);
-        return $bpjs->jenisKartu($noKartu)->index();
+    public function index(string $value, string $type = null)
+    {
+        // Auto deteksi jika type tidak dikirim
+        if (!$type) {
+            $type = strlen($value) == 16 ? 'nik' : 'noka';
+        }
+
+        if ($type == 'nik') {
+            return $this->peserta->getByNik($value);
+        }
+
+        return $this->peserta->getByNoKartu($value);
     }
 }

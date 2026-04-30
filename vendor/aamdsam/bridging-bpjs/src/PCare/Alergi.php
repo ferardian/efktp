@@ -1,6 +1,4 @@
-<?php
-
-namespace AamDsam\Bpjs\PCare;
+<?php namespace AamDsam\Bpjs\PCare;
 
 use AamDsam\Bpjs\PCare\PcareService;
 
@@ -9,16 +7,11 @@ class Alergi extends PcareService
     /**
      * @var string
      */
-    protected $feature = 'alergi/jenis';
+    protected $feature = 'alergi';
 
-    public function jenis($keyword)
+    public function jenis($jenisAlergi)
     {
-        $this->feature .= "/{$keyword}";
-        return $this;
-    }
-    public function prognosa($keyword)
-    {
-        $this->feature .= "/{$keyword}";
+        $this->feature .= "/jenis/{$jenisAlergi}";
         return $this;
     }
 }

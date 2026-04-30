@@ -73,6 +73,35 @@
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
                        data-bs-auto-close="false" role="button" aria-expanded="false">
+                        <span class="nav-link-icon d-md-none d-lg-inline-block">
+                            <i class="ti ti-heart-rate-monitor"></i>
+                        </span>
+                        <span class="nav-link-title">
+                            SATU SEHAT
+                        </span>
+                    </a>
+                    <div class="dropdown-menu">
+                        <div class="dropdown-menu-columns">
+                            <div class="dropdown-menu-column">
+                                <a class="dropdown-item" href="{{ url('satusehat/pasien') }}">
+                                    Get Pasien
+                                </a>
+                                <a class="dropdown-item" href="{{ url('satusehat/mapping/organisasi') }}">
+                                    Mapping Organisasi
+                                </a>
+                                <a class="dropdown-item" href="{{ url('satusehat/mapping/lokasi') }}">
+                                    Mapping Lokasi
+                                </a>
+                                <a class="dropdown-item" href="{{ url('satusehat/encounter') }}">
+                                    Encounter
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
+                       data-bs-auto-close="false" role="button" aria-expanded="false">
                         <span class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/package -->
                             <i class="ti ti-server-cog"></i>
                         </span>
@@ -85,6 +114,9 @@
                             <div class="dropdown-menu-column">
                                 <a class="dropdown-item" href="{{ url('master/paket-obat') }}">
                                     Paket Obat
+                                </a>
+                                <a class="dropdown-item" href="{{ url('master/jadwal') }}">
+                                    Jadwal Praktek
                                 </a>
 
                             </div>

@@ -56,6 +56,7 @@ use App\Http\Controllers\SukuBangsaController;
 use App\Http\Controllers\SuratSakitController;
 use App\Http\Controllers\SuratSehatController;
 use App\Http\Controllers\UploadController;
+use App\Http\Controllers\JadwalController;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -153,8 +154,14 @@ Route::middleware('auth')->group(function () {
 	Route::get('/poliklinik', [PoliklinikController::class, 'get']);
 	Route::post('/poliklinik', [PoliklinikController::class, 'delete']);
 	// DOKTER
-	Route::get('/dokter', [DokterController::class, 'get']);
+	Route::get('/dokter/get', [DokterController::class, 'get']);
 	Route::post('/dokter', [DokterController::class, 'delete']);
+
+	// JADWAL PRAKTEK
+	Route::get('/master/jadwal', [JadwalController::class, 'index']);
+	Route::get('/master/jadwal/get', [JadwalController::class, 'get']);
+	Route::post('/master/jadwal', [JadwalController::class, 'store']);
+	Route::post('/master/jadwal/delete', [JadwalController::class, 'delete']);
 
 	Route::get('/pegawai', [PegawaiController::class, 'get']);
 	Route::get('/pegawai/profil', function () {
@@ -386,6 +393,23 @@ Route::middleware('auth')->group(function () {
 	Route::get('mapping/pcare/obat', [MappingObatPcareController::class, 'get']);
 	Route::post('mapping/pcare/obat', [MappingObatPcareController::class, 'create']);
 	Route::post('mapping/pcare/obat/delete/{kdBarang}', [MappingObatPcareController::class, 'delete']);
+	
+	// SATU SEHAT
+	Route::get('satusehat/pasien', [Bridging\SatuSehat::class, 'patientIndex']);
+	Route::get('satusehat/pasien/data', [Bridging\SatuSehat::class, 'getPatient']);
+	
+	Route::get('satusehat/mapping/organisasi', [Bridging\SatuSehat::class, 'index']);
+	Route::get('satusehat/mapping/organisasi/data', [Bridging\SatuSehat::class, 'getData']);
+	Route::get('satusehat/mapping/organisasi/all', [Bridging\SatuSehat::class, 'getOrganizations']);
+	Route::post('satusehat/mapping/organisasi', [Bridging\SatuSehat::class, 'map']);
+
+	Route::get('satusehat/mapping/lokasi', [Bridging\SatuSehat::class, 'locationIndex']);
+	Route::get('satusehat/mapping/lokasi/data', [Bridging\SatuSehat::class, 'getLocationData']);
+	Route::post('satusehat/mapping/lokasi', [Bridging\SatuSehat::class, 'mapLocation']);
+
+	Route::get('satusehat/encounter', [Bridging\SatuSehat::class, 'encounterIndex']);
+	Route::get('satusehat/encounter/data', [Bridging\SatuSehat::class, 'getEncounterData']);
+	Route::post('satusehat/encounter/sync', [Bridging\SatuSehat::class, 'syncEncounter']);
 
 	// SETTING
 
@@ -451,7 +475,7 @@ Route::middleware('auth')->group(function () {
 	Route::get('/bridging/pcare/status/pulang/{status}', [Bridging\StatusPulang::class, 'get']);
 
 	// PESERTA
-	Route::get('/bridging/pcare/peserta/{noKartu}', [Bridging\Peserta::class, 'index']);
+	Route::get('/bridging/pcare/peserta/{noKartu}/{type?}', [Bridging\Peserta::class, 'index']);
 
 	// OBAT
 	Route::post('/bridging/pcare/obat', [Bridging\Obat::class, 'create']);
