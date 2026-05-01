@@ -407,9 +407,17 @@ Route::middleware('auth')->group(function () {
 	Route::get('satusehat/mapping/lokasi/data', [Bridging\SatuSehat::class, 'getLocationData']);
 	Route::post('satusehat/mapping/lokasi', [Bridging\SatuSehat::class, 'mapLocation']);
 
-	Route::get('satusehat/encounter', [Bridging\SatuSehat::class, 'encounterIndex']);
-	Route::get('satusehat/encounter/data', [Bridging\SatuSehat::class, 'getEncounterData']);
-	Route::post('satusehat/encounter/sync', [Bridging\SatuSehat::class, 'syncEncounter']);
+	Route::get('satusehat/encounter', [Bridging\SatuSehat::class, 'encounterIndex'])->name('satusehat.encounter.index');
+	Route::get('satusehat/encounter/data', [Bridging\SatuSehat::class, 'getEncounterData'])->name('satusehat.encounter.data');
+	Route::post('satusehat/encounter/sync', [Bridging\SatuSehat::class, 'syncEncounter'])->name('satusehat.encounter.sync');
+
+	Route::get('satusehat/condition', [Bridging\SatuSehat::class, 'conditionIndex'])->name('satusehat.condition.index');
+	Route::get('satusehat/condition/data', [Bridging\SatuSehat::class, 'getConditionData'])->name('satusehat.condition.data');
+	Route::post('satusehat/condition/sync', [Bridging\SatuSehat::class, 'syncCondition'])->name('satusehat.condition.sync');
+
+	Route::get('satusehat/observation-ttv', [Bridging\SatuSehat::class, 'observationTTVIndex'])->name('satusehat.observation-ttv.index');
+	Route::get('satusehat/observation-ttv/data', [Bridging\SatuSehat::class, 'getObservationTTVData'])->name('satusehat.observation-ttv.data');
+	Route::post('satusehat/observation-ttv/sync', [Bridging\SatuSehat::class, 'syncObservationTTV'])->name('satusehat.observation-ttv.sync');
 
 	// SETTING
 

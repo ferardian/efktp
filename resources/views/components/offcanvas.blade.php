@@ -92,8 +92,14 @@
                                 <a class="dropdown-item" href="{{ url('satusehat/mapping/lokasi') }}">
                                     Mapping Lokasi
                                 </a>
-                                <a class="dropdown-item" href="{{ url('satusehat/encounter') }}">
+                                <a class="dropdown-item {{ Request::is('satusehat/encounter') ? 'active' : '' }}" href="{{ url('satusehat/encounter') }}">
                                     Encounter
+                                </a>
+                                <a class="dropdown-item {{ Request::is('satusehat/condition') ? 'active' : '' }}" href="{{ url('satusehat/condition') }}">
+                                    Condition
+                                </a>
+                                <a class="dropdown-item {{ Request::is('satusehat/observation-ttv') ? 'active' : '' }}" href="{{ url('satusehat/observation-ttv') }}">
+                                    Observation TTV
                                 </a>
                             </div>
                         </div>

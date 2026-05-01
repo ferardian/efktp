@@ -168,4 +168,64 @@ class SatuSehat extends Controller
         $result = $this->service->syncEncounter($request->no_rawat);
         return response()->json($result);
     }
+
+    /**
+     * Show condition sync page
+     */
+    public function conditionIndex()
+    {
+        return view('content.satusehat.condition');
+    }
+
+    /**
+     * Get condition data (JSON)
+     */
+    public function getConditionData(Request $request): JsonResponse
+    {
+        $search = $request->get('search');
+        $startDate = $request->get('start_date', date('Y-m-d'));
+        $endDate = $request->get('end_date', date('Y-m-d'));
+
+        $data = $this->service->getConditionList($search, $startDate, $endDate);
+        return response()->json([
+            'status' => true,
+            'data'   => $data
+        ]);
+    }
+
+    /**
+     * Sync condition
+     */
+    public function syncCondition(Request $request): JsonResponse
+    {
+        $request->validate([
+            'no_rawat'    => 'required',
+            'kd_penyakit' => 'required',
+            'status'      => 'required'
+        ]);
+
+        $result = $this->service->syncCondition(
+            $request->no_rawat,
+            $request->kd_penyakit,
+            $request->status
+        );
+        return response()->json($result);
+    }
+
+    public function observationTTVIndex()
+    {
+        return view('content.satusehat.observation-ttv');
+    }
+
+    public function getObservationTTVData(Request $request)
+    {
+        $data = $this->service->getObservationTTVList($request->tgl_awal, $request->tgl_akhir);
+        return response()->json($data);
+    }
+
+    public function syncObservationTTV(Request $request)
+    {
+        $res = $this->service->syncObservationTTV($request->no_rawat, $request->tgl_perawatan, $request->jam_rawat);
+        return response()->json($res);
+    }
 }
