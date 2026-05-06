@@ -979,6 +979,8 @@ function selectPoliklinik(element, parrent) {
         width: '100%',
         delay: 2,
         scrollAfterSelect: true,
+        allowClear: true,
+        placeholder: 'Pilih Poli',
         ajax: {
             url: `${baseUrl}/poliklinik`,
             dataType: 'JSON',
@@ -1005,6 +1007,9 @@ function selectPoliklinik(element, parrent) {
         },
         cache: true
 
+    }).on('select2:unselecting', (e) => {
+        const option = new Option('', '', true, true);
+        $(e.currentTarget).append(option).trigger('change');
     });
     return select2;
 }
@@ -1309,6 +1314,18 @@ $.contextMenu({
                         },
                     }
                 },
+                "RmGawatDarurat": {
+                    name: "RM Gawat Darurat",
+                    items: {
+                        "TriageAsesmen": {
+                            name: "Triage & Asesmen Medis",
+                            icon: "fas fa-tag",
+                            callback: (item, opt) => {
+                                openRmIgd(`${no_rawat}`);
+                            }
+                        }
+                    }
+                },
                 "setStatus": {
                     name: "Set Status",
                     items: {
@@ -1540,16 +1557,19 @@ $.contextMenu({
     build: (element, event) => {
         const no_rawat = element.data('id');
         const no_rkm_medis = element.data('no_rkm_medis');
+        const kd_kamar = element.data('kd_kamar');
+        const tgl_masuk = element.data('tgl_masuk');
+        const jam_masuk = element.data('jam_masuk');
+        const stts_pulang = element.data('stts_pulang');
         element.addClass('text-red')
         return {
             items: {
-                "pemeriksaan": {
+                "cppt": {
                     name: "CPPT",
                     icon: 'fa-regular fa-stethoscope',
                     callback: function (item, option, e, x, y) {
                         cpptRanap(`${no_rawat}`)
                     }
-
                 },
                 "Tindakan & Pemeriksaan": {
                     name: "Tindakan & Pemeriksaan",
@@ -1572,31 +1592,18 @@ $.contextMenu({
                 },
                 "Obat": {
                     name: "Obat",
-                    // icon: 'fa-regular fa-pills',
-                    // callback: function (item, option, e, x, y) {
-                    //     cpptRanap(`${no_rawat}`)
-                    // }
                     items: {
                         "Resep Obat": {
                             name: "Resep Obat",
                             icon: 'fa-regular fa-tablets',
-                            callback: function (item, option, e, x, y) {
-                                // cpptRanap(`${no_rawat}`)
-                            }
-
+                            callback: function (item, option, e, x, y) {}
                         },
                         "Pemberian Obat": {
                             name: "Pemberian Obat",
                             icon: 'fa-regular fa-tablets',
-                            callback: function (item, option, e, x, y) {
-                                // cpptRanap(`${no_rawat}`)
-                            }
-
+                            callback: function (item, option, e, x, y) {}
                         },
-
-
                     }
-
                 },
                 "penilaianAwal": {
                     name: "Penilaian Awal",
@@ -1604,29 +1611,19 @@ $.contextMenu({
                         "Keperawatan Umum": {
                             name: "Keperawatan Umum",
                             icon: 'fa-regular fa-pencil',
-                            callback: function (item, option, e, x, y) {
-                                // cpptRanap(`${no_rawat}`)
-                            }
-
+                            callback: function (item, option, e, x, y) {}
                         },
                         "Medis Umum": {
                             name: "Medis Umum",
                             icon: 'fa-regular fa-pencil',
-                            callback: function (item, option, e, x, y) {
-                                // cpptRanap(`${no_rawat}`)
-                            }
-
+                            callback: function (item, option, e, x, y) {}
                         },
                         "Triase": {
                             name: "Triase",
                             icon: 'fa-regular fa-pencil',
-                            callback: function (item, option, e, x, y) {
-                                // cpptRanap(`${no_rawat}`)
-                            }
-
+                            callback: function (item, option, e, x, y) {}
                         },
                     },
-
                 },
                 "Permintaan": {
                     name: "Permintaan",
@@ -1641,9 +1638,7 @@ $.contextMenu({
                         "PemeriksaanRadiologi": {
                             name: "Radiologi",
                             icon: "fas fa-tag",
-                            callback: (item, opt) => {
-                                // permintaanRadiologi(`${no_rawat}`);
-                            }
+                            callback: (item, opt) => {}
                         },
                     }
                 },
@@ -1653,15 +1648,22 @@ $.contextMenu({
                     callback: function (item, option, e, x, y) {
                         resumeMedis(`${no_rawat}`)
                     }
-
                 },
-                "Riwayat Kunjungan": {
+                "riwayatKunjungan": {
                     name: "Riwayat Kunjungan",
                     icon: 'fa-regular fa-folder-open',
                     callback: function (item, option, e, x, y) {
                         riwayat(`${no_rkm_medis}`)
                     }
-
+                },
+                "sep": "---------",
+                "pulangkan": {
+                    name: "Pulangkan Pasien",
+                    icon: "fas fa-share-from-square",
+                    visible: (key, opt) => stts_pulang === '-',
+                    callback: function (item, option, e, x, y) {
+                        pulangkanPasien(no_rawat, kd_kamar, tgl_masuk, jam_masuk)
+                    }
                 },
             }
         }
@@ -1739,3 +1741,95 @@ function selectMetode(element, parrent) {
     element.val('R01').trigger('change')
 }
 
+
+function selectJnsPerawatan(element, parrent, pelaksana = '') {
+    const select2 = element.select2({
+        dropdownParent: parrent,
+        delay: 2,
+        scrollAfterSelect: true,
+        ajax: {
+            url: `${baseUrl}/jns-perawatan/get`,
+            dataType: 'JSON',
+            data: (params) => {
+                return {
+                    nm_perawatan: params.term,
+                    pelaksana: pelaksana
+                }
+            },
+            processResults: (data) => {
+                return {
+                    results: data.map((item) => {
+                        return {
+                            id: item.kd_jenis_prw,
+                            text: `${item.kd_jenis_prw} - ${item.nm_perawatan}`,
+                            detail: item
+                        }
+                    })
+                }
+            }
+        },
+        cache: false
+    });
+    return select2;
+}
+
+function selectJnsPerawatanInap(element, parrent, pelaksana = '') {
+    const select2 = element.select2({
+        dropdownParent: parrent,
+        delay: 2,
+        scrollAfterSelect: true,
+        ajax: {
+            url: `${baseUrl}/jns-perawatan-inap/get`,
+            dataType: 'JSON',
+            data: (params) => {
+                return {
+                    nm_perawatan: params.term,
+                    pelaksana: pelaksana
+                }
+            },
+            processResults: (data) => {
+                return {
+                    results: data.map((item) => {
+                        return {
+                            id: item.kd_jenis_prw,
+                            text: `${item.kd_jenis_prw} - ${item.nm_perawatan}`,
+                            detail: item
+                        }
+                    })
+                }
+            }
+        },
+        cache: false
+    });
+    return select2;
+}
+
+function selectPetugas(element, parrent) {
+    const select2 = element.select2({
+        dropdownParent: parrent,
+        delay: 2,
+        scrollAfterSelect: true,
+        ajax: {
+            url: `${baseUrl}/petugas/get`,
+            dataType: 'JSON',
+            data: (params) => {
+                return {
+                    petugas: params.term
+                }
+            },
+            processResults: (data) => {
+                return {
+                    results: data.map((item) => {
+                        return {
+                            id: item.nip,
+                            text: item.nama,
+                            detail: item
+                        }
+                    })
+                }
+            }
+        },
+        cache: false
+    });
+    return select2;
+}

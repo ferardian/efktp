@@ -18,7 +18,7 @@
                 btnCetakResep.attr('onclick', `cetakResep('${noRawat}')`)
                 btnCetakResep.removeClass('d-none');
 
-                btnSimpanObat.removeClass('d-none')
+                btnSimpanResep.removeClass('d-none')
                 btnTambahObat.removeClass('d-none')
                 tabelResepUmum.removeClass('d-none')
                 btnTambahRacikan.removeClass('d-none')
@@ -30,7 +30,7 @@
                 btnTambahResep.text('Buat Resep')
                 btnCetakResep.addClass('d-none');
 
-                btnSimpanObat.addClass('d-none')
+                btnSimpanResep.addClass('d-none')
                 btnTambahObat.addClass('d-none')
                 tabelResepUmum.addClass('d-none')
                 btnTambahRacikan.addClass('d-none')
@@ -446,7 +446,59 @@
 
                                 </div>
                             </div>`
-                        body.append([keterangan, ttv, pemeriksaan]).hide().fadeIn()
+                        let htmlInfoMasuk = '';
+                        if (result.reg_periksa && (result.reg_periksa.triase_igd || result.reg_periksa.penilaian_medis_igd)) {
+                            htmlInfoMasuk = '<div class="card mb-1 shadow-none border-info"><div class="card-body p-2"><h4 class="card-title text-info mb-2"><i class="ti ti-info-circle"></i> INFORMASI MASUK (IGD)</h4>';
+                            
+                            if (result.reg_periksa.triase_igd) {
+                                let scales = '';
+                                const triase = result.reg_periksa.triase_igd;
+                                [1, 2, 3, 4, 5].forEach(i => {
+                                    if (triase['skala' + i] && triase['skala' + i].length) {
+                                        triase['skala' + i].forEach(s => {
+                                            if (s.master) {
+                                                const colors = ['', 'bg-red', 'bg-orange', 'bg-yellow text-dark', 'bg-green', 'bg-blue'];
+                                                scales += `<span class="badge ${colors[i]} me-1 mb-1">S${i}: ${s.master['pengkajian_skala' + i]}</span> `;
+                                            }
+                                        });
+                                    }
+                                });
+                                htmlInfoMasuk += `
+                                    <div class="mb-2 p-2 border-start border-3 border-danger bg-light">
+                                        <h5 class="text-danger mb-1 small"><i class="ti ti-heart-rate-monitor"></i> TRIAGE</h5>
+                                        <div class="small"><b>Keluhan:</b> ${triase.keluhan_utama || '-'}</div>
+                                        <div class="small"><b>Skala:</b> ${scales || '-'}</div>
+                                    </div>`;
+                            }
+
+                            if (result.reg_periksa.penilaian_medis_igd) {
+                                const asmed = result.reg_periksa.penilaian_medis_igd;
+                                htmlInfoMasuk += `
+                                    <div class="mb-0 p-2 border-start border-3 border-primary bg-light">
+                                        <h5 class="text-primary mb-1 small"><i class="ti ti-stethoscope"></i> ASMED IGD</h5>
+                                        <div class="row g-2 mb-1 small">
+                                            <div class="col-12"><b>Anamnesis:</b> ${asmed.anamnesis} (${asmed.hubungan})</div>
+                                            <div class="col-12"><b>Keluhan Utama:</b> ${asmed.keluhan_utama || '-'}</div>
+                                            <div class="col-6"><b>RPS:</b> ${asmed.rps || '-'}</div>
+                                            <div class="col-6"><b>RPD:</b> ${asmed.rpd || '-'}</div>
+                                            <div class="col-6"><b>RPK:</b> ${asmed.rpk || '-'}</div>
+                                            <div class="col-6"><b>RPO:</b> ${asmed.rpo || '-'}</div>
+                                            <div class="col-12 border-top pt-1 mt-1"><b>Pemeriksaan Fisik:</b> ${asmed.ket_fisik || '-'}</div>
+                                            <div class="col-12"><b>Diagnosis:</b> <span class="text-primary font-weight-bold">${asmed.diagnosis || '-'}</span></div>
+                                            <div class="col-12"><b>Tata Laksana:</b> ${asmed.tata || '-'}</div>
+                                        </div>
+                                        <div class="row g-2 mt-1 small border-top pt-1">
+                                            <div class="col-3"><b>TD:</b> ${asmed.td || '-'}</div>
+                                            <div class="col-3"><b>Nadi:</b> ${asmed.nadi || '-'}</div>
+                                            <div class="col-3"><b>RR:</b> ${asmed.rr || '-'}</div>
+                                            <div class="col-3"><b>Suhu:</b> ${asmed.suhu || '-'}</div>
+                                        </div>
+                                    </div>`;
+                            }
+                            htmlInfoMasuk += '</div></div>';
+                        }
+
+                        body.append([keterangan, ttv, pemeriksaan, htmlInfoMasuk]).hide().fadeIn()
                     })
                     // }
                 })

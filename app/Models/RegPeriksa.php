@@ -101,6 +101,16 @@ class RegPeriksa extends Model
 		return $this->hasOne(KamarInap::class, 'no_rawat', 'no_rawat');
 	}
 
+	function penilaianMedisIgd()
+	{
+		return $this->hasOne(PenilaianMedisIgd::class, 'no_rawat', 'no_rawat');
+	}
+
+	function triaseIgd()
+	{
+		return $this->hasOne(TriaseIgd::class, 'no_rawat', 'no_rawat');
+	}
+
 	public function scopeMaxByTanggal($query, string|null $tanggal)
 	{
 		$tanggal = $tanggal ? $tanggal : now()->format('Y-m-d');

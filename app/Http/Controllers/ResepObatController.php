@@ -70,7 +70,11 @@ class ResepObatController extends Controller
 		if ($request->no_resep) {
 			$resepObat = $resepObat->byNoResep($request->no_resep)->first();
 		} else if ($request->no_rawat) {
-			$resepObat = $resepObat->byNoRawat($request->no_rawat)->get();
+			$resepObat = $resepObat->byNoRawat($request->no_rawat);
+			if ($request->status) {
+				$resepObat->where('status', $request->status);
+			}
+			$resepObat = $resepObat->get();
 		} else if ($request->tgl_awal && $request->tgl_akhir) {
 			$resepObat = ResepObat::whereBetween('tgl_peresepan', [
 				date('Y-m-d', strtotime($request->tgl_awal)),

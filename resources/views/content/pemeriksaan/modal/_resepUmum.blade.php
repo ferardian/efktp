@@ -20,10 +20,7 @@
 </div>
 @push('script')
     <script>
-        var btnTambahObat = $('#btnTambahObat')
-        var btnSimpanResep = $('#btnSimpanResep')
-        var tabelResepUmum = $('#tabelResepUmum')
-        var bodyResepUmum = tabelResepUmum.find('tbody')
+        var bodyResepUmum = $('#tabelResepUmum').find('tbody')
 
         function getResepDokter(no_resep) {
             const resepDokter = $.get(`{{ url('/resep/dokter/get') }}`, {
@@ -47,7 +44,7 @@
                 bodyResepUmum.empty()
                 if (reseps.length) {
                     tabelResepUmum.removeClass('d-none')
-                    btnSimpanObat.removeClass('d-none')
+                    btnSimpanResep.removeClass('d-none')
                     btnTambahObat.removeClass('d-none')
                     const rowObat = reseps.map((resepDokter, index) => {
                         const numb = parseInt(index) + 1
@@ -130,14 +127,17 @@
                     <i class="ti ti-square-rounded-x text-danger" style="font-size:20px" data-id="row${rowCount}" onclick="hapusBarisObat('${rowCount}')"></i>
                 </td>
             </tr>`;
-            // tambah baris diatas row subTotal
+            const newRow = $(addRow);
             const rowTotalObatUmum = bodyResepUmum.find('#rowTotalObatUmum')
-            tabel.append(addRow);
-            bodyResepUmum.detach(rowTotalObatUmum).append(rowTotalObatUmum);
+            if (rowTotalObatUmum.length) {
+                rowTotalObatUmum.before(newRow);
+            } else {
+                bodyResepUmum.append(newRow);
+            }
 
-            const idElement = $(`#kdObat${rowCount}`);
-            selectDataBarang(idElement, $('#modalCppt')).on('select2:select', (e) => {
-                e.preventDefault();
+            const modalActive = $('#modalCpptRanap').hasClass('show') ? $('#modalCpptRanap') : ($('#modalCppt').hasClass('show') ? $('#modalCppt') : $('body'));
+            const idElement = newRow.find('select');
+            selectDataBarang(idElement, modalActive).on('select2:select', (e) => {
                 const kodeBarang = e.params.data.id;
                 const targetId = e.currentTarget.id;
                 const elementTargetId = $(`#${targetId}Val`)
@@ -225,7 +225,8 @@
                     })
                 }
 
-                $('#formCpptRajal textarea[name=rtl]').val(textPlan)
+                const formActive = modalCpptRanap.length ? formCpptRanap : formCpptRajal;
+                formActive.find('textarea[name=rtl]').val(textPlan)
             })
         }
 
@@ -265,7 +266,8 @@
             $.post(`{{ url('/resep/dokter/create') }}`, {
                 dataObat
             }).done((response) => {
-                const no_rawat = $('#formCpptRajal input[name=no_rawat]').val()
+                const formActive = modalCpptRanap.length ? formCpptRanap : formCpptRajal;
+                const no_rawat = formActive.find('input[name=no_rawat]').val()
                 $('#btnCetakResep').attr('onclick', `cetakResep('${no_rawat}')`)
                 tulisPlan(noResep)
                 setResepDokter(noResep)
@@ -309,7 +311,8 @@
             $.post(`{{ url('/resep/dokter/create') }}`, {
                 dataObat
             }).done((response) => {
-                const no_rawat = $('#formCpptRajal input[name=no_rawat]').val()
+                const formActive = modalCpptRanap.length ? formCpptRanap : formCpptRajal;
+                const no_rawat = formActive.find('input[name=no_rawat]').val()
                 $('#btnCetakResep').attr('onclick', `cetakResep('${no_rawat}')`)
                 tulisPlan(noResep)
                 setResepDokter(noResep)

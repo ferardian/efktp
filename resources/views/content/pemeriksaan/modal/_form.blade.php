@@ -260,16 +260,8 @@
 
 @push('script')
     <script>
-        var btnTambahResep = $('#btnTambahResep')
-        var btnTambahObat = $('#btnTambahObat')
-        var btnTambahRacikan = $('#btnTambahRacikan')
-        var btnSimpanObat = $('#btnSimpanResep')
-        var btnSimpanRacikan = $('#btnSimpanRacikan')
-        var btnCetakResep = $('#btnCetakResep')
-        var tabelResepUmum = $('#tabelResepUmum')
         let tabelPcarePendaftaran = $('#tabelPcarePendaftaran')
         let tabelRegistrasi = $('#tabelRegistrasi')
-        var tabelResepRacikan = $('#tabelResepRacikan')
         var inputAlergi = $('#formCpptRajal').find('#alergi')
         let username = "{{ session()->get('pegawai')->nik }}"
 

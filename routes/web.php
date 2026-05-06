@@ -196,6 +196,10 @@ Route::middleware('auth')->group(function () {
 	Route::get('/skrining/jatuh', [EfktpTindakanResikoJatuhController::class, 'get']);
 	Route::get('/skrining/jatuh/print', [EfktpTindakanResikoJatuhController::class, 'print']);
 
+	// RM IGD
+	Route::get('/rm/igd', [\App\Http\Controllers\RmIgdController::class, 'get']);
+	Route::post('/rm/igd', [\App\Http\Controllers\RmIgdController::class, 'create']);
+
 	// Pemeriksaan
 	Route::get('/pemeriksaan/ralan', [PemeriksaanRalanController::class, 'get']);
 	Route::get('/pemeriksaan/ralan/get', [PemeriksaanRalanController::class, 'get']);
@@ -232,6 +236,10 @@ Route::middleware('auth')->group(function () {
 	Route::post('/prosedur/pasien/create', [ProsedurPasienController::class, 'create']);
 	Route::post('/prosedur/pasien/delete', [ProsedurPasienController::class, 'delete']);
 	Route::post('/prosedur/pasien/update', [ProsedurPasienController::class, 'update']);
+
+	Route::get('/jns-perawatan/get', [\App\Http\Controllers\JenisPerawatanController::class, 'get']);
+	Route::get('/jns-perawatan-inap/get', [\App\Http\Controllers\JenisPerawatanInapController::class, 'get']);
+	Route::get('/petugas/get', [\App\Http\Controllers\PetugasController::class, 'get']);
 
 	// Barang/obat
 	Route::get('/farmasi/obat', [DataBarangController::class, 'index']);
@@ -328,6 +336,8 @@ Route::middleware('auth')->group(function () {
 		return view('content.kamarInap');
 	});
 	Route::get('kamar/inap/get', [KamarInapController::class, 'get']);
+	Route::get('kamar/inap/detail', [KamarInapController::class, 'getDetail']);
+	Route::post('kamar/inap/pulangkan', [KamarInapController::class, 'pulangkan']);
 	Route::post('kamar/inap/create', [KamarInapController::class, 'create']);
 	Route::get('kamar/ketersediaan', [KamarInapController::class, 'getKamarKosong']);
 
@@ -340,6 +350,11 @@ Route::middleware('auth')->group(function () {
 	Route::post('pemeriksaan/tindakan-dokter', [\App\Http\Controllers\TindakanDokterController::class, 'create']);
 	Route::get('pemeriksaan/tindakan-dokter/get', [\App\Http\Controllers\TindakanDokterController::class, 'get']);
 	Route::delete('pemeriksaan/tindakan-dokter/delete', [\App\Http\Controllers\TindakanDokterController::class, 'delete']);
+
+	// TINDAKAN RANAP
+	Route::get('pemeriksaan/tindakan-ranap/get', [\App\Http\Controllers\TindakanRanapController::class, 'get']);
+	Route::post('pemeriksaan/tindakan-ranap/create', [\App\Http\Controllers\TindakanRanapController::class, 'create']);
+	Route::post('pemeriksaan/tindakan-ranap/delete', [\App\Http\Controllers\TindakanRanapController::class, 'delete']);
 
 	//RESUME MEDIS
 	Route::get('resume/medis', [\App\Http\Controllers\ResumeMedisController::class, 'get']);

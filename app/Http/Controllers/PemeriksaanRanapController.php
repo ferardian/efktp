@@ -18,7 +18,9 @@ class PemeriksaanRanapController extends Controller
     function get(Request $request)
     {
         $pemeriksaanRanap = PemeriksaanRanap::with(['regPeriksa' => function ($q) {
-            return $q->with('pasien.alergi');
+            return $q->with(['pasien.alergi', 'triaseIgd' => function ($q) {
+                $q->with(['skala1.master', 'skala2.master', 'skala3.master', 'skala4.master', 'skala5.master']);
+            }, 'penilaianMedisIgd']);
         }, 'pegawai.dokter'])->where('no_rawat', $request->no_rawat)
             ->orderBy('tgl_perawatan', 'DESC')->orderBy('jam_rawat', 'DESC');
 

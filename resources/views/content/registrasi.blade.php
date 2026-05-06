@@ -23,7 +23,14 @@
                             </div>
                         </div>
                         <div class="col-xl-2 col-lg-3 col-md-6 col-sm-12">
-                            <select class="form-select" id="dokter" name="dokter" style="width: 100%"></select>
+                            <select class="form-select" id="dokter" name="dokter" style="width: 100%">
+                                <option value=""></option>
+                            </select>
+                        </div>
+                        <div class="col-xl-2 col-lg-3 col-md-6 col-sm-12">
+                            <select class="form-select" id="poli" name="poli" style="width: 100%">
+                                <option value=""></option>
+                            </select>
                         </div>
                         <div class="col-xl-1 col-lg-1 col-md-6 col-sm-12">
                             <select class="form-select form-select-2" id="stts" name="stts" style="width: 100%">
@@ -56,6 +63,7 @@
     @include('content.registrasi._modalBuktiRegister')
     @include('content.laboratorium.modal._modalPermintaanLab')
     @include('content.registrasi._modalKamarInap')
+    @include('content.pemeriksaan.modal.rmIgd._modalRmIgd')
 @endsection
 @push('script')
     <script>
@@ -171,7 +179,7 @@
                         umur: data['umur'],
                     }).done((response) => {
                         showToast('Berhasil Mengubah Data Registrasi', 'success', 5000)
-                        loadTabelRegistrasi(tglAwal, tglAkhir, selectFilterStts.val(), selectFilterDokter.val())
+                        loadTabelRegistrasi(tglAwal, tglAkhir, selectFilterStts.val(), selectFilterDokter.val(), $('#poli').val())
                         const isCheckedPendaftaranPcare = switchPendaftaranPcare.is(':checked');
                         if ((data.no_peserta !== '-' || data.no_peserta.length > 1) && isCheckedPendaftaranPcare) {
                             createBridgingPendaftaranPcare(data)
@@ -216,7 +224,7 @@
                             'Data registrasi berhasil dihapus.',
                             'success'
                         )
-                        loadTabelRegistrasi(inputTglAwal.val(), inputTglAkhir.val(), selectFilterStts.val(), selectFilterDokter.val());
+                        loadTabelRegistrasi(inputTglAwal.val(), inputTglAkhir.val(), selectFilterStts.val(), selectFilterDokter.val(), $('#poli').val());
                     }).fail((error, status, code) => {
                         let msg = error.responseJSON ? error.responseJSON : 'Terjadi kesalahan saat menghapus data.';
                         Swal.fire(

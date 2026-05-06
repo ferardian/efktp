@@ -46,8 +46,34 @@ class TindakanDokterController extends Controller
 
     function get(Request $request)
     {
-        $data = TindakanDokter::with(['tindakan', 'dokter', 'pasien', 'regPeriksa'])
-            ->where('no_rawat', $request->no_rawat)->get();
+        $no_rawat = $request->no_rawat;
+        
+        $dr = \App\Models\TindakanDokter::with(['tindakan', 'dokter'])
+            ->where('no_rawat', $no_rawat)->get()->map(function($item) {
+                $item->pelaksana = 'Dokter';
+                $item->nama_pelaksana = $item->dokter->nm_dokter ?? '-';
+                $item->type = 'dr';
+                return $item;
+            });
+
+        $pr = \App\Models\TindakanPetugas::with(['tindakan', 'petugas'])
+            ->where('no_rawat', $no_rawat)->get()->map(function($item) {
+                $item->pelaksana = 'Petugas';
+                $item->nama_pelaksana = $item->petugas->nama ?? '-';
+                $item->type = 'pr';
+                return $item;
+            });
+
+        $drpr = \App\Models\TindakanDokterPetugas::with(['tindakan', 'dokter', 'petugas'])
+            ->where('no_rawat', $no_rawat)->get()->map(function($item) {
+                $item->pelaksana = 'Dokter & Petugas';
+                $item->nama_pelaksana = ($item->dokter->nm_dokter ?? '-') . ' & ' . ($item->petugas->nama ?? '-');
+                $item->type = 'drpr';
+                return $item;
+            });
+
+        $data = $dr->concat($pr)->concat($drpr);
+        
         return $this->success($data);
     }
 

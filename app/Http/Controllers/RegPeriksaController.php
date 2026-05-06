@@ -47,7 +47,11 @@ class RegPeriksaController extends Controller
 			'kamarInap' => function ($q) {
 				return $q->where('stts_pulang', '!=', 'Pindah Kamar')
 					->with('kamar.bangsal');
-			}
+			},
+			'penilaianMedisIgd',
+			'triaseIgd' => function ($q) {
+				return $q->with(['skala1.master', 'skala2.master', 'skala3.master', 'skala4.master', 'skala5.master']);
+			},
 		];
 	}
 
@@ -138,6 +142,10 @@ class RegPeriksaController extends Controller
 		}
 		if ($req->stts) {
 		 $regPeriksa = $regPeriksa->where('stts', $req->stts);
+		}
+
+		if ($req->poli) {
+			$regPeriksa = $regPeriksa->where('kd_poli', $req->poli);
 		}
 
 		if ($req->dataTable) {

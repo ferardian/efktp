@@ -80,53 +80,21 @@ class TindakanDokterAction
 			'ttlbhp' => 0,
 			'ttlmenejemen' => 0,
 		];
-//
-//        $data = collect($data)->map(function ($item) use ($no_rawat, $kd_dokter, &$totals) {
-//
-//            $pendapatan = floatval($item['total_byrdr']);
-//
-//            if ($item['diskonRupiah'] > 0) {
-//                $pendapatan = floatval($item['total_byrdr'] - $item['diskonRupiah']);
-//            }
-//
-//            $totals['ttldokter'] += floatval($item['tarif_tindakandr']);
-//            $totals['ttlkso'] += floatval($item['kso']);
-//            $totals['ttlpendapatan'] += floatval($pendapatan);
-//            $totals['ttlmaterial'] += floatval($item['material']);
-//            $totals['ttlbhp'] += floatval($item['bhp']);
-//            $totals['ttlmenejemen'] += floatval($item['menejemen']);
-//
-//
-//
-//            return [
-//                'no_rawat' => $no_rawat,
-//                'kd_dokter' => $kd_dokter,
-//                'kd_jenis_prw' => $item['kd_jenis_prw'],
-//                'tgl_perawatan' => date('Y-m-d'),
-//                'jam_rawat' => date('H:i:s'),
-//                'material' => $item['material'],
-//                'bhp' => $item['bhp'],
-//                'tarif_tindakandr' => $item['tarif_tindakandr'],
-//                'kso' => $item['kso'],
-//                'menejemen' => $item['menejemen'],
-//                'stts_bayar' => 'Belum',
-//                'biaya_rawat' => $pendapatan,
-//            ];
-//        })->toArray();
+		$savedData = [];
 
-		$data = collect($data)->map(function ($item) use ($no_rawat, $kd_dokter, &$totals) {
-
-			// 1. Ambil komponen biaya
+		foreach ($data as $item) {
+			// 1. Ambil komponen biaya dasar
 			$komponen = [
-				'tarif_tindakandr' => floatval($item['tarif_tindakandr']),
-				'kso' => floatval($item['kso']),
-				'material' => floatval($item['material']),
-				'bhp' => floatval($item['bhp']),
-				'menejemen' => floatval($item['menejemen']),
+				'tarif_tindakandr' => floatval($item['tarif_tindakandr'] ?? 0),
+				'tarif_tindakanpr' => floatval($item['tarif_tindakanpr'] ?? 0),
+				'kso' => floatval($item['kso'] ?? 0),
+				'material' => floatval($item['material'] ?? 0),
+				'bhp' => floatval($item['bhp'] ?? 0),
+				'menejemen' => floatval($item['menejemen'] ?? 0),
 			];
 
 			$total_awal = array_sum($komponen);
-			$diskon = floatval($item['diskonRupiah']); // diskon total yang harus dibagi
+			$diskon = floatval($item['diskonRupiah'] ?? 0);
 
 			// 2. Hitung komponen setelah diskon secara proporsional
 			if ($diskon > 0 && $total_awal > 0) {
@@ -138,37 +106,51 @@ class TindakanDokterAction
 
 			$pendapatan = array_sum($komponen);
 
-			// 3. Tambah ke totals
-			$totals['ttldokter'] += $komponen['tarif_tindakandr'];
+			// 3. Tambah ke totals global (untuk jurnal)
+			$totals['ttldokter'] += $komponen['tarif_tindakandr'] + $komponen['tarif_tindakanpr'];
 			$totals['ttlkso'] += $komponen['kso'];
 			$totals['ttlpendapatan'] += $pendapatan;
 			$totals['ttlmaterial'] += $komponen['material'];
 			$totals['ttlbhp'] += $komponen['bhp'];
 			$totals['ttlmenejemen'] += $komponen['menejemen'];
 
-			// 4. Return format penyimpanan
-			return [
+			// 4. Tentukan tabel dan siapkan data insert
+			$insertData = [
 				'no_rawat' => $no_rawat,
-				'kd_dokter' => $kd_dokter,
 				'kd_jenis_prw' => $item['kd_jenis_prw'],
 				'tgl_perawatan' => date('Y-m-d'),
 				'jam_rawat' => date('H:i:s'),
 				'material' => $komponen['material'],
 				'bhp' => $komponen['bhp'],
-				'tarif_tindakandr' => $komponen['tarif_tindakandr'],
 				'kso' => $komponen['kso'],
 				'menejemen' => $komponen['menejemen'],
 				'stts_bayar' => 'Belum',
 				'biaya_rawat' => $pendapatan,
 			];
-		})->toArray();
 
-		$create = DB::table('rawat_jl_dr')->insert($data);
-		if ($create) {
-			$this->insertSql(new TindakanDokter(), $data);
+			if ($item['type'] === 'drpr') {
+				$insertData['kd_dokter'] = $kd_dokter;
+				$insertData['nip'] = $item['kd_petugas'] ?? '-';
+				$insertData['tarif_tindakandr'] = $komponen['tarif_tindakandr'];
+				$insertData['tarif_tindakanpr'] = $komponen['tarif_tindakanpr'];
+				DB::table('rawat_jl_drpr')->insert($insertData);
+			} elseif ($item['type'] === 'pr') {
+				$insertData['nip'] = $item['kd_petugas'] ?? '-';
+				$insertData['tarif_tindakanpr'] = $komponen['tarif_tindakanpr'];
+				DB::table('rawat_jl_pr')->insert($insertData);
+			} else {
+				$insertData['kd_dokter'] = $kd_dokter;
+				$insertData['tarif_tindakandr'] = $komponen['tarif_tindakandr'];
+				DB::table('rawat_jl_dr')->insert($insertData);
+			}
+
+			$savedData[] = $insertData;
 		}
 
-		return ['data' => $data, 'totals' => $totals];
+		// Log track SQL
+		$this->insertSql(new TindakanDokter(), $savedData);
+
+		return ['data' => $savedData, 'totals' => $totals];
 	}
 
 	/**
@@ -301,27 +283,44 @@ class TindakanDokterAction
 				'ttlmenejemen' => 0,
 			];
 			foreach ($data['tindakan'] as $item) {
-				$tindakan = TindakanDokter::where([
+				$type = $item['type'] ?? 'dr';
+				$table = 'rawat_jl_dr';
+				$modelClass = \App\Models\TindakanDokter::class;
+
+				if ($type === 'drpr') {
+					$table = 'rawat_jl_drpr';
+					$modelClass = \App\Models\TindakanDokterPetugas::class;
+				} elseif ($type === 'pr') {
+					$table = 'rawat_jl_pr';
+					$modelClass = \App\Models\TindakanPetugas::class;
+				}
+
+				$tindakan = $modelClass::where([
 					'no_rawat' => $data['no_rawat'],
-					'kd_dokter' => $data['kd_dokter'],
 					'kd_jenis_prw' => $item['kd_jenis_prw'],
+					'tgl_perawatan' => $item['tgl_perawatan'],
+					'jam_rawat' => $item['jam_rawat'],
 				]);
 
 				$row = $tindakan->first();
-				$totals['ttldokter'] += floatval($row->tarif_tindakandr);
-				$totals['ttlkso'] += floatval($row->kso);
-				$totals['ttlpendapatan'] += floatval($row->biaya_rawat);
-				$totals['ttlmaterial'] += floatval($row->material);
-				$totals['ttlbhp'] += floatval($row->bhp);
-				$totals['ttlmenejemen'] += floatval($row->menejemen);
-				$delete = $tindakan->delete();
+				if ($row) {
+					$totals['ttldokter'] += floatval($row->tarif_tindakandr ?? 0) + floatval($row->tarif_tindakanpr ?? 0);
+					$totals['ttlkso'] += floatval($row->kso);
+					$totals['ttlpendapatan'] += floatval($row->biaya_rawat);
+					$totals['ttlmaterial'] += floatval($row->material);
+					$totals['ttlbhp'] += floatval($row->bhp);
+					$totals['ttlmenejemen'] += floatval($row->menejemen);
+					
+					$delete = $tindakan->delete();
 
-				if ($delete) {
-					$this->deleteSql(new TindakanDokter(), [
-						'no_rawat' => $row->no_rawat,
-						'kd_dokter' => $row->kd_dokter,
-						'kd_jenis_prw' => $row->kd_jenis_prw,
-					]);
+					if ($delete) {
+						$this->deleteSql(new \App\Models\TindakanDokter(), [
+							'no_rawat' => $row->no_rawat,
+							'kd_jenis_prw' => $row->kd_jenis_prw,
+							'tgl_perawatan' => $row->tgl_perawatan,
+							'jam_rawat' => $row->jam_rawat,
+						]);
+					}
 				}
 			}
 

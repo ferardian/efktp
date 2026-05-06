@@ -68,11 +68,11 @@
 </div>
 @push('script')
     <script>
-        let modalRujukanInternal = $('#modalRujukanInternal');
-        let modalCpptRajal = $('#modalCppt')
-        let formRujukInternalPoli = $('#formRujukanInternalPoli');
-        let formCpptRajal = $('#formCpptRajal');
-        let formFilterRujuk = $('#formFilterRujuk');
+        var modalRujukanInternal = $('#modalRujukanInternal');
+        var modalCpptRajal = $('#modalCppt')
+        var formRujukInternalPoli = $('#formRujukanInternalPoli');
+        var formCpptRajal = $('#formCpptRajal');
+        var formFilterRujuk = $('#formFilterRujuk');
         let poliRujuk = formRujukInternalPoli.find('select[name=kd_poli]');
         let dokterRujuk = formRujukInternalPoli.find('select[name=kd_dokter]');
         let tglAwalRujuk = formRujukInternalPoli.find('#tglAwal').val();

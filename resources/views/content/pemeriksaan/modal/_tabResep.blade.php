@@ -37,7 +37,7 @@
         </div>
     </div>
     <div class="card-footer p-2">
-        <button type="button" class="btn btn-sm btn-primary" id="btnTambahResep">Buat Resep</button>
+        <button type="button" class="btn btn-sm btn-primary" id="btnTambahResep" data-action="tambah">Buat Resep</button>
         <button type="button" class="btn btn-sm btn-info d-none" id="btnCetakResep"><i class="ti ti-printer me-1"></i>
             Cetak
             Resep
@@ -73,53 +73,35 @@
 
 
         function tambahResep(no_rawat) {
+            const formActive = $('#modalCpptRanap').hasClass('show') ? $('#formCpptRanap') : $('#formCpptRajal');
+            const kd_dokter = formActive.find('[name=nip]').val();
+            const status = $('#modalCpptRanap').hasClass('show') ? 'ranap' : 'ralan';
 
-            // createResepDokter()
-
+            if (!kd_dokter || kd_dokter === '-') {
+                return Swal.fire('Peringatan', 'Silahkan pilih dokter terlebih dahulu', 'warning');
+            }
 
             tabelResepUmum.removeClass('d-none')
             tabelResepRacikan.removeClass('d-none')
-            btnSimpanObat.removeClass('d-none')
+            btnSimpanResep.removeClass('d-none')
             btnSimpanRacikan.removeClass('d-none')
             btnCetakResep.removeClass('d-none')
             btnTambahObat.removeClass('d-none')
             btnTambahRacikan.removeClass('d-none')
 
-            // tambahBarisObat(tabelResepUmum);
-            const dokter = $('#nip').val()
-            createResepObat(no_rawat, 'ralan', dokter).done((response) => {
+            createResepObat(no_rawat, status, kd_dokter).done((response) => {
                 $('#no_resep').val(response.no_resep)
                 btnTambahResep.removeClass('btn-primary').addClass('btn-danger');
-                btnTambahResep.attr('onclick', `hapusResep('${no_rawat}')`)
+                btnTambahResep.data('action', 'hapus')
                 btnTambahResep.text('Hapus Resep')
             }).fail((request) => {
                 alertErrorAjax(request)
             })
-
-
-            // tabelResepUmum.removeClass('d-none')
-            // tabelResepRacikan.removeClass('d-none')
-            // btnSimpanObat.removeClass('d-none')
-            // btnSimpanRacikan.removeClass('d-none')
-            // btnCetakResep.removeClass('d-none')
-            // btnTambahObat.removeClass('d-none')
-            // btnTambahRacikan.removeClass('d-none')
-
-            // // tambahBarisObat(tabelResepUmum);
-            // const dokter = $('#nip').val()
-            // createResepObat(no_rawat, 'ralan', dokter).done((response) => {
-            //     $('#no_resep').val(response.no_resep)
-            //     btnTambahResep.removeClass('btn-primary').addClass('btn-danger');
-            //     btnTambahResep.attr('onclick', `hapusResep('${no_rawat}')`)
-            //     btnTambahResep.text('Hapus Resep')
-            // }).fail((request) => {
-            //     alertErrorAjax(request)
-            // })
-
         }
 
         function hapusResep(no_rawat) {
             const no_resep = $('input[name=no_resep]')
+            const formActive = $('#modalCpptRanap').hasClass('show') ? $('#formCpptRanap') : $('#formCpptRajal');
             Swal.fire({
                 title: "Yakin hapus obat ini ?",
                 html: "Anda tidak bisa mengembalikan obat ini",
@@ -133,13 +115,13 @@
                 if (result.isConfirmed) {
                     deleteResep(no_rawat).done((response) => {
 
-                        formCpptRajal.find('textarea[name=rtl]').val('-')
+                        formActive.find('textarea[name=rtl]').val('-')
                         no_resep.val('');
                         btnTambahResep.removeClass('btn-danger').addClass('btn-primary');
                         btnTambahResep.text('Buat Resep')
-                        btnTambahResep.attr('onclick', `tambahResep('${no_rawat}')`)
+                        btnTambahResep.data('action', 'tambah')
 
-                        btnSimpanObat.addClass('d-none')
+                        btnSimpanResep.addClass('d-none')
                         btnTambahObat.addClass('d-none')
                         tabelResepUmum.addClass('d-none')
                         tabelResepUmum.find('tbody').empty();
@@ -258,13 +240,15 @@
                     'showCancelButton': true,
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        const no_rawat = formCpptRajal.find('input[name=no_rawat]').val();
-                        const kd_dokter = formCpptRajal.find('input[name=nip]').val();
+                        const formActive = modalCpptRanap.length ? formCpptRanap : formCpptRajal;
+                        const status = modalCpptRanap.length ? 'ranap' : 'ralan';
+                        const no_rawat = formActive.find('input[name=no_rawat]').val();
+                        const kd_dokter = formActive.find('input[name=nip]').val();
 
                         $.post('{{ url('/resep/create-form-paket') }}', {
                             no_rawat: no_rawat,
                             kd_dokter: kd_dokter,
-                            status: 'ralan',
+                            status: status,
                             umum: obatUmum,
                             racikan: obatRacik
                         }).done((response) => {

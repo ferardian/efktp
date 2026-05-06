@@ -1,4 +1,17 @@
 @extends('layout')
+@push('style')
+    <style>
+        #tabelKamarInap {
+            width: 100% !important;
+        }
+        #tabelKamarInap thead th {
+            text-align: center !important;
+        }
+        #tabelKamarInap tbody td {
+            vertical-align: middle !important;
+        }
+    </style>
+@endpush
 
 @section('body')
     <div class="container-xl h-100">
@@ -44,6 +57,7 @@
     </div>
     @include('content.kamarInap.cppt.modalCppt')
     @include('content.kamarInap.resume.modalResumeMedis')
+    @include('content.kamarInap._modalPulang')
     @include('content.registrasi._modalSuratSakit')
     @include('content.registrasi._modalRiwayat')
     @include('content.laboratorium.modal._modalPermintaanLab')
@@ -120,6 +134,7 @@
                 processing: true,
                 scrollY: setTableHeight(),
                 scrollX: true,
+                autoWidth: true,
                 ajax: {
                     url: `{{ url('/kamar/inap/get') }}`,
                     data: {
@@ -129,18 +144,26 @@
                         pulang: stts_pulang,
                     },
                 },
+                drawCallback: function() {
+                    this.api().columns.adjust();
+                },
                 createdRow: (row, data, index) => {
                     $(row).addClass('tableKamarInap')
                         .attr('data-id', data.no_rawat)
-                        .attr('data-no_rawat', data.kd_poli)
+                        .attr('data-kd_kamar', data.kd_kamar)
+                        .attr('data-tgl_masuk', data.tgl_masuk)
+                        .attr('data-jam_masuk', data.jam_masuk)
+                        .attr('data-stts_pulang', data.stts_pulang)
                         .attr('data-no_rkm_medis', data.reg_periksa.no_rkm_medis);
                 },
                 columns: [{
                     title: '',
                     data: 'no_rawat',
                     render: (data, type, row, meta) => {
-                        return `<button class="btn btn-success btn-sm" type="button" onclick="cpptRanap('${data}')"><i class="ti ti-pencil"></i></button>
-                                    <button class="btn btn-primary btn-sm"><i class="ti ti-list"></i></button>`;
+                        let btn = `<button class="btn btn-success btn-sm" type="button" onclick="cpptRanap('${data}')" title="CPPT"><i class="ti ti-pencil"></i></button>
+                                   <button class="btn btn-primary btn-sm" type="button" onclick="riwayat('${row.reg_periksa.no_rkm_medis}')" title="Riwayat Perawatan"><i class="ti ti-folder-open"></i></button>`;
+                        
+                        return btn;
                     }
                 },
                     {

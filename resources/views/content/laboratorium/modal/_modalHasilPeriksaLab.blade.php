@@ -55,7 +55,7 @@
         const tableHasilPeriksaLab = $('#tableHasilPeriksaLab');
         const cardPasienLab = $('#cardPasienLab');
 
-        function showHasilPermintaanLab() {
+        function showHasilPermintaanLab(no_rawat, tgl) {
             modalHasilPeriksaLab.modal('show');
 
             getRegDetail(no_rawat).done((response) => {

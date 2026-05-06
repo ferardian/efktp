@@ -79,7 +79,7 @@
 
                 }
             }
-            $.post(`/efktp/prosedur/pasien/create`, {
+            $.post(`{{ url('/prosedur/pasien/create') }}`, {
                 data
             }).done((response) => {
                 tindakanPasien(no_rawat);
@@ -106,7 +106,7 @@
                 cancelButtonText: "Tidak, Batalkan"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    $.post(`/efktp/prosedur/pasien/delete`, {
+                    $.post(`{{ url('/prosedur/pasien/delete') }}`, {
                         no_rawat: no_rawat,
                         kode: kode,
                     }).done((response) => {
@@ -149,7 +149,7 @@
         })
 
         function getTindakanPasien(no_rawat) {
-            const tindakan = $.get(`/efktp/prosedur/pasien/get`, {
+            const tindakan = $.get(`{{ url('/prosedur/pasien/get') }}`, {
                 no_rawat: no_rawat
             })
             return tindakan

@@ -26,8 +26,6 @@
 
 @push('script')
     <script>
-        var btnTambahRacikan = $('#btnTambahRacikan')
-        var btnSimpanRacikan = $('#btnSimpanRacikan')
 
         function setResepRacikan(no_resep) {
             const tabelResepRacikan = $('#tabelResepRacikan tbody')
@@ -137,7 +135,7 @@
             }
             createResepRacikan(dataRacikan).done((response) => {
                 dataRacikan.map((val) => {
-                    $.get(`/efktp/resep/racikan/template/get`, {
+                    $.get(`{{ url('/resep/racikan/template/get') }}`, {
                         nm_racik: val.nama_racik
                     }).done((resRacikan) => {
                         if (Object.values(resRacikan).length) {
@@ -205,7 +203,7 @@
                 modalDetailRacikan.find('input[name="aturan_pakai"]').val(racik.aturan_pakai)
                 modalDetailRacikan.modal('show')
                 setRacikanDetail(no_racik, no_resep)
-                $.get(`/efktp/metode/racik/get`).done((metodes) => {
+                $.get(`{{ url('/metode/racik/get') }}`).done((metodes) => {
                     selectMetodeRacik.empty()
                     const metode = metodes.map((items) => {
                         return `<option value = "${items.kd_racik}"
@@ -218,14 +216,14 @@
         }
 
         function createResepRacikan(data) {
-            const racikan = $.post(`/efktp/resep/racikan/create`, {
+            const racikan = $.post(`{{ url('/resep/racikan/create') }}`, {
                 data
             })
             return racikan;
         }
 
         function deleteResepRacikan(no_racik, no_resep) {
-            const racikan = $.post(`/efktp/resep/racikan/delete`, {
+            const racikan = $.post(`{{ url('/resep/racikan/delete') }}`, {
                 no_racik: no_racik,
                 no_resep: no_resep
             })
@@ -235,9 +233,8 @@
         function tambahBarisRacikan() {
             const tabel = $('#tabelResepRacikan').find('tbody')
             const rowCount = tabel.find('tr').find('.racik').length;
-            const modalCppt = $('#modalCppt');
+            const modalActive = $('#modalCpptRanap').hasClass('show') ? $('#modalCpptRanap') : ($('#modalCppt').hasClass('show') ? $('#modalCppt') : $('body'));
             const rowTotalRacikan = $('#rowTotalRacikan');
-            tabel.detach(rowTotalRacikan);
             const addRow = `
                 <tr id="rowRacikan${rowCount}">
                     <td id="colNoRacik${rowCount}" class="racik">
@@ -253,12 +250,18 @@
                     </td>
                 </tr>`;
 
-            tabel.append(addRow).append(rowTotalRacikan);
-            const racikan = $(`#nmRacik${rowCount}`);
-            const metode = $(`#metode${rowCount}`);
-            $(`#jmlDr${rowCount}`).val(1)
-            selectTemplate(racikan, modalCppt);
-            selectMetode(metode, modalCppt);
+            const newRow = $(addRow);
+            if (rowTotalRacikan.length) {
+                rowTotalRacikan.before(newRow);
+            } else {
+                tabel.append(newRow);
+            }
+
+            const racikan = newRow.find('select[name="nm_racik[]"]');
+            const metode = newRow.find('select[name="metode[]"]');
+            newRow.find('input[name="jml_dr[]"]').val(1)
+            selectTemplate(racikan, modalActive);
+            selectMetode(metode, modalActive);
 
             const defaultMetode = new Option('Puyer', 'R01', true, true);
             metode.append(defaultMetode).trigger('change')
@@ -285,7 +288,7 @@
                 delay: 2,
                 tags: true,
                 ajax: {
-                    url: `/efktp/resep/racikan/template/search`,
+                    url: `{{ url('/resep/racikan/template/search') }}`,
                     dataType: 'JSON',
 
                     data: (params) => {
@@ -309,7 +312,6 @@
                 },
                 cache: true
             }).on('select2:select', (e) => {
-                e.preventDefault();
             })
         }
     </script>

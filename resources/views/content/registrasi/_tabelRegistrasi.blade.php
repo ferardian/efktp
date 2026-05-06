@@ -15,19 +15,25 @@
         const inputTglAwal = $('#tglAwal')
         const inputTglAkhir = $('#tglAkhir')
         const selectFilterDokter = formFilterRegistrasi.find('select[name="dokter"]');
+        const selectFilterPoli = formFilterRegistrasi.find('select[name="poli"]');
         const selectFilterStts = formFilterRegistrasi.find('select[name="stts"]');
 
         const dokterLocal = localStorage.getItem('dokter') ? JSON.parse(localStorage.getItem('dokter')) : isDokter;
+        const poliLocal = localStorage.getItem('poli') ? JSON.parse(localStorage.getItem('poli')) : "";
         const statusLocal = localStorage.getItem('stts') ? localStorage.getItem('stts') : '';
 
         $(document).ready(() => {
             isObjectEmpty(isDokter) ? localStorage.setItem('dokter', !isObjectEmpty(dokterLocal) ? JSON.stringify(dokterLocal) : isDokter) : '';
             let optDokter = !isObjectEmpty(dokterLocal) ? new Option(dokterLocal.nm_dokter, dokterLocal.kd_dokter, true, true) : "";
+            let optPoli = !isObjectEmpty(poliLocal) ? new Option(poliLocal.nm_poli, poliLocal.kd_poli, true, true) : "";
             let optStts = statusLocal ? new Option(statusLocal, statusLocal, true, true) : "";
             selectDokter(selectFilterDokter, formFilterRegistrasi)
+            selectPoliklinik(selectFilterPoli, formFilterRegistrasi)
             selectFilterStts.append(optStts)
             selectFilterDokter.append(optDokter)
-            loadTabelRegistrasi(inputTglAwal.val(), inputTglAkhir.val(), selectFilterStts.val(), selectFilterDokter.val());
+            selectFilterPoli.append(optPoli)
+            changeStatusColor(selectFilterStts.val())
+            loadTabelRegistrasi(inputTglAwal.val(), inputTglAkhir.val(), selectFilterStts.val(), selectFilterDokter.val(), selectFilterPoli.val());
         })
 
         selectFilterDokter.on('change', (e) => {
@@ -37,22 +43,77 @@
                 kd_dokter: e.currentTarget.value,
                 nm_dokter: nmDokter
             });
-            loadTabelRegistrasi(inputTglAwal.val(), inputTglAkhir.val(), selectFilterStts.val(), e.currentTarget.value);
+            loadTabelRegistrasi(inputTglAwal.val(), inputTglAkhir.val(), selectFilterStts.val(), e.currentTarget.value, selectFilterPoli.val());
             if (!e.currentTarget.value) {
                 dokter = '';
             }
             localStorage.setItem('dokter', dokter);
         })
 
+        selectFilterPoli.on('change', (e) => {
+            e.preventDefault();
+            const nmPoli = e.currentTarget.options[e.currentTarget.selectedIndex].text
+            let poli = JSON.stringify({
+                kd_poli: e.currentTarget.value,
+                nm_poli: nmPoli
+            });
+            loadTabelRegistrasi(inputTglAwal.val(), inputTglAkhir.val(), selectFilterStts.val(), selectFilterDokter.val(), e.currentTarget.value);
+            if (!e.currentTarget.value) {
+                poli = '';
+            }
+            localStorage.setItem('poli', poli);
+        })
+
         selectFilterStts.on('change', (e) => {
             e.preventDefault();
-            loadTabelRegistrasi(inputTglAwal.val(), inputTglAkhir.val(), e.currentTarget.value, selectFilterDokter.val());
-            let stts = e.currentTarget.value;
-            if (!e.currentTarget.value) {
-                stts = '';
-            }
-            localStorage.setItem('stts', stts);
+            const stts = e.currentTarget.value;
+            changeStatusColor(stts)
+            loadTabelRegistrasi(inputTglAwal.val(), inputTglAkhir.val(), stts, selectFilterDokter.val(), selectFilterPoli.val());
+            localStorage.setItem('stts', stts ? stts : '');
         })
+
+        function changeStatusColor(status) {
+            const select2Selection = selectFilterStts.next().find('.select2-selection');
+            let bgColor = '';
+            let textColor = '';
+
+            switch (status) {
+                case 'Sudah':
+                    bgColor = '#2fb344'; // Green
+                    textColor = '#ffffff';
+                    break;
+                case 'Batal':
+                    bgColor = '#d63939'; // Red
+                    textColor = '#ffffff';
+                    break;
+                case 'Dirujuk':
+                    bgColor = '#f76707'; // Orange
+                    textColor = '#ffffff';
+                    break;
+                case 'Belum':
+                    bgColor = '#206bc4'; // Blue
+                    textColor = '#ffffff';
+                    break;
+                default:
+                    bgColor = '';
+                    textColor = '';
+                    break;
+            }
+
+            if (bgColor) {
+                select2Selection.css({
+                    'background-color': bgColor,
+                    'color': textColor
+                });
+                select2Selection.find('.select2-selection__rendered').css('color', textColor);
+            } else {
+                select2Selection.css({
+                    'background-color': '',
+                    'color': ''
+                });
+                select2Selection.find('.select2-selection__rendered').css('color', '');
+            }
+        }
 
         $('#btnFilterRegistrasi').on('click', (e) => {
             e.preventDefault();
@@ -60,10 +121,10 @@
             const tglAkhir = $('#formFilterRegistrasi input[name=tglAkhir]').val()
             localStorage.setItem('tglAwal', tglAwal)
             localStorage.setItem('tglAkhir', tglAkhir)
-            loadTabelRegistrasi(tglAwal, tglAkhir, selectFilterStts.val(), selectFilterDokter.val());
+            loadTabelRegistrasi(tglAwal, tglAkhir, selectFilterStts.val(), selectFilterDokter.val(), selectFilterPoli.val());
         })
 
-        function loadTabelRegistrasi(tglAwal = '', tglAkhir = '', stts = '', dokter = '') {
+        function loadTabelRegistrasi(tglAwal = '', tglAkhir = '', stts = '', dokter = '', poli = '') {
             console.log(setTableHeight())
             const tabelRegistrasi = new DataTable('#tabelRegistrasi', {
                 responsive: true,
@@ -84,6 +145,7 @@
                         tglAkhir: tglAkhir,
                         stts: stts,
                         dokter: dokter,
+                        poli: poli,
                     },
                 },
                 createdRow: (row, data, index) => {

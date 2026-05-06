@@ -352,7 +352,7 @@
 <script>
     const baseUrl = "{{ url('/') }}";
 </script>
-<script src="{{ asset('js/utility.js') }}" defer></script>
+<script src="{{ asset('js/utility.js') }}?v={{ time() }}" defer></script>
 <script>
     window.showToast = function (message, type = 'success', delay = 3000) {
         const toastEl = document.getElementById('toast-simple');

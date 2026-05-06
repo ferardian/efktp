@@ -119,4 +119,71 @@ class KamarInapController extends Controller
 
         return response()->json($kamar->limit(20)->get());
     }
+
+    function getDetail(Request $request)
+    {
+        $kamarInap = KamarInap::with(['regPeriksa.pasien', 'kamar.bangsal'])
+            ->where('no_rawat', $request->no_rawat)
+            ->where('kd_kamar', $request->kd_kamar)
+            ->where('tgl_masuk', $request->tgl_masuk)
+            ->where('jam_masuk', $request->jam_masuk)
+            ->first();
+
+        return response()->json($kamarInap);
+    }
+
+    function pulangkan(Request $request)
+    {
+        $request->validate([
+            'no_rawat' => 'required',
+            'kd_kamar' => 'required',
+            'tgl_masuk' => 'required',
+            'jam_masuk' => 'required',
+            'tgl_keluar' => 'required',
+            'jam_keluar' => 'required',
+            'stts_pulang' => 'required',
+            'diagnosa_akhir' => 'required',
+        ]);
+
+        \DB::beginTransaction();
+        try {
+            $kamarInap = KamarInap::where('no_rawat', $request->no_rawat)
+                ->where('kd_kamar', $request->kd_kamar)
+                ->where('tgl_masuk', $request->tgl_masuk)
+                ->where('jam_masuk', $request->jam_masuk)
+                ->first();
+
+            if (!$kamarInap) {
+                return response()->json(['message' => 'Data Kamar Inap tidak ditemukan'], 404);
+            }
+
+            // Calculate lama (length of stay)
+            $tglMasuk = new \DateTime($request->tgl_masuk);
+            $tglKeluar = new \DateTime($request->tgl_keluar);
+            $interval = $tglMasuk->diff($tglKeluar);
+            $lama = $interval->days;
+            if ($lama == 0) $lama = 1; // Stayed for less than a day counts as 1 day
+
+            // Update Kamar Inap
+            $kamarInap->update([
+                'tgl_keluar' => date('Y-m-d', strtotime($request->tgl_keluar)),
+                'jam_keluar' => $request->jam_keluar,
+                'stts_pulang' => $request->stts_pulang,
+                'diagnosa_akhir' => $request->diagnosa_akhir,
+                'lama' => $lama,
+            ]);
+
+            // Update Kamar Status to KOSONG
+            \App\Models\Kamar::where('kd_kamar', $request->kd_kamar)->update(['status' => 'KOSONG']);
+
+            // Update RegPeriksa status to Sudah
+            \App\Models\RegPeriksa::where('no_rawat', $request->no_rawat)->update(['stts' => 'Sudah']);
+
+            \DB::commit();
+            return response()->json(['message' => 'Berhasil memulangkan pasien']);
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            return response()->json(['message' => $e->getMessage()], 500);
+        }
+    }
 }

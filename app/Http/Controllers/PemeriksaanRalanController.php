@@ -20,7 +20,9 @@ class PemeriksaanRalanController extends Controller
 
 	public function show(Request $req)
 	{
-		$pemeriksaan = $this->pemeriksaan->with(['diagnosa', 'prosedur', 'pegawai', 'regPeriksa.poliklinik', 'rujukInternal.dokter', 'rujukInternal.poliklinik', 'resep']);
+		$pemeriksaan = $this->pemeriksaan->with(['diagnosa', 'prosedur', 'pegawai', 'regPeriksa.poliklinik', 'regPeriksa.triaseIgd' => function ($q) {
+			$q->with(['skala1.master', 'skala2.master', 'skala3.master', 'skala4.master', 'skala5.master']);
+		}, 'regPeriksa.penilaianMedisIgd', 'rujukInternal.dokter', 'rujukInternal.poliklinik', 'resep']);
 		if ($req->nip) {
 			$result = $pemeriksaan->where('no_rawat', $req->no_rawat)->where('nip', $req->nip)->first();
 		} else {

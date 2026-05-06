@@ -1,4 +1,4 @@
-<div class="modal modal-blur fade" id="modalRiwayat" tabindex="-1" aria-modal="false" role="dialog" data-bs-backdrop="static">
+<div class="modal modal-blur fade" id="modalRiwayat" tabindex="-1" aria-modal="true" role="dialog" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-scrollable modal-fullscreen" role="document">
         <div class="modal-content rounded-3">
             <div class="modal-header">
@@ -169,6 +169,11 @@
             switcTab(tabRiwayat)
             listRiwayatRegistrasi.empty();
             riwayatPemeriksaanRalan.empty();
+        });
+
+        modalRiwayat.on('hide.bs.modal', () => {
+            // Ensure focus is removed from buttons inside modal before it hides
+            modalRiwayat.find(':focus').blur();
         });
 
         function setContentRiwayat(no_rawat) {

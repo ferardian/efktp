@@ -3,30 +3,43 @@
         <div class="row">
             <div class="col-md-6">
                 <div class="row">
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label for="no_rawat" class="form-label">No. Rawat</label>
-                        <input class="form-control" id="no_rawat" name="no_rawat" />
+                        <input class="form-control" id="no_rawat" name="no_rawat" readonly />
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label for="nm_pasien" class="form-label">Pasien</label>
                         <div class="input-group">
-                            <input class="form-control" id="no_rkm_medis" name="no_rkm_medis" />
-                            <input class="form-control w-50" id="nm_pasien" name="nm_pasien" />
+                            <input class="form-control" id="no_rkm_medis" name="no_rkm_medis" readonly />
+                            <input class="form-control w-50" id="nm_pasien" name="nm_pasien" readonly />
                         </div>
                     </div>
-                    <div class="col-md-5">
+                    <div class="col-md-3">
                         <label for="nm_dokter" class="form-label">Dokter</label>
                         <div class="input-group">
                             <input class="form-control" id="kd_dokter" name="kd_dokter" readonly />
                             <input class="form-control w-50" id="nm_dokter" name="nm_dokter" readonly />
-
                         </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="nm_petugas" class="form-label">Petugas (Perawat/Bidan)</label>
+                        <select class="form-select" id="kd_petugas" name="kd_petugas" style="width:100%"></select>
                     </div>
                     <div class="col-md-12 mt-2">
 
                         <div class="table-responsive">
-                            <table class="table table-sm table-bordered" id="tabelTindakanDokter">
-
+                            <table class="table table-sm table-bordered" id="tabelTindakanDokter" style="width: 100%">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>Kode</th>
+                                        <th>Nama Tindakan</th>
+                                        <th>Kategori</th>
+                                        <th>Tarif</th>
+                                        <th>Diskon (%)</th>
+                                        <th>Diskon (Rp.)</th>
+                                    </tr>
+                                </thead>
                             </table>
                         </div>
 
@@ -98,12 +111,41 @@
             formTindakanDokter.find('#kd_dokter').val(kd_dokter);
             formTindakanDokter.find('#nm_dokter').val(nm_dokter);
             tableTindakanDokter()
+            formTindakanDokter.find('#kd_petugas').val(null).trigger('change');
             getTindakanDilakukan(no_rawat)
 
             $('#btnSimpanCppt').addClass('d-none')
             $('#btnCreateHasilUsg').addClass('d-none')
             $('#btnCreateTindakan').removeClass('d-none')
 
+        });
+
+        $('#kd_petugas').select2({
+            dropdownParent: $('#modalCppt'),
+            ajax: {
+                url: `{{ url('/petugas/get') }}`,
+                dataType: 'json',
+                delay: 250,
+                data: function(params) {
+                    return {
+                        petugas: params.term
+                    };
+                },
+                processResults: function(data) {
+                    return {
+                        results: data.map(item => ({
+                            id: item.nip,
+                            text: `(${item.nip}) ${item.nama}`
+                        }))
+                    };
+                },
+                cache: true
+            },
+            placeholder: 'Pilih Petugas (Opsional)',
+            allowClear: true
+        }).on('change', function() {
+            // Re-draw table to update prices when staff is selected/cleared
+            $('#tabelTindakanDokter').DataTable().draw(false);
         });
 
         // global
@@ -125,7 +167,7 @@
                 autoWidth: false,
                 lengthChange: false,
                 ajax: {
-                    url: '/efktp/jenis-perawatan/table',
+                    url: `{{ url('/jenis-perawatan/table') }}`,
                     type: 'GET',
                     // tangkap request params sebelum dikirim
                     data: function(d) {
@@ -160,8 +202,6 @@
                         }
                     },
                     complete: function() {
-                        $('#tabelTindakanDokter tbody').width(w - 5); // -- - THIS IS THE FIX
-                        $('#tabelTindakanDokter').width(w + 5);
                     }
                 },
 
@@ -199,9 +239,18 @@
                     },
                     {
                         data: 'total_byrdr',
-                        title: 'Biaya',
+                        title: 'Tarif',
                         render: function(data, type, row, meta) {
-                            return formatCurrency(data);
+                            const kd_petugas = $('#kd_petugas').val();
+                            let price = row.total_byrdr;
+                            if (kd_petugas) {
+                                if (row.total_byrdrpr > 0) {
+                                    price = row.total_byrdrpr;
+                                } else if (row.total_byrpr > 0) {
+                                    price = row.total_byrpr;
+                                }
+                            }
+                            return formatCurrency(price);
                         }
                     },
                     {
@@ -358,21 +407,39 @@
             const no_rkm_medis = formTindakanDokter.find('#no_rkm_medis').val();
 
 
+            const kd_petugas = formTindakanDokter.find('#kd_petugas').val();
+
             const selectedData = selectedRows
                 .map(id => {
                     const d = selectedDataCache[id];
                     if (!d) return null;
 
+                    let type = 'dr';
+                    let price = d.total_byrdr;
+
+                    if (kd_petugas) {
+                        if (d.total_byrdrpr > 0) {
+                            type = 'drpr';
+                            price = d.total_byrdrpr;
+                        } else if (d.total_byrpr > 0) {
+                            type = 'pr';
+                            price = d.total_byrpr;
+                        }
+                    }
+
                     return {
                         ...d,
+                        type: type,
+                        price: price,
                         diskonPersen: diskonValues.persen[id] ?? "0",
                         diskonRupiah: diskonValues.rupiah[id] ?? "0"
                     };
                 })
                 .filter(Boolean);
-            $.post('/efktp/pemeriksaan/tindakan-dokter', {
+            $.post(`{{ url('/pemeriksaan/tindakan-dokter') }}`, {
                 no_rawat,
                 kd_dokter,
+                kd_petugas,
                 nm_pasien,
                 no_rkm_medis,
                 tindakan: selectedData
@@ -385,18 +452,17 @@
 
 
         function getTindakanDilakukan(no_rawat) {
-            $.get(`/efktp/pemeriksaan/tindakan-dokter/get`, {
+            $.get(`{{ url('/pemeriksaan/tindakan-dokter/get') }}`, {
                 no_rawat: no_rawat
             }).done((response) => {
                 const tbody = modalCppt.find('#tabelTindakanDilakukan tbody');
                 tbody.empty();
                 response.data.forEach((item, index) => {
                     const row = `<tr>
-                        <td><input type="checkbox" class="form-check-input tindakan-hasil" name="kode_tindakan[]" id="tindakan${index}" value="${item.kd_jenis_prw}" data-tgl="${item.tgl_perawatan}" data-jam="${item.jam_rawat}" data-rawat="${item.no_rawat}"/></td>
-                        <td>${splitTanggal(item.tgl_perawatan)}</td>
-                        <td>${item.jam_rawat}</td>
+                        <td><input type="checkbox" class="form-check-input tindakan-hasil" name="kode_tindakan[]" id="tindakan${index}" value="${item.kd_jenis_prw}" data-tgl="${item.tgl_perawatan}" data-jam="${item.jam_rawat}" data-rawat="${item.no_rawat}" data-type="${item.type}"/></td>
+                        <td>${splitTanggal(item.tgl_perawatan)} ${item.jam_rawat}</td>
                         <td>${item.tindakan.nm_perawatan}</td>
-                        <td>${item.dokter.nm_dokter}</td>
+                        <td>${item.pelaksana}<br/><small>${item.nama_pelaksana}</small></td>
                         <td class="text-end">${formatCurrency(item.biaya_rawat)}</td>
                     </tr>`;
                     tbody.append(row);
@@ -430,11 +496,12 @@
                             no_rawat: $this.data('rawat'),
                             jam_rawat: $this.data('jam'),
                             tgl_perawatan: $this.data('tgl'),
+                            type: $this.data('type')
                         };
                     }).get();
 
                     $.ajax({
-                        url: `/efktp/pemeriksaan/tindakan-dokter/delete`,
+                        url: `{{ url('/pemeriksaan/tindakan-dokter/delete') }}`,
                         method: 'DELETE',
                         data: {
                             no_rawat: no_rawat,
