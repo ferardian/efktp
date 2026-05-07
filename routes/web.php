@@ -433,6 +433,7 @@ Route::middleware('auth')->group(function () {
 	Route::get('satusehat/observation-ttv', [Bridging\SatuSehat::class, 'observationTTVIndex'])->name('satusehat.observation-ttv.index');
 	Route::get('satusehat/observation-ttv/data', [Bridging\SatuSehat::class, 'getObservationTTVData'])->name('satusehat.observation-ttv.data');
 	Route::post('satusehat/observation-ttv/sync', [Bridging\SatuSehat::class, 'syncObservationTTV'])->name('satusehat.observation-ttv.sync');
+	Route::post('satusehat/auto-sync', [Bridging\SatuSehat::class, 'autoSync'])->name('satusehat.auto-sync');
 
 	// SETTING
 

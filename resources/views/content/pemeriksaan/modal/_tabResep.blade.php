@@ -240,8 +240,9 @@
                     'showCancelButton': true,
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        const formActive = modalCpptRanap.length ? formCpptRanap : formCpptRajal;
-                        const status = modalCpptRanap.length ? 'ranap' : 'ralan';
+                        const modalRanap = $('#modalCpptRanap');
+                        const formActive = modalRanap.length && modalRanap.hasClass('show') ? $('#formCpptRanap') : $('#formCpptRajal');
+                        const status = modalRanap.length && modalRanap.hasClass('show') ? 'ranap' : 'ralan';
                         const no_rawat = formActive.find('input[name=no_rawat]').val();
                         const kd_dokter = formActive.find('input[name=nip]').val();
 

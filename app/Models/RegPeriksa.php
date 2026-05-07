@@ -111,6 +111,11 @@ class RegPeriksa extends Model
 		return $this->hasOne(TriaseIgd::class, 'no_rawat', 'no_rawat');
 	}
 
+	function periksaLab()
+	{
+		return $this->hasMany(\App\Models\Lab\PeriksaLab::class, 'no_rawat', 'no_rawat');
+	}
+
 	public function scopeMaxByTanggal($query, string|null $tanggal)
 	{
 		$tanggal = $tanggal ? $tanggal : now()->format('Y-m-d');

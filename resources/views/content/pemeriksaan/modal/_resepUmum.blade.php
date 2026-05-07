@@ -225,7 +225,7 @@
                     })
                 }
 
-                const formActive = modalCpptRanap.length ? formCpptRanap : formCpptRajal;
+                const formActive = $('#modalCpptRanap').length && $('#modalCpptRanap').hasClass('show') ? $('#formCpptRanap') : $('#formCpptRajal');
                 formActive.find('textarea[name=rtl]').val(textPlan)
             })
         }
@@ -266,7 +266,7 @@
             $.post(`{{ url('/resep/dokter/create') }}`, {
                 dataObat
             }).done((response) => {
-                const formActive = modalCpptRanap.length ? formCpptRanap : formCpptRajal;
+                const formActive = $('#modalCpptRanap').length && $('#modalCpptRanap').hasClass('show') ? $('#formCpptRanap') : $('#formCpptRajal');
                 const no_rawat = formActive.find('input[name=no_rawat]').val()
                 $('#btnCetakResep').attr('onclick', `cetakResep('${no_rawat}')`)
                 tulisPlan(noResep)
@@ -311,7 +311,7 @@
             $.post(`{{ url('/resep/dokter/create') }}`, {
                 dataObat
             }).done((response) => {
-                const formActive = modalCpptRanap.length ? formCpptRanap : formCpptRajal;
+                const formActive = $('#modalCpptRanap').length && $('#modalCpptRanap').hasClass('show') ? $('#formCpptRanap') : $('#formCpptRajal');
                 const no_rawat = formActive.find('input[name=no_rawat]').val()
                 $('#btnCetakResep').attr('onclick', `cetakResep('${no_rawat}')`)
                 tulisPlan(noResep)

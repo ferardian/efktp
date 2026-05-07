@@ -498,7 +498,53 @@
                             htmlInfoMasuk += '</div></div>';
                         }
 
-                        body.append([keterangan, ttv, pemeriksaan, htmlInfoMasuk]).hide().fadeIn()
+                        let htmlLab = '';
+                        if (result.reg_periksa && result.reg_periksa.periksa_lab && result.reg_periksa.periksa_lab.length) {
+                            htmlLab = '<div class="card mb-1 shadow-none border-success"><div class="card-body p-2"><h4 class="card-title text-success mb-2"><i class="ti ti-flask"></i> HASIL LABORATORIUM</h4>';
+                            result.reg_periksa.periksa_lab.forEach(lab => {
+                                htmlLab += `<div class="mb-2 p-2 border-start border-3 border-success bg-light">
+                                    <h5 class="text-success mb-1 small">
+                                        <i class="ti ti-test-pipe"></i> ${lab.jenis ? lab.jenis.nm_perawatan : 'Pemeriksaan Lab'}
+                                        <span class="text-muted float-end small">${formatTanggal(lab.tgl_periksa)} ${lab.jam}</span>
+                                    </h5>`;
+                                if (lab.detail && lab.detail.length) {
+                                    htmlLab += `<table class="table table-sm table-bordered mb-0 small">
+                                        <thead>
+                                            <tr class="bg-light text-center">
+                                                <th>Pemeriksaan</th>
+                                                <th>Hasil</th>
+                                                <th>Satuan</th>
+                                                <th>Nilai Rujukan</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>`;
+                                    lab.detail.forEach(det => {
+                                        const keterangan = det.keterangan.toUpperCase();
+                                        let rowClass = '';
+                                        let textClass = '';
+                                        if (keterangan === 'H') {
+                                            rowClass = 'bg-red-lt fw-bold';
+                                            textClass = 'text-danger';
+                                        } else if (keterangan === 'L') {
+                                            rowClass = 'bg-blue-lt fw-bold';
+                                            textClass = 'text-primary';
+                                        }
+
+                                        htmlLab += `<tr class="${rowClass}">
+                                            <td>${det.template ? det.template.Pemeriksaan : '-'}</td>
+                                            <td class="text-center ${textClass}">${det.nilai}</td>
+                                            <td class="text-center">${det.template ? det.template.satuan : '-'}</td>
+                                            <td class="text-center">${det.nilai_rujukan}</td>
+                                        </tr>`;
+                                    });
+                                    htmlLab += `</tbody></table>`;
+                                }
+                                htmlLab += `</div>`;
+                            });
+                            htmlLab += '</div></div>';
+                        }
+
+                        body.append([keterangan, ttv, pemeriksaan, htmlInfoMasuk, htmlLab]).hide().fadeIn()
                     })
                     // }
                 })
@@ -516,10 +562,11 @@
                             return `${diagnosa.kd_penyakit} ${diagnosa.penyakit.nm_penyakit}`
                         }
                     }).join('')
+                    const nmPoli = regPeriksa.poliklinik ? regPeriksa.poliklinik.nm_poli : '-';
                     return `<div class="accordion-item">
                                 <h2 class="accordion-header" id="heading-${index}">
                                     <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${index}" aria-expanded="true" aria-controls="collapse-${index}">
-                                        ${formatTanggal(regPeriksa.tgl_registrasi)} : ${diagnosa}
+                                        ${formatTanggal(regPeriksa.tgl_registrasi)} [${nmPoli}] : ${diagnosa}
                                     </button>
                                 </h2>
                                 <div id="collapse-${index}" class="accordion-collapse collapse" data-bs-parent="#listRiwayat" data-id="${regPeriksa.no_rawat}">

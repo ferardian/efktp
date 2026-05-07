@@ -454,6 +454,18 @@
             width: '100%',
         })
 
+        // SatuSehat Auto Sync (Runs every 60 seconds)
+        setInterval(() => {
+            $.post(`{{ url('satusehat/auto-sync') }}`).done((res) => {
+                if (res.count > 0) {
+                    console.log('SatuSehat Auto Sync Success:', res.synced);
+                }
+                if (res.errors && res.errors.length > 0) {
+                    console.error('SatuSehat Auto Sync Errors:', res.errors);
+                }
+            });
+        }, 60000);
+
     })
 
 
