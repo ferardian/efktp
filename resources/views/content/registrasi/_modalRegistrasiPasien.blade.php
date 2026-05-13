@@ -435,9 +435,9 @@
             $.get(`{{ url('/bridging/pcare/peserta') }}/${data.no_peserta}`).done((result) => {
                 if (result && result.metaData && result.metaData.code == 200) {
                     $.get(`{{ url('/setting/ppk') }}`).done((kode) => {
-                        data['kdProviderPeserta'] = kode;
+                        data['kdProviderPeserta'] = kode.substring(0, 8);
                         const kdProviderPst = result.response.kdProviderPst ? result.response.kdProviderPst.kdProvider : null;
-                        if (kode !== kdProviderPst) {
+                        if (kode.substring(0, 8) !== kdProviderPst) {
                             Swal.close();
                             Swal.fire({
                                 title: "Peringatan ?",

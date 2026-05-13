@@ -994,7 +994,7 @@
                         pendaftaranBPJS = resListPendaftaran.response.list.find(item => item.peserta.noKartu === data.no_peserta);
                     }
 
-                    const kdProviderPeserta = await $.get(`{{ url('/setting/pcare/user') }}`);
+                    const kdProviderPeserta = await $.get(`{{ url('/setting/ppk') }}`);
 
                     if (pendaftaranBPJS) {
                         loadingAjax('Sinkronisasi data pendaftaran PCare...');
@@ -1002,7 +1002,7 @@
                         const syncData = { ...data };
                         syncData['tgl_registrasi'] = data.tgl_daftar;
                         syncData['noUrut'] = pendaftaranBPJS.noUrut;
-                        syncData['kdProviderPeserta'] = kdProviderPeserta;
+                        syncData['kdProviderPeserta'] = kdProviderPeserta.substring(0, 8);
                         syncData['status'] = 'Terkirim';
                         syncData['kunjunganSakit'] = pendaftaranBPJS.kunjSakit === true || pendaftaranBPJS.kunjSakit === 'Kunjungan Sakit' ? 'Kunjungan Sakit' : 'Kunjungan Sehat';
                         syncData['kdTkp'] = pendaftaranBPJS.tkp.kdTkp;
@@ -1028,7 +1028,7 @@
                         pendaftaranData['kunjunganSakit'] = $('#formKunjunganPcare input[name=kunjSakit]:checked').parent().text().trim();
                         pendaftaranData['kdTkp'] = $('#formKunjunganPcare input[name=kdTkp]:checked').val();
                         pendaftaranData['tkp'] = $('#formKunjunganPcare input[name=kdTkp]:checked').parent().text().trim();
-                        pendaftaranData['kdProviderPeserta'] = kdProviderPeserta;
+                        pendaftaranData['kdProviderPeserta'] = kdProviderPeserta.substring(0, 8);
 
                         // Parse tensi
                         if (data.tensi && data.tensi.includes('/')) {
