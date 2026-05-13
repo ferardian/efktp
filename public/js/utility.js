@@ -345,14 +345,19 @@ function alertErrorAjax(request) {
     );
 }
 
-function alertErrorBpjs({ metaData, response }) {
-    const message = metaData.message;
+function alertErrorBpjs(data) {
+    const metaData = data?.metaData || {};
+    const response = data?.response || '';
+    const message = metaData.message || 'Terjadi kesalahan sistem';
+    const code = metaData.code || '500';
+
     const errors = Array.isArray(response) ? response.map(
         ({ field, message }) => `${field} : ${message}`
     ).join('<br>') : response ?? '';
+
     return Swal.fire({
         title: 'Pesan dari BPJS',
-        html: `<small>${metaData.code} ${message}</small> <br/><strong class="text-danger">${errors}</strong>`,
+        html: `<small>${code} ${message}</small> <br/><strong class="text-danger">${errors}</strong>`,
         icon: 'error',
     });
 }
