@@ -7,24 +7,24 @@ use Illuminate\Support\Facades\Log;
 
 class BpjsHttpClient
 {
-    protected string $baseUrl;
-    protected string $consId;
-    protected string $secretKey;
-    protected string $userKey;
-    protected string $appCode;
-    protected string $username;
-    protected string $password;
+    protected string $baseUrl = '';
+    protected string $consId = '';
+    protected string $secretKey = '';
+    protected string $userKey = '';
+    protected string $appCode = '095';
+    protected string $username = '';
+    protected string $password = '';
 
-    protected string $timestamp;
-    protected string $signature;
-    protected string $authorization;
+    protected string $timestamp = '';
+    protected string $signature = '';
+    protected string $authorization = '';
 
     public function __construct(array $config)
     {
-        $this->baseUrl   = rtrim($config['base_url'], '/');
-        $this->consId    = $config['cons_id'];
-        $this->secretKey = $config['secret_key'];
-        $this->userKey   = $config['user_key'];
+        $this->baseUrl   = rtrim($config['base_url'] ?? '', '/');
+        $this->consId    = $config['cons_id'] ?? '';
+        $this->secretKey = $config['secret_key'] ?? '';
+        $this->userKey   = $config['user_key'] ?? '';
         $this->appCode   = $config['app_code'] ?? '095';
         $this->username  = $config['username'] ?? '';
         $this->password  = $config['password'] ?? '';
