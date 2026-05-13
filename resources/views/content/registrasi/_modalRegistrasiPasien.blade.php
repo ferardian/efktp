@@ -435,7 +435,8 @@
             $.get(`{{ url('/bridging/pcare/peserta') }}/${data.no_peserta}`).done((result) => {
                 if (result && result.metaData && result.metaData.code == 200) {
                     $.get(`{{ url('/setting/ppk') }}`).done((kode) => {
-                        data['kdProviderPeserta'] = result.response.kdProviderPst.kdProvider;
+                        const kdProviderPst = result.response.kdProviderPst ? result.response.kdProviderPst.kdProvider : null;
+                        data['kdProviderPeserta'] = kdProviderPst || kode;
                         if (kode !== data['kdProviderPeserta']) {
                             Swal.close();
                             Swal.fire({
