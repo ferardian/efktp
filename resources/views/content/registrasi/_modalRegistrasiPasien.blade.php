@@ -365,7 +365,7 @@
                 // HANDLE PCare Pendaftaran Result
                 const resPendaftaran = res.pendaftaran;
                 if (resPendaftaran && resPendaftaran.metaData && resPendaftaran.metaData.code === 201) {
-                    data['noUrut'] = resPendaftaran.response.message;
+                    data['noUrut'] = typeof resPendaftaran.response === 'object' ? resPendaftaran.response.message : resPendaftaran.response;
                     $.post(`{{ url('/pcare/pendaftaran') }}`, data).fail((error) => {
                         alertErrorAjax(error)
                     })
