@@ -401,10 +401,10 @@ class RegPeriksaController extends Controller
 
 		if ($request->width == '4') {
 			$pdf = PDF::loadView('content.print.buktiRegister4', ['data' => $regPeriksa, 'setting' => $setting]);
-			$pdf->setPaper(array(0, 0, ($request->width * 28.3465), 200))->setOptions(['defaultFont' => 'sherif', 'isRemoteEnabled' => true]);
+			$pdf->setPaper(array(0, 0, ($request->width * 28.3465), 180))->setOptions(['defaultFont' => 'sherif', 'isRemoteEnabled' => true]);
 		} else {
 			$pdf = PDF::loadView('content.print.buktiRegister', ['data' => $regPeriksa, 'setting' => $setting]);
-			$pdf->setPaper(array(0, 0, (8 * 28.3465), 300))->setOptions(['defaultFont' => 'sherif', 'isRemoteEnabled' => true]);
+			$pdf->setPaper(array(0, 0, (8 * 28.3465), 250))->setOptions(['defaultFont' => 'sherif', 'isRemoteEnabled' => true]);
 		}
 		return $pdf->stream('Bukti-Registrasi-' . date('Ymd') . $regPeriksa->no_rkm_medis . '.pdf');
 	}

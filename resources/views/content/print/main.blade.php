@@ -28,10 +28,10 @@
         }
 
         @page {
-            margin-top: 5px;
+            margin-top: 0px;
             margin-right: 5px;
             margin-left: 5px;
-            margin-bottom: 5px;
+            margin-bottom: 0px;
         }
 
         p {
@@ -47,7 +47,7 @@
         .table-print tr {
             border: 1px solid #000;
             border-collapse: collapse;
-            padding: 5px;
+            padding: 2px;
             vertical-align: top;
         }
 
@@ -56,14 +56,14 @@
         }
 
         .table-print td {
-            padding: 5px;
+            padding: 2px;
             font-size: 11px;
         }
 
         .table-print th {
             text-align: left;
             font-size: 11px;
-            padding: 5px;
+            padding: 2px;
         }
 
         .border {

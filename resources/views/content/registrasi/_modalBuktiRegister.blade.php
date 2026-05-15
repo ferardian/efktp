@@ -48,7 +48,7 @@
 
             })
             modalBuktiRegister.find('#no_rawat').val(no_rawat)
-            modalBuktiRegister.find('#print').attr('src', `/efktp/registrasi/bukti/print?no_rawat=${no_rawat}${sizePaper}`);
+            modalBuktiRegister.find('#print').attr('src', `${baseUrl}/registrasi/bukti/print?no_rawat=${no_rawat}${sizePaper}`);
             modalBuktiRegister.modal('show');
         }
         selectSizeBukti.on('change', (e) => {

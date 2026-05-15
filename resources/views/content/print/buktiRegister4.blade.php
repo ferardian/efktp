@@ -5,7 +5,7 @@
 @endphp
 @section('content')
     <div width="100%" style="font-size: 8px">
-        <div class="container" style="margin: 5px">
+        <div class="container" style="margin: 0px">
             <div width="100%">
                 <div style="" class="text-center">
                     <p style="font-weight:bold">{{ $setting->nama_instansi }}</p>
@@ -18,7 +18,7 @@
                 <p class="" style="font-weight: bold"><u>BUKTI REGISTRASI</u></p>
                 <p>No. Urut</p>
                 @if (str_contains($data->penjab->png_jawab, 'BPJS'))
-                    <p style="font-size: 50px;font-weight: bold">{{ $data->pcarePendaftaran->noUrut }}</p>
+                    <p style="font-size: 50px;font-weight: bold">{{ $data->pcarePendaftaran->noUrut ?? $data->no_reg }}</p>
                 @else
                     <p style="font-size: 50px;font-weight: bold">{{ $data->no_reg }}</p>
                 @endif
