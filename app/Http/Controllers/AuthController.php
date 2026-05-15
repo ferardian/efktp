@@ -36,25 +36,42 @@ class AuthController extends Controller
 			->where('password', DB::raw("AES_ENCRYPT('" . $request->get('password') . "', 'windi')"))
 			->first();
 
+		$role = 'petugas';
+		if (!$auth) {
+			$auth = Admin::select('*', DB::raw("AES_DECRYPT(usere, 'nur') as username, AES_DECRYPT(passworde, 'windi') as passwd"))
+				->where('usere', DB::raw("AES_ENCRYPT('" . $request->get('username') . "', 'nur')"))
+				->where('passworde', DB::raw("AES_ENCRYPT('" . $request->get('password') . "', 'windi')"))
+				->first();
+			$role = 'admin';
+		}
+
 		if ($auth) {
-			$isAuth = Auth::login($auth);
+			if ($role == 'admin') {
+				Auth::guard('admin')->login($auth);
+			} else {
+				Auth::login($auth);
+			}
 			$pegawai = Pegawai::where('nik', $auth->username)
 				->with('dokter', function ($q) {
 					return $q->select('kd_dokter', 'nm_dokter');
 				})->select(['nik', 'departemen', 'nama', 'jk', 'jbtn'])
 				->first();
 
-			$unsetAuth = [
-				$auth['password'],
-				$auth['id_user'],
-				$auth['passwd']
-			];
+			if ($role == 'admin' && !$pegawai) {
+				$pegawai = (object)[
+					'nik' => $auth->username,
+					'nama' => 'Super Admin',
+					'jbtn' => 'Admin Utama',
+					'departemen' => '-',
+					'jk' => 'L',
+					'dokter' => null
+				];
+			}
 
-			unset($unsetAuth);
 			$userSesion = $auth;
 
 			$request->session()->put(
-				['pegawai' => $pegawai, 'user' => $userSesion, 'role' => $this->setRole($pegawai)]
+				['pegawai' => $pegawai, 'user' => $userSesion, 'role' => $role == 'admin' ? 'admin' : $this->setRole($pegawai)]
 			);
 
 			if ($request->has('href')) {
@@ -63,7 +80,7 @@ class AuthController extends Controller
 				try {
 					$routes->match($req);
 					return redirect('/' . $request->href);
-				} catch (NotFoundHttpException $e) {
+				} catch (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException | \Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException $e) {
 					return redirect('/');
 				}
 			}
@@ -77,6 +94,7 @@ class AuthController extends Controller
 	public function logout(Request $request)
 	{
 		Auth::logout();
+		Auth::guard('admin')->logout();
 		Session::flush();
 		$request->session()->regenerateToken();
 		if ($request->href) {

@@ -124,6 +124,17 @@
                                 <a class="dropdown-item" href="{{ url('master/jadwal') }}">
                                     Jadwal Praktek
                                 </a>
+                                <a class="dropdown-item" href="{{ url('master/dokter') }}">
+                                    Data Dokter
+                                </a>
+                                <a class="dropdown-item" href="{{ url('master/petugas') }}">
+                                    Data Petugas
+                                </a>
+                                @if (session()->get('role') == 'admin')
+                                    <a class="dropdown-item" href="{{ url('master/user') }}">
+                                        Set User
+                                    </a>
+                                @endif
 
                             </div>
                         </div>

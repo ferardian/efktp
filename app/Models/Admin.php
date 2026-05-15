@@ -12,4 +12,7 @@ class Admin extends Authenticable
     protected $table = 'admin';
     protected $guarded = [];
     public $timestamps = false;
+    protected $primaryKey = 'usere';
+    public $incrementing = false;
+    protected $keyType = 'string';
 }

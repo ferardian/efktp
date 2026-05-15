@@ -1178,6 +1178,13 @@ $.contextMenu({
                     }
 
                 },
+                "cetakGelang": {
+                    name: "Cetak Gelang Pasien",
+                    icon: "fas fa-print",
+                    callback: function (item, option, e, x, y) {
+                        window.open(`${baseUrl}/registrasi/gelang?no_rawat=${no_rawat}`, '_blank');
+                    }
+                },
                 "Rujuk": {
                     name: "Rujuk",
                     items: {
@@ -1654,6 +1661,13 @@ $.contextMenu({
                         resumeMedis(`${no_rawat}`)
                     }
                 },
+                "cetakGelang": {
+                    name: "Cetak Gelang Pasien",
+                    icon: 'fa-regular fa-print',
+                    callback: function (item, option, e, x, y) {
+                        window.open(`${baseUrl}/registrasi/gelang?no_rawat=${no_rawat}`, '_blank');
+                    }
+                },
                 "riwayatKunjungan": {
                     name: "Riwayat Kunjungan",
                     icon: 'fa-regular fa-folder-open',
@@ -1797,7 +1811,7 @@ function selectJnsPerawatanInap(element, parrent, pelaksana = '') {
                     results: data.map((item) => {
                         return {
                             id: item.kd_jenis_prw,
-                            text: `${item.kd_jenis_prw} - ${item.nm_perawatan}`,
+                            text: `${item.kd_jenis_prw} - ${item.nm_perawatan} (Rp. ${new Intl.NumberFormat('id-ID').format(item.total_byrdr || item.total_byrpr || item.total_byrdrpr)})`,
                             detail: item
                         }
                     })
@@ -1815,11 +1829,11 @@ function selectPetugas(element, parrent) {
         delay: 2,
         scrollAfterSelect: true,
         ajax: {
-            url: `${baseUrl}/petugas/get`,
+            url: `${baseUrl}/petugas/search`,
             dataType: 'JSON',
             data: (params) => {
                 return {
-                    petugas: params.term
+                    keyword: params.term
                 }
             },
             processResults: (data) => {

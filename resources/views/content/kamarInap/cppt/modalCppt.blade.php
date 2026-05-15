@@ -27,6 +27,11 @@
                                             <i class="ti ti-list me-1"></i> Tindakan
                                         </a>
                                     </li>
+                                    <li class="nav-item" role="presentation">
+                                        <a href="#tabs-billing-ranap" class="nav-link" data-bs-toggle="tab" aria-selected="false" role="tab" tabindex="-1">
+                                            <i class="ti ti-receipt me-1"></i> Billing
+                                        </a>
+                                    </li>
                                 </ul>
                             </div>
                             <div class="card-body p-3">
@@ -39,6 +44,9 @@
                                     </div>
                                     <div class="tab-pane fade" id="tabs-tindakan-ranap" role="tabpanel">
                                         @include('content.kamarInap.cppt.sub._tindakan')
+                                    </div>
+                                    <div class="tab-pane fade" id="tabs-billing-ranap" role="tabpanel">
+                                        @include('content.kamarInap.cppt.sub._billing')
                                     </div>
                                 </div>
                             </div>
@@ -182,6 +190,12 @@
             $('a[href="#tabs-resep"]').on('shown.bs.tab', function() {
                 $('#tabObat a[href="#tabsResepUmum"]').tab('show');
             });
+
+            // Load billing data when billing tab is shown
+            $('a[href="#tabs-billing-ranap"]').on('shown.bs.tab', function() {
+                const noRawat = formCpptRanap.find('input[name="no_rawat"]').val();
+                loadBillingRanap(noRawat);
+            });
         })
 
         modalCpptRanap.on('hidden.bs.modal', () => {
@@ -302,6 +316,10 @@
                     },
                     {
                         data: 'nama_pelaksana'
+                    },
+                    {
+                        data: 'biaya_rawat',
+                        render: (data) => `Rp. ${new Intl.NumberFormat('id-ID').format(data)}`
                     },
                     {
                         data: null,

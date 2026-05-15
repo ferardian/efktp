@@ -132,9 +132,10 @@ class RegPeriksaController extends Controller
 					date('Y-m-d', strtotime($req->tglAwal)),
 					date('Y-m-d', strtotime($req->tglAkhir))
 				])
-				->orderBy('no_reg', 'ASC');
+				->orderBy('tgl_registrasi', 'DESC')
+				->orderBy('jam_reg', 'DESC');
 		} else {
-			$regPeriksa = $this->regPeriksa->with($this->relation)->where('tgl_registrasi', date('Y-m-d'))->orderBy('no_reg', 'ASC');
+			$regPeriksa = $this->regPeriksa->with($this->relation)->where('tgl_registrasi', date('Y-m-d'))->orderBy('tgl_registrasi', 'DESC')->orderBy('jam_reg', 'DESC');
 		}
 
 		if ($req->dokter) {
@@ -388,7 +389,7 @@ class RegPeriksaController extends Controller
 			->where('no_rawat', $request->no_rawat)
 			->with([
 				'pasien' => function ($q) {
-					return $q->select(['nm_pasien', 'alamat', 'kd_kel', 'no_rkm_medis', 'alamatpj', 'jk', 'tgl_lahir', 'no_peserta'])
+					return $q->select(['nm_pasien', 'alamat', 'kd_kel', 'kd_kec', 'kd_kab', 'no_rkm_medis', 'alamatpj', 'jk', 'tgl_lahir', 'no_peserta'])
 						->with(['kel', 'kec', 'kab']);
 				},
 				'poliklinik',
@@ -407,4 +408,26 @@ class RegPeriksaController extends Controller
 		}
 		return $pdf->stream('Bukti-Registrasi-' . date('Ymd') . $regPeriksa->no_rkm_medis . '.pdf');
 	}
+
+    public function printGelang(Request $request)
+    {
+        $regPeriksa = RegPeriksa::where('no_rawat', $request->no_rawat)
+            ->with([
+                'pasien' => function ($q) {
+                    return $q->with(['kel', 'kec', 'kab']);
+                }
+            ])->first();
+
+        if (!$regPeriksa) {
+            return "Data tidak ditemukan";
+        }
+
+        $usia = $regPeriksa->umurdaftar . ' ' . $regPeriksa->sttsumur;
+
+        return view('content.print.gelang', [
+            'pasien' => $regPeriksa->pasien,
+            'usia' => $usia,
+            'no_rawat' => $regPeriksa->no_rawat
+        ]);
+    }
 }

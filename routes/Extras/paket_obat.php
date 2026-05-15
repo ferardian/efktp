@@ -1,6 +1,6 @@
 <?php
 
-Route::middleware('auth')->group(function ($route) {
+Route::middleware('auth:web,admin')->group(function ($route) {
 	$route->get('master/paket-obat', [\App\Http\Controllers\EfktpPaketObatController::class, 'index']);
 	$route->get('paket-obat/datatable', [\App\Http\Controllers\EfktpPaketObatController::class, 'datatable']);
 	$route->get('paket-obat/datatable', [\App\Http\Controllers\EfktpPaketObatController::class, 'datatable']);

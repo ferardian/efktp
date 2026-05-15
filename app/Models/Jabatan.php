@@ -5,18 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Petugas extends Model
+class Jabatan extends Model
 {
     use HasFactory;
-    protected $table = 'petugas';
-    protected $primaryKey = 'nip';
+    protected $table = 'jabatan';
+    protected $primaryKey = 'kd_jbtn';
     public $incrementing = false;
     protected $keyType = 'string';
     public $timestamps = false;
     protected $guarded = [];
-
-    public function jabatan()
-    {
-        return $this->belongsTo(Jabatan::class, 'kd_jbtn', 'kd_jbtn');
-    }
 }

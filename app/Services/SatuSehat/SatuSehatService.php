@@ -921,7 +921,7 @@ class SatuSehatService extends SatuSehatClient
             ])
             ->whereBetween('p.tgl_perawatan', [$startDate, $endDate]);
 
-        return $ralan->union($ranap)->orderBy('tgl_perawatan', 'desc')->orderBy('jam_rawat', 'desc')->get();
+        return $ralan->union($ranap)->orderBy('tgl_perawatan', 'desc')->orderBy('jam_rawat', 'desc')->get()->toArray();
     }
 
     /**

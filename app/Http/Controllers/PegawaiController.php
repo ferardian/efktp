@@ -20,4 +20,15 @@ class PegawaiController extends Controller
         $pegawai = Pegawai::where('nik', $request->nik)->first();
         return response()->json($pegawai);
     }
+
+    function search(Request $request)
+    {
+        $pegawai = Pegawai::where('nama', 'like', "%{$request->keyword}%")
+            ->orWhere('nik', 'like', "%{$request->keyword}%")
+            ->with(['departemen', 'dokter'])
+            ->select('nik', 'nama', 'jbtn', 'departemen')
+            ->limit(100)
+            ->get();
+        return response()->json($pegawai);
+    }
 }

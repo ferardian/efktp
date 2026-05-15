@@ -56,6 +56,8 @@ use App\Http\Controllers\SukuBangsaController;
 use App\Http\Controllers\SuratSakitController;
 use App\Http\Controllers\SuratSehatController;
 use App\Http\Controllers\UploadController;
+use App\Http\Controllers\PetugasController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\JadwalController;
 use App\Models\Setting;
 use Illuminate\Http\Request;
@@ -101,7 +103,7 @@ Route::get('/registrasi/get/panggil', [RegPeriksaController::class, 'getPanggil'
 Route::post('/registrasi/update', [RegPeriksaController::class, 'update']);
 Route::get('/registrasi/bukti/print', [RegPeriksaController::class, 'print']);
 
-Route::middleware('auth')->group(function () {
+Route::middleware('auth:web,admin')->group(function () {
 
 	Route::post('/logout', [AuthController::class, 'logout']);
 	Route::get('/logout', [AuthController::class, 'logout']);
@@ -155,15 +157,38 @@ Route::middleware('auth')->group(function () {
 	Route::post('/poliklinik', [PoliklinikController::class, 'delete']);
 	// DOKTER
 	Route::get('/dokter/get', [DokterController::class, 'get']);
-	Route::post('/dokter', [DokterController::class, 'delete']);
+	Route::post('/dokter', [DokterController::class, 'store']);
+	Route::put('/dokter/{kd_dokter}', [DokterController::class, 'update']);
+	Route::delete('/dokter/{kd_dokter}', [DokterController::class, 'destroy']);
+
+    // USER MANAGEMENT
+    Route::get('/master/user', [UserController::class, 'index']);
+    Route::get('/user/data', [UserController::class, 'data']);
+    Route::get('/user/get', [UserController::class, 'get']);
+    Route::post('/user', [UserController::class, 'store']);
+    Route::put('/user/{username}', [UserController::class, 'update']);
+    Route::delete('/user/{username}', [UserController::class, 'destroy']);
+    Route::get('/user/columns', [UserController::class, 'getColumns']);
+
+    // PETUGAS MANAGEMENT
+    Route::get('/master/petugas', [PetugasController::class, 'index']);
+    Route::get('/petugas/data', [PetugasController::class, 'data']);
+    Route::get('/petugas/get', [PetugasController::class, 'get']);
+    Route::get('/petugas/search', [PetugasController::class, 'search']);
+    Route::post('/petugas', [PetugasController::class, 'store']);
+    Route::put('/petugas/{nip}', [PetugasController::class, 'update']);
+    Route::delete('/petugas/{nip}', [PetugasController::class, 'destroy']);
+    Route::get('/billing/ranap', [\App\Http\Controllers\BillingController::class, 'getBillingRanap']);
 
 	// JADWAL PRAKTEK
 	Route::get('/master/jadwal', [JadwalController::class, 'index']);
+	Route::get('/master/dokter', [DokterController::class, 'index']);
 	Route::get('/master/jadwal/get', [JadwalController::class, 'get']);
 	Route::post('/master/jadwal', [JadwalController::class, 'store']);
 	Route::post('/master/jadwal/delete', [JadwalController::class, 'delete']);
 
 	Route::get('/pegawai', [PegawaiController::class, 'get']);
+	Route::get('/pegawai/search', [PegawaiController::class, 'search']);
 	Route::get('/pegawai/profil', function () {
 		return view('content.pegawai');
 	});
@@ -185,6 +210,7 @@ Route::middleware('auth')->group(function () {
 	Route::get('/registrasi/kelurahan', [RegPeriksaController::class, 'getKelurahan']);
 	Route::get('/registrasi/grafik', [RegPeriksaController::class, 'getGrafik']);
 	Route::get('/registrasi/grafik/tahun', [RegPeriksaController::class, 'getGrafikTahunan']);
+	Route::get('/registrasi/gelang', [RegPeriksaController::class, 'printGelang']);
 
 	// PENILIAIAN AWAL/SKRINING
 	Route::get('/penilaian/awal/keperawatan/ralan', [PenilaianAwalKeperawatanRalanController::class, 'get']);

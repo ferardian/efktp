@@ -87,6 +87,7 @@
                 <th>Tindakan</th>
                 <th>Pelaksana</th>
                 <th>Nama Pelaksana</th>
+                <th>Tarif</th>
                 <th></th>
             </tr>
         </thead>
