@@ -1,9 +1,23 @@
 <div class="card" style="min-height: 85vh;">
     <div class="card-status-top bg-success"></div>
-    {{-- <div class="card-header">
-    </div> --}}
+    <div class="card-header p-2">
+        <ul class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <a href="#tabs-riwayat-soap" class="nav-link active" data-bs-toggle="tab" aria-selected="true" role="tab">
+                    <i class="ti ti-history me-1"></i> Riwayat & SOAP
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a href="#tabs-grafik-vital" class="nav-link" data-bs-toggle="tab" aria-selected="false" role="tab" tabindex="-1">
+                    <i class="ti ti-chart-line me-1"></i> Grafik Perkembangan
+                </a>
+            </li>
+        </ul>
+    </div>
 
     <div class="card-body">
+        <div class="tab-content">
+            <div class="tab-pane fade active show" id="tabs-riwayat-soap" role="tabpanel">
         <div class="accordion mb-3" id="infoMasuk">
             <div class="accordion-item">
                 <h2 class="accordion-header" id="heading-info-masuk">
@@ -40,6 +54,18 @@
 
         </div>
     </div>
+
+    <div class="tab-pane fade" id="tabs-grafik-vital" role="tabpanel">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="card-title m-0">Grafik Tanda Vital Harian</h4>
+            <span class="badge bg-green-lt"><i class="ti ti-pulse me-1"></i>Vital Signs</span>
+        </div>
+        <div class="card p-2 bg-light shadow-none border">
+            <div id="chart-vital-signs" style="min-height: 400px; width: 100%;"></div>
+        </div>
+    </div>
+</div>
+</div>
 </div>
 
 @push('script')
@@ -69,7 +95,8 @@
                                     </div>
                                 </div>`
                 })
-                $('#listRiwayat').append(pemeriksaan)
+                $('#listRiwayat').append(pemeriksaan);
+                renderVitalSignsChart(response);
             })
         }
 
@@ -191,7 +218,8 @@
                                 </div>
                             </div>`
                 })
-                $('#listRiwayat').append(pemeriksaan)
+                $('#listRiwayat').append(pemeriksaan);
+                renderVitalSignsChart(response);
             })
         }
 
@@ -321,9 +349,9 @@
             getCpptRanap(params[0], params[1], params[2]).done((response) => {
                 const setPetugas = new Option(response.pegawai.nama, response.nip, true, true);
                 pegawai.append(setPetugas).trigger('change');
-                formCpptRanap.find('input[name="tgl_perawatan"').val(splitTanggal(response.tgl_perawatan));
-                formCpptRanap.find('input[name="tgl_perawatan_awal"').val(splitTanggal(response.tgl_perawatan));
-                formCpptRanap.find('input[name="checkJam"').prop('checked', true).trigger('change');
+                formCpptRanap.find('input[name="tgl_perawatan"]').val(splitTanggal(response.tgl_perawatan));
+                formCpptRanap.find('input[name="tgl_perawatan_awal"]').val(splitTanggal(response.tgl_perawatan));
+                formCpptRanap.find('input[name="checkJam"]').prop('checked', true).trigger('change');
                 formCpptRanap.find('input[name="jam_rawat"]').val(response.jam_rawat);
                 formCpptRanap.find('input[name="jam_rawat_awal"]').val(response.jam_rawat);
                 formCpptRanap.find('textarea[name="keluhan"]').val(response.keluhan)
@@ -340,12 +368,203 @@
                 formCpptRanap.find('input[name="spo2"]').val(response.spo2)
                 formCpptRanap.find('input[name="gcs"]').val(response.gcs)
                 formCpptRanap.find(`select[name="kesadaran"] option:contains("${response.kesadaran}")`).prop('selected', true)
-                setSelectAlergi(response.reg_periksa.pasien.alergi, inputAlergi)
+                setSelectAlergi(response.reg_periksa.pasien.alergi, alergi)
                 $('#btnResetCpptRanap').removeClass('d-none');
                 $('#btnSalinCpptRanap').removeClass('d-none');
                 $('#btnSimpanCpptRanap').attr('onclick', `updateCpptRanap('${response.no_rawat}', '${response.tgl_perawatan}', '${response.jam_rawat}', '${response.nip}')`);
 
             })
         }
+
+        var vitalChartInstance = null;
+
+        function renderVitalSignsChart(data) {
+            if (!data || !data.length) {
+                $('#chart-vital-signs').html('<div class="text-center p-5 text-muted"><i>Tidak ada data pemeriksaan tanda vital untuk pasien ini</i></div>');
+                if (vitalChartInstance) {
+                    vitalChartInstance.destroy();
+                    vitalChartInstance = null;
+                }
+                return;
+            }
+
+            const sortedData = data.slice().reverse();
+
+            const categories = [];
+            const tempSeries = [];
+            const pulseSeries = [];
+            const respSeries = [];
+            const spo2Series = [];
+            const sysSeries = [];
+            const diaSeries = [];
+
+            sortedData.forEach(item => {
+                const formattedTime = formatTanggal(item.tgl_perawatan) + ' ' + item.jam_rawat.substring(0, 5);
+                categories.push(formattedTime);
+
+                tempSeries.push(item.suhu_tubuh && item.suhu_tubuh !== '-' && item.suhu_tubuh !== '' ? parseFloat(item.suhu_tubuh.replace(',', '.')) : null);
+                pulseSeries.push(item.nadi && item.nadi !== '-' && item.nadi !== '' ? parseInt(item.nadi) : null);
+                respSeries.push(item.respirasi && item.respirasi !== '-' && item.respirasi !== '' ? parseInt(item.respirasi) : null);
+                spo2Series.push(item.spo2 && item.spo2 !== '-' && item.spo2 !== '' ? parseInt(item.spo2) : null);
+
+                let systolic = null;
+                let diastolic = null;
+                if (item.tensi && item.tensi !== '-' && item.tensi !== '' && item.tensi.includes('/')) {
+                    const parts = item.tensi.split('/');
+                    const sysVal = parseInt(parts[0]);
+                    const diaVal = parseInt(parts[1]);
+                    if (!isNaN(sysVal)) systolic = sysVal;
+                    if (!isNaN(diaVal)) diastolic = diaVal;
+                }
+                sysSeries.push(systolic);
+                diaSeries.push(diastolic);
+            });
+
+            const checkData = [...tempSeries, ...pulseSeries, ...respSeries, ...spo2Series, ...sysSeries, ...diaSeries].some(v => v !== null);
+            if (!checkData) {
+                $('#chart-vital-signs').html('<div class="text-center p-5 text-muted"><i>Belum ada pencatatan tanda vital (Suhu, Nadi, Tensi, dll) untuk pasien ini</i></div>');
+                if (vitalChartInstance) {
+                    vitalChartInstance.destroy();
+                    vitalChartInstance = null;
+                }
+                return;
+            }
+
+            const options = {
+                series: [
+                    {
+                        name: 'Suhu (°C)',
+                        data: tempSeries
+                    },
+                    {
+                        name: 'Nadi (x/mnt)',
+                        data: pulseSeries
+                    },
+                    {
+                        name: 'Sistole (mmHg)',
+                        data: sysSeries
+                    },
+                    {
+                        name: 'Diastole (mmHg)',
+                        data: diaSeries
+                    },
+                    {
+                        name: 'Respirasi (x/mnt)',
+                        data: respSeries
+                    },
+                    {
+                        name: 'SpO2 (%)',
+                        data: spo2Series
+                    }
+                ],
+                chart: {
+                    type: 'line',
+                    height: 400,
+                    zoom: {
+                        enabled: true
+                    },
+                    toolbar: {
+                        show: true,
+                        tools: {
+                            download: true,
+                            selection: false,
+                            zoom: true,
+                            zoomin: true,
+                            zoomout: true,
+                            pan: true,
+                            reset: true
+                        }
+                    },
+                    fontFamily: 'inherit'
+                },
+                colors: [
+                    '#d63939', // Suhu - Red
+                    '#206bc4', // Nadi - Blue
+                    '#4299e1', // Sistole - Light Blue
+                    '#90cdf4', // Diastole - Very Light Blue
+                    '#2fb344', // Respirasi - Green
+                    '#f59f00'  // SpO2 - Orange/Yellow
+                ],
+                dataLabels: {
+                    enabled: false
+                },
+                stroke: {
+                    width: [3, 3, 2, 2, 3, 3],
+                    curve: 'smooth',
+                    dashArray: [0, 0, 0, 4, 0, 0]
+                },
+                grid: {
+                    borderColor: '#f1f1f1',
+                    row: {
+                        colors: ['transparent', 'transparent'],
+                        opacity: 0.5
+                    }
+                },
+                markers: {
+                    size: 4,
+                    hover: {
+                        sizeOffset: 2
+                    }
+                },
+                xaxis: {
+                    categories: categories,
+                    labels: {
+                        rotate: -45,
+                        style: {
+                            fontSize: '10px'
+                        }
+                    }
+                },
+                yaxis: {
+                    title: {
+                        text: 'Nilai Klinis'
+                    },
+                    min: 10,
+                    max: function(max) {
+                        return Math.max(max + 10, 200);
+                    }
+                },
+                tooltip: {
+                    shared: true,
+                    intersect: false,
+                    y: {
+                        formatter: function (y) {
+                            if (typeof y !== "undefined" && y !== null) {
+                                return y;
+                            }
+                            return "-";
+                        }
+                    }
+                },
+                legend: {
+                    position: 'top',
+                    horizontalAlign: 'center'
+                }
+            };
+
+            $('#chart-vital-signs').empty();
+            if (vitalChartInstance) {
+                vitalChartInstance.destroy();
+            }
+            vitalChartInstance = new ApexCharts(document.querySelector("#chart-vital-signs"), options);
+            vitalChartInstance.render();
+        }
+
+        $(document).on('shown.bs.tab', 'a[href="#tabs-grafik-vital"]', function () {
+            window.dispatchEvent(new Event('resize'));
+        });
     </script>
+@endpush
+
+@push('style')
+    <link rel="stylesheet" href="{{ asset('libs/apexcharts/dist/apexcharts.css') }}">
+    <style>
+        #chart-vital-signs {
+            width: 100% !important;
+        }
+    </style>
+@endpush
+
+@push('script')
+    <script src="{{ asset('libs/apexcharts/dist/apexcharts.min.js') }}"></script>
 @endpush

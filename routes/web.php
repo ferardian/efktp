@@ -37,6 +37,7 @@ use App\Http\Controllers\PemeriksaanGigiHasilController;
 use App\Http\Controllers\PemeriksaanRalanController;
 use App\Http\Controllers\PemeriksaanRanapController;
 use App\Http\Controllers\PenilaianAwalKeperawatanRalanController;
+use App\Http\Controllers\PenilaianAwalKeperawatanRanapController;
 use App\Http\Controllers\PenjabController;
 use App\Http\Controllers\PenyakitController;
 use App\Http\Controllers\PerusahaanPasienController;
@@ -216,6 +217,10 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::get('/penilaian/awal/keperawatan/ralan', [PenilaianAwalKeperawatanRalanController::class, 'get']);
 	Route::post('/penilaian/awal/keperawatan/ralan', [PenilaianAwalKeperawatanRalanController::class, 'createPenilaian']);
 	Route::get('/penilaian/awal/keperawatan/ralan/print', [PenilaianAwalKeperawatanRalanController::class, 'print']);
+
+	Route::get('/penilaian/awal/keperawatan/ranap', [PenilaianAwalKeperawatanRanapController::class, 'get']);
+	Route::post('/penilaian/awal/keperawatan/ranap', [PenilaianAwalKeperawatanRanapController::class, 'createPenilaian']);
+	Route::get('/penilaian/awal/keperawatan/ranap/print', [PenilaianAwalKeperawatanRanapController::class, 'print']);
 
 	// TINDAKAN SKRINING RESIKO JATUH
 	Route::post('/skrining/jatuh', [EfktpTindakanResikoJatuhController::class, 'create']);

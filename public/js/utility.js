@@ -1623,7 +1623,9 @@ $.contextMenu({
                         "Keperawatan Umum": {
                             name: "Keperawatan Umum",
                             icon: 'fa-regular fa-pencil',
-                            callback: function (item, option, e, x, y) {}
+                            callback: function (item, option, e, x, y) {
+                                penilaianAwalKeperawatanRanap(`${no_rawat}`);
+                            }
                         },
                         "Medis Umum": {
                             name: "Medis Umum",

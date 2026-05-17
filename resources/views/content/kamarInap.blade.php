@@ -61,6 +61,7 @@
     @include('content.registrasi._modalSuratSakit')
     @include('content.registrasi._modalRiwayat')
     @include('content.laboratorium.modal._modalPermintaanLab')
+    @include('content.kamarInap.penilaianAwal._modalPenilaianAwalKeperawatanRanap')
 @endsection
 @push('script')
     <script>
