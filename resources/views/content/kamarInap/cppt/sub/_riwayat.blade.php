@@ -317,13 +317,21 @@
                         }
 
                         let bodyMapHtml = '';
-                        const hasPoints = triaseUgd.body_map_points && triaseUgd.body_map_points.length > 0;
+                        let points = triaseUgd.body_map_points;
+                        if (typeof points === 'string') {
+                            try {
+                                points = JSON.parse(points);
+                            } catch (e) {
+                                points = null;
+                            }
+                        }
+                        const hasPoints = Array.isArray(points) && points.length > 0;
                         const hasLuka = triaseUgd.luka_perdarahan && triaseUgd.luka_perdarahan.trim().length > 0;
                         
                         if (hasPoints || hasLuka) {
                             let markers = '';
                             if (hasPoints) {
-                                triaseUgd.body_map_points.forEach((pt, index) => {
+                                points.forEach((pt, index) => {
                                     markers += `<span class="position-absolute badge rounded-pill bg-danger border border-white d-flex align-items-center justify-content-center" style="width: 14px; height: 14px; font-size: 8px; padding: 0; left: ${pt.x * 0.5}px; top: ${pt.y * 0.5}px; transform: translate(-50%, -50%); z-index: 20;">${index + 1}</span>`;
                                 });
                             }
