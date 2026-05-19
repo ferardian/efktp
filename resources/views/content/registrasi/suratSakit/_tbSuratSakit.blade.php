@@ -35,7 +35,7 @@
                 scrollY: '25vh',
                 scrollX: true,
                 ajax: {
-                    url: `/efktp/surat/sakit`,
+                    url: `{{ url('surat/sakit') }}`,
                     data: {
                         dataTable: true,
                         tgl_pertama: tglAwal,
@@ -123,7 +123,7 @@
                 confirmButtonText: 'Ya, Hapus!'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    $.post(`/efktp/surat/sakit/delete/${no_surat}`).done((response) => {
+                    $.post(`{{ url('surat/sakit/delete') }}/${no_surat}`).done((response) => {
                         alertSuccessAjax().then(() => {
                             loadSuratSakit(tglAwal, tglAkhir)
                             setNoSuratSakit().done((response) => {

@@ -59,7 +59,7 @@
         }
 
         function setNoSuratSakit(tgl_surat = '') {
-            const noSakit = $.get(`/efktp/surat/sakit/setnomor`, {
+            const noSakit = $.get(`{{ url('surat/sakit/setnomor') }}`, {
                 tgl_surat: tgl_surat,
             })
             return noSakit
@@ -82,7 +82,7 @@
                 return false;
             }
 
-            $.post(`/efktp/surat/sakit`, data).done((response) => {
+            $.post(`{{ url('surat/sakit') }}`, data).done((response) => {
                 alertSuccessAjax().then(() => {
                     const pertama = formFilterSakit.find('input[name=tgl_pertama]').val()
                     const kedua = formFilterSakit.find('input[name=tgl_kedua]').val()
