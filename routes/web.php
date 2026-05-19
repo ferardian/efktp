@@ -230,6 +230,8 @@ Route::middleware('auth:web,admin')->group(function () {
 	// RM IGD
 	Route::get('/rm/igd', [\App\Http\Controllers\RmIgdController::class, 'get']);
 	Route::post('/rm/igd', [\App\Http\Controllers\RmIgdController::class, 'create']);
+	Route::get('/rm/triase/ugd', [\App\Http\Controllers\RmIgdController::class, 'getUgdTriage']);
+	Route::post('/rm/triase/ugd', [\App\Http\Controllers\RmIgdController::class, 'createUgdTriage']);
 
 	// Pemeriksaan
 	Route::get('/pemeriksaan/ralan', [PemeriksaanRalanController::class, 'get']);

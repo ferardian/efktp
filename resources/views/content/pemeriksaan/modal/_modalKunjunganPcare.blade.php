@@ -995,6 +995,19 @@
                     }
 
                     const kdProviderPeserta = await $.get(`{{ url('/setting/ppk') }}`);
+                    
+                    let kdProviderPst = null;
+                    try {
+                        const resPeserta = await $.get(`{{ url('/bridging/pcare/peserta') }}/${data.no_peserta}`);
+                        if (resPeserta && resPeserta.metaData && resPeserta.metaData.code == 200 && resPeserta.response && resPeserta.response.kdProviderPst) {
+                            kdProviderPst = resPeserta.response.kdProviderPst.kdProvider;
+                        }
+                    } catch (e) {
+                        console.error('Gagal fetch peserta:', e);
+                    }
+                    if (!kdProviderPst) {
+                        kdProviderPst = kdProviderPeserta.substring(0, 8);
+                    }
 
                     if (pendaftaranBPJS) {
                         loadingAjax('Sinkronisasi data pendaftaran PCare...');
@@ -1002,7 +1015,7 @@
                         const syncData = { ...data };
                         syncData['tgl_registrasi'] = data.tgl_daftar;
                         syncData['noUrut'] = pendaftaranBPJS.noUrut;
-                        syncData['kdProviderPeserta'] = kdProviderPeserta.substring(0, 8);
+                        syncData['kdProviderPeserta'] = kdProviderPst;
                         syncData['status'] = 'Terkirim';
                         syncData['kunjunganSakit'] = pendaftaranBPJS.kunjSakit === true || pendaftaranBPJS.kunjSakit === 'Kunjungan Sakit' ? 'Kunjungan Sakit' : 'Kunjungan Sehat';
                         syncData['kdTkp'] = pendaftaranBPJS.tkp.kdTkp;
@@ -1028,7 +1041,7 @@
                         pendaftaranData['kunjunganSakit'] = $('#formKunjunganPcare input[name=kunjSakit]:checked').parent().text().trim();
                         pendaftaranData['kdTkp'] = $('#formKunjunganPcare input[name=kdTkp]:checked').val();
                         pendaftaranData['tkp'] = $('#formKunjunganPcare input[name=kdTkp]:checked').parent().text().trim();
-                        pendaftaranData['kdProviderPeserta'] = kdProviderPeserta.substring(0, 8);
+                        pendaftaranData['kdProviderPeserta'] = kdProviderPst;
 
                         // Parse tensi
                         if (data.tensi && data.tensi.includes('/')) {

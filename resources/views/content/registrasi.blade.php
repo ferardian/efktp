@@ -64,6 +64,7 @@
     @include('content.laboratorium.modal._modalPermintaanLab')
     @include('content.registrasi._modalKamarInap')
     @include('content.pemeriksaan.modal.rmIgd._modalRmIgd')
+    @include('content.pemeriksaan.modal.triaseUgd._modalTriaseUgd')
 @endsection
 @push('script')
     <script>
@@ -179,7 +180,7 @@
                         umur: data['umur'],
                     }).done((response) => {
                         showToast('Berhasil Mengubah Data Registrasi', 'success', 5000)
-                        loadTabelRegistrasi(tglAwal, tglAkhir, selectFilterStts.val(), selectFilterDokter.val(), $('#poli').val())
+                        loadTabelRegistrasi($('#tglAwal').val(), $('#tglAkhir').val(), selectFilterStts.val(), selectFilterDokter.val(), $('#poli').val())
                         const isCheckedPendaftaranPcare = switchPendaftaranPcare.is(':checked');
                         if ((data.no_peserta !== '-' || data.no_peserta.length > 1) && isCheckedPendaftaranPcare) {
                             createBridgingPendaftaranPcare(data)
@@ -224,7 +225,7 @@
                             'Data registrasi berhasil dihapus.',
                             'success'
                         )
-                        loadTabelRegistrasi(inputTglAwal.val(), inputTglAkhir.val(), selectFilterStts.val(), selectFilterDokter.val(), $('#poli').val());
+                        loadTabelRegistrasi($('#tglAwal').val(), $('#tglAkhir').val(), selectFilterStts.val(), selectFilterDokter.val(), $('#poli').val());
                     }).fail((error, status, code) => {
                         let msg = error.responseJSON ? error.responseJSON : 'Terjadi kesalahan saat menghapus data.';
                         Swal.fire(

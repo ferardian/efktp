@@ -1335,6 +1335,13 @@ $.contextMenu({
                             callback: (item, opt) => {
                                 openRmIgd(`${no_rawat}`);
                             }
+                        },
+                        "TriaseUgdKlinik": {
+                            name: "Triase Pasien UGD (Klinik)",
+                            icon: "fas fa-heartbeat",
+                            callback: (item, opt) => {
+                                openTriaseUgd(`${no_rawat}`);
+                            }
                         }
                     }
                 },

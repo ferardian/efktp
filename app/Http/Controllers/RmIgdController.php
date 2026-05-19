@@ -18,6 +18,7 @@ use App\Models\MasterTriaseSkala3;
 use App\Models\MasterTriaseSkala4;
 use App\Models\MasterTriaseSkala5;
 use App\Models\MasterTriaseMacamKasus;
+use App\Models\TriaseUgd;
 use App\Traits\Track;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -227,6 +228,68 @@ class RmIgdController extends Controller
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
             return response()->json('Gagal menyimpan ke database. Pastikan semua data wajib sudah terisi dengan benar. Error: ' . $e->getCode(), 500);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json('Terjadi kesalahan sistem: ' . $e->getMessage(), 500);
+        }
+    }
+
+    public function getUgdTriage(Request $request)
+    {
+        $no_rawat = $request->no_rawat;
+        $data = TriaseUgd::where('no_rawat', $no_rawat)->with('petugas')->first();
+        return response()->json($data);
+    }
+
+    public function createUgdTriage(Request $request)
+    {
+        $request->validate([
+            'no_rawat' => 'required',
+            'tgl_triase' => 'required',
+            'keluhan_utama' => 'required',
+            'skala_triase' => 'required',
+        ], [
+            'no_rawat.required' => 'Nomor Rawat tidak boleh kosong.',
+            'tgl_triase.required' => 'Tanggal Triase tidak boleh kosong.',
+            'keluhan_utama.required' => 'Keluhan utama tidak boleh kosong.',
+            'skala_triase.required' => 'Skala triase belum ditentukan.',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $no_rawat = $request->no_rawat;
+            $nip = $request->nip ?? (session()->has('pegawai') ? session()->get('pegawai')->nik : null);
+            
+            if (!$nip) {
+                return response()->json('Petugas triase/NIP tidak boleh kosong.', 422);
+            }
+
+            $triase = TriaseUgd::updateOrCreate(
+                ['no_rawat' => $no_rawat],
+                [
+                    'tgl_triase' => $request->tgl_triase,
+                    'rujukan' => $request->rujukan ?? 'Tidak',
+                    'rujukan_dari' => $request->rujukan_dari,
+                    'keluhan_utama' => $request->keluhan_utama,
+                    'survey_primer' => $request->survey_primer ?? [],
+                    'skala_triase' => $request->skala_triase,
+                    'skala_nyeri' => $request->skala_nyeri,
+                    'nyeri_tipe' => $request->nyeri_tipe,
+                    'nyeri_lokasi' => $request->nyeri_lokasi,
+                    'nyeri_durasi' => $request->nyeri_durasi,
+                    'resiko_jatuh' => $request->resiko_jatuh,
+                    'resiko_jatuh_skor' => $request->resiko_jatuh_skor,
+                    'luka_perdarahan' => $request->luka_perdarahan,
+                    'body_map_points' => $request->body_map_points ?? [],
+                    'keputusan_jam' => $request->keputusan_jam,
+                    'rencana_tindak_lanjut' => $request->rencana_tindak_lanjut,
+                    'rujuk_tujuan' => $request->rujuk_tujuan,
+                    'nip' => $nip,
+                ]
+            );
+
+            DB::commit();
+            return response()->json($triase, 201);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json('Terjadi kesalahan sistem: ' . $e->getMessage(), 500);
