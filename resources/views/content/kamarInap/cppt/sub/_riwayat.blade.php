@@ -267,20 +267,39 @@
                             catBadge = `<span class="badge bg-secondary text-white">${triaseUgd.skala_triase || '-'}</span>`;
                         }
 
-                        let primerText = '-';
+                        let primerText = '';
                         if (triaseUgd.survey_primer) {
-                            if (Array.isArray(triaseUgd.survey_primer)) {
-                                primerText = triaseUgd.survey_primer.join(', ');
-                            } else if (typeof triaseUgd.survey_primer === 'object') {
-                                primerText = Object.values(triaseUgd.survey_primer).join(', ');
-                            } else {
+                            let survey = triaseUgd.survey_primer;
+                            if (typeof survey === 'string') {
                                 try {
-                                    const parsed = JSON.parse(triaseUgd.survey_primer);
-                                    primerText = Array.isArray(parsed) ? parsed.join(', ') : Object.values(parsed).join(', ');
-                                } catch(e) {
-                                    primerText = triaseUgd.survey_primer;
+                                    survey = JSON.parse(survey);
+                                } catch(e) {}
+                            }
+                            
+                            let values = [];
+                            function collectValues(obj) {
+                                if (Array.isArray(obj)) {
+                                    obj.forEach(val => {
+                                        if (typeof val === 'string') {
+                                            let formatted = val.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+                                            if (formatted.toLowerCase() === 'ku baik') formatted = 'K/U Baik';
+                                            if (formatted.toLowerCase() === 'ku lemah') formatted = 'K/U Lemah';
+                                            values.push(formatted);
+                                        }
+                                    });
+                                } else if (typeof obj === 'object' && obj !== null) {
+                                    Object.values(obj).forEach(collectValues);
+                                } else if (typeof obj === 'string') {
+                                    let formatted = obj.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+                                    if (formatted.toLowerCase() === 'ku baik') formatted = 'K/U Baik';
+                                    if (formatted.toLowerCase() === 'ku lemah') formatted = 'K/U Lemah';
+                                    values.push(formatted);
                                 }
                             }
+                            collectValues(survey);
+                            primerText = values.length ? values.join(', ') : '-';
+                        } else {
+                            primerText = '-';
                         }
 
                         let nyeriDetails = '-';
