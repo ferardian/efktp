@@ -229,36 +229,36 @@
                                         </div>
                                     </div>
 
-                                    <div class="d-flex justify-content-between text-center gap-1">
-                                        <div class="pain-face-card border rounded p-2 flex-fill" data-score="0" style="cursor: pointer; background: #e8f5e9; border-color: #2e7d32 !important;">
+                                    <div class="d-flex justify-content-between text-center gap-1 w-100">
+                                        <div class="pain-face-card border rounded py-2 px-1" data-score="0" style="cursor: pointer; flex: 1 1 0px; min-width: 0; background: #e8f5e9; border-color: #2e7d32 !important;">
                                             <div style="font-size: 24px;">😊</div>
                                             <div class="fw-bold text-success">0</div>
-                                            <small class="d-block small" style="font-size: 10px;">Tidak Nyeri</small>
+                                            <small class="d-block text-wrap" style="font-size: 9px; line-height: 1.1;">Tidak Nyeri</small>
                                         </div>
-                                        <div class="pain-face-card border rounded p-2 flex-fill" data-score="2" style="cursor: pointer;">
+                                        <div class="pain-face-card border rounded py-2 px-1" data-score="2" style="cursor: pointer; flex: 1 1 0px; min-width: 0;">
                                             <div style="font-size: 24px;">🙂</div>
                                             <div class="fw-bold text-success">2</div>
-                                            <small class="d-block small" style="font-size: 10px;">Ringan</small>
+                                            <small class="d-block text-wrap" style="font-size: 9px; line-height: 1.1;">Ringan</small>
                                         </div>
-                                        <div class="pain-face-card border rounded p-2 flex-fill" data-score="4" style="cursor: pointer;">
+                                        <div class="pain-face-card border rounded py-2 px-1" data-score="4" style="cursor: pointer; flex: 1 1 0px; min-width: 0;">
                                             <div style="font-size: 24px;">😐</div>
                                             <div class="fw-bold text-warning">4</div>
-                                            <small class="d-block small" style="font-size: 10px;">Sedang</small>
+                                            <small class="d-block text-wrap" style="font-size: 9px; line-height: 1.1;">Sedang</small>
                                         </div>
-                                        <div class="pain-face-card border rounded p-2 flex-fill" data-score="6" style="cursor: pointer;">
+                                        <div class="pain-face-card border rounded py-2 px-1" data-score="6" style="cursor: pointer; flex: 1 1 0px; min-width: 0;">
                                             <div style="font-size: 24px;">🙁</div>
                                             <div class="fw-bold text-warning">6</div>
-                                            <small class="d-block small" style="font-size: 10px;">Berat</small>
+                                            <small class="d-block text-wrap" style="font-size: 9px; line-height: 1.1;">Berat</small>
                                         </div>
-                                        <div class="pain-face-card border rounded p-2 flex-fill" data-score="8" style="cursor: pointer;">
+                                        <div class="pain-face-card border rounded py-2 px-1" data-score="8" style="cursor: pointer; flex: 1 1 0px; min-width: 0;">
                                             <div style="font-size: 24px;">😢</div>
                                             <div class="fw-bold text-danger">8</div>
-                                            <small class="d-block small" style="font-size: 10px;">Sgt Berat</small>
+                                            <small class="d-block text-wrap" style="font-size: 9px; line-height: 1.1;">Sgt Berat</small>
                                         </div>
-                                        <div class="pain-face-card border rounded p-2 flex-fill" data-score="10" style="cursor: pointer;">
+                                        <div class="pain-face-card border rounded py-2 px-1" data-score="10" style="cursor: pointer; flex: 1 1 0px; min-width: 0;">
                                             <div style="font-size: 24px;">😭</div>
                                             <div class="fw-bold text-danger">10</div>
-                                            <small class="d-block small" style="font-size: 10px;">Tidak Tertahankan</small>
+                                            <small class="d-block text-wrap" style="font-size: 9px; line-height: 1.1;">Tidak Tertahankan</small>
                                         </div>
                                     </div>
 
