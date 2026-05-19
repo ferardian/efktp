@@ -531,7 +531,7 @@
 
     // Fetch Petugas lists
     function getPetugasTriase() {
-        return $.get("{{ url('/petugas/get') }}");
+        return $.get("{{ url('/petugas/data') }}");
     }
 
     // Open Triage Modal
