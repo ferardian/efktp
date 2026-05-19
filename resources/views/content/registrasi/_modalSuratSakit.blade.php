@@ -72,7 +72,7 @@
                 no_rawat: no_rawat
             }).done((response) => {
                 const diagnosa = response.diagnosa.map((dx) => {
-                    return dx.penyakit.ciri_ciri
+                    return dx.penyakit.nm_penyakit
                 }).join(';')
                 formSuratSakit.find('input[name=no_rawat]').val(no_rawat)
                 formSuratSakit.find('input[name=diagnosa]').val(diagnosa)
