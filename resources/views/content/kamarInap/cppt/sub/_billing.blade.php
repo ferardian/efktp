@@ -1,12 +1,21 @@
 <div class="card shadow-none border-0 bg-transparent">
     <div class="card-body p-0">
-        <div class="alert alert-info border-start border-4 border-info mb-3">
+        <div class="alert alert-info border-start border-4 border-info mb-3 d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center">
                 <i class="ti ti-info-circle fs-2 me-2"></i>
                 <div>
                     <h4 class="mb-0">Rincian Billing Berjalan</h4>
                     <p class="mb-0 small">Estimasi total biaya selama perawatan berlangsung</p>
                 </div>
+            </div>
+            <div class="btn-group">
+                <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="ti ti-printer me-1"></i> Cetak Billing
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="cetakBilling('80')">Ukuran 80mm</a></li>
+                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="cetakBilling('58')">Ukuran 58mm</a></li>
+                </ul>
             </div>
         </div>
 
@@ -125,6 +134,19 @@
             .fail((err) => {
                 tbody.html('<tr><td colspan="4" class="text-center text-danger p-4"><i class="ti ti-x"></i> Gagal memuat rincian billing</td></tr>');
             });
+    }
+
+    function cetakBilling(size) {
+        const no_rawat = $('#formCpptRanap input[name="no_rawat"]').val() || $('#billing_no_nota').text().replace(': ', '').trim();
+        if (no_rawat && no_rawat !== '-') {
+            window.open(`{{ url('/billing/print') }}?no_rawat=${no_rawat}&size=${size}`, '_blank');
+        } else {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Opps...',
+                text: 'Nomor rawat tidak valid!'
+            });
+        }
     }
 </script>
 @endpush

@@ -5,13 +5,80 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\Setting;
 
 class BillingController extends Controller
 {
     public function getBillingRanap(Request $request)
     {
         $no_rawat = $request->no_rawat;
+        $data = $this->getBillingRanapData($no_rawat);
+        return response()->json($data);
+    }
 
+    public function getBillingRalan(Request $request)
+    {
+        $no_rawat = $request->no_rawat;
+        $data = $this->getBillingRalanData($no_rawat);
+        return response()->json($data);
+    }
+
+    public function printBilling(Request $request)
+    {
+        $no_rawat = $request->no_rawat;
+        $size = $request->input('size', '80'); // '80' or '58'
+
+        // Check if Ralan or Ranap
+        $reg = DB::table('reg_periksa')
+            ->where('no_rawat', $no_rawat)
+            ->first();
+
+        if (!$reg) {
+            return abort(404, 'Data tidak ditemukan');
+        }
+
+        // Get matching data
+        if ($reg->status_lanjut == 'Ranap') {
+            $billingData = $this->getBillingRanapData($no_rawat);
+            $billingData['type'] = 'RANAP';
+        } else {
+            $billingData = $this->getBillingRalanData($no_rawat);
+            $billingData['type'] = 'RALAN';
+        }
+
+        $setting = Setting::first();
+
+        // Convert mm to points (1mm = 2.83465 pt)
+        // 58 mm width = 164.4 pt
+        // 80 mm width = 226.7 pt
+        // Let's compute a dynamic height based on the number of items, to prevent unnecessary blank pages
+        $itemCount = 0;
+        foreach ($billingData['categories'] as $cat) {
+            if (count($cat['items']) > 0) {
+                $itemCount += count($cat['items']) + 1; // items + category header
+            }
+        }
+        
+        $baseHeight = ($size == '58') ? 350 : 400;
+        $itemHeight = ($size == '58') ? 18 : 22;
+        $height = $baseHeight + ($itemCount * $itemHeight);
+
+        $width = ($size == '58') ? 164.4 : 226.7;
+
+        $pdf = PDF::loadView('content.print.billing', [
+            'data' => $billingData,
+            'setting' => $setting,
+            'size' => $size
+        ])
+        ->setPaper(array(0, 0, $width, $height))
+        ->setOptions(['defaultFont' => 'Arial', 'isRemoteEnabled' => true]);
+
+        return $pdf->stream('cetak billing.pdf');
+    }
+
+    private function getBillingRanapData($no_rawat)
+    {
         // 1. Biaya Registrasi
         $reg = DB::table('reg_periksa')
             ->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
@@ -115,7 +182,7 @@ class BillingController extends Controller
             $total_hari += ($d == 0 ? 1 : $d);
         }
 
-        return response()->json([
+        return [
             'no_rawat' => $no_rawat,
             'no_rm' => $reg->no_rkm_medis ?? '-',
             'pasien' => $reg->nm_pasien ?? '-',
@@ -134,13 +201,11 @@ class BillingController extends Controller
                 ]],
             ],
             'grand_total' => $grand_total
-        ]);
+        ];
     }
 
-    public function getBillingRalan(Request $request)
+    private function getBillingRalanData($no_rawat)
     {
-        $no_rawat = $request->no_rawat;
-
         // 1. Biaya Registrasi
         $reg = DB::table('reg_periksa')
             ->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
@@ -201,7 +266,7 @@ class BillingController extends Controller
 
         $grand_total = ($biaya_reg + $total_tindakan + $total_obat + $total_lab + $total_rad + $tambahan) - $potongan;
 
-        return response()->json([
+        return [
             'no_rawat' => $no_rawat,
             'no_rm' => $reg->no_rkm_medis ?? '-',
             'pasien' => $reg->nm_pasien ?? '-',
@@ -219,6 +284,6 @@ class BillingController extends Controller
                 ]],
             ],
             'grand_total' => $grand_total
-        ]);
+        ];
     }
 }

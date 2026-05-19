@@ -181,6 +181,7 @@ Route::middleware('auth:web,admin')->group(function () {
     Route::delete('/petugas/{nip}', [PetugasController::class, 'destroy']);
     Route::get('/billing/ranap', [\App\Http\Controllers\BillingController::class, 'getBillingRanap']);
     Route::get('/billing/ralan', [\App\Http\Controllers\BillingController::class, 'getBillingRalan']);
+    Route::get('/billing/print', [\App\Http\Controllers\BillingController::class, 'printBilling']);
 
 	// JADWAL PRAKTEK
 	Route::get('/master/jadwal', [JadwalController::class, 'index']);
