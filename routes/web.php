@@ -180,6 +180,7 @@ Route::middleware('auth:web,admin')->group(function () {
     Route::put('/petugas/{nip}', [PetugasController::class, 'update']);
     Route::delete('/petugas/{nip}', [PetugasController::class, 'destroy']);
     Route::get('/billing/ranap', [\App\Http\Controllers\BillingController::class, 'getBillingRanap']);
+    Route::get('/billing/ralan', [\App\Http\Controllers\BillingController::class, 'getBillingRalan']);
 
 	// JADWAL PRAKTEK
 	Route::get('/master/jadwal', [JadwalController::class, 'index']);

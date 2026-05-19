@@ -136,4 +136,89 @@ class BillingController extends Controller
             'grand_total' => $grand_total
         ]);
     }
+
+    public function getBillingRalan(Request $request)
+    {
+        $no_rawat = $request->no_rawat;
+
+        // 1. Biaya Registrasi
+        $reg = DB::table('reg_periksa')
+            ->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
+            ->join('poliklinik', 'reg_periksa.kd_poli', '=', 'poliklinik.kd_poli')
+            ->where('no_rawat', $no_rawat)
+            ->select('reg_periksa.biaya_reg', 'pasien.nm_pasien', 'reg_periksa.tgl_registrasi', 'reg_periksa.no_rkm_medis', 'poliklinik.nm_poli')
+            ->first();
+        $biaya_reg = $reg ? $reg->biaya_reg : 0;
+
+        // 2. Biaya Tindakan
+        $tindakan_dr = DB::table('rawat_jl_dr')
+            ->join('jns_perawatan', 'rawat_jl_dr.kd_jenis_prw', '=', 'jns_perawatan.kd_jenis_prw')
+            ->where('no_rawat', $no_rawat)
+            ->select('jns_perawatan.nm_perawatan', 'rawat_jl_dr.tgl_perawatan', 'rawat_jl_dr.biaya_rawat')
+            ->get()->map(fn($item) => ['item' => $item->nm_perawatan, 'tgl' => $item->tgl_perawatan, 'qty' => 1, 'tarif' => $item->biaya_rawat, 'subtotal' => $item->biaya_rawat]);
+
+        $tindakan_pr = DB::table('rawat_jl_pr')
+            ->join('jns_perawatan', 'rawat_jl_pr.kd_jenis_prw', '=', 'jns_perawatan.kd_jenis_prw')
+            ->where('no_rawat', $no_rawat)
+            ->select('jns_perawatan.nm_perawatan', 'rawat_jl_pr.tgl_perawatan', 'rawat_jl_pr.biaya_rawat')
+            ->get()->map(fn($item) => ['item' => $item->nm_perawatan, 'tgl' => $item->tgl_perawatan, 'qty' => 1, 'tarif' => $item->biaya_rawat, 'subtotal' => $item->biaya_rawat]);
+
+        $tindakan_drpr = DB::table('rawat_jl_drpr')
+            ->join('jns_perawatan', 'rawat_jl_drpr.kd_jenis_prw', '=', 'jns_perawatan.kd_jenis_prw')
+            ->where('no_rawat', $no_rawat)
+            ->select('jns_perawatan.nm_perawatan', 'rawat_jl_drpr.tgl_perawatan', 'rawat_jl_drpr.biaya_rawat')
+            ->get()->map(fn($item) => ['item' => $item->nm_perawatan, 'tgl' => $item->tgl_perawatan, 'qty' => 1, 'tarif' => $item->biaya_rawat, 'subtotal' => $item->biaya_rawat]);
+
+        $detail_tindakan = $tindakan_dr->concat($tindakan_pr)->concat($tindakan_drpr);
+        $total_tindakan = $detail_tindakan->sum('subtotal');
+
+        // 3. Biaya Obat & Alkes
+        $detail_obat = DB::table('detail_pemberian_obat')
+            ->join('databarang', 'detail_pemberian_obat.kode_brng', '=', 'databarang.kode_brng')
+            ->where('no_rawat', $no_rawat)
+            ->select('databarang.nama_brng', 'detail_pemberian_obat.tgl_perawatan', 'detail_pemberian_obat.jml', 'detail_pemberian_obat.biaya_obat', 'detail_pemberian_obat.total')
+            ->get()->map(fn($item) => ['item' => $item->nama_brng, 'tgl' => $item->tgl_perawatan, 'qty' => $item->jml, 'tarif' => $item->biaya_obat, 'subtotal' => $item->total]);
+        $total_obat = $detail_obat->sum('subtotal');
+
+        // 4. Biaya Laboratorium
+        $detail_lab = DB::table('periksa_lab')
+            ->join('jns_perawatan_lab', 'periksa_lab.kd_jenis_prw', '=', 'jns_perawatan_lab.kd_jenis_prw')
+            ->where('no_rawat', $no_rawat)
+            ->select('jns_perawatan_lab.nm_perawatan', 'periksa_lab.tgl_periksa', 'periksa_lab.biaya')
+            ->get()->map(fn($item) => ['item' => $item->nm_perawatan, 'tgl' => $item->tgl_periksa, 'qty' => 1, 'tarif' => $item->biaya, 'subtotal' => $item->biaya]);
+        $total_lab = $detail_lab->sum('subtotal');
+
+        // 5. Biaya Radiologi
+        $detail_rad = DB::table('periksa_radiologi')
+            ->join('jns_perawatan_radiologi', 'periksa_radiologi.kd_jenis_prw', '=', 'jns_perawatan_radiologi.kd_jenis_prw')
+            ->where('no_rawat', $no_rawat)
+            ->select('jns_perawatan_radiologi.nm_perawatan', 'periksa_radiologi.tgl_periksa', 'periksa_radiologi.biaya')
+            ->get()->map(fn($item) => ['item' => $item->nm_perawatan, 'tgl' => $item->tgl_periksa, 'qty' => 1, 'tarif' => $item->biaya, 'subtotal' => $item->biaya]);
+        $total_rad = $detail_rad->sum('subtotal');
+
+        $tambahan = DB::table('tambahan_biaya')->where('no_rawat', $no_rawat)->sum('besar_biaya');
+        $potongan = DB::table('pengurangan_biaya')->where('no_rawat', $no_rawat)->sum('besar_pengurangan');
+
+        $grand_total = ($biaya_reg + $total_tindakan + $total_obat + $total_lab + $total_rad + $tambahan) - $potongan;
+
+        return response()->json([
+            'no_rawat' => $no_rawat,
+            'no_rm' => $reg->no_rkm_medis ?? '-',
+            'pasien' => $reg->nm_pasien ?? '-',
+            'poli' => $reg->nm_poli ?? '-',
+            'tgl_perawatan' => $reg ? $reg->tgl_registrasi : '-',
+            'categories' => [
+                ['label' => 'Registrasi', 'total' => $biaya_reg, 'items' => [['item' => 'Biaya Registrasi', 'qty' => 1, 'tarif' => $biaya_reg, 'subtotal' => $biaya_reg]]],
+                ['label' => 'Tindakan & Perawatan', 'total' => $total_tindakan, 'items' => $detail_tindakan],
+                ['label' => 'Obat & Alkes', 'total' => $total_obat, 'items' => $detail_obat],
+                ['label' => 'Laboratorium', 'total' => $total_lab, 'items' => $detail_lab],
+                ['label' => 'Radiologi', 'total' => $total_rad, 'items' => $detail_rad],
+                ['label' => 'Tambahan/Potongan', 'total' => $tambahan - $potongan, 'items' => [
+                    ['item' => 'Tambahan Biaya', 'qty' => 1, 'tarif' => $tambahan, 'subtotal' => $tambahan],
+                    ['item' => 'Potongan Biaya', 'qty' => 1, 'tarif' => -$potongan, 'subtotal' => -$potongan],
+                ]],
+            ],
+            'grand_total' => $grand_total
+        ]);
+    }
 }

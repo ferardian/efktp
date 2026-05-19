@@ -6,7 +6,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <ul class="nav nav-tabs " data-bs-toggle="tabs">
+                 <ul class="nav nav-tabs " data-bs-toggle="tabs">
                     <li class="nav-item">
                         <a href="#tabs-cppt" class="nav-link active" data-bs-toggle="tab">CPPT</a>
                     </li>
@@ -21,6 +21,9 @@
                     </li>
                     <li class="nav-item">
                         <a href="#tabs-hasil-lab" class="nav-link" data-bs-toggle="tab">Hasil Lab</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#tabs-billing" class="nav-link" data-bs-toggle="tab">Billing</a>
                     </li>
                 </ul>
                 <div class="tab-content mt-3">
@@ -52,6 +55,9 @@
                     </div>
                     <div class="tab-pane fade" id="tabs-hasil-lab">
                         @include('content.laboratorium.sub._hasilPeriksaTab')
+                    </div>
+                    <div class="tab-pane fade" id="tabs-billing">
+                        @include('content.pemeriksaan.modal._billing')
                     </div>
                 </div>
 
@@ -114,6 +120,7 @@
 
         const targetTabsPermintaanLab = modalCppt.find('a[href="#tabs-permintaan-lab"]');
         const targetTabsHasilLab = modalCppt.find('a[href="#tabs-hasil-lab"]');
+        const targetTabsBilling = modalCppt.find('a[href="#tabs-billing"]');
 
         $(document).ready(() => {
             targetTabsPermintaanLab.on('shown.bs.tab', (e) => {
@@ -209,6 +216,17 @@
             $('#btndataDetailPermintaanTab').addClass('d-none')
             $('#btnKirimPermintaanTab').addClass('d-none')
             $('#btnCreateHasilUsg').removeClass('d-none')
+        });
+
+        targetTabsBilling.on('shown.bs.tab', function() {
+            const no_rawat = formCpptRajal.find('input[name=no_rawat]').val();
+            loadBillingRalan(no_rawat);
+
+            $('#btnSimpanCppt').addClass('d-none')
+            $('#btnCreateTindakan').addClass('d-none')
+            $('#btnCreateHasilUsg').addClass('d-none')
+            $('#btndataDetailPermintaanTab').addClass('d-none')
+            $('#btnKirimPermintaanTab').addClass('d-none')
         });
 
         modalCppt.on('shown.bs.modal', (e) => {
