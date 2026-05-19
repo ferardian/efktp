@@ -337,10 +337,26 @@ function alertSuccessAjax(message) {
 }
 
 function alertErrorAjax(request) {
-    const errorMsg = Array.isArray(request.responseJSON) ? request.responseJSON[2] : request.responseJSON;
+    let errorMsg = '';
+    if (request.responseJSON) {
+        if (Array.isArray(request.responseJSON)) {
+            errorMsg = request.responseJSON[2] || JSON.stringify(request.responseJSON);
+        } else if (request.responseJSON.errors) {
+            errorMsg = Object.values(request.responseJSON.errors).map(e => e.join(', ')).join('<br>');
+        } else if (request.responseJSON.message) {
+            errorMsg = request.responseJSON.message;
+        } else {
+            errorMsg = JSON.stringify(request.responseJSON);
+        }
+    } else if (request.responseText) {
+        errorMsg = request.responseText.substring(0, 500);
+    } else {
+        errorMsg = request.statusText;
+    }
+
     Swal.fire(
         'Gagal',
-        'Terjadi kesalahan<br>  Error Code : ' + request.status + ', ' + request.statusText + '<br/> <p class="text-danger" p-0>' + errorMsg + '</span>',
+        'Terjadi kesalahan<br>  Error Code : ' + request.status + ', ' + request.statusText + '<br/> <div class="text-danger mt-2 small">' + errorMsg + '</div>',
         'error'
     );
 }
