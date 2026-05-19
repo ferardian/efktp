@@ -83,6 +83,7 @@ class SuratSakitController extends Controller
 			'tanggalawal' => date('Y-m-d', strtotime($request->tanggalawal)),
 			'tanggalakhir' => date('Y-m-d', strtotime($request->tanggalakhir)),
 			'lamasakit' => "{$request->lama} ({$terbilang})",
+			'diagnosa_surat' => $request->diagnosa,
 		];
 
 		try {
@@ -118,7 +119,9 @@ class SuratSakitController extends Controller
 		])->where('no_surat', $noSurat)->first();
 		$setting = Setting::first();
 
-		if ($surat->diagnosa) {
+		if ($surat->diagnosa_surat) {
+			$diagnosa = $surat->diagnosa_surat;
+		} elseif ($surat->diagnosa && count($surat->diagnosa) > 0) {
 			$diagnosa = collect($surat->diagnosa)->map(function ($dx) {
 				return $dx->penyakit->nm_penyakit;
 			})->join(';');

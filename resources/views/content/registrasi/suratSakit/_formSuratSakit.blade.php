@@ -22,7 +22,7 @@
             </div>
             <div class="col-xl-4 col-md-6 col-sm-12">
                 <label for="diagnosa">Diagnosa</label>
-                <input type="text" class="form-control" name="diagnosa" id="diagnosa" readonly />
+                <input type="text" class="form-control" name="diagnosa" id="diagnosa" />
             </div>
             <div class="col-xl-4 col-md-6 col-sm-12">
                 <label for="tanggalawal">Tanggal</label>
