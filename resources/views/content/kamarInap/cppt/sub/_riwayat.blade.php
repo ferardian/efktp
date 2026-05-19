@@ -229,7 +229,7 @@
 
             getRegDetail(no_rawat).done((response) => {
                 let html = '';
-                if (response.triase_igd || response.penilaian_medis_igd) {
+                if (response.triase_igd || response.penilaian_medis_igd || response.triase_ugd) {
                     if (response.triase_igd) {
                         let scales = '';
                         const triase = response.triase_igd;
@@ -248,6 +248,73 @@
                                 <h5 class="text-danger mb-1"><i class="ti ti-heart-rate-monitor"></i> TRIAGE IGD</h5>
                                 <div class="small"><b>Keluhan Utama:</b> ${triase.keluhan_utama || '-'}</div>
                                 <div class="mt-1">${scales || '-'}</div>
+                            </div>`;
+                    }
+
+                    if (response.triase_ugd) {
+                        const triaseUgd = response.triase_ugd;
+                        
+                        let catBadge = '';
+                        if (triaseUgd.skala_triase === 'Kategori 1') {
+                            catBadge = '<span class="badge bg-red text-white">Kategori 1 (Resusitasi)</span>';
+                        } else if (triaseUgd.skala_triase === 'Kategori 2') {
+                            catBadge = '<span class="badge bg-orange text-white">Kategori 2 (Emergensi)</span>';
+                        } else if (triaseUgd.skala_triase === 'Kategori 3') {
+                            catBadge = '<span class="badge bg-warning text-dark">Kategori 3 (Urgen)</span>';
+                        } else if (triaseUgd.skala_triase === 'Kategori 4') {
+                            catBadge = '<span class="badge bg-success text-white">Kategori 4 (Non Urgen)</span>';
+                        } else {
+                            catBadge = `<span class="badge bg-secondary text-white">${triaseUgd.skala_triase || '-'}</span>`;
+                        }
+
+                        let primerText = '-';
+                        if (triaseUgd.survey_primer) {
+                            if (Array.isArray(triaseUgd.survey_primer)) {
+                                primerText = triaseUgd.survey_primer.join(', ');
+                            } else if (typeof triaseUgd.survey_primer === 'object') {
+                                primerText = Object.values(triaseUgd.survey_primer).join(', ');
+                            } else {
+                                try {
+                                    const parsed = JSON.parse(triaseUgd.survey_primer);
+                                    primerText = Array.isArray(parsed) ? parsed.join(', ') : Object.values(parsed).join(', ');
+                                } catch(e) {
+                                    primerText = triaseUgd.survey_primer;
+                                }
+                            }
+                        }
+
+                        let nyeriDetails = '-';
+                        if (triaseUgd.skala_nyeri !== null && triaseUgd.skala_nyeri !== undefined) {
+                            nyeriDetails = `<b>Skor Nyeri:</b> <span class="badge bg-secondary">${triaseUgd.skala_nyeri}/10</span>`;
+                            if (triaseUgd.nyeri_tipe) nyeriDetails += ` (${triaseUgd.nyeri_tipe})`;
+                            if (triaseUgd.nyeri_lokasi) nyeriDetails += `, <b>Lokasi:</b> ${triaseUgd.nyeri_lokasi}`;
+                            if (triaseUgd.nyeri_durasi) nyeriDetails += `, <b>Durasi:</b> ${triaseUgd.nyeri_durasi}`;
+                        }
+
+                        let jatuhDetails = '-';
+                        if (triaseUgd.resiko_jatuh) {
+                            jatuhDetails = `<b>${triaseUgd.resiko_jatuh}</b>`;
+                            if (triaseUgd.resiko_jatuh_skor !== null) jatuhDetails += ` (Skor: ${triaseUgd.resiko_jatuh_skor})`;
+                        }
+
+                        const petugasNama = triaseUgd.petugas ? triaseUgd.petugas.nama : '-';
+
+                        html += `
+                            <div class="mb-2 p-2 border-start border-3 border-danger bg-light rounded shadow-sm">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <h5 class="text-danger mb-1"><i class="ti ti-activity-heartbeat"></i> TRIAGE IGD KLINIK</h5>
+                                    <div>${catBadge}</div>
+                                </div>
+                                <div class="row g-2 small">
+                                    <div class="col-12"><b>Keluhan Utama:</b> ${triaseUgd.keluhan_utama || '-'}</div>
+                                    <div class="col-12"><b>Survey Primer:</b> <span class="text-muted">${primerText}</span></div>
+                                    <div class="col-6"><b>Asesmen Nyeri:</b><br>${nyeriDetails}</div>
+                                    <div class="col-6"><b>Resiko Jatuh:</b><br>${jatuhDetails}</div>
+                                    <div class="col-12 border-top pt-1 mt-1 d-flex justify-content-between text-muted" style="font-size: 10px;">
+                                        <span><b>Tgl Triase:</b> ${formatTanggal(triaseUgd.tgl_triase.substring(0, 10))} ${triaseUgd.tgl_triase.substring(11, 16)}</span>
+                                        <span><b>Petugas:</b> ${petugasNama}</span>
+                                    </div>
+                                </div>
                             </div>`;
                     }
 

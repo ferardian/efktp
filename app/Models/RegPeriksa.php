@@ -111,6 +111,11 @@ class RegPeriksa extends Model
 		return $this->hasOne(TriaseIgd::class, 'no_rawat', 'no_rawat');
 	}
 
+	function triaseUgd()
+	{
+		return $this->hasOne(TriaseUgd::class, 'no_rawat', 'no_rawat');
+	}
+
 	function periksaLab()
 	{
 		return $this->hasMany(\App\Models\Lab\PeriksaLab::class, 'no_rawat', 'no_rawat');

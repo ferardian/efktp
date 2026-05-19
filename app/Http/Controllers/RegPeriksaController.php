@@ -52,6 +52,9 @@ class RegPeriksaController extends Controller
 			'triaseIgd' => function ($q) {
 				return $q->with(['skala1.master', 'skala2.master', 'skala3.master', 'skala4.master', 'skala5.master']);
 			},
+			'triaseUgd' => function ($q) {
+				return $q->with('petugas');
+			},
 		];
 	}
 
