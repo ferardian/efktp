@@ -258,7 +258,7 @@
                                         <div class="pain-face-card border rounded p-2 flex-fill" data-score="10" style="cursor: pointer;">
                                             <div style="font-size: 24px;">😭</div>
                                             <div class="fw-bold text-danger">10</div>
-                                            <small class="d-block small" style="font-size: 10px;">Siksaan</small>
+                                            <small class="d-block small" style="font-size: 10px;">Tidak Tertahankan</small>
                                         </div>
                                     </div>
 
@@ -479,7 +479,7 @@
             colorClass = 'text-danger';
             closestScore = 8;
         } else if (val === 10) {
-            desc = 'Siksaan';
+            desc = 'Tidak Tertahankan';
             colorClass = 'text-danger';
             closestScore = 10;
         }
