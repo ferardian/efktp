@@ -316,6 +316,39 @@
                             if (triaseUgd.resiko_jatuh_skor !== null) jatuhDetails += ` (Skor: ${triaseUgd.resiko_jatuh_skor})`;
                         }
 
+                        let bodyMapHtml = '';
+                        const hasPoints = triaseUgd.body_map_points && triaseUgd.body_map_points.length > 0;
+                        const hasLuka = triaseUgd.luka_perdarahan && triaseUgd.luka_perdarahan.trim().length > 0;
+                        
+                        if (hasPoints || hasLuka) {
+                            let markers = '';
+                            if (hasPoints) {
+                                triaseUgd.body_map_points.forEach((pt, index) => {
+                                    markers += `<span class="position-absolute badge rounded-pill bg-danger border border-white d-flex align-items-center justify-content-center" style="width: 14px; height: 14px; font-size: 8px; padding: 0; left: ${pt.x * 0.5}px; top: ${pt.y * 0.5}px; transform: translate(-50%, -50%); z-index: 20;">${index + 1}</span>`;
+                                });
+                            }
+
+                            bodyMapHtml = `
+                                <div class="col-12 border-top pt-2 mt-2">
+                                    <div class="row g-2 align-items-center">
+                                        ${hasPoints ? `
+                                        <div class="col-sm-4 text-center">
+                                            <div class="position-relative" style="width: 160px; height: 160px; margin: 0 auto; background: #fff; border: 1px solid #dee2e6; border-radius: 4px; overflow: hidden;">
+                                                <img src="{{ asset('img/body_map.png') }}" style="width: 100%; height: 100%; object-fit: contain;">
+                                                ${markers}
+                                            </div>
+                                            <small class="text-muted d-block mt-1" style="font-size: 9px;">Peta Lokasi Luka</small>
+                                        </div>` : ''}
+                                        <div class="${hasPoints ? 'col-sm-8' : 'col-12'}">
+                                            <div class="small"><b>Keterangan Luka & Perdarahan:</b></div>
+                                            <div class="text-muted small p-2 bg-white border rounded" style="min-height: 50px; font-size: 11px;">
+                                                ${triaseUgd.luka_perdarahan || '<i>Tidak ada rincian luka/perdarahan</i>'}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>`;
+                        }
+
                         const petugasNama = triaseUgd.petugas ? triaseUgd.petugas.nama : '-';
 
                         html += `
@@ -329,6 +362,7 @@
                                     <div class="col-12"><b>Survey Primer:</b> <span class="text-muted">${primerText}</span></div>
                                     <div class="col-6"><b>Asesmen Nyeri:</b><br>${nyeriDetails}</div>
                                     <div class="col-6"><b>Resiko Jatuh:</b><br>${jatuhDetails}</div>
+                                    ${bodyMapHtml}
                                     <div class="col-12 border-top pt-1 mt-1 d-flex justify-content-between text-muted" style="font-size: 10px;">
                                         <span><b>Tgl Triase:</b> ${formatTanggal(triaseUgd.tgl_triase.substring(0, 10))} ${triaseUgd.tgl_triase.substring(11, 16)}</span>
                                         <span><b>Petugas:</b> ${petugasNama}</span>
