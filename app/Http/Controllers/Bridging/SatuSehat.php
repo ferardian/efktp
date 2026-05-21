@@ -269,4 +269,137 @@ class SatuSehat extends Controller
             'count'  => count($synced)
         ]);
     }
+    public function medicationIndex()
+    {
+        return view('content.satusehat.medication');
+    }
+
+    public function getObatLokal(Request $request): JsonResponse
+    {
+        $keyword = $request->get('keyword', '');
+        $statusMap = $request->get('status_map', 'all'); // 'all', 'mapped', 'unmapped', 'not_synced'
+
+        $query = DB::table('databarang as d')
+            ->join('jenis as j', 'j.kdjns', '=', 'd.kdjns')
+            ->leftJoin('industrifarmasi as ind', 'ind.kode_industri', '=', 'd.kode_industri')
+            ->leftJoin('satu_sehat_mapping_obat as smo', 'smo.kode_brng', '=', 'd.kode_brng')
+            ->leftJoin('satu_sehat_medication as sm', 'sm.kode_brng', '=', 'd.kode_brng')
+            ->where('d.status', '1') // Status Aktif
+            ->where('j.nama', '!=', 'ALKES') // Bukan ALKES
+            ->select(
+                'd.kode_brng', 'd.nama_brng', 'd.kdjns', 'j.nama as nm_jns', 'ind.nama_industri',
+                'smo.obat_code', 'smo.obat_display', 'smo.form_code', 'smo.route_code', 'smo.denominator_code',
+                'sm.id_medication',
+                DB::raw("IF(smo.kode_brng IS NOT NULL, 1, 0) as is_mapped"),
+                DB::raw("IF(sm.id_medication IS NOT NULL, 1, 0) as is_synced")
+            );
+
+        if ($keyword) {
+            $query->where(function ($q) use ($keyword) {
+                $q->where('d.kode_brng', 'like', "%{$keyword}%")
+                  ->orWhere('d.nama_brng', 'like', "%{$keyword}%")
+                  ->orWhere('smo.obat_code', 'like', "%{$keyword}%")
+                  ->orWhere('smo.obat_display', 'like', "%{$keyword}%");
+            });
+        }
+
+        if ($statusMap === 'mapped') {
+            $query->whereNotNull('smo.kode_brng');
+        } elseif ($statusMap === 'unmapped') {
+            $query->whereNull('smo.kode_brng');
+        } elseif ($statusMap === 'not_synced') {
+            $query->whereNotNull('smo.kode_brng')->whereNull('sm.id_medication');
+        }
+
+        $data = $query->orderBy('d.nama_brng', 'asc')->paginate($request->get('limit', 20));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Data obat lokal berhasil diambil',
+            'data'    => $data
+        ]);
+    }
+
+    public function searchKfa(Request $request): JsonResponse
+    {
+        $params = $request->only([
+            'page', 'size', 'product_type', 'from_date', 'to_date', 
+            'farmalkes_type', 'keyword', 'template_code', 'packaging_code'
+        ]);
+        
+        if (!isset($params['page'])) $params['page'] = 1;
+        if (!isset($params['size'])) $params['size'] = 100;
+        if (!isset($params['product_type'])) $params['product_type'] = 'farmasi';
+
+        $kfaData = $this->service->getKfaProducts($params);
+
+        if (!$kfaData || !$kfaData['status']) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data dari server KFA SatuSehat',
+                'error'   => $kfaData['message'] ?? 'Unknown error'
+            ], 500);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Data KFA berhasil diambil',
+            'data'    => $kfaData['data']
+        ]);
+    }
+
+    public function saveMappingObat(Request $request): JsonResponse
+    {
+        $request->validate([
+            'kode_brng' => 'required|string',
+            'obat_code' => 'required|string',
+            'obat_system' => 'required|string',
+            'obat_display' => 'required|string',
+            'form_code' => 'nullable|string',
+            'form_system' => 'nullable|string',
+            'form_display' => 'nullable|string',
+            'route_code' => 'nullable|string',
+            'route_system' => 'nullable|string',
+            'route_display' => 'nullable|string',
+            'denominator_code' => 'nullable|string',
+            'denominator_system' => 'nullable|string',
+            'numerator_code' => 'nullable|string',
+            'numerator_system' => 'nullable|string'
+        ]);
+
+        $data = $request->except(['_token']);
+
+        try {
+            DB::table('satu_sehat_mapping_obat')->updateOrInsert(
+                ['kode_brng' => $data['kode_brng']],
+                $data
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Mapping Obat KFA berhasil disimpan'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menyimpan mapping: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function deleteMappingObat(Request $request, $kode_brng): JsonResponse
+    {
+        try {
+            DB::table('satu_sehat_mapping_obat')->where('kode_brng', $kode_brng)->delete();
+            return response()->json([
+                'success' => true,
+                'message' => 'Mapping Obat KFA berhasil dihapus'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus mapping: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

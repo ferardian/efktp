@@ -12,6 +12,7 @@ class SatuSehatClient
     protected string $authUrl;
     protected string $clientId;
     protected string $clientSecret;
+    protected string $kfaUrl;
 
     public function __construct()
     {
@@ -19,6 +20,7 @@ class SatuSehatClient
         $this->authUrl      = config('satusehat.auth_url');
         $this->clientId     = config('satusehat.client_id');
         $this->clientSecret = config('satusehat.client_secret');
+        $this->kfaUrl       = env('SATUSEHAT_KFA_V2_URL', 'https://api-satusehat.kemkes.go.id/kfa-v2');
     }
 
     /**
@@ -103,5 +105,17 @@ class SatuSehatClient
             'status' => true,
             'data'   => $response->json(),
         ];
+    }
+
+    /**
+     * Get KFA Products
+     */
+    public function getKfaProducts(array $params = []): array
+    {
+        $token = $this->getToken();
+        $response = Http::withToken($token)
+            ->get($this->kfaUrl . '/products/all', $params);
+
+        return $this->handleResponse($response);
     }
 }

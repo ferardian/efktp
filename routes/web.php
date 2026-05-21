@@ -470,6 +470,12 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::post('satusehat/observation-ttv/sync', [Bridging\SatuSehat::class, 'syncObservationTTV'])->name('satusehat.observation-ttv.sync');
 	Route::post('satusehat/auto-sync', [Bridging\SatuSehat::class, 'autoSync'])->name('satusehat.auto-sync');
 
+	Route::get('satusehat/medication', [Bridging\SatuSehat::class, 'medicationIndex'])->name('satusehat.medication.index');
+	Route::get('satusehat/medication/lokal', [Bridging\SatuSehat::class, 'getObatLokal'])->name('satusehat.medication.lokal');
+	Route::get('satusehat/medication/kfa', [Bridging\SatuSehat::class, 'searchKfa'])->name('satusehat.medication.kfa');
+	Route::post('satusehat/medication/mapping', [Bridging\SatuSehat::class, 'saveMappingObat'])->name('satusehat.medication.mapping.save');
+	Route::delete('satusehat/medication/mapping/{kode_brng}', [Bridging\SatuSehat::class, 'deleteMappingObat'])->name('satusehat.medication.mapping.delete');
+
 	// SETTING
 
 	Route::get('/setting', [BridgingPcareSettingController::class, 'index']);

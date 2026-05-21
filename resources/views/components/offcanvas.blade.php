@@ -92,6 +92,9 @@
                                 <a class="dropdown-item" href="{{ url('satusehat/mapping/lokasi') }}">
                                     Mapping Lokasi
                                 </a>
+                                <a class="dropdown-item {{ Request::is('satusehat/medication') ? 'active' : '' }}" href="{{ url('satusehat/medication') }}">
+                                    Medication
+                                </a>
                                 <a class="dropdown-item {{ Request::is('satusehat/encounter') ? 'active' : '' }}" href="{{ url('satusehat/encounter') }}">
                                     Encounter
                                 </a>
