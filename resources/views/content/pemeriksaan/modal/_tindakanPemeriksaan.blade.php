@@ -123,12 +123,12 @@
         $('#kd_petugas').select2({
             dropdownParent: $('#modalCppt'),
             ajax: {
-                url: `{{ url('/petugas/get') }}`,
+                url: `{{ url('/petugas/search') }}`,
                 dataType: 'json',
                 delay: 250,
                 data: function(params) {
                     return {
-                        petugas: params.term
+                        keyword: params.term
                     };
                 },
                 processResults: function(data) {
