@@ -40,6 +40,15 @@ class ResepDokterController extends Controller
                     $this->insertSql(new ResepDokter(), collect($request->dataObat)->map(function ($item) {
                         return $item;
                     }));
+
+                    // Otomatis simpan aturan pakai baru ke master
+                    foreach ($request->dataObat as $obat) {
+                        if (!empty($obat['aturan_pakai'])) {
+                            DB::table('master_aturan_pakai')->insertOrIgnore([
+                                'aturan' => $obat['aturan_pakai']
+                            ]);
+                        }
+                    }
                 }
             });
         } catch (QueryException $e) {
@@ -75,6 +84,13 @@ class ResepDokterController extends Controller
             $resep = ResepDokter::where($key)->update($request->all());
             if ($resep) {
                 $this->updateSql(new ResepDokter(), $request->all(), $key);
+
+                // Otomatis simpan aturan pakai baru ke master jika ada perubahan
+                if ($request->has('aturan_pakai') && !empty($request->aturan_pakai)) {
+                    DB::table('master_aturan_pakai')->insertOrIgnore([
+                        'aturan' => $request->aturan_pakai
+                    ]);
+                }
             }
             return response()->json('SUKSES');
         } catch (QueryException $e) {
