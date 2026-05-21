@@ -29,6 +29,16 @@ class ResepDokterController extends Controller
         return response()->json($aturan);
     }
 
+    public function storeAturanPakai(Request $request)
+    {
+        if ($request->has('aturan') && !empty($request->aturan)) {
+            DB::table('master_aturan_pakai')->insertOrIgnore([
+                'aturan' => $request->aturan
+            ]);
+        }
+        return response()->json('SUKSES');
+    }
+
     public function create(Request $request)
     {
         // return $request->dataObat;

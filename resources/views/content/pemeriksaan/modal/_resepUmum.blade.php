@@ -169,6 +169,14 @@
                     cache: true
                 },
                 placeholder: 'Ketik Aturan Pakai'
+            }).on('select2:select', function(e) {
+                const aturan = e.params.data.id;
+                if (aturan) {
+                    $.post(`{{ url('/resep/dokter/aturan-pakai') }}`, {
+                        _token: '{{ csrf_token() }}',
+                        aturan: aturan
+                    });
+                }
             });
 
             $(`#jmlObat${rowCount}`).on('input', (e) => {
@@ -214,6 +222,14 @@
                     cache: true
                 },
                 placeholder: 'Ketik Aturan Pakai'
+            }).on('select2:select', function(e) {
+                const aturanValue = e.params.data.id;
+                if (aturanValue) {
+                    $.post(`{{ url('/resep/dokter/aturan-pakai') }}`, {
+                        _token: '{{ csrf_token() }}',
+                        aturan: aturanValue
+                    });
+                }
             });
             if (aturan) {
                 aturanSelect.append(new Option(aturan, aturan, true, true)).trigger('change');
