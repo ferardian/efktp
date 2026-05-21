@@ -504,21 +504,21 @@ class SatuSehat extends Controller
 
         if ($existing && $existing->id_medication) {
             $payload['id'] = $existing->id_medication;
-            $res = $this->service->sendRequest('PUT', "Medication/{$existing->id_medication}", $payload);
+            $res = $this->service->put("Medication/{$existing->id_medication}", $payload);
         } else {
-            $res = $this->service->sendRequest('POST', "Medication", $payload);
+            $res = $this->service->post("Medication", $payload);
         }
 
-        if (isset($res['id'])) {
+        if ($res['status'] && isset($res['data']['id'])) {
             DB::table('satu_sehat_medication')->updateOrInsert(
                 ['kode_brng' => $kode_brng],
-                ['id_medication' => $res['id']]
+                ['id_medication' => $res['data']['id']]
             );
 
             return response()->json([
                 'success' => true,
                 'message' => 'Berhasil mengirim Medication ke SatuSehat',
-                'id_medication' => $res['id']
+                'id_medication' => $res['data']['id']
             ]);
         }
 
