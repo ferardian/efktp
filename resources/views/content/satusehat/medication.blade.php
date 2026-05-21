@@ -134,9 +134,19 @@
                             if (item.is_mapped == 1) {
                                 statusBadge = '<span class="badge bg-success">Termapping</span>';
                                 kfaInfo = `<strong>${item.obat_code}</strong><br><small class="text-muted">${item.obat_display}</small>`;
+                                
+                                if (item.is_synced == 1) {
+                                    kfaInfo += `<br><small class="text-info"><i class="ti ti-id-badge"></i> ID FHIR: ${item.id_medication}</small>`;
+                                }
+                                
+                                let syncBtnIcon = item.is_synced == 1 ? '<i class="ti ti-check"></i>' : '<i class="ti ti-cloud-upload"></i>';
+                                let syncBtnTitle = item.is_synced == 1 ? 'Update ke SatuSehat' : 'Kirim ke SatuSehat';
+                                let syncBtnClass = item.is_synced == 1 ? 'btn-outline-success' : 'btn-outline-info';
+
                                 actionBtn = `
                                     <div class="btn-group">
                                         <button class="btn btn-sm btn-outline-primary" onclick="openKfaModal('${item.kode_brng}', '${item.nama_brng.replace(/'/g, "\\'")}')"><i class="ti ti-edit"></i></button>
+                                        <button class="btn btn-sm ${syncBtnClass}" title="${syncBtnTitle}" onclick="syncMedication('${item.kode_brng}')">${syncBtnIcon}</button>
                                         <button class="btn btn-sm btn-outline-danger" onclick="deleteMapping('${item.kode_brng}')"><i class="ti ti-trash"></i></button>
                                     </div>
                                 `;
@@ -350,6 +360,37 @@
                             loadingAjax().close();
                             Swal.fire('Error!', 'Gagal menghapus mapping.', 'error');
                         }
+                    });
+                }
+            });
+        }
+
+        function syncMedication(kodeBrng) {
+            Swal.fire({
+                title: 'Kirim ke SatuSehat?',
+                text: "Data master obat ini akan dikirim ke server SatuSehat (resource Medication).",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Kirim',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    loadingAjax();
+                    $.post("{{ url('satusehat/medication/sync') }}", {
+                        _token: '{{ csrf_token() }}',
+                        kode_brng: kodeBrng
+                    }, function(res) {
+                        loadingAjax().close();
+                        if (res.success) {
+                            Swal.fire('Berhasil', res.message, 'success');
+                            loadLocalDrugs(currentLocalPage);
+                        } else {
+                            Swal.fire('Gagal', res.message || 'Terjadi kesalahan sistem', 'error');
+                        }
+                    }).fail(function(err) {
+                        loadingAjax().close();
+                        let errMsg = err.responseJSON && err.responseJSON.message ? err.responseJSON.message : 'Terjadi kesalahan sistem saat mengirim data';
+                        Swal.fire('Error', errMsg, 'error');
                     });
                 }
             });

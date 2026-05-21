@@ -475,6 +475,7 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::get('satusehat/medication/kfa', [Bridging\SatuSehat::class, 'searchKfa'])->name('satusehat.medication.kfa');
 	Route::post('satusehat/medication/mapping', [Bridging\SatuSehat::class, 'saveMappingObat'])->name('satusehat.medication.mapping.save');
 	Route::delete('satusehat/medication/mapping/{kode_brng}', [Bridging\SatuSehat::class, 'deleteMappingObat'])->name('satusehat.medication.mapping.delete');
+	Route::post('satusehat/medication/sync', [Bridging\SatuSehat::class, 'sendMedication'])->name('satusehat.medication.sync');
 
 	// SETTING
 

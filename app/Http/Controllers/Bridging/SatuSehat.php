@@ -402,4 +402,131 @@ class SatuSehat extends Controller
             ], 500);
         }
     }
+    public function sendMedication(Request $request): JsonResponse
+    {
+        $kode_brng = $request->input('kode_brng');
+        if (!$kode_brng) {
+            return response()->json(['success' => false, 'message' => 'kode_brng wajib diisi'], 400);
+        }
+
+        $mapping = DB::table('satu_sehat_mapping_obat as smo')
+            ->join('databarang as d', 'd.kode_brng', '=', 'smo.kode_brng')
+            ->where('smo.kode_brng', $kode_brng)
+            ->first();
+
+        if (!$mapping) {
+            return response()->json(['success' => false, 'message' => 'Data mapping obat belum ada'], 404);
+        }
+
+        $orgId = config('satusehat.org_id');
+
+        $payload = [
+            'resourceType' => 'Medication',
+            'meta' => [
+                'profile' => ['https://fhir.kemkes.go.id/r4/StructureDefinition/Medication']
+            ],
+            'identifier' => [
+                [
+                    'system' => "http://sys-ids.kemkes.go.id/medication/{$orgId}",
+                    'use' => 'official',
+                    'value' => $mapping->kode_brng
+                ]
+            ],
+            'code' => [
+                'coding' => [
+                    [
+                        'system' => rtrim($mapping->obat_system, '/'),
+                        'code' => $mapping->obat_code,
+                        'display' => $mapping->obat_display
+                    ]
+                ]
+            ],
+            'status' => 'active',
+            'manufacturer' => [
+                'reference' => "Organization/{$orgId}"
+            ],
+            'form' => [
+                'coding' => [
+                    [
+                        'system' => rtrim($mapping->form_system, '/'),
+                        'code' => $mapping->form_code,
+                        'display' => $mapping->form_display
+                    ]
+                ]
+            ],
+            'extension' => [
+                [
+                    'url' => 'https://fhir.kemkes.go.id/r4/StructureDefinition/MedicationType',
+                    'valueCodeableConcept' => [
+                        'coding' => [
+                            [
+                                'system' => 'http://terminology.kemkes.go.id/CodeSystem/medication-type',
+                                'code' => 'NC',
+                                'display' => 'Non-compound'
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $ingredient = [
+            'itemCodeableConcept' => [
+                'coding' => [
+                    [
+                        'system' => rtrim($mapping->obat_system, '/'),
+                        'code' => $mapping->obat_code,
+                        'display' => $mapping->obat_display
+                    ]
+                ]
+            ],
+            'isActive' => true
+        ];
+
+        if ($mapping->numerator_code && $mapping->denominator_code) {
+            $ingredient['strength'] = [
+                'numerator' => [
+                    'value' => 1,
+                    'system' => rtrim($mapping->numerator_system, '/'),
+                    'code' => $mapping->numerator_code
+                ],
+                'denominator' => [
+                    'value' => 1,
+                    'system' => rtrim($mapping->denominator_system, '/'),
+                    'code' => $mapping->denominator_code
+                ]
+            ];
+        }
+
+        $payload['ingredient'] = [$ingredient];
+
+        $existing = DB::table('satu_sehat_medication')->where('kode_brng', $kode_brng)->first();
+
+        if ($existing && $existing->id_medication) {
+            $payload['id'] = $existing->id_medication;
+            $res = $this->service->sendRequest('PUT', "Medication/{$existing->id_medication}", $payload);
+        } else {
+            $res = $this->service->sendRequest('POST', "Medication", $payload);
+        }
+
+        if (isset($res['id'])) {
+            DB::table('satu_sehat_medication')->updateOrInsert(
+                ['kode_brng' => $kode_brng],
+                ['id_medication' => $res['id']]
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Berhasil mengirim Medication ke SatuSehat',
+                'id_medication' => $res['id']
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Gagal mengirim Medication ke SatuSehat',
+            'response' => $res,
+            'payload' => $payload
+        ], 500);
+    }
 }
