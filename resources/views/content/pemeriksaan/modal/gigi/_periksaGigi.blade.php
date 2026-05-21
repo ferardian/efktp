@@ -315,7 +315,7 @@
             cek = formPemeriksaanGigiHasil.find('input[name=posisi_gigi]').val(id)
             selectPenyakit(selectKdPenyakit, modalPemeriksaanGigiHasil)
             selectTindakan(selectKdTindakan, modalPemeriksaanGigiHasil)
-            $.get(`/efktp/pemeriksaan/gigi/hasil`, {
+            $.get(`{{ url('/') }}/pemeriksaan/gigi/hasil`, {
                 no_rawat: formPemeriksaanGigi.find('input[name=no_rawat]').val(),
                 posisi: id,
             }).done((response) => {
@@ -341,7 +341,7 @@
                 searching: false,
                 info: false,
                 ajax: {
-                    url: `/efktp/pemeriksaan/gigi/hasil`,
+                    url: `{{ url('/') }}/pemeriksaan/gigi/hasil`,
                     data: {
                         dataTable: true,
                         no_rawat: no_rawat,
@@ -402,7 +402,7 @@
                 cancelButtonText: "Tidak"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    $.post(`/efktp/pemeriksaan/gigi/hasil/delete`, {
+                    $.post(`{{ url('/') }}/pemeriksaan/gigi/hasil/delete`, {
                         id: id,
                     }).done((response) => {
                         alertSuccessAjax().then(() => {

@@ -18,7 +18,7 @@
 
         function setVideoAntrean() {
             const content = $("#txtVideoAntrean").val();
-            $.post(`/efktp/setting/antrean/video`, {
+            $.post(`{{ url('/') }}/setting/antrean/video`, {
                 title: 'video',
                 content: content
             }).done((response) => {
@@ -31,7 +31,7 @@
         }
 
         function getVideoAntrean() {
-            $.get(`/efktp/setting/antrean/video`).done((response) => {
+            $.get(`{{ url('/') }}/setting/antrean/video`).done((response) => {
                 const content = response.content
                 contentVideoAntrean.html(content);
                 $("#txtVideoAntrean").val(content)

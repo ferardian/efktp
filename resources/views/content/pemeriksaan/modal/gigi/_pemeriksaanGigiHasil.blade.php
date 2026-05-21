@@ -66,7 +66,7 @@
             const data = getDataForm('formPemeriksaanGigiHasil', ['input', 'select', 'textarea']);
             data['no_rawat'] = formPemeriksaanGigi.find('input[name=no_rawat]').val();
             const no_rkm_medis = formPemeriksaanGigi.find('input[name=no_rkm_medis]').val();
-            $.post(`/efktp/pemeriksaan/gigi/hasil`, data).done((response) => {
+            $.post(`{{ url('/') }}/pemeriksaan/gigi/hasil`, data).done((response) => {
                 alertSuccessAjax().then(() => {
                     renderHasilGigi(data['no_rawat']);
                     loadRiwayatGigi(no_rkm_medis)

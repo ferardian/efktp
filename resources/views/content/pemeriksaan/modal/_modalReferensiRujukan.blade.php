@@ -27,7 +27,7 @@
 
         function renderRujukan() {
             const loading = loadingAjax();
-            $.get(`/efktp/bridging/pcare/spesialis/rujukan`, {
+            $.get(`{{ url('/') }}/bridging/pcare/spesialis/rujukan`, {
                 kdSubSpesialis: $('#kdSubSpesialis').val(),
                 kdSarana: $('#kdSarana').val(),
                 tglRujuk: $('#tglEstRujukan').val(),

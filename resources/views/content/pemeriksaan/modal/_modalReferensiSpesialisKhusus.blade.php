@@ -44,7 +44,7 @@
 
         function renderFaskesKhusus(kode, noKartu, tglEstRujuk) {
             const loading = loadingAjax();
-            $.get(`/efktp/bridging/pcare/spesialis/rujukan/khusus`, {
+            $.get(`{{ url('/') }}/bridging/pcare/spesialis/rujukan/khusus`, {
                 kdKhusus: kode,
                 noKartu: noKartu,
                 tglEstRujuk: tglEstRujuk
@@ -140,7 +140,7 @@
         function renderReferensiSpesialisKhusus() {
             $('#modalReferensiSpesialisKhusus').find('.modal-title').html('Referensi Spesialis')
             const loading = loadingAjax();
-            $.get(`/efktp/bridging/pcare/spesialis/khusus`).done((response) => {
+            $.get(`{{ url('/') }}/bridging/pcare/spesialis/khusus`).done((response) => {
                 if (response.metaData.code == 200) {
                     loading.close();
                     $('#modalReferensiSpesialisKhusus').modal('show')

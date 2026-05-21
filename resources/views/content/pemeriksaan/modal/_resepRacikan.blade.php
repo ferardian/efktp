@@ -82,7 +82,7 @@
 
 
         function getResepRacikan(no_resep, no_racik = '') {
-            const racikan = $.get(`/efktp/resep/racikan/get`, {
+            const racikan = $.get(`{{ url('/') }}/resep/racikan/get`, {
                 no_resep: no_resep,
                 no_racik: no_racik,
             })

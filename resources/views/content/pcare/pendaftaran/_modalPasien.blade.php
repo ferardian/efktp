@@ -462,7 +462,7 @@
                         formRegistrasiPoli.find('input[name=no_reg]').val(response)
                     });
                     // // SET POLIKLINIK
-                    // $.get(`/efktp/mapping/pcare/poliklinik`, {
+                    // $.get(`{{ url('/') }}/mapping/pcare/poliklinik`, {
                     //     kdPoliPcare: response.poli.kdPoli
                     // }).done((resultPoli) => {
 
@@ -475,7 +475,7 @@
                     // })
 
                     // // GET DOKTER
-                    // $.get(`/efktp/bridging/pcare/dokter`).done((respDokter) => {
+                    // $.get(`{{ url('/') }}/bridging/pcare/dokter`).done((respDokter) => {
                     //     const dokter = respDokter.response.list
                     //     const kdDokterPcare = dokter.map((dr, index) => {
                     //         if (index == 0) {
@@ -483,7 +483,7 @@
                     //         }
                     //     }).join('')
 
-                    //     $.get(`/efktp/mapping/pcare/dokter`, {
+                    //     $.get(`{{ url('/') }}/mapping/pcare/dokter`, {
                     //         kdDokterPcare: kdDokterPcare
                     //     }).done((resDokter) => {
                     //         loadingAjax().close();

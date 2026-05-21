@@ -49,7 +49,7 @@
                 const endDate = $('#end_date').val();
 
                 $.ajax({
-                    url: '/satusehat/condition/data',
+                    url: '{{ url("satusehat/condition/data") }}',
                     type: 'GET',
                     data: {
                         start_date: startDate,
@@ -109,7 +109,7 @@
                 btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>');
 
                 $.ajax({
-                    url: '/satusehat/condition/sync',
+                    url: '{{ url("satusehat/condition/sync") }}',
                     type: 'POST',
                     data: {
                         _token: '{{ csrf_token() }}',

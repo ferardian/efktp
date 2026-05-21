@@ -24,7 +24,7 @@
         function renderReferensiSpesialis() {
             $('#modalReferensiSpesialis').find('.modal-title').html('Referensi Spesialis')
             const loading = loadingAjax();
-            $.get(`/efktp/bridging/pcare/spesialis`).done((response) => {
+            $.get(`{{ url('/') }}/bridging/pcare/spesialis`).done((response) => {
                 if (response.metaData.code == 200) {
                     loading.close();
                     $('#modalReferensiSpesialis').modal('show')

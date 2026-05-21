@@ -87,7 +87,7 @@
 
         function getPeserta(no_peserta) {
             loadingAjax();
-            $.get(`/efktp/bridging/pcare/peserta/${no_peserta}`).done((response) => {
+            $.get(`{{ url('/') }}/bridging/pcare/peserta/${no_peserta}`).done((response) => {
                 if (response.metaData.code == 200) {
                     const result = response.response;
                     const umur = hitungUmur(splitTanggal(result.tglLahir));

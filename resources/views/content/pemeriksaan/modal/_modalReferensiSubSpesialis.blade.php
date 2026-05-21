@@ -46,7 +46,7 @@
 
         function renderReferensiSubspesialis(kdSpesialis) {
             loadingAjax()
-            $.get(`/efktp/bridging/pcare/spesialis/${kdSpesialis}/subspesialis`).done((response) => {
+            $.get(`{{ url('/') }}/bridging/pcare/spesialis/${kdSpesialis}/subspesialis`).done((response) => {
                 if (response.metaData.code == 200) {
                     loadingAjax().close();
                     $('#modalReferensiSpesialis').modal('hide')
@@ -102,7 +102,7 @@
 
         function renderTbSarana() {
             loadingAjax()
-            $.get(`/efktp/bridging/pcare/spesialis/sarana`).done((response) => {
+            $.get(`{{ url('/') }}/bridging/pcare/spesialis/sarana`).done((response) => {
                 if (response.metaData.code == 200) {
                     $('#tbReferensiSarana').removeClass('d-none')
                     loadingAjax().close();

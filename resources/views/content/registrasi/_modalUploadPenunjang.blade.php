@@ -71,7 +71,7 @@
 
         Dropzone.autoDiscover = false;
         let formUploadPenunjang = new Dropzone("#formUploadPenunjang", {
-            url: `/efktp/upload`,
+            url: `{{ url('/') }}/upload`,
             addRemoveLinks: true,
             autoProcessQueue: false,
             uploadMultiple: true,
@@ -108,7 +108,7 @@
         })
 
         modalUpload.on('shown.bs.modal', () => {
-            $.get(`/efktp/berkas/penunjang/kategori/first`).done((response) => {
+            $.get(`{{ url('/') }}/berkas/penunjang/kategori/first`).done((response) => {
                 const option = new Option(response.kategori, response.id, true, true);
                 kategori.append(option).trigger('change');
             })
@@ -139,7 +139,7 @@
                 tags: true,
                 cache: true,
                 ajax: {
-                    url: `/efktp/berkas/penunjang/kategori`,
+                    url: `{{ url('/') }}/berkas/penunjang/kategori`,
                     dataType: 'json',
                     data: (params) => {
                         const query = {
@@ -164,7 +164,7 @@
         }
 
         function rendercontainerBerkas(no_rawat) {
-            $.get(`/efktp/upload`, {
+            $.get(`{{ url('/') }}/upload`, {
                 no_rawat: no_rawat
             }).done((response) => {
                 if (response.length) {
@@ -216,7 +216,7 @@
                 confirmButtonText: 'Ya, Hapus!'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    $.post(`/efktp/upload/delete/${id}`).done((response) => {
+                    $.post(`{{ url('/') }}/upload/delete/${id}`).done((response) => {
                         toast()
                         rendercontainerBerkas(modalUpload.find('input[name=no_rawat]').val())
                     }).fail((error) => {
@@ -267,7 +267,7 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     data.forEach((item) => {
-                        $.post(`/efktp/upload/delete/${item}`).done((response) => {
+                        $.post(`{{ url('/') }}/upload/delete/${item}`).done((response) => {
                             toast()
                             rendercontainerBerkas(modalUpload.find('input[name=no_rawat]').val())
                             btnResetCheckBerkas.addClass('d-none')
@@ -294,7 +294,7 @@
         }
 
         kategori.on('select2:select', (e) => {
-            $.post(`/efktp/berkas/penunjang/kategori`, {
+            $.post(`{{ url('/') }}/berkas/penunjang/kategori`, {
                 kategori: e.currentTarget.value
             }).done((response) => {
                 if (response.message == 'SUKSES') {

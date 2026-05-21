@@ -150,7 +150,7 @@
 
 
             })
-            $.get(`/efktp/rujuk/keluar/detail`, {
+            $.get(`{{ url('/') }}/rujuk/keluar/detail`, {
                 no_rawat: no_rawat
             }).done((response) => {
                 if (!Object.keys(response).length) {
@@ -207,7 +207,7 @@
         }
 
         function setNoRujukEksternal() {
-            return $.get(`/efktp/rujuk/keluar/nomor`)
+            return $.get(`{{ url('/') }}/rujuk/keluar/nomor`)
         }
 
         const selectEksternal = (id) => {
@@ -220,7 +220,7 @@
             scrollAfterSelect: true,
             cache: true,
             ajax: {
-                url: `/efktp/rujuk/keluar/keterangan`,
+                url: `{{ url('/') }}/rujuk/keluar/keterangan`,
                 dataType: 'JSON',
 
                 data: (params) => {
@@ -249,7 +249,7 @@
             scrollAfterSelect: true,
             cache: true,
             ajax: {
-                url: `/efktp/rujuk/keluar/faskes`,
+                url: `{{ url('/') }}/rujuk/keluar/faskes`,
                 dataType: 'JSON',
 
                 data: (params) => {
@@ -282,7 +282,7 @@
                 scrollY: '25vh',
                 scrollX: true,
                 ajax: {
-                    url: `/efktp/rujuk/keluar`,
+                    url: `{{ url('/') }}/rujuk/keluar`,
                     data: {
                         dataTable: true,
                         tglAwal: tglAwal,
@@ -365,7 +365,7 @@
             loadingAjax();
             const data = getDataForm('formRujukanEksternal', ['input', 'select']);
             data['keterangan_diagnosa'] = formRujukanEksternal.find('select[name="keterangan_diagnosa"] option:selected').text();
-            $.post(`/efktp/rujuk/keluar`, data).done((response) => {
+            $.post(`{{ url('/') }}/rujuk/keluar`, data).done((response) => {
                 setStatusLayan(data['no_rawat'], 'Dirujuk').done((response) => {
                     loadingAjax().close();
                     loadRujukEksternal(tglAwal, tglAkhir)
@@ -417,7 +417,7 @@
                 cancelButtonText: "Tidak, Batalkan"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    $.post(`/efktp/rujuk/keluar/delete`, {
+                    $.post(`{{ url('/') }}/rujuk/keluar/delete`, {
                         no_rawat: no_rawat,
                     }).done((response) => {
                         alertSuccessAjax('Hapus data rujukan').then(() => {
@@ -451,7 +451,7 @@
                 }
 
             })
-            modalPrintRujukEksternal.find("#print").removeAttr('src').attr('src', `/efktp/rujuk/keluar/print?no_rawat=${no_rawat}`)
+            modalPrintRujukEksternal.find("#print").removeAttr('src').attr('src', `{{ url('/') }}/rujuk/keluar/print?no_rawat=${no_rawat}`)
         }
         modalPrintRujukEksternal.on('hidden.bs.modal', () => {
             modalPrintRujukEksternal.find("#print").removeAttr('src');

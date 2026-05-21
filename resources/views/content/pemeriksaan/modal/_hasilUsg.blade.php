@@ -819,7 +819,7 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
-                        url: `/efktp/hasil-usg`,
+                        url: `{{ url('/') }}/hasil-usg`,
                         data: {
                             no_rawat: no_rawat
                         },

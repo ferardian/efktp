@@ -411,7 +411,7 @@
     {{--                fixedHeader: false,--}}
     {{--                scrollY: setTableHeight(),--}}
     {{--                ajax: {--}}
-    {{--                    url: "/efktp/paket-obat/datatable",--}}
+    {{--                    url: "{{ url('/') }}/paket-obat/datatable",--}}
     {{--                },--}}
     {{--                columns: [{--}}
     {{--                    title: 'Paket',--}}
@@ -478,7 +478,7 @@
     {{--            }).then((result) => {--}}
     {{--                if (result.isConfirmed) {--}}
     {{--                    $.ajax({--}}
-    {{--                        url: `/efktp/paket-obat/${id}`,--}}
+    {{--                        url: `{{ url('/') }}/paket-obat/${id}`,--}}
     {{--                        type: 'DELETE',--}}
     {{--                        success: function (response) {--}}
     {{--                            showToast('Berhasil Hapus Paket Obat');--}}
@@ -495,7 +495,7 @@
     {{--        function editPaketObat(id) {--}}
     {{--            const formPaketObat = $('#formPaketObat');--}}
 
-    {{--            $.get(`/efktp/paket-obat/${id}`).done((response) => {--}}
+    {{--            $.get(`{{ url('/') }}/paket-obat/${id}`).done((response) => {--}}
     {{--                const {data} = response;--}}
 
     {{--                if (data.length === 0) {--}}
@@ -561,7 +561,7 @@
     {{--                        placeholder: 'Pilih Template Racikan...',--}}
     {{--                        width: '100%',--}}
     {{--                        ajax: {--}}
-    {{--                            url: '/efktp/resep/racikan/template/search',--}}
+    {{--                            url: '{{ url('/') }}/resep/racikan/template/search',--}}
     {{--                            dataType: 'JSON',--}}
 
     {{--                            data: (params) => {--}}
@@ -643,7 +643,7 @@
     {{--                placeholder: 'Pilih Template Racikan...',--}}
     {{--                width: '100%',--}}
     {{--                ajax: {--}}
-    {{--                    url: '/efktp/resep/racikan/template/search',--}}
+    {{--                    url: '{{ url('/') }}/resep/racikan/template/search',--}}
     {{--                    dataType: 'JSON',--}}
 
     {{--                    data: (params) => {--}}
@@ -735,7 +735,7 @@
     {{--                racik: dataRacik--}}
     {{--            }--}}
 
-    {{--            $.post(`/efktp/paket-obat`, data).done((response) => {--}}
+    {{--            $.post(`{{ url('/') }}/paket-obat`, data).done((response) => {--}}
     {{--                renderTablePaketObat()--}}
     {{--                $('#formPaketObat').find('input').val("")--}}
     {{--                $('#formPaketObat').find('select').val("").change()--}}

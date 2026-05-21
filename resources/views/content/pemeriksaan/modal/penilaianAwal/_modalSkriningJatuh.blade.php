@@ -122,7 +122,7 @@
 
             })
 
-            $.get(`/efktp/skrining/jatuh`, {
+            $.get(`{{ url('/') }}/skrining/jatuh`, {
                 no_rawat: no_rawat
             }).done((response) => {
                 const result = Object.keys(response).length
@@ -144,7 +144,7 @@
 
         function simpanSkriningJatuh() {
             const data = getDataForm('formSkriningJatuh', ['input', 'select', 'textarea']);
-            $.post(`/efktp/skrining/jatuh`, data).done((response) => {
+            $.post(`{{ url('/') }}/skrining/jatuh`, data).done((response) => {
                 const tanggal = new Date()
                 $('#alertSkrining').removeClass('d-none')
                 $('#alertSkrining').find('#tgl_penilaian').html("{{ date('Y-m-d H:i:s') }}")
@@ -157,11 +157,11 @@
 
         function cetakSkriningJatuh() {
             const no_rawat = modalSkriningJatuh.find('#no_rawat').val();
-            $.get(`/efktp/skrining/jatuh`, {
+            $.get(`{{ url('/') }}/skrining/jatuh`, {
                 no_rawat: no_rawat
             }).done((response) => {
                 modalCetakSkrining.modal('show')
-                modalCetakSkrining.find('#print').removeAttr('src').attr('src', `/efktp/skrining/jatuh/print?no_rawat=${no_rawat}`);
+                modalCetakSkrining.find('#print').removeAttr('src').attr('src', `{{ url('/') }}/skrining/jatuh/print?no_rawat=${no_rawat}`);
             });
         }
 

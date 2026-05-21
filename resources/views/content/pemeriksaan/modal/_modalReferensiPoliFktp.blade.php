@@ -21,7 +21,7 @@
 
         function renderReferensiPoliFktp() {
             loadingAjax();
-            $.get(`/efktp/bridging/pcare/fktp/poli`).done((response) => {
+            $.get(`{{ url('/') }}/bridging/pcare/fktp/poli`).done((response) => {
                 if (response.metaData.code == '200') {
 
                     loadingAjax().close();

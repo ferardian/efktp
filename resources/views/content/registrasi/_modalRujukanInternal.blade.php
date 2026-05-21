@@ -100,7 +100,7 @@
 
         function simpanRujukanInternal() {
             const data = getDataForm('formRujukanInternalPoli', ['input', 'select']);
-            $.post(`/efktp/rujuk/internal/poli`, data).done((response) => {
+            $.post(`{{ url('/') }}/rujuk/internal/poli`, data).done((response) => {
                 if (response) {
                     alertSuccessAjax().then(() => {
                         renderTbRujuk(tglAwalRujuk, tglAkhirRujuk);
@@ -120,7 +120,7 @@
                 processing: true,
                 scrollY: '25vh',
                 ajax: {
-                    url: `/efktp/rujuk/internal/poli`,
+                    url: `{{ url('/') }}/rujuk/internal/poli`,
                     data: {
                         dataTable: true,
                         tglAwal: tglAwal,
@@ -207,7 +207,7 @@
                 cancelButtonText: "Tidak, Batalkan"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    $.post(`/efktp/rujuk/internal/poli/delete`, {
+                    $.post(`{{ url('/') }}/rujuk/internal/poli/delete`, {
                         no_rawat: no_rawat,
                     }).done((response) => {
                         alertSuccessAjax('Hapus data rujukan')
@@ -220,7 +220,7 @@
         }
 
         function modalCpptRujuk(no_rawat, kd_dokter) {
-            $.get(`/efktp/rujuk/internal/poli/show`, {
+            $.get(`{{ url('/') }}/rujuk/internal/poli/show`, {
                 no_rawat: no_rawat
             }).done((response) => {
                 const regPeriksa = response.reg_periksa;

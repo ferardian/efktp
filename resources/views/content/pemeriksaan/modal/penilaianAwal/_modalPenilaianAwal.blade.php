@@ -344,7 +344,7 @@
 
         function simpanPenilaianAwalKeperawatan() {
             const data = getDataForm('formPenilaianAwalKeperawatan', ['input', 'select', 'textarea']);
-            $.post(`/efktp/penilaian/awal/keperawatan/ralan`, data).done((response) => {
+            $.post(`{{ url('/') }}/penilaian/awal/keperawatan/ralan`, data).done((response) => {
                 const tanggal = new Date()
                 $('#alertPenilaian').removeClass('d-none')
                 $('#alertPenilaian').find('#tgl_penilaian').html("{{ date('Y-m-d H:i:s') }}")
@@ -356,7 +356,7 @@
         }
 
         function getPenilaianAwalKeperawatan(no_rawat) {
-            const penilaian = $.get(`/efktp/penilaian/awal/keperawatan/ralan`, {
+            const penilaian = $.get(`{{ url('/') }}/penilaian/awal/keperawatan/ralan`, {
                 no_rawat: no_rawat
             })
             return penilaian;
@@ -371,7 +371,7 @@
             const no_rawat = modalPenilaianAwalKeperawatan.find('#no_rawat').val();
             getPenilaianAwalKeperawatan(no_rawat).done((response) => {
                 modalCetakPenilaian.modal('show')
-                modalCetakPenilaian.find('#print').attr('src', `/efktp/penilaian/awal/keperawatan/ralan/print?no_rawat=${no_rawat}`);
+                modalCetakPenilaian.find('#print').attr('src', `{{ url('/') }}/penilaian/awal/keperawatan/ralan/print?no_rawat=${no_rawat}`);
 
             })
         }
