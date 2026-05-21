@@ -28,6 +28,16 @@
                                         </a>
                                     </li>
                                     <li class="nav-item" role="presentation">
+                                        <a href="#tabs-permintaan-lab" class="nav-link" data-bs-toggle="tab" aria-selected="false" role="tab" tabindex="-1">
+                                            <i class="ti ti-flask me-1"></i> Permintaan Lab
+                                        </a>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <a href="#tabs-hasil-lab" class="nav-link" data-bs-toggle="tab" aria-selected="false" role="tab" tabindex="-1">
+                                            <i class="ti ti-report-medical me-1"></i> Hasil Lab
+                                        </a>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
                                         <a href="#tabs-billing-ranap" class="nav-link" data-bs-toggle="tab" aria-selected="false" role="tab" tabindex="-1">
                                             <i class="ti ti-receipt me-1"></i> Billing
                                         </a>
@@ -45,6 +55,12 @@
                                     <div class="tab-pane fade" id="tabs-tindakan-ranap" role="tabpanel">
                                         @include('content.kamarInap.cppt.sub._tindakan')
                                     </div>
+                                    <div class="tab-pane fade" id="tabs-permintaan-lab" role="tabpanel">
+                                        @include('content.laboratorium.sub._formPermintaanTab')
+                                    </div>
+                                    <div class="tab-pane fade" id="tabs-hasil-lab" role="tabpanel">
+                                        @include('content.laboratorium.sub._hasilPeriksaTab')
+                                    </div>
                                     <div class="tab-pane fade" id="tabs-billing-ranap" role="tabpanel">
                                         @include('content.kamarInap.cppt.sub._billing')
                                     </div>
@@ -61,6 +77,13 @@
                 <button type="button" id="btnResetCpptRanap" class="btn btn-warning d-none"><i class="ti ti-reload me-1"></i>Baru</button>
                 <button type="button" id="btnSalinCpptRanap" class="btn btn-primary d-none"><i class="ti ti-copy me-1"></i> Copy</button>
                 <button type="button" id="btnSimpanCpptRanap" class="btn btn-success" onclick="createCpptRanap()"><i class="ti ti-device-floppy me-1"></i> Simpan</button>
+                {{-- button permintaan lab --}}
+                <button type="button" class="btn btn-primary d-none" id="btndataDetailPermintaanTab">
+                    <i class="ti ti-eye me-1"></i> History Permintaan
+                </button>
+                <button type="button" class="btn btn-success d-none" id="btnKirimPermintaanTab" onclick="createPermintaanLabTab()">
+                    <i class="ti ti-device-floppy me-1"></i> Kirim Permintaan
+                </button>
                 <button type="button" class="btn btn-danger" data-bs-dismiss="modal"><i class="ti ti-x me-1"></i>Keluar</button>
             </div>
         </div>
@@ -186,20 +209,81 @@
                 language: "id",
             });
 
+            // Tab shown event listeners to control button visibility and data load
+            $('a[href="#tabs-pemeriksaan"]').on('shown.bs.tab', function() {
+                $('#btnSimpanCpptRanap').removeClass('d-none');
+                const isEdit = $('#btnSimpanCpptRanap').attr('onclick') && $('#btnSimpanCpptRanap').attr('onclick').includes('updateCpptRanap');
+                if (isEdit) {
+                    $('#btnResetCpptRanap').removeClass('d-none');
+                    $('#btnSalinCpptRanap').removeClass('d-none');
+                } else {
+                    $('#btnResetCpptRanap').addClass('d-none');
+                    $('#btnSalinCpptRanap').addClass('d-none');
+                }
+                $('#btnKirimPermintaanTab').addClass('d-none');
+                $('#btndataDetailPermintaanTab').addClass('d-none');
+            });
+
             // Force sub-tab 'Umum' when main 'Resep' tab is shown
             $('a[href="#tabs-resep"]').on('shown.bs.tab', function() {
+                $('#btnSimpanCpptRanap').addClass('d-none');
+                $('#btnResetCpptRanap').addClass('d-none');
+                $('#btnSalinCpptRanap').addClass('d-none');
+                $('#btnKirimPermintaanTab').addClass('d-none');
+                $('#btndataDetailPermintaanTab').addClass('d-none');
+
                 $('#tabObat a[href="#tabsResepUmum"]').tab('show');
+            });
+
+            $('a[href="#tabs-tindakan-ranap"]').on('shown.bs.tab', function() {
+                $('#btnSimpanCpptRanap').addClass('d-none');
+                $('#btnResetCpptRanap').addClass('d-none');
+                $('#btnSalinCpptRanap').addClass('d-none');
+                $('#btnKirimPermintaanTab').addClass('d-none');
+                $('#btndataDetailPermintaanTab').addClass('d-none');
             });
 
             // Load billing data when billing tab is shown
             $('a[href="#tabs-billing-ranap"]').on('shown.bs.tab', function() {
+                $('#btnSimpanCpptRanap').addClass('d-none');
+                $('#btnResetCpptRanap').addClass('d-none');
+                $('#btnSalinCpptRanap').addClass('d-none');
+                $('#btnKirimPermintaanTab').addClass('d-none');
+                $('#btndataDetailPermintaanTab').addClass('d-none');
+
                 const noRawat = formCpptRanap.find('input[name="no_rawat"]').val();
                 loadBillingRanap(noRawat);
+            });
+
+            $('a[href="#tabs-permintaan-lab"]').on('shown.bs.tab', function() {
+                $('#btnSimpanCpptRanap').addClass('d-none');
+                $('#btnResetCpptRanap').addClass('d-none');
+                $('#btnSalinCpptRanap').addClass('d-none');
+                $('#btnKirimPermintaanTab').removeClass('d-none');
+                $('#btndataDetailPermintaanTab').removeClass('d-none');
+
+                const no_rawat = formCpptRanap.find('input[name="no_rawat"]').val();
+                permintaanLabTab(no_rawat);
+            });
+
+            $('a[href="#tabs-hasil-lab"]').on('shown.bs.tab', function() {
+                $('#btnSimpanCpptRanap').addClass('d-none');
+                $('#btnResetCpptRanap').addClass('d-none');
+                $('#btnSalinCpptRanap').addClass('d-none');
+                $('#btnKirimPermintaanTab').addClass('d-none');
+                $('#btndataDetailPermintaanTab').addClass('d-none');
+
+                const no_rawat = formCpptRanap.find('input[name="no_rawat"]').val();
+                showPeriksaLabTab(no_rawat);
             });
         })
 
         modalCpptRanap.on('hidden.bs.modal', () => {
             $('#listRiwayat').empty()
+            const targetTabsPemeriksaan = modalCpptRanap.find('a[href="#tabs-pemeriksaan"]');
+            if (!targetTabsPemeriksaan.hasClass('active')) {
+                targetTabsPemeriksaan.tab('show');
+            }
         });
 
         modalCpptRanap.on('hide.bs.modal', () => {
@@ -525,6 +609,369 @@
                 tabelResepRacikan.addClass('d-none')
                 btnSimpanRacikan.addClass('d-none')
             }
+        }
+        const formPermintaanLabTab = $('#formPermintaanLabTab');
+        const selectJenisPeriksaLabTab = formPermintaanLabTab.find('#pemeriksaanTab');
+        const tablePermintaanLabTab = $('#tablePermintaanLabTab');
+        const tableHasilPermintaanTab = $('#tableHasilPermintaanTab');
+
+        function permintaanLabTab(no_rawat) {
+            getRegDetail(no_rawat).done((response) => {
+                const {
+                    pasien,
+                    dokter,
+                    poliklinik,
+                    diagnosa
+                } = response;
+                formPermintaanLabTab.find('#no_rawatTab').val(no_rawat);
+                formPermintaanLabTab.find('#no_rkm_medisTab').val(response.no_rkm_medis);
+                formPermintaanLabTab.find('#nm_pasienTab').val(`${pasien.nm_pasien} (${pasien.jk})`);
+                formPermintaanLabTab.find('#tgl_lahirTab').val(`${formatTanggal(pasien.tgl_lahir)} / ${response.umurdaftar} ${response.sttsumur}`);
+                formPermintaanLabTab.find('#kd_dokterTab').val(response.kd_dokter)
+                formPermintaanLabTab.find('#nm_dokterTab').val(dokter.nm_dokter)
+                formPermintaanLabTab.find('#status_lanjutTab').val(response.status_lanjut)
+                formPermintaanLabTab.find('#statusTab').val(response.status_lanjut)
+                formPermintaanLabTab.find('#kd_poliTab').val(response.kd_poli)
+                formPermintaanLabTab.find('#nm_poliTab').val(poliklinik.nm_poli)
+
+                const diagnosaPasien = diagnosa.map((item) => {
+                    return item.kd_penyakit
+                }).join(';')
+
+                formPermintaanLabTab.find('#diagnosaTab').val(diagnosaPasien)
+                getPermintaanLabTab(no_rawat);
+            });
+            getNomorPermintaanTab();
+        }
+
+        function getNomorPermintaanTab() {
+            return $.get(`{{ url('/lab/permintaan/noorder') }}`).done((response) => {
+                formPermintaanLabTab.find('#noorderTab').val(response)
+            })
+        }
+
+        function getPermintaanLabTab(no_rawat) {
+            $.get(`{{ url('/lab/permintaan/get') }}`, {
+                no_rawat: no_rawat
+            }).done((response) => {
+                let contentPermintaan = '';
+                tableHasilPermintaanTab.find('tbody').empty();
+                if (Object.values(response).length) {
+                    const permintaan = response.map((item, index) => {
+                        return `<tr>
+                        <td>${index+1}</td>
+                        <td>${item.noorder} <a href="javascript:void(0)" onclick="deletePermintaanLabTab('${item.noorder}')" title="Hapus permintaan" class="text-red"><i class="ti ti-trash"></i></a> ${isGetHasilLabTab(item)}</td>
+                        <td>${splitTanggal(item.tgl_permintaan)} ${item.jam_permintaan}</td>
+                        <td>${item.informasi_tambahan}</td>
+                        <td>${item.diagnosa_klinis}</td>
+                        <td>${splitTanggal(item.tgl_sampel)} ${item.jam_sampel}</td>
+                        <td>${splitTanggal(item.tgl_hasil)} ${item.jam_hasil}</td>
+                        </tr>${getPermintaanPeriksa(item.pemeriksaan)}`
+                    }).join('');
+                    contentPermintaan = permintaan;
+                    tableHasilPermintaanTab.removeClass('d-none');
+                } else {
+                    contentPermintaan = `<tr><td colspan=7 class="text-center text-danger"><strong>Tidak ada permintaan lab</strong></td></tr>`
+                    tableHasilPermintaanTab.addClass('d-none');
+                }
+                tableHasilPermintaanTab.find('tbody').append(contentPermintaan)
+            }).fail((error) => {
+                alertErrorAjax(error)
+            })
+        }
+
+        function isGetHasilLabTab(item) {
+            if (item.tgl_hasil !== '0000-00-00') {
+                return `<a href="javascript:void(0)" onclick="showHasilPermintaanLabTab('${item.no_rawat}', '${item.tgl_hasil}')" title="Lihat Hasil" class="text-success"><i class="ti ti-eye"></i></a>`
+            }
+            return '';
+        }
+
+        function deletePermintaanLabTab(noorder) {
+            Swal.fire({
+                title: "Yakin hapus data ini ?",
+                html: "Data permintaan lab akan di hapus",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Iya, Yakin",
+                cancelButtonText: "Tidak, Batalkan",
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post(`{{ url('/lab/permintaan/delete') }}/${noorder}`)
+                        .done((response) => {
+                            toast('Permintaan lab di hapus');
+                            const no_rawat = formPermintaanLabTab.find('#no_rawatTab').val();
+                            getPermintaanLabTab(no_rawat);
+                            getNomorPermintaanTab();
+                        }).fail((error) => {
+                            alertErrorAjax(error)
+                        })
+                }
+            })
+        }
+
+        function createPermintaanLabTab() {
+            const data = getDataForm('formPermintaanLabTab', ['input']);
+            const dataDetailPermintaan = [];
+            const dataPemeriksaan = [];
+            tablePermintaanLabTab.find('.itemPemeriksaanLab').each((index, e) => {
+                const element = $(e);
+                const item = element.prop('checked')
+                if (item) {
+                    const noorder = data.noorder;
+                    const id = element.attr('name');
+                    const kd_jenis_prw = element.data('parent');
+                    const stts_bayar = 'Belum';
+
+                    const exists = dataPemeriksaan.find(entry =>
+                        entry.kd_jenis_prw === kd_jenis_prw
+                    );
+
+                    if (!exists) {
+                        dataPemeriksaan.push({
+                            noorder: noorder,
+                            kd_jenis_prw: kd_jenis_prw,
+                            stts_bayar: stts_bayar
+                        });
+                    }
+
+                    dataDetailPermintaan.push({
+                        noorder: noorder,
+                        id_template: id,
+                        kd_jenis_prw: kd_jenis_prw,
+                        stts_bayar: stts_bayar,
+                    });
+                }
+            });
+
+            tablePermintaanLabTab.find('.checkJenisPemeriksaanTab').each((index, e) => {
+                const element = $(e);
+                if (element.prop('checked')) {
+
+                    const noorder = data.noorder;
+                    const kd_jenis_prw = element.attr('name');
+                    const stts_bayar = 'Belum';
+
+                    const exists = dataPemeriksaan.find(entry =>
+                        entry.kd_jenis_prw === kd_jenis_prw
+                    );
+
+                    if (!exists) {
+                        dataPemeriksaan.push({
+                            noorder: noorder,
+                            kd_jenis_prw: kd_jenis_prw,
+                            stts_bayar: stts_bayar
+                        });
+                    }
+                }
+            });
+
+            if (dataDetailPermintaan.length) {
+                $.post(`{{ url('/lab/permintaan') }}`, data).done((response) => {
+                    dataPemeriksaan.forEach(item => {
+                        item.noorder = response.data
+                    });
+                    dataDetailPermintaan.forEach(item => {
+                        item.noorder = response.data
+                    });
+                    createPermintaanPemeriksaanLab(dataPemeriksaan).done(() => {
+                        createDetailPermintaanLabTab(dataDetailPermintaan)
+                    });
+
+                }).fail((error) => {
+                    alertErrorAjax(error)
+                })
+            } else {
+                Swal.fire({
+                    icon: 'warning',
+                    title: `Ooppss...`,
+                    html: `Anda belum memilih item pemeriksaan, Pilih salah satu atau lebih item pemeriksaan`,
+                })
+            }
+        }
+
+        function createDetailPermintaanLabTab(data) {
+            return $.post(`{{ url('/lab/permintaan/detail') }}`, {
+                data: data,
+            }).done((response) => {
+                toast('Permintaan lab dibuat');
+                const no_rawat = formPermintaanLabTab.find('#no_rawatTab').val();
+                getPermintaanLabTab(no_rawat);
+
+                tablePermintaanLabTab.find('tbody').empty();
+                tablePermintaanLabTab.find('input[type=checkbox]').prop('checked', false)
+                formPermintaanLabTab.find('#informasi_tambahanTab').val('-')
+                formPermintaanLabTab.find('#diagnosa_klinisTab').val('-')
+                $('#pemeriksaanTab').val("").trigger('change');
+                getNomorPermintaanTab();
+            }).fail((error) => {
+                alertErrorAjax(error)
+            })
+        }
+        $('#pemeriksaanTab').select2({
+            tags: false,
+            dropdownParent: $('#modalCpptRanap'),
+            ajax: {
+                url: `{{ url('/lab/jenis/get') }}`,
+                dataType: 'json',
+                data: (params) => {
+                    const query = {
+                        nm_perawatan: params.term
+                    }
+                    return query
+                },
+                processResults: (data) => {
+                    return {
+                        results: data.map((item) => {
+                            return {
+                                id: item.kd_jenis_prw,
+                                text: `(${item.kd_jenis_prw}) ${item.nm_perawatan}`,
+                            }
+                        })
+                    }
+                }
+            },
+        });
+
+        $('#pemeriksaanTab').on('select2:select', (e) => {
+            const data = $('#pemeriksaanTab').val();
+            $.get(`{{ url('/lab/jenis/template/get') }}`, {
+                kode: data
+            }).done((response) => {
+                let pemeriksaan = response.map((item) => {
+                    return `<tr>
+                    <td><input type="checkbox" class="form-check checkJenisPemeriksaanTab" name="${item.kd_jenis_prw}" id="${item.kd_jenis_prw}" onclick="checkJenisPemeriksaanTab(this)"/></td>
+                    <td colspan=3><b>${item.nm_perawatan}</b></td>
+                    </tr>${setTemplatePemeriksaanTab(item)}`
+                });
+                tablePermintaanLabTab.find('tbody').empty().append(pemeriksaan)
+            })
+        })
+
+        $('#pemeriksaanTab').on('select2:unselect', (e) => {
+            const data = $('#pemeriksaanTab').val();
+            if (data.length) {
+                $.get(`{{ url('/lab/jenis/template/get') }}`, {
+                    kode: data
+                }).done((response) => {
+                    let pemeriksaan = response.map((item) => {
+                        return `<tr>
+                        <td><input type="checkbox" class="form-check checkJenisPemeriksaanTab" name="${item.kd_jenis_prw}" id="${item.kd_jenis_prw}" onclick="checkJenisPemeriksaanTab(this)"/></td>
+                        <td colspan=3><b>${item.nm_perawatan}</b></td>
+                        </tr>${setTemplatePemeriksaanTab(item)}`
+                    });
+                    tablePermintaanLabTab.find('tbody').empty().append(pemeriksaan)
+                })
+            } else {
+                tablePermintaanLabTab.find('tbody').empty()
+            }
+        })
+
+        function setTemplatePemeriksaanTab(data) {
+            const {
+                template
+            } = data;
+            return template.map((i) => {
+                if (i.Pemeriksaan.length) {
+                    return `<tr>
+                    <td><input class="form-checkbox itemPemeriksaanLab" type="checkbox" name="${i.id_template}" id="${i.id_template}" data-parent="${i.kd_jenis_prw}" /></td>
+                    <td><span class="ms-4">${i.Pemeriksaan}</span></td>
+                    <td>${i.satuan}</td>
+                    <td><b>LD</b> : ${i.nilai_rujukan_ld} ${i.satuan}, <b>LA</b> : ${i.nilai_rujukan_la} ${i.satuan}, <b>PD</b> : ${i.nilai_rujukan_pd} ${i.satuan}, <b>PA</b> : ${i.nilai_rujukan_pa} ${i.satuan} </td>
+                </tr>`
+
+                } else {
+                    return `<tr>
+                    <td><input class="form-checkbox itemPemeriksaanLab" type="checkbox" name="${i.id_template}" id="${i.id_template}" data-parent="${i.kd_jenis_prw}" /></td>
+                    <td><span class="ms-4">${data.nm_perawatan}</span></td>
+                    <td>${i.satuan}</td>
+                    <td></td>
+                </tr>`
+                }
+            })
+        }
+
+        function checkJenisPemeriksaanTab(el) {
+            const isCheck = $(el).prop('checked');
+            tablePermintaanLabTab.find('input[type=checkbox]').each((index, e) => {
+                if (e.dataset.parent == el.id) {
+                    $(e).prop('checked', isCheck)
+                }
+            })
+        }
+
+        const tableHasilPeriksaLabTab = $('#tableHasilPeriksaLabTab');
+        function showPeriksaLabTab(no_rawat) {
+            getRegDetail(no_rawat).done((response) => {
+                const {
+                    pasien
+                } = response;
+                $('#no_rawatResultTab').val(no_rawat)
+                $('#no_rkm_medisResultTab').val(response.no_rkm_medis)
+                $('#nm_pasienResultTab').val(`${pasien.nm_pasien} (${pasien.jk})`)
+                $('#tgl_lahirResultTab').val(`${splitTanggal(pasien.tgl_lahir)} / ${response.umurdaftar} ${response.sttsumur}`)
+            })
+
+            $.get(`{{ url('/lab/periksa/get') }}`, {
+                no_rawat: no_rawat,
+            }).done((response) => {
+                const {
+                    data
+                } = response;
+                if (data.count === 0) {
+                    const row = `<tr><td colspan="5" class="text-center text-danger">Tidak ditemukan hasil</td></tr>`;
+                    tableHasilPeriksaLabTab.find('tbody').empty().append(row);
+                } else {
+                    renderItemHasilPeriksaLabTab(data.result)
+                }
+            })
+        }
+
+        function renderItemHasilPeriksaLabTab(data) {
+            tableHasilPeriksaLabTab.find('tbody').empty();
+            const content = data.map((item, index) => {
+                const sub = item.detail ? renderSubItemHasilPeriksaLab(item.detail) : ''
+                return `<tr class="bg-muted-lt">
+                        <td></td>
+                        <td><strong>${item.jenis?.nm_perawatan}</strong></td>
+                        <td class="text-center">${splitTanggal(item.tgl_periksa)} ${item.jam}</td>
+                        <td colspan=2 class="text-center">${item.pegawai.nama}</td>
+                    </tr>${sub}`
+            });
+            tableHasilPeriksaLabTab.find('tbody').append(content)
+        }
+
+        function renderSubItemHasilPeriksaLab(data) {
+            return data.map((item, index) => {
+                return `<tr class="${setColorItemLab(item.keterangan)}">
+                        <td class="text-end">${index+1}</td>
+                        <td><span class="ms-2">${item.template.nama}</span></td>
+                        <td class="text-end">${item.nilai} ${item.template.satuan}</td>
+                        <td class="text-end">${item.nilai_rujukan} ${item.template.satuan}</td>
+                        <td class="text-center">${item.keterangan}</td>
+                    </tr>`
+            }).join('')
+        }
+
+        function setColorItemLab(ket) {
+            switch (ket.toUpperCase()) {
+                case 'L':
+                    return 'bg-blue-lt'
+                    break;
+                case 'H':
+                    return 'bg-red-lt'
+                    break;
+                default:
+                    return '';
+                    break;
+            }
+        }
+
+        function showHasilPermintaanLabTab(no_rawat, tgl) {
+            modalCpptRanap.find('a[href="#tabs-hasil-lab"]').tab('show');
+            showPeriksaLabTab(no_rawat);
         }
     </script>
 @endpush

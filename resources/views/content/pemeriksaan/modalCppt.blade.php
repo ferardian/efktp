@@ -525,7 +525,7 @@
                 }
             });
 
-            tablePermintaanLabTab.find('.checkJenisPemeriksaan').each((index, e) => {
+            tablePermintaanLabTab.find('.checkJenisPemeriksaanTab').each((index, e) => {
                 const element = $(e);
                 if (element.prop('checked')) {
 
