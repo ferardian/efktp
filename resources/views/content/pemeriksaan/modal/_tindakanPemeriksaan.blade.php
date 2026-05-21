@@ -460,7 +460,8 @@
                 response.data.forEach((item, index) => {
                     const row = `<tr>
                         <td><input type="checkbox" class="form-check-input tindakan-hasil" name="kode_tindakan[]" id="tindakan${index}" value="${item.kd_jenis_prw}" data-tgl="${item.tgl_perawatan}" data-jam="${item.jam_rawat}" data-rawat="${item.no_rawat}" data-type="${item.type}"/></td>
-                        <td>${splitTanggal(item.tgl_perawatan)} ${item.jam_rawat}</td>
+                        <td>${splitTanggal(item.tgl_perawatan)}</td>
+                        <td>${item.jam_rawat}</td>
                         <td>${item.tindakan.nm_perawatan}</td>
                         <td>${item.pelaksana}<br/><small>${item.nama_pelaksana}</small></td>
                         <td class="text-end">${formatCurrency(item.biaya_rawat)}</td>
