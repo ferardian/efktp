@@ -629,8 +629,8 @@
                 formPermintaanLabTab.find('#tgl_lahirTab').val(`${formatTanggal(pasien.tgl_lahir)} / ${response.umurdaftar} ${response.sttsumur}`);
                 formPermintaanLabTab.find('#kd_dokterTab').val(response.kd_dokter)
                 formPermintaanLabTab.find('#nm_dokterTab').val(dokter.nm_dokter)
-                formPermintaanLabTab.find('#status_lanjutTab').val(response.status_lanjut)
-                formPermintaanLabTab.find('#statusTab').val(response.status_lanjut)
+                formPermintaanLabTab.find('#status_lanjutTab').val('Ranap')
+                formPermintaanLabTab.find('#statusTab').val('Ranap')
                 formPermintaanLabTab.find('#kd_poliTab').val(response.kd_poli)
                 formPermintaanLabTab.find('#nm_poliTab').val(poliklinik.nm_poli)
 
