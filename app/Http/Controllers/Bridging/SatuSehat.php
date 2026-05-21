@@ -522,9 +522,19 @@ class SatuSehat extends Controller
             ]);
         }
 
+        $errorMsg = 'Gagal mengirim Medication ke SatuSehat';
+        if (isset($res['data']['issue'])) {
+            $issues = collect($res['data']['issue'])->map(function ($issue) {
+                return $issue['details']['text'] ?? 'Unknown error';
+            })->implode(' | ');
+            $errorMsg .= '. Alasan: ' . $issues;
+        } elseif (isset($res['data']['message'])) {
+            $errorMsg .= '. Alasan: ' . $res['data']['message'];
+        }
+
         return response()->json([
             'success' => false,
-            'message' => 'Gagal mengirim Medication ke SatuSehat',
+            'message' => $errorMsg,
             'response' => $res,
             'payload' => $payload
         ], 500);

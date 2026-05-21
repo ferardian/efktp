@@ -315,7 +315,7 @@
                 if (result.isConfirmed) {
                     loadingAjax();
                     $.post("{{ url('satusehat/medication/mapping') }}", payload, function(res) {
-                        loadingAjax().close();
+                        Swal.close();
                         if (res.success) {
                             Swal.fire('Berhasil', res.message, 'success');
                             $('#modalKfaSearch').modal('hide');
@@ -324,7 +324,7 @@
                             Swal.fire('Gagal', res.message, 'error');
                         }
                     }).fail(function() {
-                        loadingAjax().close();
+                        Swal.close();
                         Swal.fire('Error', 'Terjadi kesalahan sistem', 'error');
                     });
                 }
@@ -348,7 +348,7 @@
                         type: 'DELETE',
                         data: { _token: '{{ csrf_token() }}' },
                         success: function(res) {
-                            loadingAjax().close();
+                            Swal.close();
                             if (res.success) {
                                 Swal.fire('Terhapus!', res.message, 'success');
                                 loadLocalDrugs(currentLocalPage);
@@ -357,7 +357,7 @@
                             }
                         },
                         error: function() {
-                            loadingAjax().close();
+                            Swal.close();
                             Swal.fire('Error!', 'Gagal menghapus mapping.', 'error');
                         }
                     });
@@ -380,7 +380,7 @@
                         _token: '{{ csrf_token() }}',
                         kode_brng: kodeBrng
                     }, function(res) {
-                        loadingAjax().close();
+                        Swal.close();
                         if (res.success) {
                             Swal.fire('Berhasil', res.message, 'success');
                             loadLocalDrugs(currentLocalPage);
@@ -388,7 +388,7 @@
                             Swal.fire('Gagal', res.message || 'Terjadi kesalahan sistem', 'error');
                         }
                     }).fail(function(err) {
-                        loadingAjax().close();
+                        Swal.close();
                         let errMsg = err.responseJSON && err.responseJSON.message ? err.responseJSON.message : 'Terjadi kesalahan sistem saat mengirim data';
                         Swal.fire('Error', errMsg, 'error');
                     });
