@@ -19,6 +19,16 @@ class ResepDokterController extends Controller
         return response()->json($resep);
     }
 
+    public function masterAturanPakai(Request $request)
+    {
+        $keyword = $request->keyword;
+        $aturan = DB::table('master_aturan_pakai')
+            ->where('aturan', 'like', "%$keyword%")
+            ->limit(50)
+            ->get();
+        return response()->json($aturan);
+    }
+
     public function create(Request $request)
     {
         // return $request->dataObat;

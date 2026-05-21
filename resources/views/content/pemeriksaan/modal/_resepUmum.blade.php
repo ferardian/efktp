@@ -120,7 +120,7 @@
                     <input type="hidden" name="kode_brng[]" id="kdObat${rowCount}Val"/>
                     <input type="text" class="form-control" name="jumlah[]" id="jmlObat${rowCount}"/>
                 </td>
-                <td><input class="form-control form-control-sm" name="aturan_pakai[]" id="aturan${rowCount}"/></td>
+                <td><select class="form-control form-control-sm" name="aturan_pakai[]" id="aturan${rowCount}" style="width:100%"></select></td>
                 <td class="text-end subTotal${rowCount}"></td>
                 <td>
                     <i class="ti ti-device-floppy text-success" style="font-size:20px" data-id="row${rowCount}" onclick="createResepDokter()"></i>
@@ -136,7 +136,7 @@
             }
 
             const modalActive = $('#modalCpptRanap').hasClass('show') ? $('#modalCpptRanap') : ($('#modalCppt').hasClass('show') ? $('#modalCppt') : $('body'));
-            const idElement = newRow.find('select');
+            const idElement = newRow.find(`#kdObat${rowCount}`);
             selectDataBarang(idElement, modalActive).on('select2:select', (e) => {
                 const kodeBarang = e.params.data.id;
                 const targetId = e.currentTarget.id;
@@ -147,6 +147,29 @@
                 $(`#jmlObat${rowCount}`).val(1);
                 elementTargetId.val(kodeBarang)
             })
+
+            $(`#aturan${rowCount}`).select2({
+                dropdownParent: modalActive,
+                tags: true,
+                ajax: {
+                    url: `{{ url('/resep/dokter/aturan-pakai') }}`,
+                    dataType: 'json',
+                    delay: 250,
+                    data: function(params) {
+                        return { keyword: params.term };
+                    },
+                    processResults: function(data) {
+                        return {
+                            results: data.map(item => ({
+                                id: item.aturan,
+                                text: item.aturan
+                            }))
+                        };
+                    },
+                    cache: true
+                },
+                placeholder: 'Ketik Aturan Pakai'
+            });
 
             $(`#jmlObat${rowCount}`).on('input', (e) => {
                 const subTotal = $(`.harga${rowCount}`).text().replace(/[^\d]/g, '') * e.target.value
@@ -167,7 +190,34 @@
             const jml = colJml.html().split(" ")[0];
             const aturan = colAturan.html();
             colJml.empty().html(`<input type="hidden" name="kode_brng" id="kdObat${id}Val" value="${kd_obat}"/><input type="text" class="form-control" name="jml" id="jmlObat${id}" value="${jml}"/>`)
-            colAturan.empty().html(`<input type="text" class="form-control" name="aturan" id="aturan${id}" value="${aturan}"/>`)
+            colAturan.empty().html(`<select class="form-control form-control-sm" name="aturan" id="aturan${id}" style="width:100%"></select>`)
+            const modalActive = $('#modalCpptRanap').hasClass('show') ? $('#modalCpptRanap') : ($('#modalCppt').hasClass('show') ? $('#modalCppt') : $('body'));
+            const aturanSelect = $(`#aturan${id}`);
+            aturanSelect.select2({
+                dropdownParent: modalActive,
+                tags: true,
+                ajax: {
+                    url: `{{ url('/resep/dokter/aturan-pakai') }}`,
+                    dataType: 'json',
+                    delay: 250,
+                    data: function(params) {
+                        return { keyword: params.term };
+                    },
+                    processResults: function(data) {
+                        return {
+                            results: data.map(item => ({
+                                id: item.aturan,
+                                text: item.aturan
+                            }))
+                        };
+                    },
+                    cache: true
+                },
+                placeholder: 'Ketik Aturan Pakai'
+            });
+            if (aturan) {
+                aturanSelect.append(new Option(aturan, aturan, true, true)).trigger('change');
+            }
             colAksi.empty().append(`
                 <button type="button" class="btn btn-sm btn-outline-primary" onclick="simpanUbah(${id}, '${kd_obat}')" title="Simpan Perubahan">
                     <i class="ti ti-pencil"></i>

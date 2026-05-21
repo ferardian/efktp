@@ -293,6 +293,7 @@ Route::middleware('auth:web,admin')->group(function () {
 	// Resep Dokter (NON RACIKAN)
 	Route::post('/resep/dokter/create', [ResepDokterController::class, 'create']);
 	Route::get('/resep/dokter/get', [ResepDokterController::class, 'get']);
+	Route::get('/resep/dokter/aturan-pakai', [ResepDokterController::class, 'masterAturanPakai']);
 	Route::post('/resep/dokter/delete', [ResepDokterController::class, 'delete']);
 	Route::post('/resep/dokter/update', [ResepDokterController::class, 'update']);
 
