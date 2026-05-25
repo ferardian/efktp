@@ -155,7 +155,13 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::post('/set/norm/delete', [setNoRkmMedisController::class, 'delete']);
 	// POLIKLINIK
 	Route::get('/poliklinik', [PoliklinikController::class, 'get']);
-	Route::post('/poliklinik', [PoliklinikController::class, 'delete']);
+	Route::get('/master/poliklinik', [PoliklinikController::class, 'index']);
+	Route::get('/poliklinik/data', [PoliklinikController::class, 'data']);
+	Route::post('/poliklinik', [PoliklinikController::class, 'store']);
+	Route::put('/poliklinik/{kd_poli}', [PoliklinikController::class, 'update']);
+	Route::delete('/poliklinik/{kd_poli}', [PoliklinikController::class, 'destroy']);
+	Route::post('/poliklinik/bulk-delete', [PoliklinikController::class, 'bulkDestroy']);
+	Route::post('/poliklinik/deactivate-all', [PoliklinikController::class, 'deactivateAll']);
 	// DOKTER
 	Route::get('/dokter/get', [DokterController::class, 'get']);
 	Route::post('/dokter', [DokterController::class, 'store']);
@@ -287,6 +293,8 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::post('/resep/delete', [ResepObatController::class, 'delete']);
 	Route::get('/resep/print', [ResepObatController::class, 'print']);
 	Route::post('/resep/create-form-paket', [ResepObatController::class, 'createResepPaket']);
+	Route::get('/resep/unvalidated', [ResepObatController::class, 'getUnvalidated']);
+	Route::post('/resep/validate', [ResepObatController::class, 'validateResep']);
 
 	Route::get('/resep/nomor/generate', [\App\Action\GenerateNoResep::class, 'handle']);
 

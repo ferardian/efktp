@@ -228,7 +228,12 @@ class TindakanRanapAction
     private function generateNoJurnal()
     {
         $date = date('Y-m-d');
+        $date_formatted = date('Ymd');
         $count = DB::table('jurnal')->whereDate('tgl_jurnal', $date)->count();
-        return 'JR' . date('Ymd') . str_pad($count + 1, 6, '0', STR_PAD_LEFT);
+        do {
+            $count++;
+            $no_jurnal = 'JR' . $date_formatted . str_pad($count, 6, '0', STR_PAD_LEFT);
+        } while (DB::table('jurnal')->where('no_jurnal', $no_jurnal)->exists());
+        return $no_jurnal;
     }
 }

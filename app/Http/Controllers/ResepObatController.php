@@ -14,6 +14,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
+use Illuminate\Support\Facades\DB;
 
 class ResepObatController extends Controller
 {
@@ -194,5 +195,391 @@ class ResepObatController extends Controller
 		return $this->success(['no_resep' => $resep]);
 	}
 
+	public function getUnvalidated(Request $request)
+	{
+		$no_rawat = $request->no_rawat;
+		if (!$no_rawat) {
+			return response()->json(['message' => 'no_rawat is required'], 400);
+		}
 
+		$reg = DB::table('reg_periksa')->where('no_rawat', $no_rawat)->first();
+		if (!$reg) {
+			return response()->json(['message' => 'Registration not found'], 404);
+		}
+
+		$bangsal = DB::table('set_depo_ralan')
+			->where('kd_poli', $reg->kd_poli)
+			->value('kd_bangsal');
+		if (!$bangsal) {
+			$set_lokasi = DB::table('set_lokasi')->first();
+			$bangsal = $set_lokasi ? $set_lokasi->kd_bangsal : 'AP';
+		}
+
+		$resepObat = ResepObat::where('no_rawat', $no_rawat)
+			->where(function ($query) {
+				$query->where('tgl_perawatan', '0000-00-00')
+					->orWhereNull('tgl_perawatan');
+			})
+			->with([
+				'dokter',
+				'resepDokter.obat.satuan',
+				'resepRacikan.detail.obat.satuan',
+				'resepRacikan.metode'
+			])
+			->get();
+
+		$resepObat->map(function ($resep) use ($bangsal) {
+			foreach ($resep->resepDokter as $rd) {
+				if ($rd->obat) {
+					$stok = DB::table('gudangbarang')
+						->where('kode_brng', $rd->kode_brng)
+						->where('kd_bangsal', $bangsal)
+						->where('no_batch', '')
+						->where('no_faktur', '')
+						->value('stok') ?? 0;
+					$capacity = floatval($rd->obat->kapasitas) > 0 ? floatval($rd->obat->kapasitas) : 1.0;
+					$rd->stok = $stok * $capacity;
+				} else {
+					$rd->stok = 0;
+				}
+			}
+
+			foreach ($resep->resepRacikan as $rr) {
+				foreach ($rr->detail as $rrd) {
+					if ($rrd->obat) {
+						$stok = DB::table('gudangbarang')
+							->where('kode_brng', $rrd->kode_brng)
+							->where('kd_bangsal', $bangsal)
+							->where('no_batch', '')
+							->where('no_faktur', '')
+							->value('stok') ?? 0;
+						$rrd->stok = $stok;
+					} else {
+						$rrd->stok = 0;
+					}
+				}
+			}
+			return $resep;
+		});
+
+		return response()->json([
+			'kd_bangsal' => $bangsal,
+			'bangsal_name' => DB::table('bangsal')->where('kd_bangsal', $bangsal)->value('nm_bangsal') ?? '-',
+			'resep' => $resepObat
+		]);
+	}
+
+	public function validateResep(Request $request)
+	{
+		$no_resep = $request->no_resep;
+		if (!$no_resep) {
+			return response()->json(['message' => 'no_resep is required'], 400);
+		}
+
+		try {
+			$result = DB::transaction(function () use ($no_resep) {
+				$resep = ResepObat::where('no_resep', $no_resep)
+					->where(function ($query) {
+						$query->where('tgl_perawatan', '0000-00-00')
+							->orWhereNull('tgl_perawatan');
+					})
+					->first();
+
+				if (!$resep) {
+					throw new \Exception('Resep tidak ditemukan atau sudah divalidasi');
+				}
+
+				$no_rawat = $resep->no_rawat;
+				$reg = DB::table('reg_periksa')->where('no_rawat', $no_rawat)->first();
+				if (!$reg) {
+					throw new \Exception('Registrasi tidak ditemukan');
+				}
+
+				$bangsal = DB::table('set_depo_ralan')
+					->where('kd_poli', $reg->kd_poli)
+					->value('kd_bangsal');
+				if (!$bangsal) {
+					$set_lokasi = DB::table('set_lokasi')->first();
+					$bangsal = $set_lokasi ? $set_lokasi->kd_bangsal : 'AP';
+				}
+
+				$tgl_perawatan = date('Y-m-d');
+				$jam = date('H:i:s');
+
+				$ttljual = 0;
+				$ttlhpp = 0;
+
+				$detailPemberianObatToInsert = [];
+				$aturanPakaiToInsert = [];
+				$obatRacikanToInsert = [];
+				$detailObatRacikanToInsert = [];
+
+				foreach ($resep->resepDokter as $rd) {
+					$obat = DB::table('databarang')->where('kode_brng', $rd->kode_brng)->first();
+					if (!$obat) {
+						throw new \Exception('Barang/obat dengan kode ' . $rd->kode_brng . ' tidak ditemukan');
+					}
+
+					$capacity = floatval($obat->kapasitas) > 0 ? floatval($obat->kapasitas) : 1.0;
+					$qty = floatval($rd->jml) / $capacity;
+
+					$stok = DB::table('gudangbarang')
+						->where('kode_brng', $rd->kode_brng)
+						->where('kd_bangsal', $bangsal)
+						->where('no_batch', '')
+						->where('no_faktur', '')
+						->value('stok') ?? 0;
+
+					if ($stok < $qty) {
+						$availableUnits = $stok * $capacity;
+						throw new \Exception('Stok obat "' . $obat->nama_brng . '" tidak cukup. Stok saat ini: ' . $availableUnits . ' unit, dibutuhkan: ' . $rd->jml);
+					}
+
+					DB::table('gudangbarang')
+						->where('kode_brng', $rd->kode_brng)
+						->where('kd_bangsal', $bangsal)
+						->where('no_batch', '')
+						->where('no_faktur', '')
+						->decrement('stok', $qty);
+
+					$biaya_obat = floatval($obat->ralan);
+					$h_beli = floatval($obat->h_beli);
+					$total_item = $biaya_obat * $qty;
+
+					$ttljual += $total_item;
+					$ttlhpp += $h_beli * $qty;
+
+					$detailPemberianObatToInsert[] = [
+						'tgl_perawatan' => $tgl_perawatan,
+						'jam' => $jam,
+						'no_rawat' => $no_rawat,
+						'kode_brng' => $rd->kode_brng,
+						'h_beli' => $h_beli,
+						'biaya_obat' => $biaya_obat,
+						'jml' => $qty,
+						'embalase' => 0,
+						'tuslah' => 0,
+						'total' => $total_item,
+						'status' => 'Ralan',
+						'kd_bangsal' => $bangsal,
+						'no_batch' => '',
+						'no_faktur' => ''
+					];
+
+					if ($rd->aturan_pakai && trim($rd->aturan_pakai) !== '') {
+						$aturanPakaiToInsert[] = [
+							'tgl_perawatan' => $tgl_perawatan,
+							'jam' => $jam,
+							'no_rawat' => $no_rawat,
+							'kode_brng' => $rd->kode_brng,
+							'aturan' => $rd->aturan_pakai
+						];
+					}
+				}
+
+				foreach ($resep->resepRacikan as $rr) {
+					$obatRacikanToInsert[] = [
+						'tgl_perawatan' => $tgl_perawatan,
+						'jam' => $jam,
+						'no_rawat' => $no_rawat,
+						'no_racik' => $rr->no_racik,
+						'nama_racik' => $rr->nama_racik,
+						'kd_racik' => $rr->kd_racik,
+						'jml_dr' => $rr->jml_dr,
+						'aturan_pakai' => $rr->aturan_pakai,
+						'keterangan' => $rr->keterangan ?? '-'
+					];
+
+					foreach ($rr->detail as $rrd) {
+						$obat = DB::table('databarang')->where('kode_brng', $rrd->kode_brng)->first();
+						if (!$obat) {
+							throw new \Exception('Barang/obat racikan dengan kode ' . $rrd->kode_brng . ' tidak ditemukan');
+						}
+
+						$stok = DB::table('gudangbarang')
+							->where('kode_brng', $rrd->kode_brng)
+							->where('kd_bangsal', $bangsal)
+							->where('no_batch', '')
+							->where('no_faktur', '')
+							->value('stok') ?? 0;
+
+						if ($stok < $rrd->jml) {
+							throw new \Exception('Stok obat racikan "' . $obat->nama_brng . '" tidak cukup. Stok saat ini: ' . $stok . ', dibutuhkan: ' . $rrd->jml);
+						}
+
+						DB::table('gudangbarang')
+							->where('kode_brng', $rrd->kode_brng)
+							->where('kd_bangsal', $bangsal)
+							->where('no_batch', '')
+							->where('no_faktur', '')
+							->decrement('stok', $rrd->jml);
+
+						$biaya_obat = floatval($obat->ralan);
+						$h_beli = floatval($obat->h_beli);
+						$qty = floatval($rrd->jml);
+						$total_item = $biaya_obat * $qty;
+
+						$ttljual += $total_item;
+						$ttlhpp += $h_beli * $qty;
+
+						$detailObatRacikanToInsert[] = [
+							'tgl_perawatan' => $tgl_perawatan,
+							'jam' => $jam,
+							'no_rawat' => $no_rawat,
+							'no_racik' => $rr->no_racik,
+							'kode_brng' => $rrd->kode_brng
+						];
+
+						$detailPemberianObatToInsert[] = [
+							'tgl_perawatan' => $tgl_perawatan,
+							'jam' => $jam,
+							'no_rawat' => $no_rawat,
+							'kode_brng' => $rrd->kode_brng,
+							'h_beli' => $h_beli,
+							'biaya_obat' => $biaya_obat,
+							'jml' => $qty,
+							'embalase' => 0,
+							'tuslah' => 0,
+							'total' => $total_item,
+							'status' => 'Ralan',
+							'kd_bangsal' => $bangsal,
+							'no_batch' => '',
+							'no_faktur' => ''
+						];
+					}
+				}
+
+				if (!empty($detailPemberianObatToInsert)) {
+					DB::table('detail_pemberian_obat')->insert($detailPemberianObatToInsert);
+				}
+				if (!empty($aturanPakaiToInsert)) {
+					DB::table('aturan_pakai')->insert($aturanPakaiToInsert);
+				}
+				if (!empty($obatRacikanToInsert)) {
+					DB::table('obat_racikan')->insert($obatRacikanToInsert);
+				}
+				if (!empty($detailObatRacikanToInsert)) {
+					DB::table('detail_obat_racikan')->insert($detailObatRacikanToInsert);
+				}
+
+				DB::table('resep_obat')
+					->where('no_resep', $no_resep)
+					->update([
+						'tgl_perawatan' => $tgl_perawatan,
+						'jam' => $jam
+					]);
+
+				$this->postResepJurnal($no_rawat, $ttljual, $ttlhpp);
+
+				return [
+					'no_resep' => $no_resep,
+					'no_rawat' => $no_rawat,
+					'ttljual' => $ttljual,
+					'ttlhpp' => $ttlhpp
+				];
+			});
+
+			return response()->json([
+				'status' => 'success',
+				'message' => 'Resep berhasil divalidasi',
+				'data' => $result
+			], 200);
+
+		} catch (\Exception $e) {
+			return response()->json([
+				'status' => 'error',
+				'message' => $e->getMessage()
+			], 500);
+		}
+	}
+
+	private function postResepJurnal($no_rawat, $ttljual, $ttlhpp)
+	{
+		if ($ttljual <= 0 && $ttlhpp <= 0) {
+			return;
+		}
+
+		$rekening = DB::table('set_akun_ralan')->first();
+		if (!$rekening) {
+			return;
+		}
+
+		DB::table('tampjurnal')->delete();
+
+		if ($ttljual > 0) {
+			DB::table('tampjurnal')->insert([
+				[
+					'kd_rek' => $rekening->Suspen_Piutang_Obat_Ralan,
+					'nm_rek' => 'Suspen Piutang Obat Ralan',
+					'debet' => $ttljual,
+					'kredit' => 0
+				],
+				[
+					'kd_rek' => $rekening->Obat_Ralan,
+					'nm_rek' => 'Pendapatan Obat Rawat Jalan',
+					'debet' => 0,
+					'kredit' => $ttljual
+				]
+			]);
+		}
+
+		if ($ttlhpp > 0) {
+			DB::table('tampjurnal')->insert([
+				[
+					'kd_rek' => $rekening->HPP_Obat_Rawat_Jalan,
+					'nm_rek' => 'HPP Persediaan Obat Rawat Jalan',
+					'debet' => $ttlhpp,
+					'kredit' => 0
+				],
+				[
+					'kd_rek' => $rekening->Persediaan_Obat_Rawat_Jalan,
+					'nm_rek' => 'Persediaan Obat Rawat Jalan',
+					'debet' => 0,
+					'kredit' => $ttlhpp
+				]
+			]);
+		}
+
+		$date = date('Y-m-d');
+		$date_formatted = date('Ymd');
+		$count = DB::table('jurnal')->whereDate('tgl_jurnal', $date)->count();
+		do {
+			$count++;
+			$no_jurnal = 'JR' . $date_formatted . str_pad($count, 6, '0', STR_PAD_LEFT);
+		} while (DB::table('jurnal')->where('no_jurnal', $no_jurnal)->exists());
+
+		$reg = DB::table('reg_periksa')
+			->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
+			->where('reg_periksa.no_rawat', $no_rawat)
+			->select('pasien.nm_pasien', 'reg_periksa.no_rkm_medis')
+			->first();
+		$nm_pasien = $reg ? $reg->nm_pasien : '-';
+		$no_rm = $reg ? $reg->no_rkm_medis : '-';
+
+		$pegawai = session()->get('pegawai');
+		$post_by = $pegawai ? $pegawai->nama : 'Dokter Mandiri';
+
+		DB::table('jurnal')->insert([
+			'no_jurnal' => $no_jurnal,
+			'tgl_jurnal' => $date,
+			'jam_jurnal' => date('H:i:s'),
+			'no_bukti' => $no_rawat,
+			'jenis' => 'U',
+			'keterangan' => 'PEMBERIAN OBAT RAWAT JALAN PASIEN ' . $no_rm . ' ' . $nm_pasien . ', DIPOSTING OLEH ' . $post_by
+		]);
+
+		$tamp = DB::table('tampjurnal')->get();
+		$detail = $tamp->map(function ($item) use ($no_jurnal) {
+			return [
+				'no_jurnal' => $no_jurnal,
+				'kd_rek' => $item->kd_rek,
+				'debet' => $item->debet,
+				'kredit' => $item->kredit
+			];
+		})->toArray();
+
+		if (!empty($detail)) {
+			DB::table('detailjurnal')->insert($detail);
+		}
+	}
 }

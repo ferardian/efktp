@@ -28,6 +28,7 @@ class BillingController extends Controller
     {
         $no_rawat = $request->no_rawat;
         $size = $request->input('size', '80'); // '80' or '58'
+        $show_obat = $request->input('show_obat', '1') !== '0';
 
         // Check if Ralan or Ranap
         $reg = DB::table('reg_periksa')
@@ -56,7 +57,11 @@ class BillingController extends Controller
         $itemCount = 0;
         foreach ($billingData['categories'] as $cat) {
             if (count($cat['items']) > 0) {
-                $itemCount += count($cat['items']) + 1; // items + category header
+                if ($cat['label'] === 'Obat & Alkes' && !$show_obat) {
+                    $itemCount += 1; // only the category header
+                } else {
+                    $itemCount += count($cat['items']) + 1; // items + category header
+                }
             }
         }
         
@@ -69,7 +74,8 @@ class BillingController extends Controller
         $pdf = PDF::loadView('content.print.billing', [
             'data' => $billingData,
             'setting' => $setting,
-            'size' => $size
+            'size' => $size,
+            'show_obat' => $show_obat
         ])
         ->setPaper(array(0, 0, $width, $height))
         ->setOptions(['defaultFont' => 'Arial', 'isRemoteEnabled' => true]);

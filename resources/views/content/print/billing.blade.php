@@ -183,17 +183,19 @@
                     <td colspan="2" class="category-header">{{ $cat['label'] }}</td>
                     <td class="category-header text-right">{{ number_format($cat['total'], 0, ',', '.') }}</td>
                 </tr>
-                @foreach ($cat['items'] as $item)
-                    <tr>
-                        <td colspan="2" class="item-row">
-                            <div>{{ $item['item'] }}</div>
-                            <div class="item-details">{{ $item['qty'] }} x {{ number_format($item['tarif'], 0, ',', '.') }}</div>
-                        </td>
-                        <td class="text-right" style="vertical-align: bottom;">
-                            {{ number_format($item['subtotal'], 0, ',', '.') }}
-                        </td>
-                    </tr>
-                @endforeach
+                @if ($cat['label'] !== 'Obat & Alkes' || $show_obat)
+                    @foreach ($cat['items'] as $item)
+                        <tr>
+                            <td colspan="2" class="item-row">
+                                <div>{{ $item['item'] }}</div>
+                                <div class="item-details">{{ $item['qty'] }} x {{ number_format($item['tarif'], 0, ',', '.') }}</div>
+                            </td>
+                            <td class="text-right" style="vertical-align: bottom;">
+                                {{ number_format($item['subtotal'], 0, ',', '.') }}
+                            </td>
+                        </tr>
+                    @endforeach
+                @endif
             @endif
         @endforeach
     </table>

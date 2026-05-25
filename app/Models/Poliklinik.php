@@ -9,6 +9,9 @@ class Poliklinik extends Model
 {
     use HasFactory;
     protected $table = 'poliklinik';
+    protected $primaryKey = 'kd_poli';
+    protected $keyType = 'string';
+    public $incrementing = false;
     protected $guarded = [];
     protected $hidden = ['laravel_through_key', 'registrasi', 'registrasilama'];
     public $timestamps = false;

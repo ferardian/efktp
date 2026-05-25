@@ -133,6 +133,12 @@
                                 <a class="dropdown-item" href="{{ url('master/petugas') }}">
                                     Data Petugas
                                 </a>
+                                <a class="dropdown-item" href="{{ url('master/tarif-ralan') }}">
+                                    Tarif Rawat Jalan
+                                </a>
+                                <a class="dropdown-item" href="{{ url('master/poliklinik') }}">
+                                    Poliklinik
+                                </a>
                                 @if (session()->get('role') == 'admin')
                                     <a class="dropdown-item" href="{{ url('master/user') }}">
                                         Set User
