@@ -172,6 +172,7 @@
                     // tangkap request params sebelum dikirim
                     data: function(d) {
                         lastRequestStart = d.start || 0;
+                        d.status = '1';
                         return d;
                     },
                     // intercept response dari server
