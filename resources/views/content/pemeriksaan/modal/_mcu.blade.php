@@ -471,68 +471,71 @@
             $(this).val($(this).find('option:first').val());
         });
 
-        // Copy patient and doctor info from main form
-        $('#formMcu input[name=no_rawat]').val($('#formCpptRajal input[name=no_rawat]').val());
-        $('#formMcu input[name=no_rkm_medis]').val($('#formCpptRajal input[name=no_rkm_medis]').val());
-        $('#formMcu input[name=nm_pasien]').val($('#formCpptRajal input[name=nm_pasien]').val());
-        $('#formMcu input[name=nip]').val($('#formCpptRajal input[name=nip]').val());
-        $('#formMcu input[name=nm_dokter]').val($('#formCpptRajal input[name=nm_dokter]').val());
+        // Fetch patient details safely to prevent race conditions
+        getRegDetail(no_rawat).done((response) => {
+            const { pasien, dokter } = response;
+            $('#formMcu input[name=no_rawat]').val(response.no_rawat);
+            $('#formMcu input[name=no_rkm_medis]').val(response.no_rkm_medis);
+            $('#formMcu input[name=nm_pasien]').val(`${pasien.nm_pasien} / ${pasien.jk}`);
+            $('#formMcu input[name=nip]').val(response.kd_dokter);
+            $('#formMcu input[name=nm_dokter]').val(dokter.nm_dokter);
 
-        // Fetch existing data
-        $.get(`{{ url('/pemeriksaan/mcu/get') }}`, { no_rawat: no_rawat }).done(function(data) {
-            if (data && Object.keys(data).length) {
-                $('#btnHapusMcu').removeClass('d-none');
-                $('#btnCetakMcu').removeClass('d-none');
-                Object.keys(data).forEach(function(key) {
-                    const input = $('#formMcu').find(`input[name=${key}]`);
-                    const select = $('#formMcu').find(`select[name=${key}]`);
-                    const textarea = $('#formMcu').find(`textarea[name=${key}]`);
+            // Fetch existing data
+            $.get(`{{ url('/pemeriksaan/mcu/get') }}`, { no_rawat: no_rawat }).done(function(data) {
+                if (data && Object.keys(data).length) {
+                    $('#btnHapusMcu').removeClass('d-none');
+                    $('#btnCetakMcu').removeClass('d-none');
+                    Object.keys(data).forEach(function(key) {
+                        const input = $('#formMcu').find(`input[name=${key}]`);
+                        const select = $('#formMcu').find(`select[name=${key}]`);
+                        const textarea = $('#formMcu').find(`textarea[name=${key}]`);
 
-                    if (input.length && !input.attr('readonly')) {
-                        let val = data[key];
-                        if (val === null) {
-                            val = '';
-                        } else if (val === '-') {
-                            val = '';
-                        } else if (key === 'td' && (val === '0/0' || val === '0')) {
-                            val = '';
+                        if (input.length && !input.attr('readonly')) {
+                            let val = data[key];
+                            if (val === null) {
+                                val = '';
+                            } else if (val === '-') {
+                                val = '';
+                            } else if (key === 'td' && (val === '0/0' || val === '0')) {
+                                val = '';
+                            }
+                            input.val(val);
+                            if (key === 'td') {
+                                formatTensi(input[0]);
+                            }
                         }
-                        input.val(val);
-                        if (key === 'td') {
-                            formatTensi(input[0]);
+                        if (textarea.length) {
+                            textarea.val(data[key] !== null && data[key] !== '-' ? data[key] : '');
                         }
-                    }
-                    if (textarea.length) {
-                        textarea.val(data[key] !== null && data[key] !== '-' ? data[key] : '');
-                    }
-                    if (select.length) {
-                        select.val(data[key]);
-                    }
-                });
-                hitungBmiMcu();
-            } else {
-                $('#btnHapusMcu').addClass('d-none');
-                $('#btnCetakMcu').addClass('d-none');
-                // If new, copy basic TTV from CPPT form if available
-                const tbCppt = $('#formCpptRajal input[name=tinggi]').val();
-                const bbCppt = $('#formCpptRajal input[name=berat]').val();
-                const tdCppt = $('#formCpptRajal input[name=tensi]').val();
-                const suhuCppt = $('#formCpptRajal input[name=suhu_tubuh]').val();
-                const rrCppt = $('#formCpptRajal input[name=respirasi]').val();
-                const nadiCppt = $('#formCpptRajal input[name=nadi]').val();
+                        if (select.length) {
+                            select.val(data[key]);
+                        }
+                    });
+                    hitungBmiMcu();
+                } else {
+                    $('#btnHapusMcu').addClass('d-none');
+                    $('#btnCetakMcu').addClass('d-none');
+                    // If new, copy basic TTV from CPPT form if available
+                    const tbCppt = $('#formCpptRajal input[name=tinggi]').val();
+                    const bbCppt = $('#formCpptRajal input[name=berat]').val();
+                    const tdCppt = $('#formCpptRajal input[name=tensi]').val();
+                    const suhuCppt = $('#formCpptRajal input[name=suhu_tubuh]').val();
+                    const rrCppt = $('#formCpptRajal input[name=respirasi]').val();
+                    const nadiCppt = $('#formCpptRajal input[name=nadi]').val();
 
-                if (tbCppt && tbCppt !== '0' && tbCppt !== '-') $('#formMcu input[name=tb]').val(tbCppt);
-                if (bbCppt && bbCppt !== '0' && bbCppt !== '-') $('#formMcu input[name=bb]').val(bbCppt);
-                if (tdCppt && tdCppt !== '0' && tdCppt !== '-' && tdCppt !== '0/0') {
-                    const tdInput = $('#formMcu input[name=td]');
-                    tdInput.val(tdCppt);
-                    formatTensi(tdInput[0]);
+                    if (tbCppt && tbCppt !== '0' && tbCppt !== '-') $('#formMcu input[name=tb]').val(tbCppt);
+                    if (bbCppt && bbCppt !== '0' && bbCppt !== '-') $('#formMcu input[name=bb]').val(bbCppt);
+                    if (tdCppt && tdCppt !== '0' && tdCppt !== '-' && tdCppt !== '0/0') {
+                        const tdInput = $('#formMcu input[name=td]');
+                        tdInput.val(tdCppt);
+                        formatTensi(tdInput[0]);
+                    }
+                    if (suhuCppt && suhuCppt !== '0' && suhuCppt !== '-') $('#formMcu input[name=suhu]').val(suhuCppt);
+                    if (rrCppt && rrCppt !== '0' && rrCppt !== '-') $('#formMcu input[name=rr]').val(rrCppt);
+                    if (nadiCppt && nadiCppt !== '0' && nadiCppt !== '-') $('#formMcu input[name=nadi]').val(nadiCppt);
+                    hitungBmiMcu();
                 }
-                if (suhuCppt && suhuCppt !== '0' && suhuCppt !== '-') $('#formMcu input[name=suhu]').val(suhuCppt);
-                if (rrCppt && rrCppt !== '0' && rrCppt !== '-') $('#formMcu input[name=rr]').val(rrCppt);
-                if (nadiCppt && nadiCppt !== '0' && nadiCppt !== '-') $('#formMcu input[name=nadi]').val(nadiCppt);
-                hitungBmiMcu();
-            }
+            });
         });
     }
 
