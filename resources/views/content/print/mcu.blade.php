@@ -14,6 +14,21 @@
             right: 0px;
             height: 90px;
         }
+        footer {
+            position: fixed;
+            bottom: -35px;
+            left: 0px;
+            right: 0px;
+            height: 15px;
+            text-align: center;
+            font-size: 9px;
+            color: #777;
+            border-top: 1px solid #eee;
+            padding-top: 3px;
+        }
+        .page-number:before {
+            content: "Halaman " counter(page) " dari " counter(pages);
+        }
         table {
             font-size: 11px;
             width: 100%;
@@ -56,6 +71,10 @@
             padding: 2px 0px;
         }
     </style>
+
+    <footer>
+        <span class="page-number"></span>
+    </footer>
 
     <header>
         <!-- Header Instansi -->
