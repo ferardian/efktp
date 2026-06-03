@@ -270,8 +270,11 @@
         modalCppt.on('shown.bs.modal', (e) => {
             switcTab(tabObat)
 
+            const current_no_rawat = modalCppt.find('input[name="no_rawat"]').val();
+
             if (window.openMcuTabOnShow) {
                 targetTabsMcu.tab('show');
+                loadMcu(current_no_rawat);
                 window.openMcuTabOnShow = false;
             } else if (!targetTabsCppt.hasClass('active')) {
                 targetTabsCppt.tab('show');
@@ -375,6 +378,16 @@
                 }
             })
             $('#modalCppt').modal('show')
+
+            if ($('#modalCppt').hasClass('show')) {
+                if (window.openMcuTabOnShow) {
+                    targetTabsMcu.tab('show');
+                    loadMcu(no_rawat);
+                    window.openMcuTabOnShow = false;
+                } else if (targetTabsMcu.hasClass('active')) {
+                    loadMcu(no_rawat);
+                }
+            }
         }
 
         function setResepPasien(no_rawat) {
