@@ -4,6 +4,16 @@
 @endphp
 @section('content')
     <style>
+        @page {
+            margin: 115px 20px 50px 20px;
+        }
+        header {
+            position: fixed;
+            top: -100px;
+            left: 0px;
+            right: 0px;
+            height: 90px;
+        }
         table {
             font-size: 11px;
             width: 100%;
@@ -47,9 +57,9 @@
         }
     </style>
 
-    <div class="container" style="margin: 15px;">
+    <header>
         <!-- Header Instansi -->
-        <table class="header-table" width="100%" style="margin-bottom: 5px;">
+        <table class="header-table" width="100%">
             <tr>
                 <td width="12%">
                     <img src="{{ 'data:image/jpeg;base64,' . base64_encode($setting->logo) }}" alt="" width="55px">
@@ -62,14 +72,17 @@
                     </div>
                 </td>
                 <td width="35%" style="text-align: right; vertical-align: top;">
-                    <div style="font-size: 13px; font-weight: bold; border: 1.5px solid #000; padding: 6px; text-align: center; border-radius: 4px; background-color: #fdfdfd;">
+                    <div style="font-size: 13px; font-weight: bold; border: 1.5px solid #000; padding: 6px; text-align: center; border-radius: 4px; background-color: #fdfdfd; margin-top: 5px;">
                         HASIL MEDICAL CHECK UP
                     </div>
                 </td>
             </tr>
         </table>
         
-        <hr style="border: 0; border-top: 2px double #000; margin-top: 5px; margin-bottom: 10px;"/>
+        <hr style="border: 0; border-top: 2px double #000; margin-top: 5px; margin-bottom: 0px;"/>
+    </header>
+
+    <div class="container">
 
         <!-- Demografi Pasien -->
         <table width="100%" class="table-data" style="margin-bottom: 10px;">
