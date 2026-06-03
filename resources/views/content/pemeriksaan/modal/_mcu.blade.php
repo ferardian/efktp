@@ -473,12 +473,15 @@
 
         // Fetch patient details safely to prevent race conditions
         getRegDetail(no_rawat).done((response) => {
-            const { pasien, dokter } = response;
-            $('#formMcu input[name=no_rawat]').val(response.no_rawat);
-            $('#formMcu input[name=no_rkm_medis]').val(response.no_rkm_medis);
-            $('#formMcu input[name=nm_pasien]').val(`${pasien.nm_pasien} / ${pasien.jk}`);
-            $('#formMcu input[name=nip]').val(response.kd_dokter);
-            $('#formMcu input[name=nm_dokter]').val(dokter.nm_dokter);
+            if (response) {
+                const pasien = response.pasien || {};
+                const dokter = response.dokter || {};
+                $('#formMcu input[name=no_rawat]').val(response.no_rawat || '');
+                $('#formMcu input[name=no_rkm_medis]').val(response.no_rkm_medis || '');
+                $('#formMcu input[name=nm_pasien]').val(`${pasien.nm_pasien || '-'} / ${pasien.jk || '-'}`);
+                $('#formMcu input[name=nip]').val(response.kd_dokter || '');
+                $('#formMcu input[name=nm_dokter]').val(dokter.nm_dokter || '-');
+            }
 
             // Fetch existing data
             $.get(`{{ url('/pemeriksaan/mcu/get') }}`, { no_rawat: no_rawat }).done(function(data) {
