@@ -27,7 +27,7 @@
             padding-top: 3px;
         }
         .page-number:before {
-            content: "Halaman " counter(page) " dari " counter(pages);
+            content: "Halaman " counter(page);
         }
         table {
             font-size: 11px;
