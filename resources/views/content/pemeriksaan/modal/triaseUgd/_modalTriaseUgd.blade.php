@@ -362,11 +362,21 @@
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-link link-secondary" data-bs-dismiss="modal">Batal</button>
-                <button type="button" class="btn btn-primary ms-auto" onclick="simpanTriaseUgd()">
-                    <i class="ti ti-device-floppy me-1"></i> Simpan Triase UGD
-                </button>
+            <div class="modal-footer d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <button type="button" class="btn btn-danger d-none" id="btn-hapus-triase" onclick="hapusTriaseUgd()">
+                        <i class="ti ti-trash me-1"></i> Hapus
+                    </button>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-info d-none" id="btn-cetak-triase" onclick="cetakTriaseUgd()">
+                        <i class="ti ti-printer me-1"></i> Cetak
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="simpanTriaseUgd()">
+                        <i class="ti ti-device-floppy me-1"></i> Simpan Triase UGD
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -567,6 +577,8 @@
             // Fetch existing data
             $.get("{{ url('/rm/triase/ugd') }}", { no_rawat: no_rawat }).done((res) => {
                 if (res) {
+                    $('#btn-hapus-triase').removeClass('d-none');
+                    $('#btn-cetak-triase').removeClass('d-none');
                     $('#triase_tgl_triase').val(res.tgl_triase ? res.tgl_triase.replace(' ', 'T').substring(0, 16) : '');
                     $('#triase_rujukan').val(res.rujukan).change();
                     $('#triase_rujukan_dari').val(res.rujukan_dari);
@@ -617,6 +629,8 @@
                         });
                     }
                 } else {
+                    $('#btn-hapus-triase').addClass('d-none');
+                    $('#btn-cetak-triase').addClass('d-none');
                     // Set default current time for new triage
                     const now = new Date();
                     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
@@ -655,6 +669,54 @@
             }
         }).fail((err) => {
             alertErrorAjax(err);
+        });
+    }
+
+    function cetakTriaseUgd() {
+        const no_rawat = $('#triase_no_rawat').val();
+        if (!no_rawat) {
+            Swal.fire('Error', 'Nomor rawat tidak teridentifikasi.', 'error');
+            return;
+        }
+        window.open("{{ url('/rm/triase/ugd/print') }}?no_rawat=" + encodeURIComponent(no_rawat), '_blank');
+    }
+
+    function hapusTriaseUgd() {
+        const no_rawat = $('#triase_no_rawat').val();
+        if (!no_rawat) {
+            Swal.fire('Error', 'Nomor rawat tidak teridentifikasi.', 'error');
+            return;
+        }
+
+        Swal.fire({
+            title: 'Apakah Anda yakin?',
+            text: 'Data triase UGD untuk nomor rawat ' + no_rawat + ' akan dihapus permanently!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, Hapus!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                loadingAjax('Menghapus data triase UGD...');
+                $.post("{{ url('/rm/triase/ugd/delete') }}", {
+                    _token: $('meta[name="csrf-token"]').attr('content'),
+                    no_rawat: no_rawat
+                }).done((response) => {
+                    alertSuccessAjax('Data triase UGD berhasil dihapus').then(() => {
+                        modalTriaseUgd.modal('hide');
+                        // Reset CPPT button color if exists
+                        const row = $(`.rows-registrasi[data-id="${no_rawat}"]`);
+                        const btnCppt = row.find('button[onclick^="showCpptRalan"]');
+                        if (btnCppt.length) {
+                            btnCppt.removeClass('btn-success').addClass('btn-outline-primary');
+                        }
+                    });
+                }).fail((err) => {
+                    alertErrorAjax(err);
+                });
+            }
         });
     }
 </script>

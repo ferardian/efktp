@@ -21,6 +21,7 @@ use App\Models\MasterTriaseMacamKasus;
 use App\Models\TriaseUgd;
 use App\Traits\Track;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\QueryException;
 
@@ -294,5 +295,57 @@ class RmIgdController extends Controller
             DB::rollBack();
             return response()->json('Terjadi kesalahan sistem: ' . $e->getMessage(), 500);
         }
+    }
+
+    public function deleteUgdTriage(Request $request)
+    {
+        $no_rawat = $request->no_rawat;
+        if (!$no_rawat) {
+            return response()->json('No. Rawat tidak valid', 400);
+        }
+
+        try {
+            $deleted = TriaseUgd::where('no_rawat', $no_rawat)->delete();
+            if ($deleted) {
+                $this->deleteSql(new TriaseUgd(), ['no_rawat' => $no_rawat]);
+                return response()->json('SUKSES');
+            } else {
+                return response()->json('Data Triase UGD tidak ditemukan', 404);
+            }
+        } catch (\Illuminate\Database\QueryException $e) {
+            return response()->json($e->errorInfo, 500);
+        }
+    }
+
+    public function printUgdTriage(Request $request)
+    {
+        $no_rawat = $request->no_rawat;
+        if (!$no_rawat) {
+            return redirect()->back()->with('error', 'No. Rawat tidak valid');
+        }
+
+        $triase = TriaseUgd::where('no_rawat', $no_rawat)
+            ->with([
+                'regPeriksa.pasien' => function ($query) {
+                    $query->with(['kel', 'kec', 'kab', 'prop']);
+                },
+                'petugas'
+            ])
+            ->first();
+
+        if (!$triase) {
+            return redirect()->back()->with('error', 'Data Triase UGD tidak ditemukan');
+        }
+
+        $setting = \App\Models\Setting::first();
+
+        $pdf = Pdf::loadView('content.print.triaseUgd', [
+            'data' => $triase,
+            'setting' => $setting
+        ])
+        ->setPaper('A4', 'portrait')
+        ->setOptions(['defaultFont' => 'serif', 'isRemoteEnabled' => true]);
+
+        return $pdf->stream('triase_ugd_' . str_replace('/', '_', $no_rawat) . '.pdf');
     }
 }

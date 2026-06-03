@@ -241,6 +241,8 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::post('/rm/igd', [\App\Http\Controllers\RmIgdController::class, 'create']);
 	Route::get('/rm/triase/ugd', [\App\Http\Controllers\RmIgdController::class, 'getUgdTriage']);
 	Route::post('/rm/triase/ugd', [\App\Http\Controllers\RmIgdController::class, 'createUgdTriage']);
+	Route::post('/rm/triase/ugd/delete', [\App\Http\Controllers\RmIgdController::class, 'deleteUgdTriage']);
+	Route::get('/rm/triase/ugd/print', [\App\Http\Controllers\RmIgdController::class, 'printUgdTriage']);
 
 	// Pemeriksaan
 	Route::get('/pemeriksaan/ralan', [PemeriksaanRalanController::class, 'get']);
