@@ -659,6 +659,9 @@
         
         $.post("{{ url('/rm/triase/ugd') }}", data).done((response) => {
             alertSuccessAjax();
+            if (document.activeElement) {
+                document.activeElement.blur();
+            }
             modalTriaseUgd.modal('hide');
 
             // Change color of CPPT button on registration table
@@ -705,6 +708,9 @@
                     no_rawat: no_rawat
                 }).done((response) => {
                     alertSuccessAjax('Data triase UGD berhasil dihapus').then(() => {
+                        if (document.activeElement) {
+                            document.activeElement.blur();
+                        }
                         modalTriaseUgd.modal('hide');
                         // Reset CPPT button color if exists
                         const row = $(`.rows-registrasi[data-id="${no_rawat}"]`);
