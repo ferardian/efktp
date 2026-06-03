@@ -1178,6 +1178,13 @@ $.contextMenu({
                     }
 
                 },
+                "mcu": {
+                    name: "Medical Check Up (MCU)",
+                    icon: "fas fa-heartbeat",
+                    callback: function (item, option, e, x, y) {
+                        showMcuModal(`${no_rawat}`)
+                    }
+                },
                 "upload": {
                     name: "Upload Penunjang",
                     icon: "fas fa-arrow-up-from-bracket",

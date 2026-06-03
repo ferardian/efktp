@@ -23,6 +23,9 @@
                         <a href="#tabs-hasil-lab" class="nav-link" data-bs-toggle="tab">Hasil Lab</a>
                     </li>
                     <li class="nav-item">
+                        <a href="#tabs-mcu" class="nav-link" data-bs-toggle="tab">MCU</a>
+                    </li>
+                    <li class="nav-item">
                         <a href="#tabs-billing" class="nav-link" data-bs-toggle="tab">Billing</a>
                     </li>
                 </ul>
@@ -56,6 +59,9 @@
                     <div class="tab-pane fade" id="tabs-hasil-lab">
                         @include('content.laboratorium.sub._hasilPeriksaTab')
                     </div>
+                    <div class="tab-pane fade" id="tabs-mcu">
+                        @include('content.pemeriksaan.modal._mcu')
+                    </div>
                     <div class="tab-pane fade" id="tabs-billing">
                         @include('content.pemeriksaan.modal._billing')
                     </div>
@@ -63,6 +69,9 @@
 
             </div>
             <div class="modal-footer">
+                <button type="button" class="btn btn-danger d-none me-auto" id="btnHapusMcu" onclick="hapusMcu()">
+                    <i class="ti ti-trash me-1"></i> Hapus MCU
+                </button>
                 <button type="button" class="btn btn-success" onclick="simpanPemeriksaanRalan()" id="btnSimpanCppt">
                     <i class="ti ti-device-floppy me-1"></i> Simpan CPPT
                 </button>
@@ -80,6 +89,12 @@
                 </button>
                 <button type="button" class="btn btn-success d-none" id="btnKirimPermintaanTab" onclick="createPermintaanLabTab()">
                     <i class="ti ti-device-floppy me-1"></i> Kirim Permintaan
+                </button>
+                <button type="button" class="btn btn-success d-none" id="btnSimpanMcu" onclick="simpanMcu()">
+                    <i class="ti ti-device-floppy me-1"></i> Simpan MCU
+                </button>
+                <button type="button" class="btn btn-primary d-none" id="btnCetakMcu" onclick="cetakMcu()">
+                    <i class="ti ti-printer me-1"></i> Cetak MCU
                 </button>
                 <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
                     <i class="ti ti-x me-1"></i>Keluar
@@ -120,6 +135,7 @@
 
         const targetTabsPermintaanLab = modalCppt.find('a[href="#tabs-permintaan-lab"]');
         const targetTabsHasilLab = modalCppt.find('a[href="#tabs-hasil-lab"]');
+        const targetTabsMcu = modalCppt.find('a[href="#tabs-mcu"]');
         const targetTabsBilling = modalCppt.find('a[href="#tabs-billing"]');
 
         $(document).ready(() => {
@@ -132,6 +148,7 @@
                 $('#btnCreateHasilUsg').addClass('d-none')
                 $('#btndataDetailPermintaanTab').removeClass('d-none')
                 $('#btnKirimPermintaanTab').removeClass('d-none')
+                $('#btnSimpanMcu').addClass('d-none')
             });
 
             targetTabsHasilLab.on('shown.bs.tab', (e) => {
@@ -143,6 +160,19 @@
                 $('#btnCreateHasilUsg').addClass('d-none')
                 $('#btndataDetailPermintaanTab').addClass('d-none')
                 $('#btnKirimPermintaanTab').addClass('d-none')
+                $('#btnSimpanMcu').addClass('d-none')
+            });
+
+            targetTabsMcu.on('shown.bs.tab', (e) => {
+                const no_rawat = modalCppt.find('input[name="no_rawat"]').val();
+                loadMcu(no_rawat);
+
+                $('#btnSimpanCppt').addClass('d-none')
+                $('#btnCreateTindakan').addClass('d-none')
+                $('#btnCreateHasilUsg').addClass('d-none')
+                $('#btndataDetailPermintaanTab').addClass('d-none')
+                $('#btnKirimPermintaanTab').addClass('d-none')
+                $('#btnSimpanMcu').removeClass('d-none')
             });
             btnTambahResep = $('#btnTambahResep')
             btnTambahObat = $('#btnTambahObat')
@@ -172,6 +202,10 @@
             $('.tindakan-check').prop('checked', false);
             $('#formHasilUsg').find('input[type=text], input[type=date] , textarea').val('');
             $('#formHasilUsg').find('select').val('').trigger('change');
+            $('#formMcu').find('input[type=text], textarea').val('-');
+            $('#formMcu').find('select').each(function() {
+                $(this).val($(this).find('option:first').val());
+            });
             if (!targetTabsCppt.hasClass('active')) {
                 targetTabsCppt.tab('show');
             }
@@ -184,6 +218,7 @@
             $('#btnCreateHasilUsg').addClass('d-none')
             $('#btndataDetailPermintaanTab').addClass('d-none')
             $('#btnKirimPermintaanTab').addClass('d-none')
+            $('#btnSimpanMcu').addClass('d-none')
         });
 
         targetTabsTindakan.on('shown.bs.tab', function(event) {
@@ -208,6 +243,7 @@
             $('#btndataDetailPermintaanTab').addClass('d-none')
             $('#btnKirimPermintaanTab').addClass('d-none')
             $('#btnCreateTindakan').removeClass('d-none')
+            $('#btnSimpanMcu').addClass('d-none')
         });
 
         modalCppt.find('a[href="#tabsHasilUsg"]').on('shown.bs.tab', function() {
@@ -216,6 +252,7 @@
             $('#btndataDetailPermintaanTab').addClass('d-none')
             $('#btnKirimPermintaanTab').addClass('d-none')
             $('#btnCreateHasilUsg').removeClass('d-none')
+            $('#btnSimpanMcu').addClass('d-none')
         });
 
         targetTabsBilling.on('shown.bs.tab', function() {
@@ -227,15 +264,37 @@
             $('#btnCreateHasilUsg').addClass('d-none')
             $('#btndataDetailPermintaanTab').addClass('d-none')
             $('#btnKirimPermintaanTab').addClass('d-none')
+            $('#btnSimpanMcu').addClass('d-none')
         });
 
         modalCppt.on('shown.bs.modal', (e) => {
             switcTab(tabObat)
 
-            if (!targetTabsCppt.hasClass('active')) {
+            if (window.openMcuTabOnShow) {
+                targetTabsMcu.tab('show');
+                window.openMcuTabOnShow = false;
+            } else if (!targetTabsCppt.hasClass('active')) {
                 targetTabsCppt.tab('show');
             }
         })
+
+        modalCppt.find('a[data-bs-toggle="tab"]').on('shown.bs.tab', (e) => {
+            const target = $(e.target).attr('href');
+            if (target !== '#tabs-mcu') {
+                $('#btnHapusMcu').addClass('d-none');
+                $('#btnCetakMcu').addClass('d-none');
+            }
+        });
+
+        modalCppt.on('hidden.bs.modal', (e) => {
+            $('#btnHapusMcu').addClass('d-none');
+            $('#btnCetakMcu').addClass('d-none');
+        });
+
+        function showMcuModal(no_rawat) {
+            window.openMcuTabOnShow = true;
+            showCpptRalan(no_rawat);
+        }
 
         function showCpptRalan(no_rawat) {
 

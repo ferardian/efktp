@@ -56,6 +56,7 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SukuBangsaController;
 use App\Http\Controllers\SuratSakitController;
 use App\Http\Controllers\SuratSehatController;
+use App\Http\Controllers\PenilaianMcuController;
 use App\Http\Controllers\UploadController;
 use App\Http\Controllers\PetugasController;
 use App\Http\Controllers\UserController;
@@ -246,6 +247,13 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::get('/pemeriksaan/ralan/get', [PemeriksaanRalanController::class, 'get']);
 	Route::get('/pemeriksaan/ralan/show', [PemeriksaanRalanController::class, 'show']);
 	Route::post('/pemeriksaan/ralan/create', [PemeriksaanRalanController::class, 'create']);
+
+	// MCU
+	Route::get('/pemeriksaan/mcu/get', [PenilaianMcuController::class, 'get']);
+	Route::post('/pemeriksaan/mcu/create', [PenilaianMcuController::class, 'create']);
+	Route::get('/pemeriksaan/mcu/penunjang', [PenilaianMcuController::class, 'getPenunjang']);
+	Route::post('/pemeriksaan/mcu/delete', [PenilaianMcuController::class, 'delete']);
+	Route::get('/pemeriksaan/mcu/print', [PenilaianMcuController::class, 'print']);
 
 	// PEMERIKSAAN GIGI
 	Route::get('/pemeriksaan/gigi', [PemeriksaanGigiController::class, 'get']);
