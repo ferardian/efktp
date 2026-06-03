@@ -270,12 +270,11 @@
         modalCppt.on('shown.bs.modal', (e) => {
             switcTab(tabObat)
 
-            const current_no_rawat = modalCppt.find('input[name="no_rawat"]').val();
-
             if (window.openMcuTabOnShow) {
                 targetTabsMcu.tab('show');
-                loadMcu(current_no_rawat);
+                loadMcu(window.mcuNoRawatOnShow);
                 window.openMcuTabOnShow = false;
+                window.mcuNoRawatOnShow = null;
             } else if (!targetTabsCppt.hasClass('active')) {
                 targetTabsCppt.tab('show');
             }
@@ -296,6 +295,7 @@
 
         function showMcuModal(no_rawat) {
             window.openMcuTabOnShow = true;
+            window.mcuNoRawatOnShow = no_rawat;
             showCpptRalan(no_rawat);
         }
 
