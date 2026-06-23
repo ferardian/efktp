@@ -9,16 +9,16 @@ class GenerateNoResep
 
 	public function handle(ResepObat $resep): int
 	{
+		$todayPrefix = date('Ymd');
 		$resep = $resep->select('no_resep')
+			->where('no_resep', 'like', $todayPrefix . '%')
 			->orderBy('no_resep', 'DESC')
-			->where('tgl_peresepan', date('Y-m-d'))
-			->orWhere('tgl_perawatan', date('Y-m-d'))
 			->first();
 
 		if ($resep) {
 			$no_resep = $resep->no_resep + 1;
 		} else {
-			$no_resep = date('Ymd') . '0001';
+			$no_resep = $todayPrefix . '0001';
 		}
 		return $no_resep;
 	}

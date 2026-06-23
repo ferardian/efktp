@@ -868,6 +868,23 @@
                     loadingAjax().close();
                     const result = response.response;
                     $.get(`{{ url('/setting/ppk') }}`).done((kode) => {
+                        const populateData = () => {
+                            const umur = hitungUmur(splitTanggal(result.tglLahir));
+                            const textUmur = `${umur.split(';')[0]} Th ${umur.split(';')[1]} Bl ${umur.split(';')[2]} Hr`;
+                            const nokaValue = result.noKartu || (findBy == 'noKartu' ? noKartu : '-');
+                            const nikValue = result.noKTP || (findBy == 'noKTP' ? noKartu : '-');
+
+                            formPasien.find('#nm_pasien').val(result.nama).addClass('is-valid highlight-success');
+                            formPasien.find('#no_peserta').val(nokaValue).addClass('is-valid highlight-success');
+                            formPasien.find('#no_ktp').val(nikValue).addClass('is-valid highlight-success');
+                            formPasien.find('#umur').val(textUmur).addClass('is-valid highlight-success');
+                            formPasien.find('#no_tlp').val(result.noHP).addClass('is-valid highlight-success');
+                            formPasien.find('#tgl_lahir').val(result.tglLahir).addClass('is-valid highlight-success');
+                            formPasien.find('#jk').val(result.sex).change().addClass('is-valid highlight-success');
+                            const bpjs = new Option('BPJ - BPJS', 'BPJS', true, true);
+                            formPasien.find('#kd_pj').append(bpjs).trigger('change').addClass('is-valid highlight-success');
+                        };
+
                         if (kode !== result.kdProviderPst.kdProvider) {
                             Swal.fire({
                                 title: "Peringatan ?",
@@ -879,22 +896,15 @@
                                 confirmButtonText: "Iya, Lanjutkan",
                                 cancelButtonText: "Tidak, Batalkan"
                             }).then((res) => {
-                                if (!res.isConfirmed) {
+                                if (res.isConfirmed) {
+                                    populateData();
+                                } else {
                                     resetFormRegistrasi();
-                                    return true;
                                 }
                             });
+                        } else {
+                            populateData();
                         }
-                        const umur = hitungUmur(splitTanggal(result.tglLahir));
-                        const textUmur = `${umur.split(';')[0]} Th ${umur.split(';')[1]} Bl ${umur.split(';')[2]} Hr`
-                        formPasien.find('#nm_pasien').val(result.nama).addClass('is-valid highlight-success');
-                        formPasien.find('#no_ktp').val(result.noKTP).addClass('is-valid highlight-success');
-                        formPasien.find('#umur').val(textUmur).addClass('is-valid highlight-success');
-                        formPasien.find('#no_tlp').val(result.noHP).addClass('is-valid highlight-success');
-                        formPasien.find('#tgl_lahir').val(result.tglLahir).addClass('is-valid highlight-success');
-                        formPasien.find('#jk').val(result.sex).change().addClass('is-valid highlight-success');
-                        const bpjs = new Option('BPJ - BPJS', 'BPJS', true, true);
-                        formPasien.find('#kd_pj').append(bpjs).trigger('change').addClass('is-valid highlight-success');
                     })
 
                 } else {
