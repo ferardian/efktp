@@ -57,7 +57,7 @@
             <tr>
                 <td>Diagnosa</td>
                 <td>:</td>
-                <td></td>
+                <td>{{ $data['diagnosa'] }}</td>
             </tr>
         </table>
 
