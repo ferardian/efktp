@@ -78,7 +78,11 @@
                     </a>
                     <a href="{{ url('farmasi/resep') }}" class="dropdown-item">
                         Resep Obat
-                    </a><a href="{{ url('master/paket-obat') }}" class="dropdown-item">
+                    </a>
+                    <a href="{{ url('farmasi/resep/rekap') }}" class="dropdown-item {{ Request::is('farmasi/resep/rekap') ? 'active' : '' }}">
+                        Rekap Resep
+                    </a>
+                    <a href="{{ url('master/paket-obat') }}" class="dropdown-item">
                         Paket Obat
                     </a>
                 </div>

@@ -582,4 +582,91 @@ class ResepObatController extends Controller
 			DB::table('detailjurnal')->insert($detail);
 		}
 	}
+
+	public function rekapIndex(Request $request)
+	{
+		$poliklinik = \App\Models\Poliklinik::active()->orderBy('nm_poli', 'asc')->get();
+		$dokter = \App\Models\Dokter::where('status', '1')->orderBy('nm_dokter', 'asc')->get();
+		return view('content.farmasi.resep.rekapResep', compact('poliklinik', 'dokter'));
+	}
+
+	public function rekapData(Request $request)
+	{
+		$data = $this->getRekapQueryData($request);
+		return DataTables::of($data)->addIndexColumn()->make(true);
+	}
+
+	private function getRekapQueryData(Request $request)
+	{
+		$tgl_awal = $request->tgl_awal ? date('Y-m-d', strtotime($request->tgl_awal)) : date('Y-m-d');
+		$tgl_akhir = $request->tgl_akhir ? date('Y-m-d', strtotime($request->tgl_akhir)) : date('Y-m-d');
+		$kd_poli = $request->kd_poli;
+		$kd_dokter = $request->kd_dokter;
+		$status_validasi = $request->status_validasi;
+
+		$subQueryNonRacikan = DB::table('resep_dokter as rd')
+			->join('resep_obat as ro', 'rd.no_resep', '=', 'ro.no_resep')
+			->join('reg_periksa as rp', 'ro.no_rawat', '=', 'rp.no_rawat')
+			->select('rd.kode_brng', 'rd.jml', 'ro.tgl_peresepan', 'ro.tgl_perawatan', 'rp.kd_poli', 'ro.kd_dokter');
+
+		$subQueryRacikan = DB::table('resep_dokter_racikan_detail as rrd')
+			->join('resep_obat as ro', 'rrd.no_resep', '=', 'ro.no_resep')
+			->join('reg_periksa as rp', 'ro.no_rawat', '=', 'rp.no_rawat')
+			->select('rrd.kode_brng', 'rrd.jml', 'ro.tgl_peresepan', 'ro.tgl_perawatan', 'rp.kd_poli', 'ro.kd_dokter');
+
+		$unionQuery = $subQueryNonRacikan->unionAll($subQueryRacikan);
+
+		$query = DB::table(DB::raw("({$unionQuery->toSql()}) as detail"))
+			->mergeBindings($unionQuery)
+			->join('databarang as db', 'detail.kode_brng', '=', 'db.kode_brng')
+			->leftJoin('kodesatuan as ks', 'db.kode_sat', '=', 'ks.kode_sat')
+			->select('db.kode_brng', 'db.nama_brng', 'ks.satuan', DB::raw('SUM(detail.jml) as total_qty'))
+			->whereBetween('detail.tgl_peresepan', [$tgl_awal, $tgl_akhir]);
+
+		if ($kd_poli) {
+			$query->where('detail.kd_poli', $kd_poli);
+		}
+		if ($kd_dokter) {
+			$query->where('detail.kd_dokter', $kd_dokter);
+		}
+		if ($status_validasi === 'belum') {
+			$query->where(function ($q) {
+				$q->where('detail.tgl_perawatan', '0000-00-00')
+					->orWhereNull('detail.tgl_perawatan');
+			});
+		} elseif ($status_validasi === 'sudah') {
+			$query->where('detail.tgl_perawatan', '!=', '0000-00-00')
+				->whereNotNull('detail.tgl_perawatan');
+		}
+
+		return $query->groupBy('db.kode_brng', 'db.nama_brng', 'ks.satuan')
+			->orderBy('db.nama_brng', 'asc')
+			->get();
+	}
+
+
+	public function rekapPdf(Request $request)
+	{
+		$data = $this->getRekapQueryData($request);
+
+		$poliName = 'Semua Poliklinik';
+		if ($request->kd_poli) {
+			$poliName = DB::table('poliklinik')->where('kd_poli', $request->kd_poli)->value('nm_poli') ?? 'Poliklinik';
+		}
+		$dokterName = 'Semua Dokter';
+		if ($request->kd_dokter) {
+			$dokterName = DB::table('dokter')->where('kd_dokter', $request->kd_dokter)->value('nm_dokter') ?? 'Dokter';
+		}
+
+		$tgl_awal = $request->tgl_awal ?? date('d-m-Y');
+		$tgl_akhir = $request->tgl_akhir ?? date('d-m-Y');
+		$status = $request->status_validasi == 'belum' ? 'Belum Validasi' : ($request->status_validasi == 'sudah' ? 'Sudah Validasi' : 'Semua Status');
+
+		$setting = Setting::first();
+		$pdf = PDF::loadView('content.print.rekapResepPdf', compact('data', 'poliName', 'dokterName', 'tgl_awal', 'tgl_akhir', 'status', 'setting'))
+			->setPaper('A4', 'portrait')
+			->setOptions(['defaultFont' => 'sans-serif', 'isRemoteEnabled' => true]);
+
+		return $pdf->stream('rekap_resep_obat.pdf');
+	}
 }

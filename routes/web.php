@@ -331,6 +331,9 @@ Route::middleware('auth:web,admin')->group(function () {
 
 	// FARMASI
 	Route::get('farmasi/resep', [ResepObatController::class, 'index']);
+	Route::get('farmasi/resep/rekap', [ResepObatController::class, 'rekapIndex']);
+	Route::get('farmasi/resep/rekap/data', [ResepObatController::class, 'rekapData']);
+	Route::get('farmasi/resep/rekap/pdf', [ResepObatController::class, 'rekapPdf']);
 	Route::get('farmasi/resep/get', [ResepObatController::class, 'get']);
 	Route::post('farmasi/resep/set/penyerahan', [ResepObatController::class, 'setPenyerahan']);
 
