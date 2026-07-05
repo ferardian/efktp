@@ -134,19 +134,9 @@
                                 <label class="form-label">Alamat</label>
                                 <textarea class="form-control" id="alamat" name="alamat" rows="2"></textarea>
                             </div>
-                            <div class="row">
-                                <div class="col-6">
-                                    <div class="mb-2">
-                                        <label class="form-label">No. Telp</label>
-                                        <input type="text" class="form-control" id="no_telp" name="no_telp">
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="mb-2">
-                                        <label class="form-label">Email</label>
-                                        <input type="email" class="form-control" id="email" name="email">
-                                    </div>
-                                </div>
+                            <div class="mb-2">
+                                <label class="form-label">No. Telp</label>
+                                <input type="text" class="form-control" id="no_telp" name="no_telp">
                             </div>
                             <div class="mt-3">
                                 <button type="button" class="btn btn-success w-100" id="btnSimpanPetugas" onclick="simpanPetugas()">
@@ -258,7 +248,6 @@
                 $('#stts_nikah').val(data.stts_nikah);
                 $('#alamat').val(data.alamat);
                 $('#no_telp').val(data.no_telp);
-                $('#email').val(data.email);
                 $('#status').val(data.status);
 
                 $('#btnSimpanPetugas').removeClass('btn-success').addClass('btn-warning').html('<i class="ti ti-pencil me-2"></i> Update Data Petugas');

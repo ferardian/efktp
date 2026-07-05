@@ -9,8 +9,11 @@ class DataBarang extends Model
 {
     use HasFactory;
     protected $table = 'databarang';
+    protected $primaryKey = 'kode_brng';
+    public $incrementing = false;
+    protected $keyType = 'string';
+    public $timestamps = false;
     protected $guarded = [];
-    public $timestamps;
 
     public function satuan()
     {

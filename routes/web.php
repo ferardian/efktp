@@ -294,8 +294,12 @@ Route::middleware('auth:web,admin')->group(function () {
 
 	// Barang/obat
 	Route::get('/farmasi/obat', [DataBarangController::class, 'index']);
-
 	Route::get('/barang/get', [DataBarangController::class, 'get']);
+	Route::get('/barang/get-next-kode', [DataBarangController::class, 'getNextKode']);
+	Route::post('/barang/store', [DataBarangController::class, 'store']);
+	Route::put('/barang/update/{kode_brng}', [DataBarangController::class, 'update']);
+	Route::delete('/barang/delete/{kode_brng}', [DataBarangController::class, 'destroy']);
+	Route::get('/barang/detail/{kode_brng}', [DataBarangController::class, 'detail']);
 
 	// Resep Obat
 	Route::post('/resep/create', [ResepObatController::class, 'create']);

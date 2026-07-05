@@ -78,7 +78,7 @@ class PetugasController extends Controller
             );
 
             // 2. Insert to Petugas
-            Petugas::create($request->all());
+            Petugas::create($request->except('email'));
 
             DB::commit();
             return response()->json(['message' => 'Data Petugas berhasil disimpan']);
@@ -98,7 +98,7 @@ class PetugasController extends Controller
             DB::beginTransaction();
 
             $petugas = Petugas::where('nip', $nip)->firstOrFail();
-            $petugas->update($request->all());
+            $petugas->update($request->except('email'));
 
             $pegawai = \App\Models\Pegawai::where('nik', $nip)->first();
             if ($pegawai) {

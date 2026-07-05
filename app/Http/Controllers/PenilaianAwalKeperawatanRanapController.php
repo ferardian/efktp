@@ -129,7 +129,6 @@ class PenilaianAwalKeperawatanRanapController extends Controller
                     'alamat' => $pegawai->alamat ?: '-',
                     'kd_jbtn' => 'J001', // Must reference a valid job position key from 'jabatan' table
                     'no_telp' => '-',
-                    'email' => '',
                     'status' => '1'
                 ]);
             }
