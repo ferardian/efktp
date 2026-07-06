@@ -189,6 +189,8 @@ Route::middleware('auth:web,admin')->group(function () {
     Route::get('/billing/ranap', [\App\Http\Controllers\BillingController::class, 'getBillingRanap']);
     Route::get('/billing/ralan', [\App\Http\Controllers\BillingController::class, 'getBillingRalan']);
     Route::get('/billing/print', [\App\Http\Controllers\BillingController::class, 'printBilling']);
+    Route::get('/billing/accounts', [\App\Http\Controllers\BillingController::class, 'getBillingAccounts']);
+    Route::post('/billing/close', [\App\Http\Controllers\BillingController::class, 'closeBilling']);
 
 	// JADWAL PRAKTEK
 	Route::get('/master/jadwal', [JadwalController::class, 'index']);
@@ -299,7 +301,22 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::post('/barang/store', [DataBarangController::class, 'store']);
 	Route::put('/barang/update/{kode_brng}', [DataBarangController::class, 'update']);
 	Route::delete('/barang/delete/{kode_brng}', [DataBarangController::class, 'destroy']);
+	Route::post('/barang/batch-status', [DataBarangController::class, 'batchUpdateStatus']);
 	Route::get('/barang/detail/{kode_brng}', [DataBarangController::class, 'detail']);
+
+	// Penerimaan Barang Medis / Obat (Pemesanan)
+	Route::get('/farmasi/penerimaan', [\App\Http\Controllers\PemesananController::class, 'index']);
+	Route::get('/penerimaan/data', [\App\Http\Controllers\PemesananController::class, 'data']);
+	Route::post('/penerimaan/store', [\App\Http\Controllers\PemesananController::class, 'store']);
+	Route::delete('/penerimaan/delete/{no_faktur}', [\App\Http\Controllers\PemesananController::class, 'destroy']);
+	Route::get('/penerimaan/detail', [\App\Http\Controllers\PemesananController::class, 'detail']);
+
+	// Stok Opname
+	Route::get('/farmasi/opname', [\App\Http\Controllers\OpnameController::class, 'index']);
+	Route::get('/opname/data', [\App\Http\Controllers\OpnameController::class, 'data']);
+	Route::get('/opname/get-items', [\App\Http\Controllers\OpnameController::class, 'getItems']);
+	Route::post('/opname/store', [\App\Http\Controllers\OpnameController::class, 'store']);
+	Route::post('/opname/delete', [\App\Http\Controllers\OpnameController::class, 'destroy']);
 
 	// Resep Obat
 	Route::post('/resep/create', [ResepObatController::class, 'create']);

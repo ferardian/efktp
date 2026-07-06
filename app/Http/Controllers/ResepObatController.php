@@ -320,8 +320,7 @@ class ResepObatController extends Controller
 						throw new \Exception('Barang/obat dengan kode ' . $rd->kode_brng . ' tidak ditemukan');
 					}
 
-					$capacity = floatval($obat->kapasitas) > 0 ? floatval($obat->kapasitas) : 1.0;
-					$qty = floatval($rd->jml) / $capacity;
+					$qty = floatval($rd->jml);
 
 					$stok = DB::table('gudangbarang')
 						->where('kode_brng', $rd->kode_brng)
@@ -331,8 +330,7 @@ class ResepObatController extends Controller
 						->value('stok') ?? 0;
 
 					if ($stok < $qty) {
-						$availableUnits = $stok * $capacity;
-						throw new \Exception('Stok obat "' . $obat->nama_brng . '" tidak cukup. Stok saat ini: ' . $availableUnits . ' unit, dibutuhkan: ' . $rd->jml);
+						throw new \Exception('Stok obat "' . $obat->nama_brng . '" tidak cukup. Stok saat ini: ' . $stok . ' unit, dibutuhkan: ' . $qty);
 					}
 
 					DB::table('gudangbarang')

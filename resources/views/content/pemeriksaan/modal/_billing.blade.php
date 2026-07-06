@@ -4,7 +4,7 @@
             <div class="d-flex align-items-center">
                 <i class="ti ti-info-circle fs-2 me-2"></i>
                 <div>
-                    <h4 class="mb-0">Rincian Billing Berjalan</h4>
+                    <h4 class="mb-0 d-flex align-items-center">Rincian Billing Berjalan <span id="billing_status_badge"></span></h4>
                     <p class="mb-0 small">Estimasi total biaya selama pemeriksaan berlangsung</p>
                 </div>
             </div>
@@ -13,6 +13,9 @@
                     <input class="form-check-input" type="checkbox" id="printShowObatDetail" checked>
                     <label class="form-check-label small fw-bold text-dark mb-0" for="printShowObatDetail">Detail Obat</label>
                 </div>
+                <button type="button" class="btn btn-sm btn-success me-2" id="btnOpenCloseBilling" onclick="showCloseBillingModal()">
+                    <i class="ti ti-lock me-1"></i> Simpan & Tutup Billing
+                </button>
                 <div class="btn-group">
                     <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="ti ti-printer me-1"></i> Cetak Billing
@@ -114,6 +117,99 @@
                 </div>
             </div>
         </div>
+
+        <!-- Modal Close Billing -->
+        <div class="modal fade" id="modalCloseBilling" tabindex="-1" data-bs-backdrop="static">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title text-white"><i class="ti ti-lock me-2"></i> Tutup & Simpan Billing</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body text-dark">
+                        <form id="formCloseBilling">
+                            <input type="hidden" id="cb_no_rawat">
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">No. Rawat</label>
+                                <input type="text" class="form-control bg-light" id="cb_no_rawat_display" readonly>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Nama Pasien</label>
+                                <input type="text" class="form-control bg-light" id="cb_nama_pasien" readonly>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-6 mb-3">
+                                    <label class="form-label fw-bold text-success">Total Tagihan (Rp)</label>
+                                    <input type="text" class="form-control bg-light fw-bold text-success" id="cb_total_tagihan" readonly>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <label class="form-label fw-bold">Tgl. Bayar</label>
+                                    <input type="date" class="form-control" id="cb_tgl_bayar" value="{{ date('Y-m-d') }}">
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-6 mb-3">
+                                    <label class="form-label fw-bold text-warning">Potongan / Diskon (Rp)</label>
+                                    <input type="number" class="form-control" id="cb_potongan" value="0" min="0" oninput="calculateCloseBillingAmounts()">
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <label class="form-label fw-bold text-primary">Tambahan Biaya (Rp)</label>
+                                    <input type="number" class="form-control" id="cb_tambahan" value="0" min="0" oninput="calculateCloseBillingAmounts()">
+                                </div>
+                            </div>
+
+                            <div class="mb-3 border-top pt-3">
+                                <label class="form-label fw-bold text-dark">Metode Pembayaran (Cash/Transfer/Card)</label>
+                                <div id="cb_payments_container">
+                                    <!-- Dynamic Payments list -->
+                                    <div class="payment-row row g-2 mb-2 align-items-center">
+                                        <div class="col-7">
+                                            <select class="form-select select-akun-bayar" onchange="calculateCloseBillingAmounts()">
+                                                <option value="">-- Pilih Akun Pembayaran --</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-5">
+                                            <input type="number" class="form-control input-besar-bayar" value="0" min="0" placeholder="Besar Bayar" oninput="calculateCloseBillingAmounts()">
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-secondary mt-1" onclick="addCloseBillingPaymentRow()">
+                                    <i class="ti ti-plus me-1"></i> Tambah Metode Bayar
+                                </button>
+                            </div>
+
+                            <div class="mb-3 border-top pt-3" id="cb_piutang_section" style="display:none;">
+                                <div class="alert alert-warning py-2 mb-2 small text-dark">
+                                    <i class="ti ti-alert-triangle me-1 text-warning"></i> Sisa tagihan belum lunas akan dibebankan sebagai piutang.
+                                </div>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold text-danger">Sisa Piutang (Rp)</label>
+                                        <input type="text" class="form-control bg-light fw-bold text-danger" id="cb_sisa_piutang" readonly value="0">
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold">Akun Piutang</label>
+                                        <select class="form-select" id="cb_kd_rek_piutang">
+                                            <option value="">-- Pilih Akun Piutang --</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer bg-light">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="button" class="btn btn-success fw-bold" onclick="submitCloseBilling()">
+                            <i class="ti ti-device-floppy me-1"></i> Simpan & Selesaikan
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -135,6 +231,17 @@
                 $('#billing_pasien').text(': ' + response.pasien);
                 $('#billing_poli').text(': ' + response.poli);
                 $('#billing_tgl').text(': ' + formatTanggal(response.tgl_perawatan));
+
+                // Populate Payment Status Badge and Button text/style
+                const badge = $('#billing_status_badge');
+                const btn = $('#btnOpenCloseBilling');
+                 if (response.status_bayar === 'Sudah Bayar') {
+                    badge.html(`<span class="badge bg-success-lt text-success ms-2 px-2 py-1 align-middle d-inline-flex align-items-center" style="font-size: 11px; font-weight: 600; text-transform: none; gap: 4px; line-height: 1.2;"><i class="ti ti-lock"></i> Terkunci (Sudah Bayar)</span>`);
+                    btn.html(`<i class="ti ti-lock-open me-1"></i> Update & Tutup Billing`).removeClass('btn-success').addClass('btn-warning');
+                } else {
+                    badge.html(`<span class="badge bg-warning-lt text-warning ms-2 px-2 py-1 align-middle d-inline-flex align-items-center" style="font-size: 11px; font-weight: 600; text-transform: none; gap: 4px; line-height: 1.2;"><i class="ti ti-lock-open"></i> Belum Bayar</span>`);
+                    btn.html(`<i class="ti ti-lock me-1"></i> Simpan & Tutup Billing`).removeClass('btn-warning').addClass('btn-success');
+                }
 
                 let html = '';
                 response.categories.forEach(cat => {
@@ -174,6 +281,7 @@
     }
 
     function cetakBilling(size) {
+        const formCpptRajal = $('#formCpptRajal');
         const no_rawat = formCpptRajal.find('input[name=no_rawat]').val() || $('#billing_no_nota').text().replace(': ', '').trim();
         if (no_rawat && no_rawat !== '-') {
             const show_obat = $('#printShowObatDetail').is(':checked') ? 1 : 0;
@@ -335,5 +443,241 @@
             }
         });
     }
+
+    let accountsData = null;
+
+    function showCloseBillingModal() {
+        const formCpptRajal = $('#formCpptRajal');
+        const no_rawat = formCpptRajal.find('input[name=no_rawat]').val() || $('#billing_no_nota').text().replace(': ', '').trim();
+        if (!no_rawat || no_rawat === '-') {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Opps...',
+                text: 'Nomor rawat tidak valid!'
+            });
+            return;
+        }
+
+        const nama_pasien = $('#billing_pasien').text().replace(': ', '').trim();
+        const raw_total = parseFloat($('#grandTotalBilling').text().replace('Rp.', '').replace(/[^0-9,-]/g, '').replace(',', '.')) || 0;
+
+        $('#cb_no_rawat').val(no_rawat);
+        $('#cb_no_rawat_display').val(no_rawat);
+        $('#cb_nama_pasien').val(nama_pasien);
+        $('#cb_total_tagihan').val(new Intl.NumberFormat('id-ID').format(raw_total));
+        $('#cb_total_tagihan').data('raw-value', raw_total);
+        $('#cb_potongan').val(0);
+        $('#cb_tambahan').val(0);
+
+        // Reset payments container to a single row
+        $('#cb_payments_container').html(`
+            <div class="payment-row row g-2 mb-2 align-items-center">
+                <div class="col-7">
+                    <select class="form-select select-akun-bayar" onchange="calculateCloseBillingAmounts()">
+                        <option value="">-- Pilih Akun Pembayaran --</option>
+                    </select>
+                </div>
+                <div class="col-5">
+                    <input type="number" class="form-control input-besar-bayar" value="${raw_total}" min="0" placeholder="Besar Bayar" oninput="calculateCloseBillingAmounts()">
+                </div>
+            </div>
+        `);
+
+        // Fetch Accounts
+        $.get("{{ url('/billing/accounts') }}", { no_rawat: no_rawat })
+            .done((response) => {
+                accountsData = response;
+                
+                // Populate Akun Bayar dropdowns
+                populateAkunBayarSelects();
+                
+                // Populate Akun Piutang
+                const piutangSelect = $('#cb_kd_rek_piutang');
+                piutangSelect.empty().append('<option value="">-- Pilih Akun Piutang --</option>');
+                response.akun_piutang.forEach(acc => {
+                    const selected = response.default_piutang && response.default_piutang.kd_rek === acc.kd_rek ? 'selected' : '';
+                    piutangSelect.append(`<option value="${acc.kd_rek}" ${selected}>${acc.nama_bayar} (${acc.kd_rek})</option>`);
+                });
+
+                calculateCloseBillingAmounts();
+                $('#modalCloseBilling').modal('show');
+            })
+            .fail((xhr) => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal Memuat Akun',
+                    text: xhr.responseJSON?.message || 'Gagal memuat daftar akun pembayaran'
+                });
+            });
+    }
+
+    function populateAkunBayarSelects() {
+        if (!accountsData) return;
+        $('.select-akun-bayar').each(function() {
+            const select = $(this);
+            const currentVal = select.val();
+            select.empty().append('<option value="">-- Pilih Akun Pembayaran --</option>');
+            accountsData.akun_bayar.forEach(acc => {
+                select.append(`<option value="${acc.nama_bayar}">${acc.nama_bayar} (${acc.kd_rek})</option>`);
+            });
+            if (currentVal) {
+                select.val(currentVal);
+            }
+        });
+    }
+
+    function addCloseBillingPaymentRow() {
+        const row = $(`
+            <div class="payment-row row g-2 mb-2 align-items-center">
+                <div class="col-7">
+                    <select class="form-select select-akun-bayar" onchange="calculateCloseBillingAmounts()">
+                        <option value="">-- Pilih Akun Pembayaran --</option>
+                    </select>
+                </div>
+                <div class="col-4">
+                    <input type="number" class="form-control input-besar-bayar" value="0" min="0" placeholder="Besar Bayar" oninput="calculateCloseBillingAmounts()">
+                </div>
+                <div class="col-1 text-center">
+                    <a href="javascript:void(0)" class="text-danger" onclick="$(this).closest('.payment-row').remove(); calculateCloseBillingAmounts();">
+                        <i class="ti ti-trash fs-3"></i>
+                    </a>
+                </div>
+            </div>
+        `);
+        $('#cb_payments_container').append(row);
+        populateAkunBayarSelects();
+    }
+
+    function calculateCloseBillingAmounts() {
+        const raw_total = parseFloat($('#cb_total_tagihan').data('raw-value')) || 0;
+        const potongan = parseFloat($('#cb_potongan').val()) || 0;
+        const tambahan = parseFloat($('#cb_tambahan').val()) || 0;
+        
+        const net_total = (raw_total + tambahan) - potongan;
+        
+        let total_bayar = 0;
+        $('.payment-row').each(function() {
+            const besar = parseFloat($(this).find('.input-besar-bayar').val()) || 0;
+            total_bayar += besar;
+        });
+
+        const sisa = net_total - total_bayar;
+        if (sisa > 0) {
+            $('#cb_piutang_section').show();
+            $('#cb_sisa_piutang').val(new Intl.NumberFormat('id-ID').format(sisa));
+        } else {
+            $('#cb_piutang_section').hide();
+            $('#cb_sisa_piutang').val(0);
+        }
+    }
+
+    function submitCloseBilling() {
+        const no_rawat = $('#cb_no_rawat').val();
+        const tgl_bayar = $('#cb_tgl_bayar').val();
+        const potongan = parseFloat($('#cb_potongan').val()) || 0;
+        const tambahan = parseFloat($('#cb_tambahan').val()) || 0;
+        
+        const raw_total = parseFloat($('#cb_total_tagihan').data('raw-value')) || 0;
+        const net_total = (raw_total + tambahan) - potongan;
+
+        let payments = [];
+        let total_bayar = 0;
+        let missingAccount = false;
+
+        $('.payment-row').each(function() {
+            const nama = $(this).find('.select-akun-bayar').val();
+            const besar = parseFloat($(this).find('.input-besar-bayar').val()) || 0;
+            if (besar > 0) {
+                if (!nama) {
+                    missingAccount = true;
+                }
+                payments.push({
+                    nama_bayar: nama,
+                    besar_bayar: besar
+                });
+                total_bayar += besar;
+            }
+        });
+
+        if (missingAccount) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Akun Pembayaran Kosong',
+                text: 'Harap pilih akun pembayaran untuk nilai bayar yang diinput!'
+            });
+            return;
+        }
+
+        const sisa = net_total - total_bayar;
+        let kd_rek_piutang = '';
+        if (sisa > 0) {
+            kd_rek_piutang = $('#cb_kd_rek_piutang').val();
+            if (!kd_rek_piutang) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Akun Piutang Kosong',
+                    text: 'Sisa tagihan belum lunas. Harap pilih akun piutang!'
+                });
+                return;
+            }
+        }
+
+        Swal.fire({
+            title: 'Selesaikan & Tutup Billing?',
+            text: 'Tindakan ini akan mengunci rincian biaya pasien dan memposting jurnal keuangan!',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#2fb344',
+            confirmButtonText: 'Ya, Simpan & Tutup',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Menyimpan transaksi...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                $.ajax({
+                    url: "{{ url('/billing/close') }}",
+                    type: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        no_rawat: no_rawat,
+                        tgl_bayar: tgl_bayar,
+                        potongan: potongan,
+                        tambahan: tambahan,
+                        payments: payments,
+                        kd_rek_piutang: kd_rek_piutang
+                    },
+                    success: (response) => {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil',
+                            text: response.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                        $('#modalCloseBilling').modal('hide');
+                        loadBillingRalan(no_rawat);
+                    },
+                    error: (xhr) => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal Menyimpan',
+                            text: xhr.responseJSON?.message || 'Terjadi kesalahan sistem'
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    $(document).ready(() => {
+        // Move modal to body to prevent nested modal backdrop and tab conflicts
+        $('#modalCloseBilling').appendTo('body');
+    });
 </script>
 @endpush

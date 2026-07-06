@@ -23,7 +23,9 @@ class DataBarangController extends Controller
     {
         $barang = DataBarang::query();
         
-        if (!$request->has('allData')) {
+        if ($request->has('status') && $request->status !== 'semua') {
+            $barang->where('status', $request->status);
+        } elseif (!$request->has('allData')) {
             $barang->where('status', '1');
         }
 
@@ -99,6 +101,23 @@ class DataBarangController extends Controller
             return response()->json(['message' => 'Data obat berhasil dihapus']);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Gagal menghapus data: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function batchUpdateStatus(Request $request)
+    {
+        $request->validate([
+            'kode_brng' => 'required|array',
+            'kode_brng.*' => 'required|string',
+            'status' => 'required|in:0,1'
+        ]);
+
+        try {
+            DataBarang::whereIn('kode_brng', $request->kode_brng)->update(['status' => $request->status]);
+            $msg = $request->status === '1' ? 'Berhasil mengaktifkan data obat terpilih' : 'Berhasil menonaktifkan data obat terpilih';
+            return response()->json(['message' => $msg]);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Gagal memperbarui status data obat: ' . $e->getMessage()], 500);
         }
     }
 

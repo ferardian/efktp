@@ -4,9 +4,22 @@
     <div class="container-fluid">
         <div class="row gy-2">
             <div class="col-xl-8 col-lg-8 col-md-12 col-sm-12">
-                <div class="card">
-                    <div class="card-body">
-                        <div id="table-default" class="table-responsive">
+                <div class="card" style="height: calc(100vh - 170px); display: flex; flex-direction: column;">
+                    <div class="card-header d-flex justify-content-between align-items-center py-2 bg-light-lt">
+                        <h3 class="card-title text-primary"><i class="ti ti-pill me-2"></i> Daftar Obat / Barang</h3>
+                        <div class="d-flex align-items-center gap-2">
+                            <select class="form-select form-select-sm" id="filter_status" style="width: 140px;">
+                                <option value="1" selected>Status: Aktif</option>
+                                <option value="0">Status: Non-Aktif</option>
+                                <option value="semua">Status: Semua</option>
+                            </select>
+                            <button type="button" class="btn btn-danger btn-sm d-none" id="btnBatchDeactivate" onclick="batchDeactivateBarang()">
+                                <i class="ti ti-trash-off me-1"></i> Non-aktifkan Terpilih
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body" style="flex: 1; min-height: 0; overflow: hidden;">
+                        <div id="table-default" class="table-responsive h-100" style="overflow-y: auto;">
                             <table class="table table-striped table-hover nowrap" id="tabelBarangObat" width="100%">
                             </table>
                         </div>
@@ -16,7 +29,7 @@
             <div class="col-xl-4 col-lg-4 col-md-12 col-sm-12">
                 <form id="formBarangObat">
                     @csrf
-                    <div class="card" style="max-height: 80vh; overflow-y: auto;">
+                    <div class="card" style="height: calc(100vh - 170px); overflow-y: auto;">
                         <div class="card-body">
                             <h5 class="card-title">Form Data Obat / Barang</h5>
                             
@@ -258,23 +271,46 @@
         $(document).ready(() => {
             renderTabelBarang();
             resetFormBarang();
+
+            // Reload table on status filter change
+            $('#filter_status').on('change', () => {
+                if (typeof selectedBarangCodes !== 'undefined') {
+                    selectedBarangCodes.clear();
+                    updateBatchButton();
+                }
+                $('#checkAllBarang').prop('checked', false);
+                tabelBarangObat.DataTable().ajax.reload();
+            });
         })
 
         function renderTabelBarang() {
             tabelBarangObat.DataTable({
                 processing: true,
                 serverSide: true,
-                scrollY: setTableHeight(),
+                scrollY: 'calc(100vh - 380px)',
                 scrollX: true,
                 ajax: {
                     url: `{{ url('/barang/get') }}`,
                     type: 'get',
-                    data: {
-                        dataTable: true,
-                        allData: true,
+                    data: function (d) {
+                        d.dataTable = true;
+                        d.allData = true;
+                        d.status = $('#filter_status').val();
                     }
                 },
-                columns: [{
+                columns: [
+                    {
+                        data: null,
+                        title: '<input type="checkbox" id="checkAllBarang" class="form-check-input">',
+                        orderable: false,
+                        searchable: false,
+                        width: '3%',
+                        render: (data, type, row) => {
+                            const isChecked = typeof selectedBarangCodes !== 'undefined' && selectedBarangCodes.has(row.kode_brng) ? 'checked' : '';
+                            return `<input type="checkbox" class="form-check-input check-barang" value="${row.kode_brng}" ${isChecked}>`;
+                        }
+                    },
+                    {
                     data: 'kode_brng',
                     name: 'kode_brng',
                     title: 'Kode',
@@ -304,6 +340,27 @@
                         title: 'Satuan',
                         render: (data, type, row, meta) => {
                             return data;
+                        }
+                    },
+                    {
+                        data: 'gudang_barang',
+                        name: 'gudang_barang',
+                        title: 'Stok',
+                        render: (data, type, row) => {
+                            let total = 0;
+                            let details = [];
+                            if (data && Array.isArray(data)) {
+                                data.forEach(g => {
+                                    const nm = g.lokasi ? g.lokasi.nm_bangsal : g.kd_bangsal;
+                                    const stokVal = parseFloat(g.stok) || 0;
+                                    total += stokVal;
+                                    if (stokVal > 0) {
+                                        details.push(`${nm}: ${g.stok}`);
+                                    }
+                                });
+                            }
+                            const tooltipText = details.length > 0 ? details.join('<br>') : 'Kosong';
+                            return `<span class="badge bg-teal-lt" data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="top" title="${tooltipText}">${total}</span>`;
                         }
                     },
                     {
@@ -402,6 +459,27 @@
                     // Initialize Select2 on newly created select elements
                     $('.form-select-2').select2({
                         width: 'resolve', // You can adjust this option based on your requirements
+                    });
+
+                    // Sync checkboxes state
+                    if (typeof selectedBarangCodes !== 'undefined') {
+                        let allChecked = $('.check-barang').length > 0;
+                        $('.check-barang').each(function() {
+                            const val = $(this).val();
+                            if (selectedBarangCodes.has(val)) {
+                                $(this).prop('checked', true);
+                            } else {
+                                $(this).prop('checked', false);
+                                allChecked = false;
+                            }
+                        });
+                        $('#checkAllBarang').prop('checked', allChecked);
+                    }
+
+                    // Initialize tooltips on table draw
+                    $('[data-bs-toggle="tooltip"]').tooltip({
+                        trigger: 'hover',
+                        html: true
                     });
                 }
             })
@@ -651,5 +729,113 @@
                 }
             })
         }
+
+        // Batch selection logic
+        const selectedBarangCodes = new Set();
+
+        function updateBatchButton() {
+            const btn = $('#btnBatchDeactivate');
+            const statusFilter = $('#filter_status').val();
+
+            if (selectedBarangCodes.size > 0) {
+                btn.removeClass('d-none');
+                if (statusFilter === '0') {
+                    // Non-Aktif: show Activate button (green success)
+                    btn.removeClass('btn-danger').addClass('btn-success');
+                    btn.html(`<i class="ti ti-circle-check me-1"></i> Aktifkan Terpilih (${selectedBarangCodes.size})`);
+                } else {
+                    // Aktif / Semua: show Deactivate button (red danger)
+                    btn.removeClass('btn-success').addClass('btn-danger');
+                    btn.html(`<i class="ti ti-trash-off me-1"></i> Non-aktifkan Terpilih (${selectedBarangCodes.size})`);
+                }
+            } else {
+                btn.addClass('d-none');
+            }
+        }
+
+        $(document).on('change', '.check-barang', function() {
+            const code = $(this).val();
+            if ($(this).is(':checked')) {
+                selectedBarangCodes.add(code);
+            } else {
+                selectedBarangCodes.delete(code);
+            }
+            
+            const allCheckedOnPage = $('.check-barang:checked').length === $('.check-barang').length;
+            $('#checkAllBarang').prop('checked', allCheckedOnPage);
+            updateBatchButton();
+        });
+
+        $(document).on('change', '#checkAllBarang', function() {
+            const isChecked = $(this).is(':checked');
+            $('.check-barang').each(function() {
+                const code = $(this).val();
+                $(this).prop('checked', isChecked);
+                if (isChecked) {
+                    selectedBarangCodes.add(code);
+                } else {
+                    selectedBarangCodes.delete(code);
+                }
+            });
+            updateBatchButton();
+        });
+
+        function batchDeactivateBarang() {
+            if (selectedBarangCodes.size === 0) return;
+
+            const statusFilter = $('#filter_status').val();
+            const targetStatus = statusFilter === '0' ? '1' : '0';
+            const actionText = targetStatus === '1' ? 'mengaktifkan kembali' : 'menonaktifkan';
+            const btnColor = targetStatus === '1' ? '#2fb344' : '#d33';
+            const confirmText = targetStatus === '1' ? 'Ya, Aktifkan!' : 'Ya, Non-aktifkan!';
+            const titleText = targetStatus === '1' ? 'Aktifkan Data Terpilih?' : 'Non-aktifkan Data Terpilih?';
+
+            Swal.fire({
+                title: titleText,
+                html: `Apakah Anda yakin ingin ${actionText} <b>${selectedBarangCodes.size}</b> data obat terpilih?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: btnColor,
+                confirmButtonText: confirmText,
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    loadingAjax(targetStatus === '1' ? 'Mengaktifkan data...' : 'Menonaktifkan data...');
+                    $.ajax({
+                        url: "{{ url('/barang/batch-status') }}",
+                        type: 'POST',
+                        data: {
+                            _token: "{{ csrf_token() }}",
+                            kode_brng: Array.from(selectedBarangCodes),
+                            status: targetStatus
+                        },
+                        success: (response) => {
+                            showToast(response.message);
+                            selectedBarangCodes.clear();
+                            updateBatchButton();
+                            $('#checkAllBarang').prop('checked', false);
+                            tabelBarangObat.DataTable().ajax.reload(null, false);
+                        },
+                        error: (xhr) => {
+                            showToast(xhr.responseJSON.message || 'Gagal memperbarui status data obat', 'error');
+                        },
+                        complete: () => {
+                            Swal.close();
+                        }
+                    });
+                }
+            });
+        }
     </script>
+@endpush
+
+@push('style')
+    <style>
+        .form-select, .form-control {
+            color: #232e3c !important;
+        }
+        .tooltip-inner {
+            text-align: left !important;
+        }
+    </style>
 @endpush
