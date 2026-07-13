@@ -200,4 +200,5 @@ return [
 	'apotekUserKey' => env('APOTEK_USER_KEY'),
 	'bpjsPass' => env('BPJS_PASS'),
 	'bpjsKode' => env('BPJS_KODE'),
+	'billing_note' => env('BILLING_NOTE'),
 ];

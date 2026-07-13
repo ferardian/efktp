@@ -22,7 +22,7 @@ class Diagnosa extends Controller
   function get($diagnosa): JsonResponse
   {
     try {
-      $result = $this->bpjs->diagnosa($diagnosa)->index(1, 15);
+      $result = $this->bpjs->show($diagnosa, 1, 15);
     } catch (BadResponseException $e) {
       $result = $e->getMessage();
     }

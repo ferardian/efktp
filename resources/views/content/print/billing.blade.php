@@ -6,6 +6,14 @@
         $titleSize = ($size == '58') ? '12px' : '14px';
         $headerSize = ($size == '58') ? '10px' : '12px';
         $margin = ($size == '58') ? '2px' : '5px';
+
+        $hasObat = false;
+        foreach ($data['categories'] as $cat) {
+            if ($cat['label'] === 'Obat & Alkes' && count($cat['items']) > 0) {
+                $hasObat = true;
+                break;
+            }
+        }
     @endphp
 
     <style>
@@ -210,9 +218,18 @@
     </table>
 
     <div class="divider"></div>
-    <div style="text-align: center; font-size: 8px; font-style: italic; margin-top: 5px;">
-        * Nilai di atas merupakan estimasi biaya berjalan.<br>
-        Terima kasih atas kepercayaan Anda.
+    <div style="text-align: left; font-size: 8px; font-style: italic; margin-top: 5px;">
+        @if(($data['status_bayar'] ?? '') === 'Sudah Bayar')
+            * Pembayaran Lunas.<br>
+        @else
+            * Nilai di atas merupakan estimasi biaya berjalan.<br>
+        @endif
+        @if($hasObat && config('app.billing_note'))
+            * {{ config('app.billing_note') }}<br>
+        @endif
+        <div style="text-align: center; font-style: normal; margin-top: 5px;">
+            Terima kasih atas kepercayaan Anda.
+        </div>
     </div>
 
     <div class="qr-section">

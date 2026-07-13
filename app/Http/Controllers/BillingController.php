@@ -89,7 +89,7 @@ class BillingController extends Controller
         $reg = DB::table('reg_periksa')
             ->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
             ->where('no_rawat', $no_rawat)
-            ->select('reg_periksa.biaya_reg', 'pasien.nm_pasien', 'reg_periksa.tgl_registrasi', 'reg_periksa.no_rkm_medis')
+            ->select('reg_periksa.biaya_reg', 'pasien.nm_pasien', 'reg_periksa.tgl_registrasi', 'reg_periksa.no_rkm_medis', 'reg_periksa.status_bayar')
             ->first();
         $biaya_reg = $reg ? $reg->biaya_reg : 0;
 
@@ -194,6 +194,7 @@ class BillingController extends Controller
             'pasien' => $reg->nm_pasien ?? '-',
             'kamar' => $first_kamar ? "{$first_kamar->kd_kamar}, {$first_kamar->nm_bangsal}" : '-',
             'tgl_perawatan' => "{$tgl_masuk_awal} s.d {$tgl_keluar_akhir} ( {$total_hari} Hari )",
+            'status_bayar' => $reg ? $reg->status_bayar : 'Belum Bayar',
             'categories' => [
                 ['label' => 'Registrasi', 'total' => $biaya_reg, 'items' => [['item' => 'Biaya Registrasi', 'qty' => 1, 'tarif' => $biaya_reg, 'subtotal' => $biaya_reg]]],
                 ['label' => 'Kamar & Inap', 'total' => $total_kamar, 'items' => $detail_kamar],
