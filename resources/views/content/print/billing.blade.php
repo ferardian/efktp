@@ -229,7 +229,7 @@
         @else
             * Nilai di atas merupakan estimasi biaya berjalan.<br>
         @endif
-        @if($hasObat && config('app.billing_note'))
+        @if(config('app.billing_note'))
             * {{ config('app.billing_note') }}<br>
         @endif
         <div style="text-align: center; font-style: normal; margin-top: 5px;">
