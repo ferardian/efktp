@@ -36,6 +36,11 @@ return new class extends Migration
             $table->string('role');             // 'admin', 'dokter', 'apoteker', 'petugas', 'owner'
             $table->timestamps();
         });
+
+        // Auto-seed default menus and roles if menus table is empty
+        if (Schema::hasTable('menus') && \Illuminate\Support\Facades\DB::table('menus')->count() === 0) {
+            (new \Database\Seeders\MenuSeeder())->run();
+        }
     }
 
     public function down(): void

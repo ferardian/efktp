@@ -56,20 +56,19 @@
                                         </div>
                                     </div>
                                 </div>
-                                @if(config('app.enable_menu_role'))
-                                <div class="col-12 mt-2">
-                                    <div class="mb-2">
-                                        <label class="form-label">Role Akses</label>
-                                        <select class="form-select" id="role" name="role">
-                                            <option value="">-- Gunakan Fallback Sistem (Otomatis) --</option>
-                                            <option value="admin">Admin</option>
-                                            <option value="dokter">Dokter</option>
-                                            <option value="apoteker">Apoteker/Farmasi</option>
-                                            <option value="petugas">Petugas/Umum</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                @endif
+                                 @if(config('app.enable_menu_role'))
+                                 <div class="col-12 mt-2">
+                                     <div class="mb-2">
+                                         <label class="form-label">Role Akses</label>
+                                         <select class="form-select" id="role" name="role">
+                                             <option value="">-- Gunakan Fallback Sistem (Otomatis) --</option>
+                                             @foreach($roles ?? ['admin', 'dokter', 'apoteker', 'petugas'] as $r)
+                                                 <option value="{{ $r }}">{{ ucfirst($r) }}</option>
+                                             @endforeach
+                                         </select>
+                                     </div>
+                                 </div>
+                                 @endif
                             </div>
 
                             <hr class="my-2">

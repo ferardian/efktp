@@ -24,7 +24,11 @@ class UserController extends Controller
 
     public function index()
     {
-        return view('content.master.user');
+        $roles = DB::table('menu_role')->select('role')->distinct()->pluck('role')->toArray();
+        if (empty($roles)) {
+            $roles = ['admin', 'dokter', 'apoteker', 'petugas'];
+        }
+        return view('content.master.user', compact('roles'));
     }
 
     public function data(Request $request)
