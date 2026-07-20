@@ -105,6 +105,34 @@ class AuthController extends Controller
 
 	function setRole($pegawai): string
 	{
-		return $role = $pegawai->dokter ? 'dokter' : 'petugas';
+		try {
+			if (\Illuminate\Support\Facades\Schema::hasTable('user_roles')) {
+				$userRole = \Illuminate\Support\Facades\DB::table('user_roles')
+					->where('username', $pegawai->nik)
+					->value('role');
+				if (!empty($userRole)) {
+					return $userRole;
+				}
+			}
+		} catch (\Exception $e) {
+			// Fail silently and fallback to default role logic
+		}
+
+		if ($pegawai->dokter) {
+			return 'dokter';
+		}
+
+		$jabatan = strtolower($pegawai->jbtn ?? '');
+		$departemen = strtolower($pegawai->departemen ?? '');
+		if (
+			str_contains($jabatan, 'apotek') || 
+			str_contains($jabatan, 'farmasi') || 
+			str_contains($departemen, 'apotek') || 
+			str_contains($departemen, 'farmasi')
+		) {
+			return 'apoteker';
+		}
+
+		return 'petugas';
 	}
 }

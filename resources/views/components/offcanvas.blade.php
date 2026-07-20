@@ -5,6 +5,87 @@
 <div class="offcanvas-body p-0">
     <div class="container-fluid">
         <div class="navbar-collapse" id="sidebar-menu">
+            @if(config('app.enable_menu_role'))
+                @php
+                    $userRole = session('role');
+                    $menus = \App\Models\Menu::whereNull('parent_id')
+                                ->where('position', 'sidebar')
+                                ->whereHas('roles', function($q) use ($userRole) {
+                                    $q->where('role', $userRole);
+                                })
+                                ->orderBy('order_num')
+                                ->with([
+                                    'submenus' => function($query) use ($userRole) {
+                                        $query->whereHas('roles', function($q) use ($userRole) {
+                                            $q->where('role', $userRole);
+                                        })->orderBy('order_num');
+                                    },
+                                    'submenus.submenus' => function($query) use ($userRole) {
+                                        $query->whereHas('roles', function($q) use ($userRole) {
+                                            $q->where('role', $userRole);
+                                        })->orderBy('order_num');
+                                    }
+                                ])
+                                ->get();
+                @endphp
+
+                <ul class="navbar-nav pt-lg-3">
+                    @foreach($menus as $menu)
+                        @if($menu->submenus->isEmpty())
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url($menu->url) }}" target="{{ $menu->target }}">
+                                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                        {!! $menu->icon !!}
+                                    </span>
+                                    <span class="nav-link-title">
+                                        {{ $menu->name }}
+                                    </span>
+                                </a>
+                            </li>
+                        @else
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="javascript:void(0)" data-bs-toggle="dropdown"
+                                   data-bs-auto-close="false" role="button" aria-expanded="false">
+                                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                        {!! $menu->icon !!}
+                                    </span>
+                                    <span class="nav-link-title">
+                                        {{ $menu->name }}
+                                    </span>
+                                </a>
+                                <div class="dropdown-menu">
+                                    <div class="dropdown-menu-columns">
+                                        <div class="dropdown-menu-column">
+                                            @foreach($menu->submenus as $submenu)
+                                                @if($submenu->submenus && $submenu->submenus->isNotEmpty())
+                                                    <div class="dropend">
+                                                        <a class="dropdown-item dropdown-toggle" href="javascript:void(0)"
+                                                           data-bs-toggle="dropdown" data-bs-auto-close="false" role="button"
+                                                           aria-expanded="false">
+                                                            {{ $submenu->name }}
+                                                        </a>
+                                                        <div class="dropdown-menu">
+                                                            @foreach($submenu->submenus as $subchild)
+                                                                <a href="{{ url($subchild->url) }}" target="{{ $subchild->target }}" class="dropdown-item">
+                                                                    {{ $subchild->name }}
+                                                                </a>
+                                                            @endforeach
+                                                        </div>
+                                                    </div>
+                                                @else
+                                                    <a class="dropdown-item" href="{{ url($submenu->url) }}" target="{{ $submenu->target }}">
+                                                        {{ $submenu->name }}
+                                                    </a>
+                                                @endif
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        @endif
+                    @endforeach
+                </ul>
+            @else
             <ul class="navbar-nav pt-lg-3">
                 <li class="nav-item">
                     <a class="nav-link" href="./">
@@ -143,6 +224,9 @@
                                     <a class="dropdown-item" href="{{ url('master/user') }}">
                                         Set User
                                     </a>
+                                    <a class="dropdown-item {{ Request::is('master/menu') ? 'active' : '' }}" href="{{ url('master/menu') }}">
+                                        Hak Akses Menu
+                                    </a>
                                 @endif
 
                             </div>
@@ -150,6 +234,7 @@
                     </div>
                 </li>
             </ul>
+            @endif
         </div>
     </div>
 

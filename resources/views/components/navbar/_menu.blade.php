@@ -1,3 +1,60 @@
+@if(config('app.enable_menu_role'))
+    @php
+        $userRole = session('role');
+        $menus = \App\Models\Menu::whereNull('parent_id')
+                    ->where('position', 'navbar')
+                    ->whereHas('roles', function($q) use ($userRole) {
+                        $q->where('role', $userRole);
+                    })
+                    ->orderBy('order_num')
+                    ->with(['submenus' => function($query) use ($userRole) {
+                        $query->whereHas('roles', function($q) use ($userRole) {
+                            $q->where('role', $userRole);
+                        })->orderBy('order_num');
+                    }])
+                    ->get();
+    @endphp
+
+    <ul class="navbar-nav">
+        @foreach($menus as $menu)
+            @if($menu->submenus->isEmpty())
+                <li class="nav-item {{ Request::is(ltrim($menu->url, '/')) || (Request::is('/') && $menu->url == '/') ? 'active' : '' }}">
+                    <a class="nav-link" href="{{ url($menu->url) }}" target="{{ $menu->target }}">
+                        <span class="nav-link-icon d-md-none d-lg-inline-block">
+                            {!! $menu->icon !!}
+                        </span>
+                        <span class="nav-link-title">
+                            {{ $menu->name }}
+                        </span>
+                    </a>
+                </li>
+            @else
+                <li class="nav-item dropdown {{ Request::segment(1) == $menu->url ? 'active' : '' }}">
+                    <a class="nav-link dropdown-toggle" href="javascript:void(0)" data-bs-toggle="dropdown"
+                       data-bs-auto-close="outside" role="button" aria-expanded="true">
+                        <span class="nav-link-icon d-md-none d-lg-inline-block">
+                            {!! $menu->icon !!}
+                        </span>
+                        <span class="nav-link-title">
+                            {{ $menu->name }}
+                        </span>
+                    </a>
+                    <div class="dropdown-menu" data-bs-popper="static">
+                        <div class="dropdown-menu-columns">
+                            <div class="dropdown-menu-column">
+                                @foreach($menu->submenus as $submenu)
+                                    <a href="{{ url($submenu->url) }}" target="{{ $submenu->target }}" class="dropdown-item {{ Request::is($submenu->url) ? 'active' : '' }}">
+                                        {{ $submenu->name }}
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            @endif
+        @endforeach
+    </ul>
+@else
 <ul class="navbar-nav">
     <li class="nav-item {{ Request::is('/') ? 'active' : '' }}">
         <a class="nav-link" href="{{ url('/') }}">
@@ -177,6 +234,5 @@
             </div>
         </div>
     </li>
-
-
 </ul>
+@endif

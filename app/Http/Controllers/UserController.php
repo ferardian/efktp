@@ -52,6 +52,10 @@ class UserController extends Controller
             )
             ->first();
         
+        if ($user && config('app.enable_menu_role')) {
+            $user->role = DB::table('user_roles')->where('username', $request->username)->value('role') ?? '';
+        }
+        
         return response()->json($user);
     }
 
@@ -77,6 +81,13 @@ class UserController extends Controller
 
             DB::table('user')->insert($data);
 
+            if (config('app.enable_menu_role') && $request->filled('role')) {
+                DB::table('user_roles')->updateOrInsert(
+                    ['username' => $request->username],
+                    ['role' => $request->role, 'updated_at' => now()]
+                );
+            }
+
             return response()->json(['message' => 'User berhasil ditambahkan dengan akses kosong']);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Gagal menambahkan user: ' . $e->getMessage()], 500);
@@ -86,7 +97,7 @@ class UserController extends Controller
     public function update(Request $request, $username)
     {
         try {
-            $data = $request->except(['username', 'password', '_token', '_method']);
+            $data = $request->except(['username', 'password', 'role', '_token', '_method']);
             
             if ($request->filled('password')) {
                 $data['password'] = DB::raw("AES_ENCRYPT('" . $request->password . "', 'windi')");
@@ -103,6 +114,17 @@ class UserController extends Controller
                 ->where('id_user', DB::raw("AES_ENCRYPT('" . $username . "', 'nur')"))
                 ->update($data);
 
+            if (config('app.enable_menu_role')) {
+                if ($request->filled('role')) {
+                    DB::table('user_roles')->updateOrInsert(
+                        ['username' => $username],
+                        ['role' => $request->role, 'updated_at' => now()]
+                    );
+                } else {
+                    DB::table('user_roles')->where('username', $username)->delete();
+                }
+            }
+
             return response()->json(['message' => 'User berhasil diperbarui']);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Gagal memperbarui user: ' . $e->getMessage()], 500);
@@ -115,6 +137,10 @@ class UserController extends Controller
             DB::table('user')
                 ->where('id_user', DB::raw("AES_ENCRYPT('" . $username . "', 'nur')"))
                 ->delete();
+
+            if (config('app.enable_menu_role')) {
+                DB::table('user_roles')->where('username', $username)->delete();
+            }
 
             return response()->json(['message' => 'User berhasil dihapus']);
         } catch (\Exception $e) {

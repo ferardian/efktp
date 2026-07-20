@@ -71,6 +71,6 @@ class DatabaseSeeder extends Seeder
 			]);
 		}
 
-
+		$this->call(MenuSeeder::class);
 	}
 }

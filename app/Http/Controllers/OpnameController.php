@@ -11,6 +11,21 @@ use Illuminate\Support\Facades\DB;
 
 class OpnameController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            if (config('app.enable_menu_role')) {
+                if (!in_array(session()->get('role'), ['admin', 'apoteker'])) {
+                    if ($request->ajax()) {
+                        return response()->json(['message' => 'Akses ditolak.'], 403);
+                    }
+                    return redirect('/')->with('error', 'Hanya Admin dan Apoteker yang dapat mengakses halaman ini.');
+                }
+            }
+            return $next($request);
+        });
+    }
+
     public function index()
     {
         $bangsal = Bangsal::where('status', '1')->orderBy('nm_bangsal', 'asc')->get();

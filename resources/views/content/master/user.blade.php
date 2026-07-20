@@ -56,6 +56,20 @@
                                         </div>
                                     </div>
                                 </div>
+                                @if(config('app.enable_menu_role'))
+                                <div class="col-12 mt-2">
+                                    <div class="mb-2">
+                                        <label class="form-label">Role Akses</label>
+                                        <select class="form-select" id="role" name="role">
+                                            <option value="">-- Gunakan Fallback Sistem (Otomatis) --</option>
+                                            <option value="admin">Admin</option>
+                                            <option value="dokter">Dokter</option>
+                                            <option value="apoteker">Apoteker/Farmasi</option>
+                                            <option value="petugas">Petugas/Umum</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                @endif
                             </div>
 
                             <hr class="my-2">
@@ -213,6 +227,7 @@
         function resetFormUser() {
             $('#formUser').trigger('reset');
             $('#username').prop('readonly', false);
+            $('#role').val('');
             $('#btnSimpanUser').removeClass('btn-warning').addClass('btn-success').html('<i class="ti ti-device-floppy me-2"></i> Simpan Data User');
             $('.permission-checkbox').prop('checked', false);
         }
@@ -255,6 +270,12 @@
                 resetFormUser();
                 $('#username').val(data.username).prop('readonly', true);
                 // Password intentionally left blank for security, only update if filled
+                
+                if (data.role) {
+                    $('#role').val(data.role);
+                } else {
+                    $('#role').val('');
+                }
                 
                 // Set permissions
                 allColumns.forEach(col => {

@@ -178,6 +178,11 @@ Route::middleware('auth:web,admin')->group(function () {
     Route::delete('/user/{username}', [UserController::class, 'destroy']);
     Route::get('/user/columns', [UserController::class, 'getColumns']);
 
+    // MENU ROLE PERMISSIONS MANAGEMENT
+    Route::get('/master/menu', [\App\Http\Controllers\MenuController::class, 'index']);
+    Route::get('/master/menu/permissions', [\App\Http\Controllers\MenuController::class, 'getPermissions']);
+    Route::post('/master/menu/permissions', [\App\Http\Controllers\MenuController::class, 'updatePermissions']);
+
     // PETUGAS MANAGEMENT
     Route::get('/master/petugas', [PetugasController::class, 'index']);
     Route::get('/petugas/data', [PetugasController::class, 'data']);
