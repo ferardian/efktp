@@ -26,7 +26,9 @@ class UserController extends Controller
     {
         $roles = DB::table('menu_role')->select('role')->distinct()->pluck('role')->toArray();
         if (empty($roles)) {
-            $roles = ['admin', 'dokter', 'apoteker', 'petugas'];
+            $roles = ['admin', 'dokter', 'apoteker', 'petugas', 'owner'];
+        } else if (!in_array('owner', $roles)) {
+            $roles[] = 'owner';
         }
         return view('content.master.user', compact('roles'));
     }

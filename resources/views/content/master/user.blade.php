@@ -62,7 +62,7 @@
                                          <label class="form-label">Role Akses</label>
                                          <select class="form-select" id="role" name="role">
                                              <option value="">-- Gunakan Fallback Sistem (Otomatis) --</option>
-                                             @foreach($roles ?? ['admin', 'dokter', 'apoteker', 'petugas'] as $r)
+                                             @foreach($roles ?? ['admin', 'dokter', 'apoteker', 'petugas', 'owner'] as $r)
                                                  <option value="{{ $r }}">{{ ucfirst($r) }}</option>
                                              @endforeach
                                          </select>
