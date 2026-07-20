@@ -271,7 +271,7 @@
                 .fail((xhr) => {
                     showToast(xhr.responseJSON.message || 'Gagal menyimpan hak akses menu', 'error');
                 })
-                .complete(() => {
+                .always(() => {
                     Swal.close();
                 });
         }
