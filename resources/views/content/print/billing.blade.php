@@ -71,22 +71,26 @@
             border-spacing: 0;
             font-size: {{ $fontSize }};
             margin-bottom: 5px;
+            table-layout: fixed;
         }
 
         .info-table td {
             padding: 1px 0;
             vertical-align: top;
+            word-wrap: break-word;
         }
 
         .items-list {
             width: 100%;
             border-spacing: 0;
             font-size: {{ $fontSize }};
+            table-layout: fixed;
         }
 
         .items-list td {
             padding: 2px 0;
             vertical-align: top;
+            word-wrap: break-word;
         }
 
         .category-header {
@@ -97,7 +101,7 @@
         }
 
         .item-row {
-            padding-left: 5px;
+            padding-left: 2px;
         }
 
         .item-details {
@@ -107,10 +111,11 @@
 
         .text-right {
             text-align: right;
+            white-space: nowrap;
         }
 
         .grand-total-row {
-            font-size: {{ ($size == '58') ? '11px' : '13px' }};
+            font-size: {{ ($size == '58') ? '10.5px' : '13px' }};
             font-weight: bold;
         }
         
@@ -145,7 +150,7 @@
         <tr>
             <td width="30%">No. Nota</td>
             <td width="5%">:</td>
-            <td>{{ $data['no_rawat'] }}</td>
+            <td width="65%">{{ $data['no_rawat'] }}</td>
         </tr>
         <tr>
             <td>No. R.M.</td>
@@ -188,17 +193,17 @@
         @foreach ($data['categories'] as $cat)
             @if (count($cat['items']) > 0)
                 <tr>
-                    <td colspan="2" class="category-header">{{ $cat['label'] }}</td>
-                    <td class="category-header text-right">{{ number_format($cat['total'], 0, ',', '.') }}</td>
+                    <td width="65%" class="category-header">{{ $cat['label'] }}</td>
+                    <td width="35%" class="category-header text-right">{{ number_format($cat['total'], 0, ',', '.') }}</td>
                 </tr>
                 @if ($cat['label'] !== 'Obat & Alkes' || $show_obat)
                     @foreach ($cat['items'] as $item)
                         <tr>
-                            <td colspan="2" class="item-row">
+                            <td width="65%" class="item-row">
                                 <div>{{ $item['item'] }}</div>
                                 <div class="item-details">{{ $item['qty'] }} x {{ number_format($item['tarif'], 0, ',', '.') }}</div>
                             </td>
-                            <td class="text-right" style="vertical-align: bottom;">
+                            <td width="35%" class="text-right" style="vertical-align: bottom;">
                                 {{ number_format($item['subtotal'], 0, ',', '.') }}
                             </td>
                         </tr>
@@ -212,8 +217,8 @@
 
     <table class="info-table grand-total-row">
         <tr>
-            <td>TOTAL BIAYA</td>
-            <td class="text-right">Rp. {{ number_format($data['grand_total'], 0, ',', '.') }}</td>
+            <td width="40%">TOTAL BIAYA</td>
+            <td width="60%" class="text-right">Rp. {{ number_format($data['grand_total'], 0, ',', '.') }}</td>
         </tr>
     </table>
 
