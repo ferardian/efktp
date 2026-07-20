@@ -201,5 +201,5 @@ return [
 	'bpjsPass' => env('BPJS_PASS'),
 	'bpjsKode' => env('BPJS_KODE'),
 	'billing_note' => env('BILLING_NOTE'),
-	'enable_menu_role' => env('ENABLE_MENU_ROLE', true),
+	'enable_menu_role' => env('ENABLE_MENU_ROLE', false),
 ];
