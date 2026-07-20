@@ -15,11 +15,23 @@ class OpnameController extends Controller
     {
         $this->middleware(function ($request, $next) {
             if (config('app.enable_menu_role')) {
-                if (!in_array(session()->get('role'), ['admin', 'apoteker'])) {
+                $userRole = session()->get('role');
+                $allowedRoles = ['admin', 'apoteker', 'owner'];
+
+                $hasMenuAccess = DB::table('menu_role')
+                    ->join('menus', 'menu_role.menu_id', '=', 'menus.id')
+                    ->where('menu_role.role', $userRole)
+                    ->where(function($q) {
+                        $q->where('menus.url', 'farmasi/opname')
+                          ->orWhere('menus.url', '/farmasi/opname');
+                    })
+                    ->exists();
+
+                if (!in_array($userRole, $allowedRoles) && !$hasMenuAccess) {
                     if ($request->ajax()) {
                         return response()->json(['message' => 'Akses ditolak.'], 403);
                     }
-                    return redirect('/')->with('error', 'Hanya Admin dan Apoteker yang dapat mengakses halaman ini.');
+                    return redirect('/')->with('error', 'Anda tidak memiliki hak akses ke halaman ini.');
                 }
             }
             return $next($request);

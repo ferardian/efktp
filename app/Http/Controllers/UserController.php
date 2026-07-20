@@ -12,7 +12,7 @@ class UserController extends Controller
     public function __construct()
     {
         $this->middleware(function ($request, $next) {
-            if (session()->get('role') != 'admin') {
+            if (!in_array(session()->get('role'), ['admin', 'owner'])) {
                 if ($request->ajax()) {
                     return response()->json(['message' => 'Akses ditolak.'], 403);
                 }
