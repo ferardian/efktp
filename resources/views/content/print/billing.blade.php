@@ -72,7 +72,6 @@
             border-spacing: 0;
             font-size: {{ $fontSize }};
             margin-bottom: 4px;
-            table-layout: fixed;
         }
 
         .info-table td {
@@ -85,7 +84,6 @@
             width: 100%;
             border-spacing: 0;
             font-size: {{ $fontSize }};
-            table-layout: fixed;
         }
 
         .items-list td {
@@ -113,7 +111,7 @@
         .text-right {
             text-align: right;
             white-space: nowrap;
-            padding-right: 2px;
+            padding-left: 5px;
         }
 
         .grand-total-row {
@@ -150,39 +148,39 @@
 
     <table class="info-table">
         <tr>
-            <td width="32%">No. Nota</td>
-            <td width="4%">:</td>
-            <td width="64%">{{ $data['no_rawat'] }}</td>
+            <td style="width: 28%; white-space: nowrap;">No. Nota</td>
+            <td style="width: 3%;">:</td>
+            <td>{{ $data['no_rawat'] }}</td>
         </tr>
         <tr>
-            <td>No. R.M.</td>
+            <td style="white-space: nowrap;">No. R.M.</td>
             <td>:</td>
             <td>{{ $data['no_rm'] }}</td>
         </tr>
         <tr>
-            <td>Pasien</td>
+            <td style="white-space: nowrap;">Pasien</td>
             <td>:</td>
             <td>{{ $data['pasien'] }}</td>
         </tr>
         @if($data['type'] == 'RANAP')
             <tr>
-                <td>Kamar</td>
+                <td style="white-space: nowrap;">Kamar</td>
                 <td>:</td>
                 <td>{{ $data['kamar'] }}</td>
             </tr>
             <tr>
-                <td>Tgl. Rawat</td>
+                <td style="white-space: nowrap;">Tgl. Rawat</td>
                 <td>:</td>
                 <td>{{ $data['tgl_perawatan'] }}</td>
             </tr>
         @else
             <tr>
-                <td>Poliklinik</td>
+                <td style="white-space: nowrap;">Poliklinik</td>
                 <td>:</td>
                 <td>{{ $data['poli'] }}</td>
             </tr>
             <tr>
-                <td>Tgl. Periksa</td>
+                <td style="white-space: nowrap;">Tgl. Periksa</td>
                 <td>:</td>
                 <td>{{ date('d-m-Y', strtotime($data['tgl_perawatan'])) }}</td>
             </tr>
@@ -195,17 +193,17 @@
         @foreach ($data['categories'] as $cat)
             @if (count($cat['items']) > 0)
                 <tr>
-                    <td width="55%" class="category-header">{{ $cat['label'] }}</td>
-                    <td width="45%" class="category-header text-right">{{ number_format($cat['total'], 0, ',', '.') }}</td>
+                    <td class="category-header">{{ $cat['label'] }}</td>
+                    <td class="category-header text-right">{{ number_format($cat['total'], 0, ',', '.') }}</td>
                 </tr>
                 @if ($cat['label'] !== 'Obat & Alkes' || $show_obat)
                     @foreach ($cat['items'] as $item)
                         <tr>
-                            <td width="55%" class="item-row">
+                            <td class="item-row">
                                 <div>{{ $item['item'] }}</div>
                                 <div class="item-details">{{ $item['qty'] }} x {{ number_format($item['tarif'], 0, ',', '.') }}</div>
                             </td>
-                            <td width="45%" class="text-right" style="vertical-align: bottom;">
+                            <td class="text-right" style="vertical-align: bottom;">
                                 {{ number_format($item['subtotal'], 0, ',', '.') }}
                             </td>
                         </tr>
@@ -219,8 +217,8 @@
 
     <table class="info-table grand-total-row">
         <tr>
-            <td width="45%">TOTAL BIAYA</td>
-            <td width="55%" class="text-right">Rp. {{ number_format($data['grand_total'], 0, ',', '.') }}</td>
+            <td style="white-space: nowrap;">TOTAL BIAYA</td>
+            <td class="text-right">Rp. {{ number_format($data['grand_total'], 0, ',', '.') }}</td>
         </tr>
     </table>
 
