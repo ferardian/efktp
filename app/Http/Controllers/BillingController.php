@@ -188,6 +188,22 @@ class BillingController extends Controller
             $total_hari += ($d == 0 ? 1 : $d);
         }
 
+        $categories = [
+            ['label' => 'Registrasi', 'total' => $biaya_reg, 'items' => [['item' => 'Biaya Registrasi', 'qty' => 1, 'tarif' => $biaya_reg, 'subtotal' => $biaya_reg]]],
+            ['label' => 'Kamar & Inap', 'total' => $total_kamar, 'items' => $detail_kamar],
+            ['label' => 'Tindakan & Perawatan', 'total' => $total_tindakan, 'items' => $detail_tindakan],
+            ['label' => 'Obat & Alkes', 'total' => $total_obat, 'items' => $detail_obat],
+            ['label' => 'Laboratorium', 'total' => $total_lab, 'items' => $detail_lab],
+            ['label' => 'Radiologi', 'total' => $total_rad, 'items' => $detail_rad],
+        ];
+
+        if ($tambahan > 0 || $potongan > 0) {
+            $itemsTP = [];
+            if ($tambahan > 0) $itemsTP[] = ['item' => 'Tambahan Biaya', 'qty' => 1, 'tarif' => $tambahan, 'subtotal' => $tambahan];
+            if ($potongan > 0) $itemsTP[] = ['item' => 'Potongan Biaya', 'qty' => 1, 'tarif' => -$potongan, 'subtotal' => -$potongan];
+            $categories[] = ['label' => 'Tambahan/Potongan', 'total' => $tambahan - $potongan, 'items' => $itemsTP];
+        }
+
         return [
             'no_rawat' => $no_rawat,
             'no_rm' => $reg->no_rkm_medis ?? '-',
@@ -195,18 +211,7 @@ class BillingController extends Controller
             'kamar' => $first_kamar ? "{$first_kamar->kd_kamar}, {$first_kamar->nm_bangsal}" : '-',
             'tgl_perawatan' => "{$tgl_masuk_awal} s.d {$tgl_keluar_akhir} ( {$total_hari} Hari )",
             'status_bayar' => $reg ? $reg->status_bayar : 'Belum Bayar',
-            'categories' => [
-                ['label' => 'Registrasi', 'total' => $biaya_reg, 'items' => [['item' => 'Biaya Registrasi', 'qty' => 1, 'tarif' => $biaya_reg, 'subtotal' => $biaya_reg]]],
-                ['label' => 'Kamar & Inap', 'total' => $total_kamar, 'items' => $detail_kamar],
-                ['label' => 'Tindakan & Perawatan', 'total' => $total_tindakan, 'items' => $detail_tindakan],
-                ['label' => 'Obat & Alkes', 'total' => $total_obat, 'items' => $detail_obat],
-                ['label' => 'Laboratorium', 'total' => $total_lab, 'items' => $detail_lab],
-                ['label' => 'Radiologi', 'total' => $total_rad, 'items' => $detail_rad],
-                ['label' => 'Tambahan/Potongan', 'total' => $tambahan - $potongan, 'items' => [
-                    ['item' => 'Tambahan Biaya', 'qty' => 1, 'tarif' => $tambahan, 'subtotal' => $tambahan],
-                    ['item' => 'Potongan Biaya', 'qty' => 1, 'tarif' => -$potongan, 'subtotal' => -$potongan],
-                ]],
-            ],
+            'categories' => $categories,
             'grand_total' => $grand_total
         ];
     }
@@ -273,6 +278,21 @@ class BillingController extends Controller
 
         $grand_total = ($biaya_reg + $total_tindakan + $total_obat + $total_lab + $total_rad + $tambahan) - $potongan;
 
+        $categories = [
+            ['label' => 'Registrasi', 'total' => $biaya_reg, 'items' => [['item' => 'Biaya Registrasi', 'qty' => 1, 'tarif' => $biaya_reg, 'subtotal' => $biaya_reg]]],
+            ['label' => 'Tindakan & Perawatan', 'total' => $total_tindakan, 'items' => $detail_tindakan],
+            ['label' => 'Obat & Alkes', 'total' => $total_obat, 'items' => $detail_obat],
+            ['label' => 'Laboratorium', 'total' => $total_lab, 'items' => $detail_lab],
+            ['label' => 'Radiologi', 'total' => $total_rad, 'items' => $detail_rad],
+        ];
+
+        if ($tambahan > 0 || $potongan > 0) {
+            $itemsTP = [];
+            if ($tambahan > 0) $itemsTP[] = ['item' => 'Tambahan Biaya', 'qty' => 1, 'tarif' => $tambahan, 'subtotal' => $tambahan];
+            if ($potongan > 0) $itemsTP[] = ['item' => 'Potongan Biaya', 'qty' => 1, 'tarif' => -$potongan, 'subtotal' => -$potongan];
+            $categories[] = ['label' => 'Tambahan/Potongan', 'total' => $tambahan - $potongan, 'items' => $itemsTP];
+        }
+
         return [
             'no_rawat' => $no_rawat,
             'no_rm' => $reg->no_rkm_medis ?? '-',
@@ -280,17 +300,7 @@ class BillingController extends Controller
             'poli' => $reg->nm_poli ?? '-',
             'tgl_perawatan' => $reg ? $reg->tgl_registrasi : '-',
             'status_bayar' => $reg ? $reg->status_bayar : 'Belum Bayar',
-            'categories' => [
-                ['label' => 'Registrasi', 'total' => $biaya_reg, 'items' => [['item' => 'Biaya Registrasi', 'qty' => 1, 'tarif' => $biaya_reg, 'subtotal' => $biaya_reg]]],
-                ['label' => 'Tindakan & Perawatan', 'total' => $total_tindakan, 'items' => $detail_tindakan],
-                ['label' => 'Obat & Alkes', 'total' => $total_obat, 'items' => $detail_obat],
-                ['label' => 'Laboratorium', 'total' => $total_lab, 'items' => $detail_lab],
-                ['label' => 'Radiologi', 'total' => $total_rad, 'items' => $detail_rad],
-                ['label' => 'Tambahan/Potongan', 'total' => $tambahan - $potongan, 'items' => [
-                    ['item' => 'Tambahan Biaya', 'qty' => 1, 'tarif' => $tambahan, 'subtotal' => $tambahan],
-                    ['item' => 'Potongan Biaya', 'qty' => 1, 'tarif' => -$potongan, 'subtotal' => -$potongan],
-                ]],
-            ],
+            'categories' => $categories,
             'grand_total' => $grand_total
         ];
     }

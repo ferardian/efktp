@@ -6,6 +6,7 @@
         $titleSize = ($size == '58') ? '12px' : '14px';
         $headerSize = ($size == '58') ? '10px' : '12px';
         $margin = ($size == '58') ? '2px' : '5px';
+        $marginRight = ($size == '58') ? '8px' : '12px';
 
         $hasObat = false;
         foreach ($data['categories'] as $cat) {
@@ -19,7 +20,7 @@
     <style>
         @page {
             margin-top: 5px;
-            margin-right: {{ $margin }};
+            margin-right: {{ $marginRight }};
             margin-left: {{ $margin }};
             margin-bottom: 5px;
         }
@@ -112,6 +113,7 @@
         .text-right {
             text-align: right;
             white-space: nowrap;
+            padding-right: 5px;
         }
 
         .grand-total-row {
