@@ -69,7 +69,7 @@ class BillingController extends Controller
         $itemHeight = ($size == '58') ? 18 : 22;
         $height = $baseHeight + ($itemCount * $itemHeight);
 
-        $width = ($size == '58') ? 164.4 : 226.7;
+        $width = ($size == '58') ? 136.0 : 226.7;
 
         $pdf = PDF::loadView('content.print.billing', [
             'data' => $billingData,

@@ -2,11 +2,11 @@
 
 @section('content')
     @php
-        $fontSize = ($size == '58') ? '9px' : '11px';
-        $titleSize = ($size == '58') ? '12px' : '14px';
-        $headerSize = ($size == '58') ? '10px' : '12px';
+        $fontSize = ($size == '58') ? '8.5px' : '11px';
+        $titleSize = ($size == '58') ? '11px' : '14px';
+        $headerSize = ($size == '58') ? '9.5px' : '12px';
         $margin = ($size == '58') ? '2px' : '5px';
-        $marginRight = ($size == '58') ? '8px' : '12px';
+        $marginRight = ($size == '58') ? '2px' : '5px';
 
         $hasObat = false;
         foreach ($data['categories'] as $cat) {
@@ -27,19 +27,19 @@
         
         body {
             font-size: {{ $fontSize }};
-            line-height: 1.3;
+            line-height: 1.25;
             color: #000;
         }
 
         .receipt-header {
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .receipt-header img {
             display: block;
-            margin: 0 auto 5px auto;
-            max-width: 40px;
+            margin: 0 auto 4px auto;
+            max-width: 36px;
         }
 
         .receipt-header .instansi-name {
@@ -57,13 +57,13 @@
 
         .divider {
             border-top: 1px dashed #000;
-            margin: 5px 0;
+            margin: 4px 0;
             height: 0;
         }
 
         .double-divider {
             border-top: 1px double #000;
-            margin: 5px 0;
+            margin: 4px 0;
             height: 0;
         }
 
@@ -71,7 +71,7 @@
             width: 100%;
             border-spacing: 0;
             font-size: {{ $fontSize }};
-            margin-bottom: 5px;
+            margin-bottom: 4px;
             table-layout: fixed;
         }
 
@@ -97,8 +97,8 @@
         .category-header {
             font-weight: bold;
             text-transform: uppercase;
-            padding-top: 4px !important;
-            font-size: {{ ($size == '58') ? '8.5px' : '10px' }};
+            padding-top: 3px !important;
+            font-size: {{ ($size == '58') ? '8px' : '10px' }};
         }
 
         .item-row {
@@ -106,28 +106,28 @@
         }
 
         .item-details {
-            font-size: {{ ($size == '58') ? '8px' : '9.5px' }};
+            font-size: {{ ($size == '58') ? '7.5px' : '9.5px' }};
             color: #333;
         }
 
         .text-right {
             text-align: right;
             white-space: nowrap;
-            padding-right: 5px;
+            padding-right: 2px;
         }
 
         .grand-total-row {
-            font-size: {{ ($size == '58') ? '10.5px' : '13px' }};
+            font-size: {{ ($size == '58') ? '10px' : '13px' }};
             font-weight: bold;
         }
         
         .qr-section {
             text-align: center;
-            margin-top: 12px;
+            margin-top: 10px;
         }
         
         .qr-section img {
-            margin-bottom: 3px;
+            margin-bottom: 2px;
         }
     </style>
 
@@ -143,16 +143,16 @@
     </div>
 
     <div class="divider"></div>
-    <div style="text-align: center; font-weight: bold; text-transform: uppercase; margin-bottom: 5px;">
+    <div style="text-align: center; font-weight: bold; text-transform: uppercase; margin-bottom: 4px;">
         Rincian Billing ({{ $data['type'] }})
     </div>
     <div class="divider"></div>
 
     <table class="info-table">
         <tr>
-            <td width="30%">No. Nota</td>
-            <td width="5%">:</td>
-            <td width="65%">{{ $data['no_rawat'] }}</td>
+            <td width="32%">No. Nota</td>
+            <td width="4%">:</td>
+            <td width="64%">{{ $data['no_rawat'] }}</td>
         </tr>
         <tr>
             <td>No. R.M.</td>
@@ -195,17 +195,17 @@
         @foreach ($data['categories'] as $cat)
             @if (count($cat['items']) > 0)
                 <tr>
-                    <td width="65%" class="category-header">{{ $cat['label'] }}</td>
-                    <td width="35%" class="category-header text-right">{{ number_format($cat['total'], 0, ',', '.') }}</td>
+                    <td width="55%" class="category-header">{{ $cat['label'] }}</td>
+                    <td width="45%" class="category-header text-right">{{ number_format($cat['total'], 0, ',', '.') }}</td>
                 </tr>
                 @if ($cat['label'] !== 'Obat & Alkes' || $show_obat)
                     @foreach ($cat['items'] as $item)
                         <tr>
-                            <td width="65%" class="item-row">
+                            <td width="55%" class="item-row">
                                 <div>{{ $item['item'] }}</div>
                                 <div class="item-details">{{ $item['qty'] }} x {{ number_format($item['tarif'], 0, ',', '.') }}</div>
                             </td>
-                            <td width="35%" class="text-right" style="vertical-align: bottom;">
+                            <td width="45%" class="text-right" style="vertical-align: bottom;">
                                 {{ number_format($item['subtotal'], 0, ',', '.') }}
                             </td>
                         </tr>
@@ -219,8 +219,8 @@
 
     <table class="info-table grand-total-row">
         <tr>
-            <td width="40%">TOTAL BIAYA</td>
-            <td width="60%" class="text-right">Rp. {{ number_format($data['grand_total'], 0, ',', '.') }}</td>
+            <td width="45%">TOTAL BIAYA</td>
+            <td width="55%" class="text-right">Rp. {{ number_format($data['grand_total'], 0, ',', '.') }}</td>
         </tr>
     </table>
 
