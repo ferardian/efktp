@@ -124,6 +124,7 @@ class RegPeriksa extends Model
 	public function scopeMaxByTanggal($query, string|null $tanggal)
 	{
 		$tanggal = $tanggal ? $tanggal : now()->format('Y-m-d');
-		$query->where('tgl_registrasi', $tanggal)->orderBy('no_rawat', 'DESC');
+		$tglRawat = date('Y/m/d', strtotime($tanggal));
+		$query->where('no_rawat', 'LIKE', "{$tglRawat}/%")->orderBy('no_rawat', 'DESC');
 	}
 }

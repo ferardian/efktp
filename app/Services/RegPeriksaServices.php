@@ -9,10 +9,20 @@ class RegPeriksaServices
     public static function setNoRawat(RegPeriksa $model, string $tanggal = null)
     {
         $tglRegistrasi = $tanggal ? date('Y-m-d', strtotime($tanggal)) : date('Y-m-d');
-        $reg = $model->maxByTanggal($tglRegistrasi)->first();
-        $no = $reg ? explode('/', $reg->no_rawat)[3] + 1 : 1;
-        $no_reg = sprintf('%06d', $no);
         $tglRawat = date('Y/m/d', strtotime($tglRegistrasi));
-        return "{$tglRawat}/{$no_reg}";
+
+        $reg = $model->where('no_rawat', 'LIKE', "{$tglRawat}/%")->orderBy('no_rawat', 'DESC')->first();
+        $no = $reg ? (int) (explode('/', $reg->no_rawat)[3] ?? 0) + 1 : 1;
+
+        do {
+            $no_reg = sprintf('%06d', $no);
+            $candidateNoRawat = "{$tglRawat}/{$no_reg}";
+            $exists = $model->where('no_rawat', $candidateNoRawat)->exists();
+            if ($exists) {
+                $no++;
+            }
+        } while ($exists);
+
+        return $candidateNoRawat;
     }
 }
