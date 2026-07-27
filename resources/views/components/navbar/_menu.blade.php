@@ -208,6 +208,26 @@
              </span>
         </a>
     </li>
+    <li class="nav-item {{ Request::segment(1) == 'keuangan' ? 'active' : '' }} dropdown">
+        <a class="nav-link dropdown-toggle" href="javascript:void(0)" data-bs-toggle="dropdown"
+           data-bs-auto-close="outside" role="button" aria-expanded="true">
+             <span class="nav-link-icon d-md-none d-lg-inline-block mt-1">
+                 <i class="ti ti-report-money fs-2"></i>
+             </span>
+            <span class="nav-link-title">
+                 Keuangan
+             </span>
+        </a>
+        <div class="dropdown-menu" data-bs-popper="static">
+            <div class="dropdown-menu-columns">
+                <div class="dropdown-menu-column">
+                    <a href="{{ url('keuangan/pembayaran-ralan') }}" class="dropdown-item {{ Request::is('keuangan/pembayaran-ralan') ? 'active' : '' }}">
+                        Pembayaran Rawat Jalan
+                    </a>
+                </div>
+            </div>
+        </div>
+    </li>
     <li class="nav-item {{ Request::is('antrean') ? 'active' : '' }} dropdown">
         <a class="nav-link dropdown-toggle" href="javascript:void(0)" data-bs-toggle="dropdown"
            data-bs-auto-close="outside" role="button" aria-expanded="true">

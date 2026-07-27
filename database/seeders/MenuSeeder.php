@@ -55,6 +55,11 @@ class MenuSeeder extends Seeder
                 'icon' => '<i class="ti ti-screen-share fw-2"></i>', 
                 'parent_id' => null, 'order_num' => 7, 'target' => '_self', 'position' => 'navbar', 'roles' => ['admin', 'dokter', 'apoteker', 'petugas', 'owner']
             ],
+            [
+                'id' => 44, 'name' => 'Keuangan', 'url' => null, 
+                'icon' => '<i class="ti ti-report-money fs-2"></i>', 
+                'parent_id' => null, 'order_num' => 8, 'target' => '_self', 'position' => 'navbar', 'roles' => ['admin', 'petugas', 'owner']
+            ],
 
             // submenus under Farmasi (parent_id = 4)
             ['id' => 8, 'name' => 'Obat & BHP', 'url' => 'farmasi/obat', 'icon' => null, 'parent_id' => 4, 'order_num' => 1, 'target' => '_self', 'position' => 'navbar', 'roles' => ['admin', 'apoteker', 'petugas', 'owner']],
@@ -73,6 +78,9 @@ class MenuSeeder extends Seeder
             ['id' => 17, 'name' => 'Poliklinik', 'url' => 'antrean/poliklinik', 'icon' => null, 'parent_id' => 7, 'order_num' => 1, 'target' => '_blank', 'position' => 'navbar', 'roles' => ['admin', 'dokter', 'apoteker', 'petugas', 'owner']],
             ['id' => 18, 'name' => 'Poliklinik v2', 'url' => 'antrean/poliklinik/v2', 'icon' => null, 'parent_id' => 7, 'order_num' => 2, 'target' => '_blank', 'position' => 'navbar', 'roles' => ['admin', 'dokter', 'apoteker', 'petugas', 'owner']],
             ['id' => 19, 'name' => 'Farmasi', 'url' => 'antrean/farmasi', 'icon' => null, 'parent_id' => 7, 'order_num' => 3, 'target' => '_blank', 'position' => 'navbar', 'roles' => ['admin', 'dokter', 'apoteker', 'petugas', 'owner']],
+
+            // submenus under Keuangan (parent_id = 44)
+            ['id' => 45, 'name' => 'Pembayaran Rawat Jalan', 'url' => 'keuangan/pembayaran-ralan', 'icon' => null, 'parent_id' => 44, 'order_num' => 1, 'target' => '_self', 'position' => 'navbar', 'roles' => ['admin', 'petugas', 'owner']],
 
             // position = sidebar (offcanvas)
             [

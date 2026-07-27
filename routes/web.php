@@ -197,6 +197,10 @@ Route::middleware('auth:web,admin')->group(function () {
     Route::get('/billing/accounts', [\App\Http\Controllers\BillingController::class, 'getBillingAccounts']);
     Route::post('/billing/close', [\App\Http\Controllers\BillingController::class, 'closeBilling']);
 
+    // KEUANGAN
+    Route::get('/keuangan/pembayaran-ralan', [\App\Http\Controllers\Keuangan\PembayaranRalanController::class, 'index']);
+    Route::get('/keuangan/pembayaran-ralan/data', [\App\Http\Controllers\Keuangan\PembayaranRalanController::class, 'getData']);
+
 	// JADWAL PRAKTEK
 	Route::get('/master/jadwal', [JadwalController::class, 'index']);
 	Route::get('/master/dokter', [DokterController::class, 'index']);
