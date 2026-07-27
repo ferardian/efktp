@@ -162,4 +162,105 @@ class PembayaranRalanController extends Controller
             'count' => count($data),
         ]);
     }
+
+    public function exportPdf(Request $request)
+    {
+        $res = $this->getData($request)->getData(true);
+        $data = $res['data'];
+        $totals = $res['totals'];
+        $setting = \App\Models\Setting::first();
+
+        $tgl_awal = $request->tgl_awal ? Carbon::parse($request->tgl_awal)->format('d-m-Y') : date('d-m-Y');
+        $tgl_akhir = $request->tgl_akhir ? Carbon::parse($request->tgl_akhir)->format('d-m-Y') : date('d-m-Y');
+
+        $poliName = $request->kd_poli ? (DB::table('poliklinik')->where('kd_poli', $request->kd_poli)->value('nm_poli') ?? 'Semua') : 'Semua';
+        $dokterName = $request->kd_dokter ? (DB::table('dokter')->where('kd_dokter', $request->kd_dokter)->value('nm_dokter') ?? 'Semua') : 'Semua';
+        $penjabName = $request->kd_pj ? (DB::table('penjab')->where('kd_pj', $request->kd_pj)->value('png_jawab') ?? 'Semua') : 'Semua';
+        $statusBayar = $request->status_bayar ?? 'Semua';
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('content.print.rekapPembayaranRalanPdf', [
+            'data' => $data,
+            'totals' => $totals,
+            'setting' => $setting,
+            'tgl_awal' => $tgl_awal,
+            'tgl_akhir' => $tgl_akhir,
+            'poliName' => $poliName,
+            'dokterName' => $dokterName,
+            'penjabName' => $penjabName,
+            'statusBayar' => $statusBayar,
+        ])
+        ->setPaper('a4', 'landscape')
+        ->setOptions(['defaultFont' => 'Arial', 'isRemoteEnabled' => true]);
+
+        return $pdf->stream("Rekap_Pembayaran_Ralan_{$tgl_awal}_s.d_{$tgl_akhir}.pdf");
+    }
+
+    public function exportExcel(Request $request)
+    {
+        $res = $this->getData($request)->getData(true);
+        $data = $res['data'];
+        $totals = $res['totals'];
+
+        $tgl_awal = $request->tgl_awal ? Carbon::parse($request->tgl_awal)->format('d-m-Y') : date('d-m-Y');
+        $tgl_akhir = $request->tgl_akhir ? Carbon::parse($request->tgl_akhir)->format('d-m-Y') : date('d-m-Y');
+
+        $fileName = "Rekap_Pembayaran_Ralan_{$tgl_awal}_s.d_{$tgl_akhir}.csv";
+
+        $headers = [
+            "Content-type" => "text/csv; charset=UTF-8",
+            "Content-Disposition" => "attachment; filename=$fileName",
+            "Pragma" => "no-cache",
+            "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
+            "Expires" => "0"
+        ];
+
+        $callback = function () use ($data, $totals) {
+            $file = fopen('php://output', 'w');
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            fputcsv($file, ['No', 'Tgl Registrasi', 'No. Nota', 'No. RM', 'Nama Pasien', 'Poliklinik', 'Dokter', 'Penjab', 'Perujuk', 'Registrasi', 'Obat+BHP', 'Tindakan', 'Operasi', 'Laborat', 'Radiologi', 'Tambahan', 'Potongan', 'Total Biaya', 'Status Bayar'], ';');
+
+            foreach ($data as $idx => $row) {
+                fputcsv($file, [
+                    $idx + 1,
+                    $row['tgl_registrasi'],
+                    $row['no_nota'],
+                    $row['no_rkm_medis'],
+                    $row['nm_pasien'],
+                    $row['nm_poli'],
+                    $row['nm_dokter'],
+                    $row['png_jawab'],
+                    $row['perujuk'],
+                    $row['biaya_reg'],
+                    $row['biaya_obat'],
+                    $row['biaya_tindakan'],
+                    $row['biaya_operasi'],
+                    $row['biaya_lab'],
+                    $row['biaya_rad'],
+                    $row['biaya_tambahan'],
+                    $row['biaya_potongan'],
+                    $row['total_biaya'],
+                    $row['status_bayar']
+                ], ';');
+            }
+
+            fputcsv($file, [
+                'TOTAL', '', '', '', '', '', '', '', '',
+                $totals['registrasi'],
+                $totals['obat'],
+                $totals['tindakan'],
+                $totals['operasi'],
+                $totals['laborat'],
+                $totals['radiologi'],
+                $totals['tambahan'],
+                $totals['potongan'],
+                $totals['grand_total'],
+                ''
+            ], ';');
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 }

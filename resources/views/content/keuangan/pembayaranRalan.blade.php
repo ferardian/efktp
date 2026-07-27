@@ -12,6 +12,11 @@
                     Data rincian tagihan & pembayaran pasien ralan berdasarkan tanggal registrasi
                 </div>
             </div>
+            <div class="col-auto ms-auto d-print-none">
+                <a href="{{ url('/') }}" class="btn btn-outline-secondary btn-sm">
+                    <i class="ti ti-arrow-left me-1"></i> Kembali ke Beranda
+                </a>
+            </div>
         </div>
     </div>
 </div>
@@ -22,7 +27,7 @@
         <div class="card mb-3 shadow-sm">
             <div class="card-header bg-light py-2">
                 <h3 class="card-title text-dark fw-bold mb-0">
-                    <i class="ti ti-filter me-1"></i> Filter Data
+                    <i class="ti ti-filter me-1"></i> Filter Data & Export
                 </h3>
             </div>
             <div class="card-body py-3">
@@ -67,18 +72,26 @@
                             </select>
                         </div>
 
-                        <div class="col-md-2">
-                            <label class="form-label fw-bold">Status Bayar</label>
-                            <select class="form-select" id="status_bayar">
-                                <option value="Semua">Semua Status</option>
-                                <option value="Sudah Bayar">Sudah Bayar</option>
-                                <option value="Belum Bayar">Belum Bayar</option>
-                            </select>
+                        <div class="col-md-3 d-flex align-items-end gap-1">
+                            <div class="flex-grow-1">
+                                <label class="form-label fw-bold">Status Bayar</label>
+                                <select class="form-select" id="status_bayar">
+                                    <option value="Semua">Semua Status</option>
+                                    <option value="Sudah Bayar">Sudah Bayar</option>
+                                    <option value="Belum Bayar">Belum Bayar</option>
+                                </select>
+                            </div>
                         </div>
 
-                        <div class="col-md-1 d-flex align-items-end">
-                            <button type="button" class="btn btn-primary w-100" id="btn-filter">
-                                <i class="ti ti-search me-1"></i> Cari
+                        <div class="col-12 d-flex justify-content-end gap-2 mt-2 pt-2 border-top">
+                            <button type="button" class="btn btn-primary" id="btn-filter">
+                                <i class="ti ti-search me-1"></i> Cari Data
+                            </button>
+                            <button type="button" class="btn btn-success" id="btn-export-excel">
+                                <i class="ti ti-file-spreadsheet me-1"></i> Export Excel (XLSX)
+                            </button>
+                            <button type="button" class="btn btn-danger" id="btn-export-pdf">
+                                <i class="ti ti-file-text me-1"></i> Export PDF / Cetak
                             </button>
                         </div>
                     </div>
@@ -236,8 +249,8 @@ $(document).ready(function() {
         ]
     });
 
-    function loadData() {
-        const payload = {
+    function getFilterParams() {
+        return {
             tgl_awal: $('#tgl_awal').val(),
             tgl_akhir: $('#tgl_akhir').val(),
             kd_poli: $('#kd_poli').val(),
@@ -245,11 +258,13 @@ $(document).ready(function() {
             kd_pj: $('#kd_pj').val(),
             status_bayar: $('#status_bayar').val(),
         };
+    }
 
+    function loadData() {
         $.ajax({
             url: "{{ url('keuangan/pembayaran-ralan/data') }}",
             type: "GET",
-            data: payload,
+            data: getFilterParams(),
             beforeSend: function() {
                 Swal.fire({
                     title: 'Memuat Data...',
@@ -263,7 +278,6 @@ $(document).ready(function() {
                 if (response.status === 'success') {
                     tablePembayaran.clear().rows.add(response.data).draw();
                     
-                    // Format Totals
                     const formatRp = (num) => 'Rp ' + Number(num).toLocaleString('id-ID');
                     $('#lbl-total-reg').text(formatRp(response.totals.registrasi));
                     $('#lbl-total-obat').text(formatRp(response.totals.obat));
@@ -280,6 +294,16 @@ $(document).ready(function() {
 
     $('#btn-filter').on('click', function() {
         loadData();
+    });
+
+    $('#btn-export-excel').on('click', function() {
+        const query = $.param(getFilterParams());
+        window.open("{{ url('keuangan/pembayaran-ralan/export-excel') }}?" + query, '_blank');
+    });
+
+    $('#btn-export-pdf').on('click', function() {
+        const query = $.param(getFilterParams());
+        window.open("{{ url('keuangan/pembayaran-ralan/export-pdf') }}?" + query, '_blank');
     });
 
     loadData();
