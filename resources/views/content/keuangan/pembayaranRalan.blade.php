@@ -180,6 +180,49 @@
 
 @push('style')
 <style>
+    /* Styling Filter Section & Select2 Border Fix */
+    .card-filter {
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+    }
+    .form-label {
+        font-size: 11px;
+        color: #334155;
+        margin-bottom: 4px;
+    }
+    .form-control, .form-select {
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 6px !important;
+        font-size: 12px;
+        height: 36px;
+        box-shadow: none !important;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #206bc4 !important;
+    }
+    /* Select2 Crisp Border & Height Alignment */
+    .select2-container .select2-selection--single {
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 6px !important;
+        height: 36px !important;
+        padding: 4px 8px !important;
+        background-color: #ffffff !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 26px !important;
+        font-size: 12px !important;
+        color: #1e293b !important;
+        padding-left: 2px !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 34px !important;
+        right: 6px !important;
+    }
+    .select2-container--default.select2-container--focus .select2-selection--single,
+    .select2-container--open .select2-selection--single {
+        border-color: #206bc4 !important;
+        box-shadow: 0 0 0 0.25rem rgba(32, 107, 196, 0.15) !important;
+    }
     #table-pembayaran th {
         font-size: 10px;
         text-align: center;
