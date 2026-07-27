@@ -58,7 +58,7 @@ class MenuSeeder extends Seeder
             [
                 'id' => 44, 'name' => 'Keuangan', 'url' => null, 
                 'icon' => '<i class="ti ti-report-money fs-2"></i>', 
-                'parent_id' => null, 'order_num' => 8, 'target' => '_self', 'position' => 'navbar', 'roles' => ['admin', 'petugas', 'owner']
+                'parent_id' => null, 'order_num' => 8, 'target' => '_self', 'position' => 'navbar', 'roles' => ['admin', 'dokter', 'petugas', 'owner']
             ],
 
             // submenus under Farmasi (parent_id = 4)
@@ -80,7 +80,7 @@ class MenuSeeder extends Seeder
             ['id' => 19, 'name' => 'Farmasi', 'url' => 'antrean/farmasi', 'icon' => null, 'parent_id' => 7, 'order_num' => 3, 'target' => '_blank', 'position' => 'navbar', 'roles' => ['admin', 'dokter', 'apoteker', 'petugas', 'owner']],
 
             // submenus under Keuangan (parent_id = 44)
-            ['id' => 45, 'name' => 'Pembayaran Rawat Jalan', 'url' => 'keuangan/pembayaran-ralan', 'icon' => null, 'parent_id' => 44, 'order_num' => 1, 'target' => '_self', 'position' => 'navbar', 'roles' => ['admin', 'petugas', 'owner']],
+            ['id' => 45, 'name' => 'Pembayaran Rawat Jalan', 'url' => 'keuangan/pembayaran-ralan', 'icon' => null, 'parent_id' => 44, 'order_num' => 1, 'target' => '_self', 'position' => 'navbar', 'roles' => ['admin', 'dokter', 'petugas', 'owner']],
 
             // position = sidebar (offcanvas)
             [
