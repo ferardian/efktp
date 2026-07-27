@@ -200,23 +200,30 @@
     .form-control:focus, .form-select:focus {
         border-color: #206bc4 !important;
     }
-    /* Select2 Crisp Border & Height Alignment */
+    /* Select2 Crisp Border & Perfect Vertical Centering */
     .select2-container .select2-selection--single {
         border: 1px solid #cbd5e1 !important;
         border-radius: 6px !important;
         height: 36px !important;
-        padding: 4px 8px !important;
+        padding: 0 10px !important;
         background-color: #ffffff !important;
+        display: flex !important;
+        align-items: center !important;
     }
     .select2-container--default .select2-selection--single .select2-selection__rendered {
-        line-height: 26px !important;
+        line-height: 34px !important;
         font-size: 12px !important;
         color: #1e293b !important;
-        padding-left: 2px !important;
+        padding-left: 0 !important;
+        padding-right: 20px !important;
+        margin-top: 0 !important;
     }
     .select2-container--default .select2-selection--single .select2-selection__arrow {
         height: 34px !important;
+        top: 1px !important;
         right: 6px !important;
+        display: flex !important;
+        align-items: center !important;
     }
     .select2-container--default.select2-container--focus .select2-selection--single,
     .select2-container--open .select2-selection--single {
