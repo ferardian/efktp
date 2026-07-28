@@ -209,12 +209,17 @@
             // Ambil data row registrasi dari datatable untuk cek pcarePendaftaran
             let hasPcare = false;
             let noUrutPcare = '';
-            if (typeof tabelRegistrasi !== 'undefined' && tabelRegistrasi) {
-                const rowData = tabelRegistrasi.rows().data().toArray().find(r => r.no_rawat === no_rawat);
-                if (rowData && rowData.pcare_pendaftaran) {
-                    hasPcare = true;
-                    noUrutPcare = rowData.pcare_pendaftaran.noUrut || '';
+            try {
+                if ($.fn.DataTable.isDataTable('#tabelRegistrasi')) {
+                    const dt = $('#tabelRegistrasi').DataTable();
+                    const rowData = dt.rows().data().toArray().find(r => r.no_rawat === no_rawat);
+                    if (rowData && rowData.pcare_pendaftaran) {
+                        hasPcare = true;
+                        noUrutPcare = rowData.pcare_pendaftaran.noUrut || '';
+                    }
                 }
+            } catch (e) {
+                console.log('Cek pcare_pendaftaran error:', e);
             }
 
             let warningText = `Data registrasi ${no_rawat} akan dihapus secara permanen!`;
