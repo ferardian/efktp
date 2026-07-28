@@ -239,8 +239,33 @@ class RegPeriksaController extends Controller
 		]);
 
 		try {
-			$regPeriksa = $this->regPeriksa->where('no_rawat', $request->no_rawat)->first();
+			$regPeriksa = $this->regPeriksa->where('no_rawat', $request->no_rawat)
+				->with(['pasien', 'poliklinik.maping'])
+				->first();
+
 			if ($regPeriksa) {
+				// --- Pembatalan Antrol BPJS Otomatis (jika enabled) ---
+				$antrianEnabled = config('bpjs.antrian.enabled', false);
+				$noPeserta      = $regPeriksa->pasien->no_peserta ?? '';
+
+				if ($antrianEnabled && !empty($noPeserta) && $noPeserta !== '-') {
+					try {
+						$kdPoliPcare = $regPeriksa->poliklinik->maping->kd_poli_pcare ?? '';
+						if (!empty($kdPoliPcare)) {
+							$antrianService = new \App\Services\Bpjs\Antrian\AntrianService();
+							$antrianService->batal([
+								'tanggalperiksa' => date('Y-m-d', strtotime($regPeriksa->tgl_registrasi)),
+								'kodepoli'       => $kdPoliPcare,
+								'nomorkartu'     => $noPeserta,
+								'alasan'         => $request->alasan ?? 'Pasien batal periksa / Registrasi dihapus',
+							]);
+						}
+					} catch (\Throwable $e) {
+						// Log error atau abaikan jika antrol gagal dibatalkan agar hapus lokal tetap berjalan
+						\Illuminate\Support\Facades\Log::error("Gagal batal antrol BPJS: " . $e->getMessage());
+					}
+				}
+
 				$this->regPeriksa->where('no_rawat', $request->no_rawat)->delete();
 				$this->deleteSql(new RegPeriksa(), [
 					'no_rawat' => $request->no_rawat,
