@@ -240,11 +240,33 @@ class RegPeriksaController extends Controller
 
 		try {
 			$regPeriksa = $this->regPeriksa->where('no_rawat', $request->no_rawat)
-				->with(['pasien', 'poliklinik.maping'])
+				->with(['pasien', 'poliklinik.maping', 'pcarePendaftaran'])
 				->first();
 
 			if ($regPeriksa) {
-				// --- Pembatalan Antrol BPJS Otomatis (jika enabled) ---
+				// 1. --- Hapus Pendaftaran PCare BPJS (jika sudah terdaftar) ---
+				if ($regPeriksa->pcarePendaftaran) {
+					try {
+						$pcarePendaftaran = $regPeriksa->pcarePendaftaran;
+						$pcareService     = new \App\Services\Bpjs\PCare\PCarePendaftaran();
+
+						// Hapus dari server PCare BPJS
+						$pcareService->hapus(
+							$pcarePendaftaran->noKartu,
+							date('d-m-Y', strtotime($pcarePendaftaran->tglDaftar)),
+							$pcarePendaftaran->noUrut,
+							$pcarePendaftaran->kdPoli
+						);
+
+						// Hapus dari tabel lokal pcare_pendaftaran
+						\App\Models\PcarePendaftaran::where('no_rawat', $request->no_rawat)->delete();
+						$this->deleteSql(new \App\Models\PcarePendaftaran(), ['no_rawat' => $request->no_rawat]);
+					} catch (\Throwable $e) {
+						\Illuminate\Support\Facades\Log::error("Gagal hapus pendaftaran PCare BPJS: " . $e->getMessage());
+					}
+				}
+
+				// 2. --- Pembatalan Antrol BPJS Otomatis (jika enabled) ---
 				$antrianEnabled = config('bpjs.antrian.enabled', false);
 				$noPeserta      = $regPeriksa->pasien->no_peserta ?? '';
 
@@ -261,11 +283,11 @@ class RegPeriksaController extends Controller
 							]);
 						}
 					} catch (\Throwable $e) {
-						// Log error atau abaikan jika antrol gagal dibatalkan agar hapus lokal tetap berjalan
 						\Illuminate\Support\Facades\Log::error("Gagal batal antrol BPJS: " . $e->getMessage());
 					}
 				}
 
+				// 3. --- Hapus Registrasi Lokal ---
 				$this->regPeriksa->where('no_rawat', $request->no_rawat)->delete();
 				$this->deleteSql(new RegPeriksa(), [
 					'no_rawat' => $request->no_rawat,

@@ -206,27 +206,42 @@
         }
 
         function hapusRegistrasi(no_rawat) {
+            // Ambil data row registrasi dari datatable untuk cek pcarePendaftaran
+            let hasPcare = false;
+            let noUrutPcare = '';
+            if (typeof tabelRegistrasi !== 'undefined' && tabelRegistrasi) {
+                const rowData = tabelRegistrasi.rows().data().toArray().find(r => r.no_rawat === no_rawat);
+                if (rowData && rowData.pcare_pendaftaran) {
+                    hasPcare = true;
+                    noUrutPcare = rowData.pcare_pendaftaran.noUrut || '';
+                }
+            }
+
+            let warningText = `Data registrasi ${no_rawat} akan dihapus secara permanen!`;
+            if (hasPcare) {
+                warningText = `<span class="text-danger font-weight-bold">PERINGATAN: Pasien ini terdaftar di PCare BPJS (No Urut: ${noUrutPcare}).</span><br><br>Menghapus registrasi ini akan otomatis menghapus pendaftaran di server PCare BPJS & membatalkan antrean Antrol.`;
+            }
+
             Swal.fire({
                 title: 'Apakah anda yakin?',
-                text: "Data registrasi " + no_rawat + " akan dihapus secara permanen!",
+                html: warningText,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
                 cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Ya, hapus!',
+                confirmButtonText: 'Ya, hapus semua!',
                 cancelButtonText: 'Batal'
             }).then((result) => {
                 if (result.isConfirmed) {
+                    loadingAjax('Sedang menghapus registrasi...');
                     $.post(`{{ url('/registrasi/delete') }}`, {
                         no_rawat: no_rawat
                     }).done((response) => {
-                        Swal.fire(
-                            'Terhapus!',
-                            'Data registrasi berhasil dihapus.',
-                            'success'
-                        )
+                        Swal.close();
+                        alertSuccessAjax('Data registrasi berhasil dihapus!');
                         loadTabelRegistrasi($('#tglAwal').val(), $('#tglAkhir').val(), selectFilterStts.val(), selectFilterDokter.val(), $('#poli').val());
                     }).fail((error, status, code) => {
+                        Swal.close();
                         let msg = error.responseJSON ? error.responseJSON : 'Terjadi kesalahan saat menghapus data.';
                         Swal.fire(
                             'Gagal!',
