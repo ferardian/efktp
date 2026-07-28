@@ -7,6 +7,7 @@ use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Services\Bpjs\PCare\PCarePendaftaran;
 use App\Services\Bpjs\Antrian\AntrianService;
+use App\Models\Jadwal;
 
 class Pendaftaran extends Controller
 {
@@ -81,7 +82,7 @@ class Pendaftaran extends Controller
                 'tanggalperiksa'=> date('Y-m-d', strtotime($request->tgl_registrasi)),
                 'kodedokter'    => (int) $request->kd_dokter_pcare,
                 'namadokter'    => $request->nm_dokter ?? 'Dokter Faskes',
-                'jampraktek'    => $request->jampraktek ?? '08:00-14:00',
+                'jampraktek'    => $this->getJamPraktek($request->kd_dokter, $request->tgl_registrasi),
                 'nomorantrean'  => $request->no_reg,
                 'angkaantrean'  => (int) $request->no_reg,
                 'keterangan'    => 'Peserta harap 30 menit lebih awal guna pencatatan administrasi.',
@@ -138,5 +139,42 @@ class Pendaftaran extends Controller
             'antrian'    => $antrianResult,
             'pendaftaran'=> $pendaftaranResult,
         ]);
+    }
+
+    /**
+     * Ambil jam praktek dokter dari tabel jadwal lokal.
+     * Mencocokkan berdasarkan kd_dokter dan hari dalam tgl_registrasi.
+     * Format output: 'HH:mm-HH:mm' (contoh: '15:30-20:00')
+     * Fallback ke '08:00-16:00' jika jadwal tidak ditemukan.
+     */
+    private function getJamPraktek(string $kdDokter, string $tglRegistrasi): string
+    {
+        // Map nama hari Indonesia ke format di tabel jadwal
+        $hariMap = [
+            'Sunday'    => 'MINGGU',
+            'Monday'    => 'SENIN',
+            'Tuesday'   => 'SELASA',
+            'Wednesday' => 'RABU',
+            'Thursday'  => 'KAMIS',
+            'Friday'    => 'JUMAT',
+            'Saturday'  => 'SABTU',
+        ];
+
+        $hariEng  = date('l', strtotime($tglRegistrasi));
+        $hariIndo = $hariMap[$hariEng] ?? 'SENIN';
+
+        $jadwal = Jadwal::where('kd_dokter', $kdDokter)
+            ->where('hari_kerja', $hariIndo)
+            ->first();
+
+        if (!$jadwal || !$jadwal->jam_mulai || !$jadwal->jam_selesai) {
+            return '08:00-16:00';
+        }
+
+        // Format: 'HH:mm-HH:mm' (tanpa detik)
+        $jamMulai   = substr($jadwal->jam_mulai,   0, 5); // '15:30:00' → '15:30'
+        $jamSelesai = substr($jadwal->jam_selesai, 0, 5); // '20:00:00' → '20:00'
+
+        return "{$jamMulai}-{$jamSelesai}";
     }
 }
