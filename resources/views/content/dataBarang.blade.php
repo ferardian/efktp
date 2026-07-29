@@ -13,6 +13,12 @@
                                 <option value="0">Status: Non-Aktif</option>
                                 <option value="semua">Status: Semua</option>
                             </select>
+                            <button type="button" class="btn btn-success btn-sm" onclick="exportDataBarang('excel')" title="Export Excel (CSV)">
+                                <i class="ti ti-file-spreadsheet me-1"></i> Excel
+                            </button>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="exportDataBarang('pdf')" title="Export PDF">
+                                <i class="ti ti-file-text me-1"></i> PDF
+                            </button>
                             <button type="button" class="btn btn-danger btn-sm d-none" id="btnBatchDeactivate" onclick="batchDeactivateBarang()">
                                 <i class="ti ti-trash-off me-1"></i> Non-aktifkan Terpilih
                             </button>
@@ -21,6 +27,24 @@
                     <div class="card-body" style="flex: 1; min-height: 0; overflow: hidden;">
                         <div id="table-default" class="table-responsive h-100" style="overflow-y: auto;">
                             <table class="table table-striped table-hover nowrap" id="tabelBarangObat" width="100%">
+                                <thead>
+                                    <tr>
+                                        <th width="3%"><input type="checkbox" id="checkAllBarang" class="form-check-input"></th>
+                                        <th>Kode</th>
+                                        <th>Nama Obat/Barang</th>
+                                        <th>Dosis</th>
+                                        <th>Satuan</th>
+                                        <th>Stok</th>
+                                        <th>Kandungan</th>
+                                        <th>Jenis</th>
+                                        <th>Kategori</th>
+                                        <th>Golongan</th>
+                                        <th>Industri</th>
+                                        <th width="15%">Mapping PCare</th>
+                                        <th>Status</th>
+                                        <th width="8%">Aksi</th>
+                                    </tr>
+                                </thead>
                             </table>
                         </div>
                     </div>
@@ -283,10 +307,25 @@
             });
         })
 
+        function exportDataBarang(type) {
+            const status = $('#filter_status').val();
+            let search = '';
+            if ($.fn.DataTable.isDataTable('#tabelBarangObat')) {
+                search = $('#tabelBarangObat').DataTable().search();
+            }
+            const params = $.param({ status: status, search: search });
+            if (type === 'excel') {
+                window.open(`{{ url('/farmasi/obat/export-excel') }}?${params}`, '_blank');
+            } else if (type === 'pdf') {
+                window.open(`{{ url('/farmasi/obat/export-pdf') }}?${params}`, '_blank');
+            }
+        }
+
         function renderTabelBarang() {
             tabelBarangObat.DataTable({
                 processing: true,
                 serverSide: true,
+                autoWidth: false,
                 scrollY: 'calc(100vh - 380px)',
                 scrollX: true,
                 ajax: {
@@ -301,51 +340,43 @@
                 columns: [
                     {
                         data: null,
-                        title: '<input type="checkbox" id="checkAllBarang" class="form-check-input">',
                         orderable: false,
                         searchable: false,
                         width: '3%',
+                        defaultContent: '',
                         render: (data, type, row) => {
                             const isChecked = typeof selectedBarangCodes !== 'undefined' && selectedBarangCodes.has(row.kode_brng) ? 'checked' : '';
                             return `<input type="checkbox" class="form-check-input check-barang" value="${row.kode_brng}" ${isChecked}>`;
                         }
                     },
                     {
-                    data: 'kode_brng',
-                    name: 'kode_brng',
-                    title: 'Kode',
-                    render: (data, type, row, meta) => {
-                        return data;
-                    }
-                },
+                        data: 'kode_brng',
+                        name: 'kode_brng',
+                        defaultContent: '-',
+                        render: (data) => data ?? '-'
+                    },
                     {
                         data: 'nama_brng',
                         name: 'nama_brng',
-                        title: 'Nama Obat/Barang',
-                        render: (data, type, row, meta) => {
-                            return data;
-                        }
+                        defaultContent: '-',
+                        render: (data) => data ?? '-'
                     },
                     {
                         data: 'kapasitas',
                         name: 'kapasitas',
-                        title: 'Dosis',
-                        render: (data, type, row, meta) => {
-                            return data;
-                        }
+                        defaultContent: '-',
+                        render: (data) => (data && data != '0') ? data : '-'
                     },
                     {
                         data: 'satuan.satuan',
                         name: 'satuan.satuan',
-                        title: 'Satuan',
-                        render: (data, type, row, meta) => {
-                            return data;
-                        }
+                        defaultContent: '-',
+                        render: (data, type, row) => row.satuan?.satuan ?? '-'
                     },
                     {
                         data: 'gudang_barang',
                         name: 'gudang_barang',
-                        title: 'Stok',
+                        defaultContent: '0',
                         render: (data, type, row) => {
                             let total = 0;
                             let details = [];
@@ -366,54 +397,44 @@
                     {
                         data: 'letak_barang',
                         name: 'letak_barang',
-                        title: 'Kandungan',
-                        render: (data, type, row, meta) => {
-                            return data;
-                        }
+                        defaultContent: '-',
+                        render: (data) => (data && data !== '-') ? data : '-'
                     },
                     {
                         data: 'jenis.nama',
                         name: 'jenis.nama',
-                        title: 'Jenis',
-                        render: (data, type, row, meta) => {
-                            return data;
-                        }
+                        defaultContent: '-',
+                        render: (data, type, row) => row.jenis?.nama ?? '-'
                     },
                     {
                         data: 'kategori.nama',
                         name: 'kategori.nama',
-                        title: 'Kategori',
-                        render: (data, type, row, meta) => {
-                            return data;
-                        }
+                        defaultContent: '-',
+                        render: (data, type, row) => row.kategori?.nama ?? '-'
                     },
                     {
                         data: 'golongan.nama',
                         name: 'golongan.nama',
-                        title: 'Golongan',
-                        render: (data, type, row, meta) => {
-                            return data;
-                        }
+                        defaultContent: '-',
+                        render: (data, type, row) => row.golongan?.nama ?? '-'
                     },
                     {
                         data: 'industri.nama_industri',
                         name: 'industri.nama_industri',
-                        title: 'Industri',
-                        render: (data, type, row, meta) => {
-                            return data;
-                        }
+                        defaultContent: '-',
+                        render: (data, type, row) => row.industri?.nama_industri ?? '-'
                     },
                     {
                         data: 'mapping.nama_brng_pcare',
                         name: 'mapping.nama_brng_pcare',
-                        title: 'Mapping',
+                        defaultContent: '-',
                         width: '15%',
                         render: (data, type, row, meta) => {
                             const mappingObatPcareElementId = `mappingObatPcare${row.kode_brng}`;
                             const btnObatElementId = `btnObat${row.kode_brng}`;
-                            const keyword = data ? row.mapping.nama_brng_pcare.split('/')[0] : row.nama_brng.substring(0, 5);
+                            const keyword = (row.mapping && row.mapping.nama_brng_pcare) ? row.mapping.nama_brng_pcare.split('/')[0] : (row.nama_brng ? row.nama_brng.substring(0, 5) : '');
 
-                            const labelMapping = data ?
+                            const labelMapping = (row.mapping && row.mapping.nama_brng_pcare) ?
                                 `<div id="${btnObatElementId}"><span class="me-2">${row.mapping.nama_brng_pcare}</span>
                                     <a href="javascript:void(0)" class="text-primary" onclick="setMappingObatPcare('${row.kode_brng}', '${keyword}')"><i class="ti ti-pencil"></i></a>
                                     <a href="javascript:void(0)" class="text-danger" onclick="deleteObatPcareMapping('${row.kode_brng}')"><i class="ti ti-x"></i></a>
@@ -435,14 +456,14 @@
                     {
                         data: 'status',
                         name: 'status',
-                        title: 'Status',
+                        defaultContent: '1',
                         render: (data) => data == '1' ? '<span class="badge bg-success">Aktif</span>' : '<span class="badge bg-danger">Non-Aktif</span>'
                     },
                     {
                         data: null,
-                        title: 'Aksi',
                         orderable: false,
                         searchable: false,
+                        defaultContent: '',
                         render: (data, type, row) => {
                             return `<div class="d-flex gap-1">
                                 <button class="btn btn-sm btn-warning" onclick="editBarang('${row.kode_brng}')">

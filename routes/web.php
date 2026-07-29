@@ -307,6 +307,8 @@ Route::middleware('auth:web,admin')->group(function () {
 
 	// Barang/obat
 	Route::get('/farmasi/obat', [DataBarangController::class, 'index']);
+	Route::get('/farmasi/obat/export-excel', [DataBarangController::class, 'exportExcel']);
+	Route::get('/farmasi/obat/export-pdf', [DataBarangController::class, 'exportPdf']);
 	Route::get('/barang/get', [DataBarangController::class, 'get']);
 	Route::get('/barang/get-next-kode', [DataBarangController::class, 'getNextKode']);
 	Route::post('/barang/store', [DataBarangController::class, 'store']);

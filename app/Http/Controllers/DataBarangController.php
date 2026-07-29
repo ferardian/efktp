@@ -121,6 +121,105 @@ class DataBarangController extends Controller
         }
     }
 
+    public function exportExcel(Request $request)
+    {
+        $barang = $this->getFilteredBarang($request);
+
+        $statusLabel = $request->status === '0' ? 'Non-Aktif' : ($request->status === 'semua' ? 'Semua' : 'Aktif');
+        $fileName = "Data_Obat_Barang_{$statusLabel}_" . date('Y-m-d') . ".csv";
+
+        $headers = [
+            "Content-type" => "text/csv; charset=UTF-8",
+            "Content-Disposition" => "attachment; filename=$fileName",
+            "Pragma" => "no-cache",
+            "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
+            "Expires" => "0"
+        ];
+
+        $callback = function () use ($barang) {
+            $file = fopen('php://output', 'w');
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            fputcsv($file, [
+                'No', 'Kode Barang', 'Nama Obat/Barang', 'Dosis/Kapasitas', 'Satuan Kecil', 
+                'Stok Total', 'Kandungan/Letak', 'Jenis', 'Kategori', 'Golongan', 
+                'Industri/Produsen', 'Mapping PCare', 'Status'
+            ], ';');
+
+            foreach ($barang as $idx => $row) {
+                $totalStok = 0;
+                if ($row->gudangBarang && is_iterable($row->gudangBarang)) {
+                    foreach ($row->gudangBarang as $g) {
+                        $totalStok += (float)$g->stok;
+                    }
+                }
+
+                fputcsv($file, [
+                    $idx + 1,
+                    $row->kode_brng,
+                    $row->nama_brng,
+                    $row->kapasitas ?: '-',
+                    $row->satuan->satuan ?? '-',
+                    $totalStok,
+                    $row->letak_barang ?: '-',
+                    $row->jenis->nama ?? '-',
+                    $row->kategori->nama ?? '-',
+                    $row->golongan->nama ?? '-',
+                    $row->industri->nama_industri ?? '-',
+                    $row->mapping->nama_brng_pcare ?? '-',
+                    $row->status == '1' ? 'Aktif' : 'Non-Aktif'
+                ], ';');
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $barang = $this->getFilteredBarang($request);
+        $setting = \App\Models\Setting::first();
+
+        $statusLabel = $request->status === '0' ? 'Non-Aktif' : ($request->status === 'semua' ? 'Semua' : 'Aktif');
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('content.print.dataBarangPdf', [
+            'data' => $barang,
+            'setting' => $setting,
+            'statusLabel' => $statusLabel
+        ])
+        ->setPaper('a4', 'landscape')
+        ->setOptions(['defaultFont' => 'Arial', 'isRemoteEnabled' => true]);
+
+        return $pdf->stream("Data_Obat_Barang_{$statusLabel}_" . date('Y-m-d') . ".pdf");
+    }
+
+    private function getFilteredBarang(Request $request)
+    {
+        $query = DataBarang::query();
+
+        if ($request->has('status') && $request->status !== 'semua') {
+            $query->where('status', $request->status);
+        } else {
+            $query->where('status', '1');
+        }
+
+        if ($request->has('search') && !empty($request->search)) {
+            $searchTerm = $request->search;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('kode_brng', 'like', "%{$searchTerm}%")
+                  ->orWhere('nama_brng', 'like', "%{$searchTerm}%");
+            });
+        }
+
+        return $query->with(['satuan', 'jenis', 'golongan', 'industri', 'kategori', 'mapping', 'gudangBarang.lokasi'])
+            ->whereHas('jenis', function ($q) {
+                return $q->where('nama', 'not like', 'logistik');
+            })->orderBy('nama_brng', 'ASC')
+            ->get();
+    }
+
     private function sanitizeData(Request $request)
     {
         $data = $request->all();
