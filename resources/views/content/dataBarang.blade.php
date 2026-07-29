@@ -13,7 +13,7 @@
                                 <option value="0">Status: Non-Aktif</option>
                                 <option value="semua">Status: Semua</option>
                             </select>
-                            <button type="button" class="btn btn-success btn-sm" onclick="exportDataBarang('excel')" title="Export Excel (.xlsx)">
+                            <button type="button" class="btn btn-success btn-sm" onclick="exportDataBarang('excel')" title="Export Excel (.xls)">
                                 <i class="ti ti-file-spreadsheet me-1"></i> Excel
                             </button>
                             <button type="button" class="btn btn-danger btn-sm" onclick="exportDataBarang('pdf')" title="Export PDF">
