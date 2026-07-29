@@ -1,6 +1,6 @@
 <?php
 header("Content-type: application/vnd-ms-excel");
-header("Content-Disposition: attachment; filename=Data_Obat_Barang_" . $statusLabel . "_" . date('Y-m-d') . ".xls");
+header("Content-Disposition: attachment; filename=Data_Obat_Barang_" . $statusLabel . "_" . date('Y-m-d') . ".xlsx");
 ?>
 <!DOCTYPE html>
 <html>
