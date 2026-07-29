@@ -124,57 +124,15 @@ class DataBarangController extends Controller
     public function exportExcel(Request $request)
     {
         $barang = $this->getFilteredBarang($request);
+        $setting = \App\Models\Setting::first();
 
         $statusLabel = $request->status === '0' ? 'Non-Aktif' : ($request->status === 'semua' ? 'Semua' : 'Aktif');
-        $fileName = "Data_Obat_Barang_{$statusLabel}_" . date('Y-m-d') . ".csv";
 
-        $headers = [
-            "Content-type" => "text/csv; charset=UTF-8",
-            "Content-Disposition" => "attachment; filename=$fileName",
-            "Pragma" => "no-cache",
-            "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
-            "Expires" => "0"
-        ];
-
-        $callback = function () use ($barang) {
-            $file = fopen('php://output', 'w');
-            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
-
-            fputcsv($file, [
-                'No', 'Kode Barang', 'Nama Obat/Barang', 'Dosis/Kapasitas', 'Satuan Kecil', 
-                'Stok Total', 'Kandungan/Letak', 'Jenis', 'Kategori', 'Golongan', 
-                'Industri/Produsen', 'Mapping PCare', 'Status'
-            ], ';');
-
-            foreach ($barang as $idx => $row) {
-                $totalStok = 0;
-                if ($row->gudangBarang && is_iterable($row->gudangBarang)) {
-                    foreach ($row->gudangBarang as $g) {
-                        $totalStok += (float)$g->stok;
-                    }
-                }
-
-                fputcsv($file, [
-                    $idx + 1,
-                    $row->kode_brng,
-                    $row->nama_brng,
-                    $row->kapasitas ?: '-',
-                    $row->satuan->satuan ?? '-',
-                    $totalStok,
-                    $row->letak_barang ?: '-',
-                    $row->jenis->nama ?? '-',
-                    $row->kategori->nama ?? '-',
-                    $row->golongan->nama ?? '-',
-                    $row->industri->nama_industri ?? '-',
-                    $row->mapping->nama_brng_pcare ?? '-',
-                    $row->status == '1' ? 'Aktif' : 'Non-Aktif'
-                ], ';');
-            }
-
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
+        return view('content.print.dataBarangExcel', [
+            'data' => $barang,
+            'setting' => $setting,
+            'statusLabel' => $statusLabel
+        ]);
     }
 
     public function exportPdf(Request $request)
