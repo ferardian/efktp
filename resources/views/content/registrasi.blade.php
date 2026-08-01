@@ -183,6 +183,7 @@
                         loadTabelRegistrasi($('#tglAwal').val(), $('#tglAkhir').val(), selectFilterStts.val(), selectFilterDokter.val(), $('#poli').val())
                         const isCheckedPendaftaranPcare = switchPendaftaranPcare.is(':checked');
                         if ((data.no_peserta !== '-' || data.no_peserta.length > 1) && isCheckedPendaftaranPcare) {
+                            data['skip_antrian'] = true;
                             createBridgingPendaftaranPcare(data)
                         }
                         modalRegistrasi.modal('hide')
