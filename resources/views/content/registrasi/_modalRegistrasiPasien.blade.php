@@ -476,13 +476,23 @@
             const tglAkhir = $('#tglAkhir').val();
             const checkPendaftaranPcare = switchPendaftaranPcare.is(':checked')
 
-            if (data.kd_dokter === '-' || data.kd_dokter === '') {
-                return Swal.fire({
-                    title: "Peringatan",
-                    html: `Anda belum memilih dokter`,
-                    icon: 'warning',
-                })
+            if (checkPendaftaranPcare) {
+                if (!data.kd_poli_pcare || data.kd_poli_pcare === '' || data.kd_poli_pcare === '-') {
+                    return Swal.fire({
+                        title: "Validasi Antrean & PCare BPJS",
+                        html: "<b>Poliklinik belum di-mapping ke Poli BPJS/PCare.</b><br><br>Silakan atur Mapping Poliklinik terlebih dahulu agar pendaftaran Antrol & PCare dapat dikirim.",
+                        icon: 'warning',
+                    });
+                }
+                if (!data.kd_dokter_pcare || data.kd_dokter_pcare === '' || data.kd_dokter_pcare === '-') {
+                    return Swal.fire({
+                        title: "Validasi Antrean & PCare BPJS",
+                        html: "<b>Dokter belum di-mapping ke Dokter BPJS/PCare.</b><br><br>Silakan atur Mapping Dokter terlebih dahulu agar pendaftaran Antrol & PCare dapat dikirim.",
+                        icon: 'warning',
+                    });
+                }
             }
+
             $.post(`{{ url('/registrasi') }}`, data).done((response) => {
                 showToast('Berhasil melakukan registrasi')
                 if (tabelRegistrasi.length) {
