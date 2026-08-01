@@ -77,6 +77,7 @@ class PemeriksaanRalanController extends Controller
 			$pemeriksaan = $this->pemeriksaan->create($data);
 			if ($pemeriksaan) {
 				$this->insertSql(new PemeriksaanRalan(), $data);
+				$this->updateAntrianPanggil($req->no_rawat);
 				return response()->json('SUKSES', 201);
 			}
 		} catch (QueryException $e) {
@@ -113,10 +114,59 @@ class PemeriksaanRalanController extends Controller
 			$pemeriksaan = $this->pemeriksaan->where($keys)->update($data);
 			if ($pemeriksaan) {
 				$this->updateSql(new PemeriksaanRalan(), $data, $keys);
+				$this->updateAntrianPanggil($req->no_rawat);
 			}
 			return response()->json('SUKSES', 201);
 		} catch (QueryException $e) {
 			return response()->json($e->errorInfo, 400);
+		}
+	}
+
+	/**
+	 * Kirim update status antrean Task 1 (Panggil / Mulai Pelayanan Poli) ke BPJS Antrol
+	 * jika config ANTRIAN_ENABLED=true di .env
+	 */
+	private function updateAntrianPanggil(string $noRawat): void
+	{
+		if (!config('bpjs.antrian.enabled', false)) {
+			return;
+		}
+
+		try {
+			$regPeriksa = \App\Models\RegPeriksa::where('no_rawat', $noRawat)
+				->with(['pasien', 'poliklinik.maping'])
+				->first();
+
+			if (!$regPeriksa) {
+				return;
+			}
+
+			$kdPoliPcare = $regPeriksa->poliklinik->maping->kd_poli_pcare ?? '';
+			if (empty($kdPoliPcare)) {
+				return;
+			}
+
+			$noPeserta = $regPeriksa->pasien->no_peserta ?? '';
+			$isBpjs    = !empty($noPeserta) && $noPeserta !== '-';
+
+			$waktu = (int) (microtime(true) * 1000);
+			$payload = [
+				'tanggalperiksa' => date('Y-m-d', strtotime($regPeriksa->tgl_registrasi)),
+				'kodepoli'       => $kdPoliPcare,
+				'nomorkartu'     => $isBpjs ? $noPeserta : '',
+				'status'         => '1', // 1 = Mulai Pelayanan Poli / Panggil
+				'waktu'          => (string) $waktu,
+			];
+
+			$antrianService = new \App\Services\Bpjs\Antrian\AntrianService();
+			$res = $antrianService->panggil($payload);
+
+			\Illuminate\Support\Facades\Log::info("[ANTRIAN PANGGIL TASK 1] CPPT no_rawat: {$noRawat}", [
+				'payload'  => $payload,
+				'response' => $res,
+			]);
+		} catch (\Throwable $e) {
+			\Illuminate\Support\Facades\Log::error("[ANTRIAN PANGGIL TASK 1 ERROR] no_rawat: {$noRawat} - " . $e->getMessage());
 		}
 	}
 }
