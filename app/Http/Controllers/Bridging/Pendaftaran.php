@@ -72,10 +72,25 @@ class Pendaftaran extends Controller
 
         // --- Kirim Antrian (jika enabled dan belum di-skip) ---
         if ($antrianEnabled && !$request->boolean('skip_antrian')) {
+            $noKartu = trim($request->no_peserta ?? '');
+            if ($noKartu === '-' || strtolower($noKartu) === 'null') {
+                $noKartu = '';
+            }
+
+            $nik = trim($request->no_ktp ?? '');
+            if ($nik === '-' || strtolower($nik) === 'null') {
+                $nik = '';
+            }
+
+            $noHp = trim($request->no_tlp ?? '');
+            if ($noHp === '-' || strtolower($noHp) === 'null') {
+                $noHp = '';
+            }
+
             $antrianPayload = [
-                'nomorkartu'    => $request->no_peserta ?? '',
-                'nik'           => $request->no_ktp ?? '',
-                'nohp'          => $request->no_tlp ?? '',
+                'nomorkartu'    => $noKartu,
+                'nik'           => $nik,
+                'nohp'          => $noHp,
                 'kodepoli'      => $request->kd_poli_pcare,
                 'namapoli'      => $request->nm_poli_pcare,
                 'norm'          => $request->no_rkm_medis,

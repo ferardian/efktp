@@ -146,14 +146,16 @@ class PemeriksaanRalanController extends Controller
 				return;
 			}
 
-			$noPeserta = $regPeriksa->pasien->no_peserta ?? '';
-			$isBpjs    = !empty($noPeserta) && $noPeserta !== '-';
+			$noPeserta = trim($regPeriksa->pasien->no_peserta ?? '');
+			if ($noPeserta === '-' || strtolower($noPeserta) === 'null') {
+				$noPeserta = '';
+			}
 
 			$waktu = (int) (microtime(true) * 1000);
 			$payload = [
 				'tanggalperiksa' => date('Y-m-d', strtotime($regPeriksa->tgl_registrasi)),
 				'kodepoli'       => $kdPoliPcare,
-				'nomorkartu'     => $isBpjs ? $noPeserta : '',
+				'nomorkartu'     => $noPeserta,
 				'status'         => '1', // 1 = Mulai Pelayanan Poli / Panggil
 				'waktu'          => (string) $waktu,
 			];
