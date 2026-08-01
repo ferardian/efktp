@@ -1125,35 +1125,38 @@
                             loadTabelRegistrasi(tglAwal, tglAkhir, statusLocal, dokterLocal.kd_dokter)
                         } else if (typeof tabelPcarePendaftaran !== 'undefined' && tabelPcarePendaftaran.length) {
                             loadTbPcarePendaftaran(tglAwal, tglAkhir)
-                        }
-
-                        // UPDATE OR CREATE LOCAL KUNJUNGAN
-                        const checkKunjunganLokal = await $.get(`{{ url('pcare/kunjungan/get') }}`, { no_rawat: data.no_rawat });
-                        const urlSaveKunjungan = (checkKunjunganLokal && Object.keys(checkKunjunganLokal).length > 0) ? `{{ url('pcare/kunjungan/update') }}` : `{{ url('pcare/kunjungan') }}`;
-
-                        $.post(urlSaveKunjungan, data).done((response) => {
-                            if (data['kdStatusPulang'] == 4 || data['kdStatusPulang'] == 6) {
-                                data['nmSubSpesialis'] = formRujukanSpesialis.find('input[name=subSpesialis]').val();
-                                data['kdSubSpesialis'] = formRujukanSpesialis.find('input[name=kdSubSpesialis]').val();
-                                loadingAjax('Membuat data rujukan...');
-                                getKunjunganRujuk(data['noKunjungan']).done((resRujukan) => {
-                                    dataRujukan = Object.assign(data, resRujukan)
-                                    createRujukSubSpesialis(dataRujukan).done((responseRujukan) => {
-                                        alertSuccessAjax('Berhasil buat rujukan').then(() => {
-                                            setStatusLayan(data['no_rawat'], 'Dirujuk');
-                                        })
-                                    })
-                                })
-                            } else if (data['kdStatusPulang'] == 3 || data['kdStatusPulang'] == 9) {
+                    // UPDATE OR CREATE LOCAL KUNJUNGAN
+                    const checkKunjunganLokal = await $.get(`{{ url('pcare/kunjungan/get') }}`, { no_rawat: data.no_rawat });
+                    const urlSaveKunjungan = (checkKunjunganLokal && Object.keys(checkKunjunganLokal).length > 0) ? `{{ url('pcare/kunjungan/update') }}` : `{{ url('pcare/kunjungan') }}`;
+                    $.post(urlSaveKunjungan, data).done((response) => {
+                        if (data['kdStatusPulang'] == 4 || data['kdStatusPulang'] == 6) {
+                            data['nmSubSpesialis'] = formRujukanSpesialis.find('input[name=subSpesialis]').val();
+                            data['kdSubSpesialis'] = formRujukanSpesialis.find('input[name=kdSubSpesialis]').val();
+                            loadingAjax('Membuat data rujukan...');
+                            createRujukSubSpesialis(data).done((responseRujukan) => {
+                                Swal.close();
+                                alertSuccessAjax('Berhasil buat rujukan').then(() => {
+                                    setStatusLayan(data['no_rawat'], 'Dirujuk');
+                                    $('#modalCppt').modal('hide');
+                                    modalKunjunganPcare.modal('hide');
+                                });
+                            }).fail((errRujukan) => {
+                                Swal.close();
+                                alertErrorAjax(errRujukan);
+                            });
+                        } else {
+                            if (data['kdStatusPulang'] == 3 || data['kdStatusPulang'] == 9) {
                                 setStatusLayan(data['no_rawat'], 'Sudah');
-                            };
-                            $('#modalCppt').modal('hide');
-                            modalKunjunganPcare.modal('hide');
-
-                        }).fail((request) => {
+                            }
                             Swal.close();
-                            alertErrorAjax(request)
-                        })
+                            alertSuccessAjax(successMessage).then(() => {
+                                $('#modalCppt').modal('hide');
+                                modalKunjunganPcare.modal('hide');
+                            });
+                        }
+                    }).fail((request) => {
+                        Swal.close();
+                        alertErrorAjax(request)
                     })
                 } else {
                     Swal.close();
@@ -1173,40 +1176,65 @@
         function editKunjungan() {
             Swal.fire({
                 title: "Perhatian",
-                html: `Pasien telah tercatat dalam data kunjungan Pcare <br/> Apakah anda yakin mengubah data kunjungan ?`,
-                icon: 'question',
+                html: 'Apakah anda yakin ingin mengubah data kunjungan ini?',
+                icon: "warning",
                 showCancelButton: true,
                 confirmButtonColor: "#3085d6",
                 cancelButtonColor: "#d33",
-                confirmButtonText: "Iya, Yakin",
-                cancelButtonText: "Tidak, Batalkan"
+                confirmButtonText: "Ya, Ubah!",
+                cancelButtonText: "Batal"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    const element = ['input', 'select'];
-                    const data = getDataForm('formKunjunganPcare', element);
-                    data['jenisRujukan'] = $('#formKunjunganPcare input[name=jenisRujukan]:checked').val()
-                    data['nmStatusPulang'] = $('#formKunjunganPcare select[name=sttsPulang] option:selected').text()
-                    data['kdStatusPulang'] = $('#formKunjunganPcare select[name=sttsPulang]').val()
-                    data['nmSadar'] = $('#formKunjunganPcare select[name=kesadaran] option:selected').text()
-                    data['no_resep'] = $('#modalCppt input[name=no_resep]').val()
+                    const data = formKunjunganPcare.serializeArray().reduce((acc, curr) => {
+                        acc[curr.name] = curr.value
+                        return acc
+                    }, {})
 
-                    // New fields mapping
-                    data['KdAlergiMakanan'] = $('#formKunjunganPcare select[name=alergiMakan]').val()
-                    data['NmAlergiMakanan'] = $('#formKunjunganPcare select[name=alergiMakan] option:selected').text()
-                    data['KdAlergiUdara'] = $('#formKunjunganPcare select[name=alergiUdara]').val()
-                    data['NmAlergiUdara'] = $('#formKunjunganPcare select[name=alergiUdara] option:selected').text()
-                    data['KdAlergiObat'] = $('#formKunjunganPcare select[name=alergiObat]').val()
-                    data['NmAlergiObat'] = $('#formKunjunganPcare select[name=alergiObat] option:selected').text()
-                    data['KdPrognosa'] = $('#formKunjunganPcare select[name=kdPrognosa]').val()
-                    data['NmPrognosa'] = $('#formKunjunganPcare select[name=kdPrognosa] option:selected').text()
-                    data['terapi_non_obat'] = $('#formKunjunganPcare input[name=instruksi]').val()
-                    data['bmhp'] = '-' // Default value for now
+                    let kdDiagnosa1 = selectDiagnosa1.val();
+                    data['diagnosa1'] = selectDiagnosa1.find(`option[value="${kdDiagnosa1}"]`).text()
+                    let kdDiagnosa2 = selectDiagnosa2.val();
+                    data['diagnosa2'] = selectDiagnosa2.find(`option[value="${kdDiagnosa2}"]`).text()
+                    let kdDiagnosa3 = selectDiagnosa3.val();
+                    data['diagnosa3'] = selectDiagnosa3.find(`option[value="${kdDiagnosa3}"]`).text()
 
-                    const isNonSpesialis = $('#nonSpesialis').hasClass('d-none')
+                    data['nmSadar'] = selectKesadaran.find(`option[value="${data['kesadaran']}"]`).text()
+                    data['nmStatusPulang'] = selectStatusPulang.find(`option[value="${data['sttsPulang']}"]`).text()
 
-                    if (isNonSpesialis) {
-                        data['alasanTacc'] = null;
-                        data['kdTacc'] = '-1';
+                    const formRujukanSpesialis = $('#formRujukanSpesialis');
+                    const formRujukanKhusus = $('#formRujukanKhusus');
+
+                    if (data['sttsPulang'] == '4') {
+                        data['spesialis'] = formRujukanSpesialis.find('input[name=subSpesialis]').val();
+                        data['kdSubSpesialis'] = formRujukanSpesialis.find('input[name=kdSubSpesialis]').val();
+
+                        data['kdPpkRujukan'] = formRujukanSpesialis.find('#ppkRujukan').val();
+                        data['ppkRujukan'] = formRujukanSpesialis.find('input[name=nmPpkRujukan]').val();
+
+                        data['kdSarana'] = formRujukanSpesialis.find('#saranaRujukan').val();
+                        data['sarana'] = formRujukanSpesialis.find('input[name=nmSaranaRujukan]').val();
+
+                        data['tglEstRujukan'] = formRujukanSpesialis.find('#tglEstRujukan').val();
+
+                        data['catatanRujuk'] = formRujukanSpesialis.find('#catatanRujuk').val();
+                        data['jadwal'] = formRujukanSpesialis.find('#jadwalRujuk').val();
+
+                    } else if (data['sttsPulang'] == '6') {
+                        data['khusus'] = formRujukanKhusus.find('input[name=spesialisKhusus]').val();
+                        data['kdKhusus'] = formRujukanKhusus.find('input[name=kdSpesialisKhusus]').val();
+
+                        data['kdSubSpesialis'] = formRujukanKhusus.find('input[name=subSpesialisKhusus]').val();
+                        data['subSpesialis'] = formRujukanKhusus.find('input[name=kdSubSpesialisKhusus]').val();
+
+                        data['kdPpkRujukan'] = formRujukanKhusus.find('#ppkKhusus').val();
+                        data['ppkRujukan'] = formRujukanKhusus.find('input[name=nmPpkKhusus]').val();
+
+                        data['tglEstRujukan'] = formRujukanKhusus.find('#tglEstKhusus').val();
+                        data['catatanRujuk'] = formRujukanKhusus.find('#catatanKhusus').val();
+                    }
+
+                    if (data['tacc'] == '0') {
+                        data['alasanTacc'] = '-';
+                        data['kdTacc'] = '-';
                     } else {
                         data['alasanTacc'] = formRujukanSpesialis.find('#alasanTacc').val();
                         data['kdTacc'] = formRujukanSpesialis.find('#kdTacc').val();
@@ -1220,21 +1248,31 @@
                                 if (data['kdStatusPulang'] == 4 || data['kdStatusPulang'] == 6) {
                                     data['nmSubSpesialis'] = formRujukanSpesialis.find('input[name=subSpesialis]').val();
                                     data['kdSubSpesialis'] = formRujukanSpesialis.find('input[name=kdSubSpesialis]').val();
-                                    // APAKAH MEMILIKI RUJUKAN
-                                    getKunjunganRujuk(data['noKunjungan']).done((resRujukan) => {
-                                        dataRujukan = Object.assign(data, resRujukan)
-                                        // UPDATE RUJUKAN
-                                        updateRujukSubSpesialis(dataRujukan)
-                                    })
-                                    setStatusLayan(data['no_rawat'], 'Dirujuk');
-                                } else if (data['kdStatusPulang'] == 3 || data['kdStatusPulang'] == 9) {
-                                    setStatusLayan(data['no_rawat'], 'Sudah');
+                                    updateRujukSubSpesialis(data).done(() => {
+                                        setStatusLayan(data['no_rawat'], 'Dirujuk');
+                                        Swal.close();
+                                        alertSuccessAjax('BERHASIL UBAH KUNJUNGAN').then(() => {
+                                            $('#modalCppt').modal('hide');
+                                            modalKunjunganPcare.modal('hide');
+                                        });
+                                    }).fail((err) => {
+                                        Swal.close();
+                                        alertErrorAjax(err);
+                                    });
+                                } else {
+                                    if (data['kdStatusPulang'] == 3 || data['kdStatusPulang'] == 9) {
+                                        setStatusLayan(data['no_rawat'], 'Sudah');
+                                    }
+                                    Swal.close();
+                                    alertSuccessAjax('BERHASIL UBAH KUNJUNGAN').then(() => {
+                                        $('#modalCppt').modal('hide');
+                                        modalKunjunganPcare.modal('hide');
+                                    });
                                 }
-                                alertSuccessAjax('BERHASIL UBAH KUNJUNGAN').then(() => {
-                                    $('#modalCppt').modal('hide');
-                                    modalKunjunganPcare.modal('hide');
-                                });
-                            })
+                            }).fail((err) => {
+                                Swal.close();
+                                alertErrorAjax(err);
+                            });
                         } else {
                             Swal.close();
                             alertErrorBpjs(response)
