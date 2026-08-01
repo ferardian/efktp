@@ -136,9 +136,14 @@ class RegPeriksaController extends Controller
 					date('Y-m-d', strtotime($req->tglAkhir))
 				])
 				->orderBy('tgl_registrasi', 'DESC')
-				->orderBy('jam_reg', 'DESC');
+				->orderBy('no_reg', 'ASC')
+				->orderBy('jam_reg', 'ASC');
 		} else {
-			$regPeriksa = $this->regPeriksa->with($this->relation)->where('tgl_registrasi', date('Y-m-d'))->orderBy('tgl_registrasi', 'DESC')->orderBy('jam_reg', 'DESC');
+			$regPeriksa = $this->regPeriksa->with($this->relation)
+				->where('tgl_registrasi', date('Y-m-d'))
+				->orderBy('tgl_registrasi', 'DESC')
+				->orderBy('no_reg', 'ASC')
+				->orderBy('jam_reg', 'ASC');
 		}
 
 		if ($req->dokter) {

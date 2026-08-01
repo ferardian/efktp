@@ -156,9 +156,10 @@
                         .attr('data-no_rkm_medis', data.no_rkm_medis)
                         .attr('data-noPeserta', data.pasien?.no_peserta);
                 },
+                order: [[2, 'asc']],
                 columnDefs: [{
                     orderable: false,
-                    targets: [1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
+                    targets: [0, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
                 }],
                 columns: [{
                     title: '',
@@ -209,6 +210,8 @@
 
                     {
                         title: 'No',
+                        data: 'no_reg',
+                        name: 'no_reg',
                         render: (data, type, row, meta) => {
                             return `<span style="cursor:pointer" onclick="buktiRegister('${row.no_rawat}')">${row.no_reg}</span>    `;
                         }
