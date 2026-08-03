@@ -51,11 +51,19 @@
                             $('#modalPasien').modal('show')
                             $.get(`{{ url('/setting/ppk') }}`).done((kode) => {
                                 loadingAjax().close();
-                                const {
-                                    kdProviderPst,
-                                    kdProviderGigi
-                                } = result.response
-                                if (kode.toUpperCase() !== kdProviderPst.kdProvider || kode.toUpperCase !== kdProviderGigi.kdProvider)
+                                const pst = result.response ? result.response.kdProviderPst : null;
+                                const gigi = result.response ? result.response.kdProviderGigi : null;
+
+                                const kdPst = (typeof pst === 'object' && pst !== null) ? (pst.kdProvider || '') : (pst || '');
+                                const kdGigi = (typeof gigi === 'object' && gigi !== null) ? (gigi.kdProvider || '') : (gigi || '');
+
+                                const settingPpk = (kode || '').trim().substring(0, 8).toLowerCase();
+                                const pPst = (kdPst || '').trim().substring(0, 8).toLowerCase();
+                                const pGigi = (kdGigi || '').trim().substring(0, 8).toLowerCase();
+
+                                const isMatch = !settingPpk || (pPst && settingPpk === pPst) || (pGigi && settingPpk === pGigi);
+
+                                if (!isMatch)
                                     Swal.fire({
                                         title: "Peringatan ?",
                                         html: "Pasien tidak terdaftar sebagai peserta Anda, tetap lanjutkan ?",

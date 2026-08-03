@@ -885,7 +885,14 @@
                             formPasien.find('#kd_pj').append(bpjs).trigger('change').addClass('is-valid highlight-success');
                         };
 
-                        if (kode !== result.kdProviderPst.kdProvider) {
+                        const pst = result ? result.kdProviderPst : null;
+                        const kdPst = (typeof pst === 'object' && pst !== null) ? (pst.kdProvider || '') : (pst || '');
+                        const settingPpk = (kode || '').trim().substring(0, 8).toLowerCase();
+                        const providerPeserta = (kdPst || '').trim().substring(0, 8).toLowerCase();
+
+                        const isMatch = !settingPpk || !providerPeserta || (settingPpk === providerPeserta);
+
+                        if (!isMatch) {
                             Swal.fire({
                                 title: "Peringatan ?",
                                 html: "Pasien tidak terdaftar sebagai peserta Anda, tetap lanjutkan ?",
