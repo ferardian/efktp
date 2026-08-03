@@ -504,6 +504,20 @@
                 if (tabelRegistrasi.length) {
                     loadTabelRegistrasi(tglAwal, tglAkhir, selectStatusLayan.val(), selectDokterPoli.val())
                 }
+
+                // Simpan Anamnesis & TTV awal ke pemeriksaan_ralan untuk semua pasien (Umum & BPJS)
+                data['tensi'] = `${data.sistole || '0'}/${data.diastole || '0'}`;
+                data['nip'] = data.kd_dokter;
+                data['spo2'] = data.spo2 || '98';
+                data['alergi'] = data.alergi || '-';
+                data['rtl'] = data.rtl || '-';
+                data['penilaian'] = data.penilaian || '-';
+                data['gcs'] = data.gcs || '15';
+                data['instruksi'] = data.instruksi || '-';
+                data['kesadaran'] = data.kesadaran || 'Compos Mentis';
+                data['pemeriksaan'] = data.pemeriksaan || '-';
+                $.post(`{{ url('/pemeriksaan/ralan/create') }}`, data);
+
                 if ((data.no_peserta !== '-' || data.no_peserta.length > 1) && checkPendaftaranPcare) {
                     createBridgingPendaftaranPcare(data)
                 } else {

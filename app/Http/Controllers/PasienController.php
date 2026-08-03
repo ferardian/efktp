@@ -33,7 +33,7 @@ class PasienController extends Controller
     {
         $riwayat = Pasien::where(['no_rkm_medis' => $request->no_rkm_medis])
             ->with(['regPeriksa' => function ($query) {
-                return $query->whereIn('stts', ['Sudah', 'Dirujuk'])
+                return $query->whereNotIn('stts', ['Batal'])
                     ->with(['diagnosa.penyakit', 'prosedur.icd9', 'poliklinik'])
                     ->with(['gigi.hasil'])
                     ->orderBy('tgl_registrasi', 'DESC');

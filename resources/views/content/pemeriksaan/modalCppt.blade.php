@@ -354,27 +354,24 @@
 
 
                 if (pemeriksaan_ralan) {
-                    Object.keys(pemeriksaan_ralan).map((key, index) => {
-                        const select = formCpptRajal.find(`select[name=${key}]`);
-                        const input = formCpptRajal.find(`input[name=${key}]`);
-                        const textarea = formCpptRajal.find(`textarea[name=${key}]`);
+                    Object.keys(pemeriksaan_ralan).forEach((key) => {
+                        const select = formCpptRajal.find(`select[name="${key}"]`);
+                        const input = formCpptRajal.find(`input[name="${key}"]`);
+                        const textarea = formCpptRajal.find(`textarea[name="${key}"]`);
+
+                        const val = (pemeriksaan_ralan[key] !== null && pemeriksaan_ralan[key] !== undefined) ? pemeriksaan_ralan[key] : '';
 
                         if (textarea.length) {
-                            textarea.val(pemeriksaan_ralan[key] ? pemeriksaan_ralan[key] : '-')
-                        } else {
-                            textarea.val('0')
+                            textarea.val(val ? val : '-');
                         }
-
                         if (input.length) {
-                            const periksa = key === 'nip' ? response.kd_dokter : pemeriksaan_ralan[key]
-                            input.val(periksa ? periksa : '0')
-                        } else {
-                            input.val('-')
+                            const periksa = key === 'nip' ? response.kd_dokter : val;
+                            input.val(periksa !== null && periksa !== undefined ? periksa : '');
                         }
                         if (select.length) {
-                            select.find(`option:contains("${pemeriksaan_ralan[key]}")`).attr('selected', 'selected')
+                            select.val(val).trigger('change');
                         }
-                    })
+                    });
                 }
             })
             $('#modalCppt').modal('show')
