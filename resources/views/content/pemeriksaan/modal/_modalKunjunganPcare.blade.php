@@ -1110,11 +1110,6 @@
                     data['noKunjungan'] = noKunjungan;
                     data['status'] = 'Terkirim';
 
-                    alertSuccessAjax(successMessage).then(async () => {
-                        if (typeof tabelRegistrasi !== 'undefined' && tabelRegistrasi.length) {
-                            loadTabelRegistrasi(tglAwal, tglAkhir, statusLocal, dokterLocal.kd_dokter)
-                        } else if (typeof tabelPcarePendaftaran !== 'undefined' && tabelPcarePendaftaran.length) {
-                            loadTbPcarePendaftaran(tglAwal, tglAkhir)
                     // UPDATE OR CREATE LOCAL KUNJUNGAN
                     const checkKunjunganLokal = await $.get(`{{ url('pcare/kunjungan/get') }}`, { no_rawat: data.no_rawat });
                     const urlSaveKunjungan = (checkKunjunganLokal && Object.keys(checkKunjunganLokal).length > 0) ? `{{ url('pcare/kunjungan/update') }}` : `{{ url('pcare/kunjungan') }}`;
@@ -1144,13 +1139,19 @@
                                 modalKunjunganPcare.modal('hide');
                             });
                         }
+
+                        if (typeof tabelRegistrasi !== 'undefined' && tabelRegistrasi.length) {
+                            loadTabelRegistrasi(tglAwal, tglAkhir, statusLocal, dokterLocal.kd_dokter);
+                        } else if (typeof tabelPcarePendaftaran !== 'undefined' && tabelPcarePendaftaran.length) {
+                            loadTbPcarePendaftaran(tglAwal, tglAkhir);
+                        }
                     }).fail((request) => {
                         Swal.close();
-                        alertErrorAjax(request)
-                    })
+                        alertErrorAjax(request);
+                    });
                 } else {
                     Swal.close();
-                    alertErrorBpjs(response)
+                    alertErrorBpjs(response);
                 }
             } catch (error) {
                 Swal.close();
