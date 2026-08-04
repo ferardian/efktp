@@ -1023,5 +1023,175 @@ class ResepObatController extends Controller
 				'message' => $e->getMessage()
 			], 400);
 		}
+	/**
+	 * Batal Validasi Resep
+	 * - Kembalikan stok ke gudangbarang
+	 * - Hapus detail_pemberian_obat, aturan_pakai, obat_racikan, detail_obat_racikan
+	 * - Buat jurnal reversal
+	 * - Reset resep_obat ke status belum divalidasi
+	 */
+	public function batalValidasi(Request $request)
+	{
+		$no_resep = $request->no_resep;
+
+		if (!$no_resep) {
+			return response()->json(['status' => 'error', 'message' => 'No resep tidak boleh kosong'], 400);
+		}
+
+		$resep = DB::table('resep_obat')->where('no_resep', $no_resep)->first();
+
+		if (!$resep) {
+			return response()->json(['status' => 'error', 'message' => 'Resep tidak ditemukan'], 404);
+		}
+
+		// Pastikan sudah divalidasi
+		if ($resep->jam === '00:00:00' || !$resep->jam) {
+			return response()->json(['status' => 'error', 'message' => 'Resep belum divalidasi, tidak perlu dibatalkan'], 400);
+		}
+
+		// Pastikan belum diserahkan
+		if ($resep->jam_penyerahan !== '00:00:00') {
+			return response()->json(['status' => 'error', 'message' => 'Resep sudah diserahkan ke pasien, tidak dapat dibatalkan. Gunakan fitur Retur Farmasi.'], 400);
+		}
+
+		$no_rawat       = $resep->no_rawat;
+		$tgl_perawatan  = $resep->tgl_perawatan;
+		$jam            = $resep->jam;
+		$bangsal        = Setting::first()?->kd_bangsal_apotek ?? 'AP';
+
+		try {
+			DB::transaction(function () use ($no_rawat, $tgl_perawatan, $jam, $no_resep, $bangsal) {
+				// 1. Ambil semua detail_pemberian_obat yang terkait dengan no_rawat, tgl, jam
+				$detailObat = DB::table('detail_pemberian_obat')
+					->where('no_rawat', $no_rawat)
+					->where('tgl_perawatan', $tgl_perawatan)
+					->where('jam', $jam)
+					->get();
+
+				// 2. Kembalikan stok ke gudangbarang
+				foreach ($detailObat as $item) {
+					DB::table('gudangbarang')
+						->where('kode_brng', $item->kode_brng)
+						->where('kd_bangsal', $bangsal)
+						->where('no_batch', $item->no_batch ?? '')
+						->where('no_faktur', $item->no_faktur ?? '')
+						->increment('stok', floatval($item->jml));
+				}
+
+				// 3. Hitung total untuk reverse jurnal
+				$ttljual = $detailObat->sum(fn($d) => floatval($d->biaya_obat) * floatval($d->jml));
+				$ttlhpp  = $detailObat->sum(fn($d) => floatval($d->h_beli) * floatval($d->jml));
+
+				// 4. Buat reverse jurnal (debet & kredit dibalik)
+				if ($ttljual > 0 || $ttlhpp > 0) {
+					$rekening = DB::table('set_akun_ralan')->first();
+					if ($rekening) {
+						DB::table('tampjurnal')->delete();
+
+						$jurnalItems = [];
+						if ($ttljual > 0) {
+							$jurnalItems[] = ['kd_rek' => $rekening->Obat_Ralan,                 'nm_rek' => 'Pendapatan Obat Rawat Jalan',      'debet' => $ttljual, 'kredit' => 0];
+							$jurnalItems[] = ['kd_rek' => $rekening->Suspen_Piutang_Obat_Ralan,  'nm_rek' => 'Suspen Piutang Obat Ralan',         'debet' => 0,        'kredit' => $ttljual];
+						}
+						if ($ttlhpp > 0) {
+							$jurnalItems[] = ['kd_rek' => $rekening->Persediaan_Obat_Rawat_Jalan,'nm_rek' => 'Persediaan Obat Rawat Jalan',       'debet' => $ttlhpp,  'kredit' => 0];
+							$jurnalItems[] = ['kd_rek' => $rekening->HPP_Obat_Rawat_Jalan,       'nm_rek' => 'HPP Persediaan Obat Rawat Jalan',   'debet' => 0,        'kredit' => $ttlhpp];
+						}
+
+						DB::table('tampjurnal')->insert($jurnalItems);
+
+						$date          = date('Y-m-d');
+						$date_formatted = date('Ymd');
+						$count = DB::table('jurnal')->whereDate('tgl_jurnal', $date)->count();
+						do {
+							$count++;
+							$no_jurnal = 'JR' . $date_formatted . str_pad($count, 6, '0', STR_PAD_LEFT);
+						} while (DB::table('jurnal')->where('no_jurnal', $no_jurnal)->exists());
+
+						$reg = DB::table('reg_periksa')
+							->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
+							->where('reg_periksa.no_rawat', $no_rawat)
+							->select('pasien.nm_pasien', 'reg_periksa.no_rkm_medis')
+							->first();
+						$nm_pasien = $reg?->nm_pasien ?? '-';
+						$no_rm     = $reg?->no_rkm_medis ?? '-';
+						$pegawai   = session()->get('pegawai');
+						$post_by   = $pegawai ? $pegawai->nama : 'Sistem';
+
+						DB::table('jurnal')->insert([
+							'no_jurnal'  => $no_jurnal,
+							'tgl_jurnal' => $date,
+							'jam_jurnal' => date('H:i:s'),
+							'no_bukti'   => $no_rawat,
+							'jenis'      => 'U',
+							'keterangan' => 'BATAL VALIDASI OBAT RALAN - PASIEN ' . $no_rm . ' ' . $nm_pasien . ', DIPROSES OLEH ' . $post_by,
+						]);
+
+						$tamp   = DB::table('tampjurnal')->get();
+						$detail = $tamp->map(fn($item) => [
+							'no_jurnal' => $no_jurnal,
+							'kd_rek'    => $item->kd_rek,
+							'debet'     => $item->debet,
+							'kredit'    => $item->kredit,
+						])->toArray();
+
+						if (!empty($detail)) {
+							DB::table('detailjurnal')->insert($detail);
+						}
+					}
+				}
+
+				// 5. Hapus record terkait validasi
+				DB::table('detail_pemberian_obat')
+					->where('no_rawat', $no_rawat)
+					->where('tgl_perawatan', $tgl_perawatan)
+					->where('jam', $jam)
+					->delete();
+
+				DB::table('aturan_pakai')
+					->where('no_rawat', $no_rawat)
+					->where('tgl_perawatan', $tgl_perawatan)
+					->where('jam', $jam)
+					->delete();
+
+				$racikIds = DB::table('obat_racikan')
+					->where('no_rawat', $no_rawat)
+					->where('tgl_perawatan', $tgl_perawatan)
+					->where('jam', $jam)
+					->pluck('no_racik');
+
+				if ($racikIds->isNotEmpty()) {
+					DB::table('detail_obat_racikan')
+						->where('no_rawat', $no_rawat)
+						->where('tgl_perawatan', $tgl_perawatan)
+						->where('jam', $jam)
+						->delete();
+
+					DB::table('obat_racikan')
+						->where('no_rawat', $no_rawat)
+						->where('tgl_perawatan', $tgl_perawatan)
+						->where('jam', $jam)
+						->delete();
+				}
+
+				// 6. Reset resep_obat ke status belum divalidasi
+				DB::table('resep_obat')
+					->where('no_resep', $no_resep)
+					->update([
+						'tgl_perawatan' => '0000-00-00',
+						'jam'           => '00:00:00',
+					]);
+			});
+
+			return response()->json([
+				'status'  => 'success',
+				'message' => 'Validasi resep berhasil dibatalkan. Stok obat telah dikembalikan.',
+			], 200);
+		} catch (\Exception $e) {
+			return response()->json([
+				'status'  => 'error',
+				'message' => $e->getMessage(),
+			], 400);
+		}
 	}
 }

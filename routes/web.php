@@ -372,6 +372,7 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::get('farmasi/resep/rekap/pdf', [ResepObatController::class, 'rekapPdf']);
 	Route::get('farmasi/resep/get', [ResepObatController::class, 'get']);
 	Route::post('farmasi/resep/set/penyerahan', [ResepObatController::class, 'setPenyerahan']);
+	Route::post('farmasi/resep/batal-validasi', [ResepObatController::class, 'batalValidasi']);
 
 	// Template Racikan
 	Route::get('farmasi/racik/template', [EfktpTemplateRacikanController::class, 'index']);

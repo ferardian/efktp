@@ -84,14 +84,19 @@
                         }
 
                         let btnValidasi = '';
+                        let btnBatalValidasi = '';
                         if (row.jam === '00:00:00') {
                             displayPanggil = 'd-none';
                             displaySelesai = 'd-none';
-                            btnValidasi = `<button class="btn btn-sm btn-warning" onclick="showModalValidasiResep('${data}')"><i class="ti ti-checklist"></i>Validasi</button>`;
+                            btnValidasi = `<button class="btn btn-sm btn-warning" onclick="showModalValidasiResep('${data}')"><i class="ti ti-checklist"></i> Validasi</button>`;
+                        } else if (row.jam_penyerahan === '00:00:00') {
+                            // Sudah divalidasi, belum diserahkan — tampilkan tombol Batal Validasi
+                            btnBatalValidasi = `<button class="btn btn-sm btn-outline-danger" onclick="batalValidasiResep('${data}')"><i class="ti ti-x"></i> Batal Validasi</button>`;
                         }
 
                         return `<button class="btn btn-sm ${colorBtn}" onclick="showDetailResep('${data}')"><i class="ti ti-search"></i>Lihat</button>
                             ${btnValidasi}
+                            ${btnBatalValidasi}
                             <button class="btn btn-sm btn-success ${display} ${displayPanggil}" onclick="panggilResepPasien('${data}', '${row.reg_periksa.pasien.nm_pasien}')"><i class="ti ti-phone"></i>Panggil</button>
                             <button class="btn btn-sm btn-primary ${display} ${displaySelesai}" onclick="setPenyerahanResep('${data}')"><i class="ti ti-send"></i>Selesai</button>`;
                     },
@@ -228,6 +233,45 @@
                 tgl_akhir = $('#tgl_akhir').val();
                 tbResepObat(tgl_awal, tgl_akhir);
             })
+        }
+
+        function batalValidasiResep(no_resep) {
+            Swal.fire({
+                title: 'Batal Validasi Resep?',
+                html: `Apakah Anda yakin ingin <b>membatalkan validasi</b> resep <b>${no_resep}</b>?<br><br>
+                       <span class="text-danger">Stok obat akan dikembalikan ke gudang dan jurnal reversal akan dibuat.</span>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="ti ti-x"></i> Ya, Batalkan Validasi',
+                cancelButtonText: 'Tidak',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    loadingAjax('Memproses pembatalan validasi...');
+                    $.post(`{{ url('/farmasi/resep/batal-validasi') }}`, {
+                        no_resep: no_resep,
+                        _token: $('meta[name="csrf-token"]').attr('content')
+                    }).done((response) => {
+                        Swal.close();
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil',
+                            text: response.message,
+                            timer: 2000,
+                            showConfirmButton: false,
+                        }).then(() => {
+                            const tgl_awal = $('#tgl_awal').val();
+                            const tgl_akhir = $('#tgl_akhir').val();
+                            tbResepObat(tgl_awal, tgl_akhir);
+                        });
+                    }).fail((xhr) => {
+                        Swal.close();
+                        const msg = xhr.responseJSON?.message ?? 'Terjadi kesalahan, silakan coba lagi.';
+                        Swal.fire({ icon: 'error', title: 'Gagal', text: msg });
+                    });
+                }
+            });
         }
 
         function panggilResepPasien(no_resep, nm_pasien) {
