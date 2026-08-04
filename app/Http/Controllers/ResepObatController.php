@@ -667,4 +667,351 @@ class ResepObatController extends Controller
 
 		return $pdf->stream('rekap_resep_obat.pdf');
 	}
+
+	public function getDetailValidation(Request $request)
+	{
+		$no_resep = $request->no_resep;
+		if (!$no_resep) {
+			return response()->json(['message' => 'no_resep is required'], 400);
+		}
+
+		$resep = ResepObat::where('no_resep', $no_resep)
+			->with([
+				'dokter',
+				'regPeriksa.pasien',
+				'regPeriksa.poliklinik',
+				'regPeriksa.penjab',
+				'resepDokter.obat.satuan',
+				'resepRacikan.detail.obat.satuan',
+				'resepRacikan.metode'
+			])
+			->first();
+
+		if (!$resep) {
+			return response()->json(['message' => 'Resep tidak ditemukan'], 404);
+		}
+
+		$bangsal = DB::table('set_depo_ralan')
+			->where('kd_poli', $resep->regPeriksa->kd_poli ?? '')
+			->value('kd_bangsal');
+		if (!$bangsal) {
+			$set_lokasi = DB::table('set_lokasi')->first();
+			$bangsal = $set_lokasi ? $set_lokasi->kd_bangsal : 'AP';
+		}
+		$nm_bangsal = DB::table('bangsal')->where('kd_bangsal', $bangsal)->value('nm_bangsal') ?? $bangsal;
+
+		foreach ($resep->resepDokter as $rd) {
+			if ($rd->obat) {
+				$stok = DB::table('gudangbarang')
+					->where('kode_brng', $rd->kode_brng)
+					->where('kd_bangsal', $bangsal)
+					->where('no_batch', '')
+					->where('no_faktur', '')
+					->value('stok') ?? 0;
+				$capacity = floatval($rd->obat->kapasitas) > 0 ? floatval($rd->obat->kapasitas) : 1.0;
+				$rd->stok = $stok * $capacity;
+			} else {
+				$rd->stok = 0;
+			}
+		}
+
+		foreach ($resep->resepRacikan as $rr) {
+			foreach ($rr->detail as $rrd) {
+				if ($rrd->obat) {
+					$stok = DB::table('gudangbarang')
+						->where('kode_brng', $rrd->kode_brng)
+						->where('kd_bangsal', $bangsal)
+						->where('no_batch', '')
+						->where('no_faktur', '')
+						->value('stok') ?? 0;
+					$rrd->stok = $stok;
+				} else {
+					$rrd->stok = 0;
+				}
+			}
+		}
+
+		return response()->json([
+			'kd_bangsal' => $bangsal,
+			'nm_bangsal' => $nm_bangsal,
+			'resep' => $resep
+		]);
+	}
+
+	public function validateResepWithAdjust(Request $request)
+	{
+		$no_resep = $request->no_resep;
+		if (!$no_resep) {
+			return response()->json(['message' => 'no_resep is required'], 400);
+		}
+
+		$items_non_racik = $request->input('items_non_racik', []);
+		$items_racik_detail = $request->input('items_racik_detail', []);
+		$items_racik = $request->input('items_racik', []);
+
+		try {
+			$result = DB::transaction(function () use ($no_resep, $items_non_racik, $items_racik_detail, $items_racik) {
+				$resep = ResepObat::where('no_resep', $no_resep)
+					->where(function ($query) {
+						$query->where('tgl_perawatan', '0000-00-00')
+							->orWhereNull('tgl_perawatan');
+					})
+					->first();
+
+				if (!$resep) {
+					throw new \Exception('Resep tidak ditemukan atau sudah divalidasi');
+				}
+
+				$no_rawat = $resep->no_rawat;
+				$reg = DB::table('reg_periksa')->where('no_rawat', $no_rawat)->first();
+				if (!$reg) {
+					throw new \Exception('Registrasi tidak ditemukan');
+				}
+
+				$bangsal = DB::table('set_depo_ralan')
+					->where('kd_poli', $reg->kd_poli)
+					->value('kd_bangsal');
+				if (!$bangsal) {
+					$set_lokasi = DB::table('set_lokasi')->first();
+					$bangsal = $set_lokasi ? $set_lokasi->kd_bangsal : 'AP';
+				}
+
+				foreach ($items_non_racik as $item) {
+					$kode_brng = $item['kode_brng'] ?? '';
+					$jml = floatval($item['jml'] ?? 0);
+					$aturan = $item['aturan_pakai'] ?? '';
+
+					if ($kode_brng) {
+						ResepDokter::where('no_resep', $no_resep)
+							->where('kode_brng', $kode_brng)
+							->update([
+								'jml' => $jml,
+								'aturan_pakai' => $aturan
+							]);
+					}
+				}
+
+				foreach ($items_racik_detail as $item) {
+					$no_racik = $item['no_racik'] ?? '';
+					$kode_brng = $item['kode_brng'] ?? '';
+					$jml = floatval($item['jml'] ?? 0);
+
+					if ($no_racik && $kode_brng) {
+						ResepDokterRacikanDetail::where('no_resep', $no_resep)
+							->where('no_racik', $no_racik)
+							->where('kode_brng', $kode_brng)
+							->update([
+								'jml' => $jml
+							]);
+					}
+				}
+
+				foreach ($items_racik as $item) {
+					$no_racik = $item['no_racik'] ?? '';
+					$jml_dr = floatval($item['jml_dr'] ?? 0);
+					$aturan = $item['aturan_pakai'] ?? '';
+
+					if ($no_racik) {
+						ResepDokterRacikan::where('no_resep', $no_resep)
+							->where('no_racik', $no_racik)
+							->update([
+								'jml_dr' => $jml_dr,
+								'aturan_pakai' => $aturan
+							]);
+					}
+				}
+
+				$resepFresh = ResepObat::where('no_resep', $no_resep)
+					->with(['resepDokter', 'resepRacikan.detail'])
+					->first();
+
+				$tgl_perawatan = date('Y-m-d');
+				$jam = date('H:i:s');
+
+				$ttljual = 0;
+				$ttlhpp = 0;
+
+				$detailPemberianObatToInsert = [];
+				$aturanPakaiToInsert = [];
+				$obatRacikanToInsert = [];
+				$detailObatRacikanToInsert = [];
+
+				foreach ($resepFresh->resepDokter as $rd) {
+					$qty = floatval($rd->jml);
+					if ($qty <= 0) continue;
+
+					$obat = DB::table('databarang')->where('kode_brng', $rd->kode_brng)->first();
+					if (!$obat) {
+						throw new \Exception('Barang/obat dengan kode ' . $rd->kode_brng . ' tidak ditemukan');
+					}
+
+					$stok = DB::table('gudangbarang')
+						->where('kode_brng', $rd->kode_brng)
+						->where('kd_bangsal', $bangsal)
+						->where('no_batch', '')
+						->where('no_faktur', '')
+						->value('stok') ?? 0;
+
+					if ($stok < $qty) {
+						throw new \Exception('Stok obat "' . $obat->nama_brng . '" tidak cukup. Stok saat ini: ' . $stok . ' unit, dibutuhkan: ' . $qty);
+					}
+
+					DB::table('gudangbarang')
+						->where('kode_brng', $rd->kode_brng)
+						->where('kd_bangsal', $bangsal)
+						->where('no_batch', '')
+						->where('no_faktur', '')
+						->decrement('stok', $qty);
+
+					$biaya_obat = floatval($obat->ralan);
+					$h_beli = floatval($obat->h_beli);
+					$total_item = $biaya_obat * $qty;
+
+					$ttljual += $total_item;
+					$ttlhpp += $h_beli * $qty;
+
+					$detailPemberianObatToInsert[] = [
+						'tgl_perawatan' => $tgl_perawatan,
+						'jam' => $jam,
+						'no_rawat' => $no_rawat,
+						'kode_brng' => $rd->kode_brng,
+						'h_beli' => $h_beli,
+						'biaya_obat' => $biaya_obat,
+						'jml' => $qty,
+						'embalase' => 0,
+						'tuslah' => 0,
+						'total' => $total_item,
+						'status' => 'Ralan',
+						'kd_bangsal' => $bangsal,
+						'no_batch' => '',
+						'no_faktur' => ''
+					];
+
+					if ($rd->aturan_pakai && trim($rd->aturan_pakai) !== '') {
+						$aturanPakaiToInsert[] = [
+							'tgl_perawatan' => $tgl_perawatan,
+							'jam' => $jam,
+							'no_rawat' => $no_rawat,
+							'kode_brng' => $rd->kode_brng,
+							'aturan' => $rd->aturan_pakai
+						];
+					}
+				}
+
+				foreach ($resepFresh->resepRacikan as $rr) {
+					$obatRacikanToInsert[] = [
+						'tgl_perawatan' => $tgl_perawatan,
+						'jam' => $jam,
+						'no_rawat' => $no_rawat,
+						'no_racik' => $rr->no_racik,
+						'nama_racik' => $rr->nama_racik,
+						'kd_racik' => $rr->kd_racik,
+						'jml_dr' => $rr->jml_dr,
+						'aturan_pakai' => $rr->aturan_pakai,
+						'keterangan' => $rr->keterangan ?? '-'
+					];
+
+					foreach ($rr->detail as $rrd) {
+						$qty = floatval($rrd->jml);
+						if ($qty <= 0) continue;
+
+						$obat = DB::table('databarang')->where('kode_brng', $rrd->kode_brng)->first();
+						if (!$obat) {
+							throw new \Exception('Barang/obat racikan dengan kode ' . $rrd->kode_brng . ' tidak ditemukan');
+						}
+
+						$stok = DB::table('gudangbarang')
+							->where('kode_brng', $rrd->kode_brng)
+							->where('kd_bangsal', $bangsal)
+							->where('no_batch', '')
+							->where('no_faktur', '')
+							->value('stok') ?? 0;
+
+						if ($stok < $qty) {
+							throw new \Exception('Stok obat racikan "' . $obat->nama_brng . '" tidak cukup. Stok saat ini: ' . $stok . ', dibutuhkan: ' . $qty);
+						}
+
+						DB::table('gudangbarang')
+							->where('kode_brng', $rrd->kode_brng)
+							->where('kd_bangsal', $bangsal)
+							->where('no_batch', '')
+							->where('no_faktur', '')
+							->decrement('stok', $qty);
+
+						$biaya_obat = floatval($obat->ralan);
+						$h_beli = floatval($obat->h_beli);
+						$total_item = $biaya_obat * $qty;
+
+						$ttljual += $total_item;
+						$ttlhpp += $h_beli * $qty;
+
+						$detailObatRacikanToInsert[] = [
+							'tgl_perawatan' => $tgl_perawatan,
+							'jam' => $jam,
+							'no_rawat' => $no_rawat,
+							'no_racik' => $rr->no_racik,
+							'kode_brng' => $rrd->kode_brng
+						];
+
+						$detailPemberianObatToInsert[] = [
+							'tgl_perawatan' => $tgl_perawatan,
+							'jam' => $jam,
+							'no_rawat' => $no_rawat,
+							'kode_brng' => $rrd->kode_brng,
+							'h_beli' => $h_beli,
+							'biaya_obat' => $biaya_obat,
+							'jml' => $qty,
+							'embalase' => 0,
+							'tuslah' => 0,
+							'total' => $total_item,
+							'status' => 'Ralan',
+							'kd_bangsal' => $bangsal,
+							'no_batch' => '',
+							'no_faktur' => ''
+						];
+					}
+				}
+
+				if (!empty($detailPemberianObatToInsert)) {
+					DB::table('detail_pemberian_obat')->insert($detailPemberianObatToInsert);
+				}
+				if (!empty($aturanPakaiToInsert)) {
+					DB::table('aturan_pakai')->insert($aturanPakaiToInsert);
+				}
+				if (!empty($obatRacikanToInsert)) {
+					DB::table('obat_racikan')->insert($obatRacikanToInsert);
+				}
+				if (!empty($detailObatRacikanToInsert)) {
+					DB::table('detail_obat_racikan')->insert($detailObatRacikanToInsert);
+				}
+
+				DB::table('resep_obat')
+					->where('no_resep', $no_resep)
+					->update([
+						'tgl_perawatan' => $tgl_perawatan,
+						'jam' => $jam
+					]);
+
+				$this->postResepJurnal($no_rawat, $ttljual, $ttlhpp);
+
+				return [
+					'no_resep' => $no_resep,
+					'no_rawat' => $no_rawat,
+					'ttljual' => $ttljual,
+					'ttlhpp' => $ttlhpp
+				];
+			});
+
+			return response()->json([
+				'status' => 'success',
+				'message' => 'Berhasil memvalidasi dan meng-adjust resep obat',
+				'data' => $result
+			], 200);
+		} catch (\Exception $e) {
+			return response()->json([
+				'status' => 'error',
+				'message' => $e->getMessage()
+			], 400);
+		}
+	}
 }

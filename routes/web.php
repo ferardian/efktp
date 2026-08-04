@@ -339,6 +339,8 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::post('/resep/create-form-paket', [ResepObatController::class, 'createResepPaket']);
 	Route::get('/resep/unvalidated', [ResepObatController::class, 'getUnvalidated']);
 	Route::post('/resep/validate', [ResepObatController::class, 'validateResep']);
+	Route::get('/resep/detail-validation', [ResepObatController::class, 'getDetailValidation']);
+	Route::post('/resep/validate-adjust', [ResepObatController::class, 'validateResepWithAdjust']);
 
 	Route::get('/resep/nomor/generate', [\App\Action\GenerateNoResep::class, 'handle']);
 

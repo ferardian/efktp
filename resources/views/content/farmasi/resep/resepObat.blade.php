@@ -28,6 +28,7 @@
         </div>
     </div>
     @include('content.farmasi.resep._modalDetailResep')
+    @include('content.farmasi.resep._modalValidasiResep')
 @endsection
 @push('script')
     <script>
@@ -82,12 +83,15 @@
                             display = ``
                         }
 
+                        let btnValidasi = '';
                         if (row.jam === '00:00:00') {
                             displayPanggil = 'd-none';
                             displaySelesai = 'd-none';
+                            btnValidasi = `<button class="btn btn-sm btn-warning" onclick="showModalValidasiResep('${data}')"><i class="ti ti-checklist"></i>Validasi</button>`;
                         }
 
                         return `<button class="btn btn-sm ${colorBtn}" onclick="showDetailResep('${data}')"><i class="ti ti-search"></i>Lihat</button>
+                            ${btnValidasi}
                             <button class="btn btn-sm btn-success ${display} ${displayPanggil}" onclick="panggilResepPasien('${data}', '${row.reg_periksa.pasien.nm_pasien}')"><i class="ti ti-phone"></i>Panggil</button>
                             <button class="btn btn-sm btn-primary ${display} ${displaySelesai}" onclick="setPenyerahanResep('${data}')"><i class="ti ti-send"></i>Selesai</button>`;
                     },
