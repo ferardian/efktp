@@ -71,8 +71,8 @@
         })
 
         $('#btnTambahObatRacikan').on('click', (e) => {
-            const nextIdDetail = $('#nextIdDetail').val()
-            const rowCount = nextIdDetail ? parseInt(nextIdDetail) + 1 : tabelObatRacikan.find('tr').length
+            const nextIdDetail = $('#nextIdDetail').val();
+            const rowCount = nextIdDetail ? parseInt(nextIdDetail) + 1 : tabelObatRacikan.find('tr').length;
 
             const row = `<tr id="rowDetailRacikan${rowCount}" class="rowDetailRacikan">
                     <td><select class="form-control" id="obat${rowCount}" name="kd_obat[]" style="width:100%"></select></td>
@@ -81,7 +81,7 @@
                         <div class="input-group input-group-flat">
                             <input class="form-control" id="p1${rowCount}" data-id="${rowCount}" name="p1[]" value="1" oninput="hitungPembagi(${rowCount})">
                             <span class="input-group-text">/</span>
-                            <input class="form-control" id="p2${rowCount}" data-id="${rowCount}" name="p2[]" value="1" oninput="hitungPembagi(${rowCount})"></td>
+                            <input class="form-control" id="p2${rowCount}" data-id="${rowCount}" name="p2[]" value="1" oninput="hitungPembagi(${rowCount})">
                         </div>
                     </td>
                     <td>
@@ -102,24 +102,23 @@
                     <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="hapusBarisDetailObat(${rowCount})"><i class="ti ti-trash-x"></i> Hapus</button></td>
                 </tr>`;
 
-            bodyObatRacikan.append(row)
+            bodyObatRacikan.append(row);
 
-
-            $('#nextIdDetail').val(rowCount)
+            $('#nextIdDetail').val(rowCount);
             const selectObat = $(`#obat${rowCount}`);
             selectDataBarang(selectObat, $('#modalDetailRacikan')).on('select2:select', (e) => {
                 e.preventDefault();
-                const jml_dr = $('#modalDetailRacikan').find('input[name=jml_dr]').val()
-                const data = e.params.data.detail
-                $(`#kapasitas${rowCount}`).val(data.kapasitas)
-                $(`#dosis${rowCount}`).val(formatFloat(data.kapasitas)).data('dosis', data.kapasitas)
-                $(`#jml${rowCount}`).val(formatFloat(jml_dr)).data('jml', jml_dr).trigger('change')
+                const jml_dr = $('#modalDetailRacikan').find('input[name=jml_dr]').val();
+                const data = e.params.data.detail;
+                $(`#kapasitas${rowCount}`).val(data.kapasitas);
+                $(`#dosis${rowCount}`).val(formatFloat(data.kapasitas)).data('dosis', data.kapasitas);
+                $(`#jml${rowCount}`).val(formatFloat(jml_dr)).data('jml', jml_dr).trigger('change');
 
-                $(`#hargaObatRacikan${rowCount}`).val(formatCurrency(data.ralan)).attr('data-harga-obat', data.ralan)
-            })
-            const rowTotalDetailRacikan = $('#rowTotalDetailRacikan')
-            bodyObatRacikan.detach(rowTotalDetailRacikan).append(rowTotalDetailRacikan)
-        })
+                $(`#hargaObatRacikan${rowCount}`).val(formatCurrency(data.ralan)).attr('data-harga-obat', data.ralan);
+            });
+            const rowTotalDetailRacikan = $('#rowTotalDetailRacikan');
+            bodyObatRacikan.detach(rowTotalDetailRacikan).append(rowTotalDetailRacikan);
+        });
 
         function hitungSubTotalObatRacikan(index) {
             const harga = $(`#hargaObatRacikan${index}`).attr('data-harga-obat')
