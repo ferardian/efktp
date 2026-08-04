@@ -100,15 +100,22 @@
                     formPesrta.find('#tglLahir').val(result.tglLahir);
                     formPesrta.find('#umur').val(textUmur);
                     formPesrta.find('#noHP').val(result.noHP);
-                    formPesrta.find('#nmProvider').val(result.kdProviderPst.nmProvider);
-                    formPesrta.find('#nmProviderGigi').val(`${result.kdProviderGigi.nmProvider ? result.kdProviderGigi.nmProvider : '-'}`);
-                    formPesrta.find('#hubunganKeluarga').val(result.hubunganKeluarga);
-                    formPesrta.find('#kodeKelas').val(result.jnsKelas.kode);
-                    formPesrta.find('#nmKelas').val(result.jnsKelas.nama);
-                    formPesrta.find('#kodeJenis').val(result.jnsPeserta.kode);
-                    formPesrta.find('#nmJenis').val(result.jnsPeserta.nama);
-                    formPesrta.find('#tglAkhirBerlaku').val(result.tglAkhirBerlaku);
-                    formPesrta.find('#tglMulaiAktif').val(result.tglMulaiAktif);
+                    const nmProvider = result.kdProviderPst ? (result.kdProviderPst.nmProvider || '-') : '-';
+                    const nmProviderGigi = result.kdProviderGigi ? (result.kdProviderGigi.nmProvider || '-') : '-';
+                    const jnsKelasKode = result.jnsKelas ? (result.jnsKelas.kode || '-') : '-';
+                    const jnsKelasNama = result.jnsKelas ? (result.jnsKelas.nama || '-') : '-';
+                    const jnsPesertaKode = result.jnsPeserta ? (result.jnsPeserta.kode || '-') : '-';
+                    const jnsPesertaNama = result.jnsPeserta ? (result.jnsPeserta.nama || '-') : '-';
+
+                    formPesrta.find('#nmProvider').val(nmProvider);
+                    formPesrta.find('#nmProviderGigi').val(nmProviderGigi);
+                    formPesrta.find('#hubunganKeluarga').val(result.hubunganKeluarga || '-');
+                    formPesrta.find('#kodeKelas').val(jnsKelasKode);
+                    formPesrta.find('#nmKelas').val(jnsKelasNama);
+                    formPesrta.find('#kodeJenis').val(jnsPesertaKode);
+                    formPesrta.find('#nmJenis').val(jnsPesertaNama);
+                    formPesrta.find('#tglAkhirBerlaku').val(result.tglAkhirBerlaku || '-');
+                    formPesrta.find('#tglMulaiAktif').val(result.tglMulaiAktif || '-');
                     modalPesertaBpjs.modal('show');
                     loadingAjax().close();
                 } else {

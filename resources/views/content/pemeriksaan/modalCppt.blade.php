@@ -327,9 +327,15 @@
                 formCpptRajal.find('input[name=kd_poli]').val(`${response.kd_poli}`)
                 formCpptRajal.find('input[name=nm_poli]').val(`${poliklinik.nm_poli}`)
                 formCpptRajal.find('input[name=kd_poli_pcare]').val(`${poliklinik.maping?.kd_poli_pcare}`)
-                formKunjunganPcare.find('input[name=tgl_daftar]').val(`${splitTanggal(response.tgl_registrasi)}`)
-                formKunjunganPcare.find('input[name=nm_poli_pcare]').val(`${poliklinik.maping?.nm_poli_pcare}`)
-                formKunjunganPcare.find('input[name=kd_dokter_pcare]').val(`${dokter.maping?.kd_dokter_pcare}`)
+                if (typeof formKunjunganPcare !== 'undefined' && formKunjunganPcare && typeof formKunjunganPcare.find === 'function') {
+                    formKunjunganPcare.find('input[name=tgl_daftar]').val(`${splitTanggal(response.tgl_registrasi)}`)
+                    formKunjunganPcare.find('input[name=nm_poli_pcare]').val(`${poliklinik.maping?.nm_poli_pcare}`)
+                    formKunjunganPcare.find('input[name=kd_dokter_pcare]').val(`${dokter.maping?.kd_dokter_pcare}`)
+                } else if ($('#formKunjunganPcare').length) {
+                    $('#formKunjunganPcare').find('input[name=tgl_daftar]').val(`${splitTanggal(response.tgl_registrasi)}`)
+                    $('#formKunjunganPcare').find('input[name=nm_poli_pcare]').val(`${poliklinik.maping?.nm_poli_pcare}`)
+                    $('#formKunjunganPcare').find('input[name=kd_dokter_pcare]').val(`${dokter.maping?.kd_dokter_pcare}`)
+                }
                 btnTambahResep.data('no-rawat', no_rawat)
                 $('#btnDiagnosaPasien').attr('onclick', `diagnosaPasien('${no_rawat}')`);
                 $('#btnTindakanPasien').attr('onclick', `tindakanPasien('${no_rawat}')`);
