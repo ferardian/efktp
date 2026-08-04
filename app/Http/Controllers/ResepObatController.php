@@ -80,13 +80,23 @@ class ResepObatController extends Controller
 			$resepObat = ResepObat::whereBetween('tgl_peresepan', [
 				date('Y-m-d', strtotime($request->tgl_awal)),
 				date('Y-m-d', strtotime($request->tgl_akhir)),
-			])->whereHas('regPeriksa', function ($query) {
-				return $query->where('stts', 'Sudah');
-			})
-				->with('regPeriksa')
+			])
+				->with([
+					'regPeriksa.pasien',
+					'regPeriksa.poliklinik',
+					'regPeriksa.dokter',
+					'regPeriksa.penjab',
+				])
 				->get();
 		} else {
-			$resepObat = ResepObat::where('tgl_peresepan', date('Y-m-d'))->get();
+			$resepObat = ResepObat::where('tgl_peresepan', date('Y-m-d'))
+				->with([
+					'regPeriksa.pasien',
+					'regPeriksa.poliklinik',
+					'regPeriksa.dokter',
+					'regPeriksa.penjab',
+				])
+				->get();
 		}
 
 		if ($request->dataTable) {
