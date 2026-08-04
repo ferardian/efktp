@@ -1023,6 +1023,8 @@ class ResepObatController extends Controller
 				'message' => $e->getMessage()
 			], 400);
 		}
+	}
+
 	/**
 	 * Batal Validasi Resep
 	 * - Kembalikan stok ke gudangbarang
