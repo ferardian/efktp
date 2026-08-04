@@ -186,19 +186,18 @@
                                 return;
                             }
                             return data.map((item, index) => {
-                                return `<span class="badge bg-orange-lt">${item.template.nm_racik}</span>`
-                            }).join(', ')
+                                return `<span class="badge bg-orange-lt">${item.template.nm_racik}</span>`;
+                            }).join(', ');
                         }
                     }]
-
-                })
-            })
+                });
+            });
 
         function setPaketToResep(id) {
             $.get(`paket-obat/${id}`).done((response) => {
                 const {
                     data
-                } = response
+                } = response;
                 const umumKosong = !data.umum || data.umum.length === 0;
                 const racikanKosong = !data.racikan || data.racikan.length === 0;
 
@@ -211,8 +210,8 @@
                         'kode_brng': item.kode_brng,
                         'jml': item.jumlah,
                         'aturan_pakai': item.aturan_pakai
-                    }
-                })
+                    };
+                });
 
                 const obatRacik = data.racikan.map((item, index) => {
                     return {
@@ -227,17 +226,17 @@
                                 'jml': item.jumlah,
                                 'p1': 1,
                                 'p2': 1,
-                            }
+                            };
                         })
-                    }
-                })
+                    };
+                });
 
                 Swal.fire({
-                    'title': `Guankan Paket ?`,
-                    'icon': 'info',
-                    'html': `Anda akan gunakan paket ${data.nama}`,
-                    'showConfirmButton': true,
-                    'showCancelButton': true,
+                    title: 'Gunakan Paket ?',
+                    icon: 'info',
+                    html: `Anda akan gunakan paket ${data.nama}`,
+                    showConfirmButton: true,
+                    showCancelButton: true,
                 }).then((result) => {
                     if (result.isConfirmed) {
                         const modalRanap = $('#modalCpptRanap');
@@ -255,14 +254,13 @@
                         }).done((response) => {
                             showToast('Success');
                             tulisPlan(response.data.no_resep);
-                            setResepPasien(no_rawat)
+                            setResepPasien(no_rawat);
                         }).fail((xhr) => {
-                            showToast(xhr.responseJSON.message, 'error')
-                        })
+                            showToast(xhr.responseJSON.message, 'error');
+                        });
                     }
-                })
-
-            })
+                });
+            });
         }
     </script>
 @endpush

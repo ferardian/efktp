@@ -502,30 +502,22 @@
         }
 
         function getKunjunganUmum(data) {
-            const kunjungan = $.get(`{{ url('/pcare/kunjungan/get') }}`,
-                data
-            )
+            const kunjungan = $.get(`{{ url('/pcare/kunjungan/get') }}`, data);
             return kunjungan;
         }
 
         function updateKunjunganUmum(data) {
-            const kunjungan = $.post(`{{ url('/pcare/kunjungan/update') }}`,
-                data
-            )
+            const kunjungan = $.post(`{{ url('/pcare/kunjungan/update') }}`, data);
             return kunjungan;
         }
 
         function createRujukSubSpesialis(data) {
-            const create = $.post(`{{ url('/pcare/kunjungan/rujuk/subspesialis') }}`,
-                data
-            )
+            const create = $.post(`{{ url('/pcare/kunjungan/rujuk/subspesialis') }}`, data);
             return create;
         }
 
         function updateRujukSubSpesialis(data) {
-            const create = $.post(`{{ url('/pcare/kunjungan/rujuk/subspesialis/update') }}`,
-                data
-            )
+            const create = $.post(`{{ url('/pcare/kunjungan/rujuk/subspesialis/update') }}`, data);
             return create;
         }
 
@@ -663,31 +655,29 @@
 
             setTerapiResep()
 
-            formRujukanKhusus.find(['input', 'button']).prop('disabled', 'disabled')
+            formRujukanKhusus.find('input, button').prop('disabled', 'disabled')
             formRujukanLanjut.find('input').prop('disabled', 'disabled')
             formRujukanLanjut.find('button').prop('disabled', 'disabled')
             formRujukanLanjut.find('#rujukanLanjut').prop('disabled', false)
             formKunjunganPcare.find('#tglKunjungan').val(data.tgl_registrasi)
 
 
-            const filteredData = Object.fromEntries(
-                Object.entries(data).filter(([key, value]) => key !== "")
-            );
-            Object.keys(filteredData).map((key, index) => {
-                input = $(`#formKunjunganPcare input[name=${key}]`);
-                select = $(`#formKunjunganPcare select[name=${key}]`);
+            Object.keys(data).forEach((key) => {
+                if (key === "" || data[key] === null || data[key] === undefined) return;
+                const input = $(`#formKunjunganPcare input[name=${key}]`);
+                const select = $(`#formKunjunganPcare select[name=${key}]`);
                 if (input.length) {
                     if (key == 'nm_pasien') {
-                        data[key] = data[key].split(' / ')[0]
+                        data[key] = String(data[key]).split(' / ')[0];
                     } else if (key == 'instruksi') {
-                        data[key] = data[key].replaceAll('\n', ', ')
+                        data[key] = String(data[key]).replaceAll('\n', ', ');
                     }
-                    input.val(data[key])
+                    input.val(data[key]);
                 }
                 if (select.length) {
-                    select.find(`option:contains("${data[key]}")`).attr('selected', 'selected')
+                    select.find(`option:contains("${data[key]}")`).attr('selected', 'selected');
                 }
-            })
+            });
 
             formKunjunganPcare.find('input[name=anamnesa]').val(data.pemeriksaan)
 
@@ -746,7 +736,7 @@
                     formKunjunganPcare.find('input[name=tglPulang]').val(splitTanggal(response.tglPulang))
                     formKunjunganPcare.find('input[name=tglKunjungan]').val(splitTanggal(response.tglPulang))
                     if (response.kdStatusPulang == 4 && response.rujuk_subspesialis) {
-                        formRujukanSpesialis.find(['input', 'button']).removeAttr('disabled');
+                        formRujukanSpesialis.find('input, button').removeAttr('disabled');
                         formKunjunganPcare.find('input[name=kdPpkRujukan]').val(response.rujuk_subspesialis.kdPPK)
                         formKunjunganPcare.find('input[name=ppkRujukan]').val(response.rujuk_subspesialis.nmPPK)
                         formKunjunganPcare.find('input[name=tglEstRujukan]').val(splitTanggal(response.rujuk_subspesialis.tglEstRujuk))
