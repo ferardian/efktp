@@ -332,9 +332,9 @@
             })
             data['alergi'] = alergi.join(', ');
             $.post(`{{ url('/pemeriksaan/ralan/create') }}`, data).done((response) => {
-                setAlergiMakan();
-                setAlergiUdara();
-                setAlergiObat();
+                if (typeof setAlergiMakan === 'function') setAlergiMakan();
+                if (typeof setAlergiUdara === 'function') setAlergiUdara();
+                if (typeof setAlergiObat === 'function') setAlergiObat();
                 createAlergi({
                     no_rkm_medis: data['no_rkm_medis'],
                     alergi: alergi
