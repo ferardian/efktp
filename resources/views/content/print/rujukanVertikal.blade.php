@@ -10,8 +10,8 @@
                     <img src="{{ asset('img/logo-bpjs.png') }}" alt="" width="200px" style="margin-top:15px:top:0" />
                 </td>
                 <td width="40%">
-                    <p><strong>Divisi Regional : {{ $data['detail']['nmKR'] ?? '-' }}</strong></p>
-                    <p><strong>Kantor Cabang : {{ $data['detail']['nmKC'] ?? '-' }}</strong></p>
+                    <p><strong>Divisi Regional : {{ !empty($data['detail']['nmKR']) && $data['detail']['nmKR'] !== '-' ? $data['detail']['nmKR'] : ($setting['propinsi'] ?? '-') }}</strong></p>
+                    <p><strong>Kantor Cabang : {{ !empty($data['detail']['nmKC']) && $data['detail']['nmKC'] !== '-' ? $data['detail']['nmKC'] : ($setting['kabupaten'] ?? '-') }}</strong></p>
                 </td>
             </tr>
         </table>
@@ -28,12 +28,12 @@
                     <tr>
                         <td>Puskesmas/Dokter Keluarga</td>
                         <td>:</td>
-                        <td>{{ $data['detail']['nmPpkAsal'] ?? '-' }}</td>
+                        <td>{{ !empty($data['detail']['nmPpkAsal']) && $data['detail']['nmPpkAsal'] !== '-' ? $data['detail']['nmPpkAsal'] : ($setting['nama_instansi'] ?? '-') }}</td>
                     </tr>
                     <tr>
                         <td>Kabupaten/Kota</td>
                         <td>:</td>
-                        <td>{{ $data['detail']['nmKC'] ?? '-' }}</td>
+                        <td>{{ !empty($data['detail']['nmKC']) && $data['detail']['nmKC'] !== '-' ? $data['detail']['nmKC'] : ($setting['kabupaten'] ?? '-') }}</td>
                     </tr>
                 </table>
             </div>

@@ -74,14 +74,15 @@ class PcareRujukSubspesialisController extends Controller
             if ($rujuk) {
                 $this->insertSql(new PcareRujukSubspesialis(), $data);
                 if (!empty($data['noKunjungan'])) {
+                    $setting = Setting::first();
                     $dataEfktp = [
                         'noKunjungan' => $data['noKunjungan'],
                         'kdPpkAsal' => $request->kdPpkAsal,
-                        'nmPpkAsal' => $request->nmPpkAsal,
+                        'nmPpkAsal' => $request->nmPpkAsal ?? $setting?->nama_instansi ?? '-',
                         'kdKR' => $request->kdKR,
-                        'nmKR' => $request->nmKR,
+                        'nmKR' => $request->nmKR ?? $setting?->propinsi ?? '-',
                         'kdKC' => $request->kdKC,
-                        'nmKC' => $request->nmKC,
+                        'nmKC' => $request->nmKC ?? $setting?->kabupaten ?? '-',
                         'tglAkhirRujuk' => $request->tglAkhirRujuk,
                         'jadwal' => $request->jadwal ? $request->jadwal : '-',
                         'infoDenda' => $request->infoDenda ? $request->infoDenda : '-',
@@ -169,14 +170,15 @@ class PcareRujukSubspesialisController extends Controller
                 $this->updateSql(new PcareRujukSubspesialis(), $data, ['no_rawat' => $data['no_rawat']]);
 
                 if (!empty($data['noKunjungan'])) {
+                    $setting = Setting::first();
                     $dataEfktp = [
                         'noKunjungan' => $data['noKunjungan'],
                         'kdPpkAsal' => $request->kdPpkAsal,
-                        'nmPpkAsal' => $request->nmPpkAsal,
+                        'nmPpkAsal' => $request->nmPpkAsal ?? $setting?->nama_instansi ?? '-',
                         'kdKR' => $request->kdKR,
-                        'nmKR' => $request->nmKR,
+                        'nmKR' => $request->nmKR ?? $setting?->propinsi ?? '-',
                         'kdKC' => $request->kdKC,
-                        'nmKC' => $request->nmKC,
+                        'nmKC' => $request->nmKC ?? $setting?->kabupaten ?? '-',
                         'tglAkhirRujuk' => $request->tglAkhirRujuk,
                         'jadwal' => $request->jadwal ? $request->jadwal : '-',
                         'infoDenda' => $request->infoDenda ? $request->infoDenda : '-',

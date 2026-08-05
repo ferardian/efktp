@@ -4,8 +4,8 @@
     <div width="100%" style="font-size: 11px">
         <img src="{{ asset('img/logo-bpjs.png') }}" alt="" width="200px" style="position: absolute;top:0px;right:40px" />
         <div class="text-center" style="margin-top:40px">
-            <h6 style="margin-bottom:0px;margin-top:0px;font-size:10px">Divisi Regional : {{ $data['detail']['nmKR'] ?? '-' }}</h6>
-            <h6 style="margin-bottom:0px;margin-top:0px;font-size:10px">Kantor Cabang : {{ $data['detail']['nmKC'] ?? '-' }}</h6>
+            <h6 style="margin-bottom:0px;margin-top:0px;font-size:10px">Divisi Regional : {{ !empty($data['detail']['nmKR']) && $data['detail']['nmKR'] !== '-' ? $data['detail']['nmKR'] : ($setting['propinsi'] ?? '-') }}</h6>
+            <h6 style="margin-bottom:0px;margin-top:0px;font-size:10px">Kantor Cabang : {{ !empty($data['detail']['nmKC']) && $data['detail']['nmKC'] !== '-' ? $data['detail']['nmKC'] : ($setting['kabupaten'] ?? '-') }}</h6>
         </div>
         <img style="position: absolute;top:80px;right:40px" src="data:image/png;base64,{{ DNS1D::getBarcodePNG($data['noKunjungan'], 'C39E') }}" height="35" width="200" />
         <h6 style="text-align:center;font-size:10px">Rujukan FKTP</h6>
@@ -19,12 +19,12 @@
                 <tr>
                     <td>Puskesmas/Klinik/Dokter</td>
                     <td>:</td>
-                    <td>{{ $data['detail']['nmPpkAsal'] ?? '-' }}</td>
+                    <td>{{ !empty($data['detail']['nmPpkAsal']) && $data['detail']['nmPpkAsal'] !== '-' ? $data['detail']['nmPpkAsal'] : ($setting['nama_instansi'] ?? '-') }}</td>
                 </tr>
                 <tr>
                     <td>Kabupaten/Kota</td>
                     <td>:</td>
-                    <td>{{ $data['detail']['nmKC'] ?? '-' }}</td>
+                    <td>{{ !empty($data['detail']['nmKC']) && $data['detail']['nmKC'] !== '-' ? $data['detail']['nmKC'] : ($setting['kabupaten'] ?? '-') }}</td>
                 </tr>
             </table>
         </div>
