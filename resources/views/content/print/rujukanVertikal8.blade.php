@@ -2,7 +2,7 @@
 
 @section('content')
     <div width="100%" style="font-size: 11px">
-        <img src="{{ asset('/public/img/logo-bpjs.png') }}" alt="" width="200px" style="position: absolute;top:0px;right:40px" />
+        <img src="{{ asset('img/logo-bpjs.png') }}" alt="" width="200px" style="position: absolute;top:0px;right:40px" />
         <div class="text-center" style="margin-top:40px">
             <h6 style="margin-bottom:0px;margin-top:0px;font-size:10px">Divisi Regional : {{ $data['detail']['nmKR'] ?? '-' }}</h6>
             <h6 style="margin-bottom:0px;margin-top:0px;font-size:10px">Kantor Cabang : {{ $data['detail']['nmKC'] ?? '-' }}</h6>

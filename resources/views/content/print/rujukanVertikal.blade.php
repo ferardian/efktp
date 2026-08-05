@@ -7,7 +7,7 @@
         <table width="100%">
             <tr>
                 <td width="60%" style="padding-right: 10px">
-                    <img src="{{ asset('/public/img/logo-bpjs.png') }}" alt="" width="200px" style="margin-top:15px:top:0" />
+                    <img src="{{ asset('img/logo-bpjs.png') }}" alt="" width="200px" style="margin-top:15px:top:0" />
                 </td>
                 <td width="40%">
                     <p><strong>Divisi Regional : {{ $data['detail']['nmKR'] ?? '-' }}</strong></p>

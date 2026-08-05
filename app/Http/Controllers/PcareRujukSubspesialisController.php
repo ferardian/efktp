@@ -62,34 +62,45 @@ class PcareRujukSubspesialisController extends Controller
             'alasanTACC' => $request->alasanTACC ?? $request->alasanTacc,
         ];
 
+        if (empty($data['noKunjungan']) && !empty($data['no_rawat'])) {
+            $data['noKunjungan'] = \App\Models\PcareKunjungan::where('no_rawat', $data['no_rawat'])->value('noKunjungan');
+        }
+
         try {
-            $rujuk = PcareRujukSubspesialis::create($data);
+            $rujuk = PcareRujukSubspesialis::updateOrCreate(
+                ['no_rawat' => $data['no_rawat']],
+                $data
+            );
             if ($rujuk) {
                 $this->insertSql(new PcareRujukSubspesialis(), $data);
-                $dataEfktp = [
-                    'noKunjungan' => $data['noKunjungan'],
-                    'kdPpkAsal' => $request->kdPpkAsal,
-                    'nmPpkAsal' => $request->nmPpkAsal,
-                    'kdKR' => $request->kdKR,
-                    'nmKR' => $request->nmKR,
-                    'kdKC' => $request->kdKC,
-                    'nmKC' => $request->nmKC,
-                    'tglAkhirRujuk' => $request->tglAkhirRujuk,
-                    'jadwal' => $request->jadwal,
-                    'infoDenda' => $request->infoDenda ? $request->indoDenda : '-',
-                    'catatanRujuk' => $request->catatanRujuk,
-                ];
-                try {
-                    $rujukEfktp = EfktpPcareRujukSubspesialis::create($dataEfktp);
-                    if ($rujukEfktp) {
-                        $this->insertSql(new EfktpPcareRujukSubspesialis(), $dataEfktp);
+                if (!empty($data['noKunjungan'])) {
+                    $dataEfktp = [
+                        'noKunjungan' => $data['noKunjungan'],
+                        'kdPpkAsal' => $request->kdPpkAsal,
+                        'nmPpkAsal' => $request->nmPpkAsal,
+                        'kdKR' => $request->kdKR,
+                        'nmKR' => $request->nmKR,
+                        'kdKC' => $request->kdKC,
+                        'nmKC' => $request->nmKC,
+                        'tglAkhirRujuk' => $request->tglAkhirRujuk,
+                        'jadwal' => $request->jadwal ? $request->jadwal : '-',
+                        'infoDenda' => $request->infoDenda ? $request->infoDenda : '-',
+                        'catatanRujuk' => $request->catatanRujuk,
+                    ];
+                    try {
+                        $rujukEfktp = EfktpPcareRujukSubspesialis::updateOrCreate(
+                            ['noKunjungan' => $data['noKunjungan']],
+                            $dataEfktp
+                        );
+                        if ($rujukEfktp) {
+                            $this->insertSql(new EfktpPcareRujukSubspesialis(), $dataEfktp);
+                        }
+                    } catch (QueryException $e) {
+                        // ignore secondary table failure
                     }
-                    $response = response()->json('SUKSES', 201);
-                } catch (QueryException $e) {
-                    return response()->json($e->errorInfo, 500);
                 }
             }
-            return response()->json(['SUKSES', $response], 201);
+            return response()->json(['SUKSES'], 201);
         } catch (QueryException $e) {
             return response()->json($e->errorInfo, 500);
         }
@@ -144,13 +155,20 @@ class PcareRujukSubspesialisController extends Controller
             'alasanTACC' => $request->alasanTACC ?? $request->alasanTacc,
         ];
 
-        $rujuk = PcareRujukSubspesialis::where('noKunjungan', $data['noKunjungan']);
+        if (empty($data['noKunjungan']) && !empty($data['no_rawat'])) {
+            $data['noKunjungan'] = \App\Models\PcareKunjungan::where('no_rawat', $data['no_rawat'])->value('noKunjungan');
+        }
 
-        if ($rujuk) {
-            try {
-                $update = $rujuk->update($data);
-                if ($update) {
-                    $this->insertSql(new PcareRujukSubspesialis(), $data);
+        try {
+            $rujuk = PcareRujukSubspesialis::updateOrCreate(
+                ['no_rawat' => $data['no_rawat']],
+                $data
+            );
+
+            if ($rujuk) {
+                $this->updateSql(new PcareRujukSubspesialis(), $data, ['no_rawat' => $data['no_rawat']]);
+
+                if (!empty($data['noKunjungan'])) {
                     $dataEfktp = [
                         'noKunjungan' => $data['noKunjungan'],
                         'kdPpkAsal' => $request->kdPpkAsal,
@@ -161,23 +179,23 @@ class PcareRujukSubspesialisController extends Controller
                         'nmKC' => $request->nmKC,
                         'tglAkhirRujuk' => $request->tglAkhirRujuk,
                         'jadwal' => $request->jadwal ? $request->jadwal : '-',
-                        'infoDenda' => $request->infoDenda ? $request->indoDenda : '-',
+                        'infoDenda' => $request->infoDenda ? $request->infoDenda : '-',
                         'catatanRujuk' => $request->catatanRujuk,
                     ];
                     try {
-                        $rujukEfktp = EfktpPcareRujukSubspesialis::where(['noKunjungan' => $data['noKunjungan']])->update($dataEfktp);
-                        if ($rujukEfktp) {
-                            $this->updateSql(new EfktpPcareRujukSubspesialis(), $dataEfktp, ['noKunjungan' => $data['noKunjungan']]);
-                        }
-                        $response = response()->json('SUKSES', 200);
+                        EfktpPcareRujukSubspesialis::updateOrCreate(
+                            ['noKunjungan' => $data['noKunjungan']],
+                            $dataEfktp
+                        );
+                        $this->updateSql(new EfktpPcareRujukSubspesialis(), $dataEfktp, ['noKunjungan' => $data['noKunjungan']]);
                     } catch (QueryException $e) {
-                        return response()->json($e->errorInfo, 500);
+                        // ignore secondary table failure
                     }
                 }
-                return response()->json(['SUKSES', $response], 200);
-            } catch (QueryException $e) {
-                return response()->json($e->errorInfo, 500);
             }
+            return response()->json(['SUKSES'], 200);
+        } catch (QueryException $e) {
+            return response()->json($e->errorInfo, 500);
         }
     }
 
