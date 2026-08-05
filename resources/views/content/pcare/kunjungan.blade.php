@@ -158,7 +158,7 @@
                         title: '',
                         data: 'noKunjungan',
                         render: (data, type, row, meta) => {
-                            if (row.kdStatusPulang == 4 && row.rujuk_subspesialis) {
+                            if (row.rujuk_subspesialis || row.kdStatusPulang == 4 || row.kdStatusPulang == 6) {
                                 return `<button type="button" class="btn btn-sm btn-success" onclick="showPrintRujukan('${data}')"><i class="ti ti-printer me-2"></i> Cetak</button>
                                 <button type="button" class="btn btn-sm btn-danger" onclick="deleteRujukSubspesialis('${data}', '${row.no_rawat}')"><i class="ti ti-trash me-2"></i> Hapus</button>`;
                             }

@@ -1181,15 +1181,12 @@
                         return acc
                     }, {})
 
-                    let kdDiagnosa1 = selectDiagnosa1.val();
-                    data['diagnosa1'] = selectDiagnosa1.find(`option[value="${kdDiagnosa1}"]`).text()
-                    let kdDiagnosa2 = selectDiagnosa2.val();
-                    data['diagnosa2'] = selectDiagnosa2.find(`option[value="${kdDiagnosa2}"]`).text()
-                    let kdDiagnosa3 = selectDiagnosa3.val();
-                    data['diagnosa3'] = selectDiagnosa3.find(`option[value="${kdDiagnosa3}"]`).text()
+                    data['diagnosa1'] = formKunjunganPcare.find('input[name=diagnosa1]').val() || data['diagnosa1'] || '-';
+                    data['diagnosa2'] = formKunjunganPcare.find('input[name=diagnosa2]').val() || data['diagnosa2'] || '-';
+                    data['diagnosa3'] = formKunjunganPcare.find('input[name=diagnosa3]').val() || data['diagnosa3'] || '-';
 
-                    data['nmSadar'] = selectKesadaran.find(`option[value="${data['kesadaran']}"]`).text()
-                    data['nmStatusPulang'] = selectStatusPulang.find(`option[value="${data['sttsPulang']}"]`).text()
+                    data['nmSadar'] = formKunjunganPcare.find('select[name=kesadaran] option:selected').text() || '-';
+                    data['nmStatusPulang'] = formKunjunganPcare.find('select[name=sttsPulang] option:selected').text() || '-';
 
                     const formRujukanSpesialis = $('#formRujukanSpesialis');
                     const formRujukanKhusus = $('#formRujukanKhusus');
