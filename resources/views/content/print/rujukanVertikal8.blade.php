@@ -74,10 +74,10 @@
                         Tgl Renc. Kunjungan : <strong>{{ !empty($data['tglEstRujuk']) ? date('d-m-Y', strtotime($data['tglEstRujuk'])) : '-' }}</strong>
                     </p>
                     <p>
-                        Jadwal : <strong>{{ $data['detail']['jadwal'] ?? '-' }}</strong>
+                        Jadwal : <strong>{{ !empty($data['detail']['jadwal']) && $data['detail']['jadwal'] !== '-' ? $data['detail']['jadwal'] : 'Setiap Hari Kerja' }}</strong>
                     </p>
                     <p>
-                        Surat rujukan berlaku satu kali kunjungan, berlaku sampai : <strong>{{ !empty($data['detail']['tglAkhirRujuk']) ? date('d-m-Y', strtotime($data['detail']['tglAkhirRujuk'])) : '-' }}</strong>
+                        Surat rujukan berlaku satu kali kunjungan, berlaku sampai : <strong>{{ !empty($data['detail']['tglAkhirRujuk']) && $data['detail']['tglAkhirRujuk'] !== '-' ? date('d-m-Y', strtotime($data['detail']['tglAkhirRujuk'])) : date('d-m-Y', strtotime('+89 days', strtotime($data['tglEstRujuk'] ?? date('Y-m-d')))) }}</strong>
                     </p>
 
                 </td>
