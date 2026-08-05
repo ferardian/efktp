@@ -61,7 +61,7 @@ class JadwalController extends Controller
             $exists = Jadwal::where($clause)->first();
 
             if ($exists) {
-                $exists->update($data);
+                Jadwal::where($clause)->update($data);
                 $this->updateSql(new Jadwal(), $data, $clause);
             } else {
                 Jadwal::create($data);

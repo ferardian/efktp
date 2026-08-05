@@ -78,20 +78,12 @@ trait Track
     }
     public static function stringClause($clause)
     {
-        $count = 1;
-        $stringClause = '';
-        foreach ($clause as $cls) {
-            if ($count < count($clause)) {
-                $and = ' AND ';
-                $count++;
-            } else {
-                $and = '';
-            }
-            $keyClasue = array_keys($clause, $cls, true);
-            $stringClause .= "$keyClasue[0]".'='."'$cls'".$and;
+        $parts = [];
+        foreach ($clause as $key => $val) {
+            $valStr = is_numeric($val) ? $val : "'".addslashes($val)."'";
+            $parts[] = "$key=$valStr";
         }
-
-        return $stringClause;
+        return implode(' AND ', $parts);
     }
 
     public static function deleteSql($table, $clause)
