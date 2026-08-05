@@ -140,6 +140,21 @@ class PCareKunjungan extends PCareClient
         return $parts[$index] ?? '0';
     }
 
+    private function parseBpjsDate(?string $dateStr): Carbon
+    {
+        if (empty($dateStr) || $dateStr === '-') {
+            return Carbon::now();
+        }
+        $clean = trim($dateStr);
+        if (preg_match('/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/', $clean, $m)) {
+            return Carbon::createFromDate((int)$m[3], (int)$m[2], (int)$m[1]);
+        }
+        if (preg_match('/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/', $clean, $m)) {
+            return Carbon::createFromDate((int)$m[1], (int)$m[2], (int)$m[3]);
+        }
+        return Carbon::parse($clean);
+    }
+
     private function buildRujukan(array $data): array
     {
         $extra = [];
@@ -147,20 +162,12 @@ class PCareKunjungan extends PCareClient
         $kdPpk = $data['kdPpkRujukan'] ?? $data['kdPPK'] ?? '';
 
         $tglDaftarRaw = $data['tgl_daftar'] ?? $data['tglDaftar'] ?? date('d-m-Y');
-        try {
-            $tglDaftarObj = Carbon::parse(str_replace('/', '-', $tglDaftarRaw));
-        } catch (\Exception $e) {
-            $tglDaftarObj = Carbon::now();
-        }
+        $tglDaftarObj = $this->parseBpjsDate($tglDaftarRaw);
 
         $tglEstRaw = $data['tglEstRujukan'] ?? $data['tglEstRujuk'] ?? null;
         if (!empty($tglEstRaw) && $tglEstRaw !== '-') {
-            try {
-                $tglEstObj = Carbon::parse(str_replace('/', '-', $tglEstRaw));
-                if ($tglEstObj->lt($tglDaftarObj)) {
-                    $tglEstObj = clone $tglDaftarObj;
-                }
-            } catch (\Exception $e) {
+            $tglEstObj = $this->parseBpjsDate($tglEstRaw);
+            if ($tglEstObj->lt($tglDaftarObj)) {
                 $tglEstObj = clone $tglDaftarObj;
             }
         } else {
