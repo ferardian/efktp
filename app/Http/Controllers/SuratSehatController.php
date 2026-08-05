@@ -48,10 +48,13 @@ class SuratSehatController extends Controller
     function setNoSurat(Request $request)
     {
         $tgl_surat = $request->tgl_surat ? $request->tgl_surat :  date('Y-m-d');
-        $surat = SuratSehat::select('no_surat')
-        ->where('tanggalsurat', date('Y-m-d', strtotime($tgl_surat)))
-        ->orderBy('no_surat', 'DESC')->first();
         $strTanggal = date('Ymd', strtotime($tgl_surat));
+        $prefix = "SKD{$strTanggal}";
+
+        $surat = SuratSehat::select('no_surat')
+            ->where('no_surat', 'like', "{$prefix}%")
+            ->orderBy('no_surat', 'DESC')->first();
+
         if (!$surat) {
             $no = '001';
         } else {
@@ -59,7 +62,7 @@ class SuratSehatController extends Controller
             $no = (int)$noAkhir + 1;
             $no = sprintf('%03d', $no);
         }
-        $no = "SKD{$strTanggal}{$no}";
+        $no = "{$prefix}{$no}";
 
         return response()->json($no);
     }

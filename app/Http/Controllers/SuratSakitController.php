@@ -57,11 +57,13 @@ class SuratSakitController extends Controller
 	public function setNoSurat(Request $request)
 	{
 		$tgl_surat = $request->tgl_surat ? $request->tgl_surat : date('Y-m-d');
+		$strTanggal = Carbon::parse($tgl_surat)->translatedFormat('Ymd');
+		$prefix = "SKS{$strTanggal}";
+
 		$surat = SuratSakit::select('no_surat')
-			->where('tanggalawal', date('Y-m-d', strtotime($tgl_surat)))
+			->where('no_surat', 'like', "{$prefix}%")
 			->orderBy('no_surat', 'DESC')->first();
 
-		$strTanggal = Carbon::parse($tgl_surat)->translatedFormat('Ymd');
 		if (!$surat) {
 			$no = '001';
 		} else {
@@ -69,7 +71,7 @@ class SuratSakitController extends Controller
 			$no = (int) $noAkhir + 1;
 			$no = sprintf('%03d', $no);
 		}
-		$no = "SKS{$strTanggal}{$no}";
+		$no = "{$prefix}{$no}";
 
 		return response()->json($no);
 	}
@@ -77,10 +79,32 @@ class SuratSakitController extends Controller
 	public function create(Request $request)
 	{
 		$terbilang = ucwords(Terbilang::make($request->lama));
+		$tglAwal = date('Y-m-d', strtotime($request->tanggalawal));
+		$strTanggal = Carbon::parse($tglAwal)->translatedFormat('Ymd');
+		$prefix = "SKS{$strTanggal}";
+
+		$noSurat = $request->no_surat;
+
+		if (empty($noSurat) || SuratSakit::where('no_surat', $noSurat)->exists()) {
+			$surat = SuratSakit::select('no_surat')
+				->where('no_surat', 'like', "{$prefix}%")
+				->orderBy('no_surat', 'DESC')
+				->first();
+
+			if (!$surat) {
+				$no = '001';
+			} else {
+				$noAkhir = substr($surat->no_surat, -3);
+				$no = (int) $noAkhir + 1;
+				$no = sprintf('%03d', $no);
+			}
+			$noSurat = "{$prefix}{$no}";
+		}
+
 		$data = [
-			'no_surat' => $request->no_surat,
+			'no_surat' => $noSurat,
 			'no_rawat' => $request->no_rawat,
-			'tanggalawal' => date('Y-m-d', strtotime($request->tanggalawal)),
+			'tanggalawal' => $tglAwal,
 			'tanggalakhir' => date('Y-m-d', strtotime($request->tanggalakhir)),
 			'lamasakit' => "{$request->lama} ({$terbilang})",
 			'diagnosa_surat' => $request->diagnosa,
