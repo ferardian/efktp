@@ -183,23 +183,46 @@ class PcareRujukSubspesialisController extends Controller
 
     public function print(Request $request)
     {
-        $key = [
-            'noKunjungan' => $request->noKunjungan,
-        ];
-        $pcare = PcareRujukSubspesialis::where($key)->with('detail', 'pasien', 'regPeriksa')->first()->toArray();
+        $noKunjungan = $request->noKunjungan;
+        if (!$noKunjungan) {
+            return response('No Kunjungan tidak valid', 400);
+        }
+
+        $pcareModel = PcareRujukSubspesialis::where('noKunjungan', $noKunjungan)
+            ->with(['detail', 'pasien', 'regPeriksa'])
+            ->first();
+
+        if (!$pcareModel) {
+            $kunjungan = \App\Models\PcareKunjungan::where('noKunjungan', $noKunjungan)->first();
+            if ($kunjungan) {
+                $pcareModel = PcareRujukSubspesialis::where('no_rawat', $kunjungan->no_rawat)
+                    ->with(['detail', 'pasien', 'regPeriksa'])
+                    ->first();
+            }
+        }
+
+        if (!$pcareModel) {
+            return response('<div style="text-align:center;padding:50px;font-family:sans-serif;">
+                <h3 style="color:#d33;">Data Rujukan Tidak Ditemukan</h3>
+                <p>Data rujukan lokal untuk No. Kunjungan <b>' . htmlspecialchars($noKunjungan) . '</b> belum tersimpan di database.</p>
+                <p>Silakan buka menu <b>CPPT / Edit Kunjungan</b> pasien dan klik <b>Ubah Kunjungan</b> untuk memperbarui data rujukan.</p>
+            </div>', 404);
+        }
+
+        $pcare = $pcareModel->toArray();
         $setting = Setting::first();
 
         if ($request->size == '8') {
             $pdf = PDF::loadView('content.print.rujukanVertikal8', ['data' => $pcare, 'setting' => $setting]);
-            $pdf->setPaper([0, 0, $request->size * 28.3465, 600])->setOptions(['defaultFont' => 'sherif', 'isRemoteEnabled' => true]);
+            $pdf->setPaper([0, 0, $request->size * 28.3465, 600])->setOptions(['defaultFont' => 'serif', 'isRemoteEnabled' => true]);
         } else if ($request->size == 'a4') {
             $pdf = PDF::loadView('content.print.rujukanVertikalA4', ['data' => $pcare, 'setting' => $setting]);
-            $pdf->setPaper('a4', 'landscape')->setOptions(['defaultFont' => 'sherif', 'isRemoteEnabled' => true]);
+            $pdf->setPaper('a4', 'landscape')->setOptions(['defaultFont' => 'serif', 'isRemoteEnabled' => true]);
         } else {
             $pdf = PDF::loadView('content.print.rujukanVertikal', ['data' => $pcare, 'setting' => $setting]);
-            $pdf->setPaper('a5', 'landscape')->setOptions(['defaultFont' => 'sherif', 'isRemoteEnabled' => true]);
+            $pdf->setPaper('a5', 'landscape')->setOptions(['defaultFont' => 'serif', 'isRemoteEnabled' => true]);
         }
-        return $pdf->stream($pcare['noKunjungan']);
+        return $pdf->stream($pcare['noKunjungan'] . '.pdf');
     }
 
     public function delete($noKunjungan)
