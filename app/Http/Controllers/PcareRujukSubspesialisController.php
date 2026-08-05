@@ -75,6 +75,11 @@ class PcareRujukSubspesialisController extends Controller
                 $this->insertSql(new PcareRujukSubspesialis(), $data);
                 if (!empty($data['noKunjungan'])) {
                     $setting = Setting::first();
+                    $tglEstForAkhir = $data['tglEstRujuk'] ?? date('Y-m-d');
+                    $tglAkhirRujukVal = !empty($request->tglAkhirRujuk) 
+                        ? date('Y-m-d', strtotime(str_replace('-', '/', $request->tglAkhirRujuk))) 
+                        : date('Y-m-d', strtotime('+89 days', strtotime($tglEstForAkhir)));
+
                     $dataEfktp = [
                         'noKunjungan' => $data['noKunjungan'],
                         'kdPpkAsal' => $request->kdPpkAsal,
@@ -83,8 +88,8 @@ class PcareRujukSubspesialisController extends Controller
                         'nmKR' => $request->nmKR ?? $setting?->propinsi ?? '-',
                         'kdKC' => $request->kdKC,
                         'nmKC' => $request->nmKC ?? $setting?->kabupaten ?? '-',
-                        'tglAkhirRujuk' => $request->tglAkhirRujuk,
-                        'jadwal' => $request->jadwal ? $request->jadwal : '-',
+                        'tglAkhirRujuk' => $tglAkhirRujukVal,
+                        'jadwal' => $request->jadwal ? $request->jadwal : 'Setiap Hari Kerja',
                         'infoDenda' => $request->infoDenda ? $request->infoDenda : '-',
                         'catatanRujuk' => $request->catatanRujuk,
                     ];
@@ -171,6 +176,11 @@ class PcareRujukSubspesialisController extends Controller
 
                 if (!empty($data['noKunjungan'])) {
                     $setting = Setting::first();
+                    $tglEstForAkhir = $data['tglEstRujuk'] ?? date('Y-m-d');
+                    $tglAkhirRujukVal = !empty($request->tglAkhirRujuk) 
+                        ? date('Y-m-d', strtotime(str_replace('-', '/', $request->tglAkhirRujuk))) 
+                        : date('Y-m-d', strtotime('+89 days', strtotime($tglEstForAkhir)));
+
                     $dataEfktp = [
                         'noKunjungan' => $data['noKunjungan'],
                         'kdPpkAsal' => $request->kdPpkAsal,
@@ -179,8 +189,8 @@ class PcareRujukSubspesialisController extends Controller
                         'nmKR' => $request->nmKR ?? $setting?->propinsi ?? '-',
                         'kdKC' => $request->kdKC,
                         'nmKC' => $request->nmKC ?? $setting?->kabupaten ?? '-',
-                        'tglAkhirRujuk' => $request->tglAkhirRujuk,
-                        'jadwal' => $request->jadwal ? $request->jadwal : '-',
+                        'tglAkhirRujuk' => $tglAkhirRujukVal,
+                        'jadwal' => $request->jadwal ? $request->jadwal : 'Setiap Hari Kerja',
                         'infoDenda' => $request->infoDenda ? $request->infoDenda : '-',
                         'catatanRujuk' => $request->catatanRujuk,
                     ];
