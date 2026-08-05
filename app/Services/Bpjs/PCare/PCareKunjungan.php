@@ -143,41 +143,43 @@ class PCareKunjungan extends PCareClient
     private function buildRujukan(array $data): array
     {
         $extra = [];
-        $jenis = $data['jenisRujukan'];
+        $jenis = $data['jenisRujukan'] ?? null;
+        $kdPpk = $data['kdPpkRujukan'] ?? $data['kdPPK'] ?? '';
+        $tglEst = $data['tglEstRujukan'] ?? $data['tglEstRujuk'] ?? '';
 
         if ($jenis === 'spesialis') {
             $extra['rujukLanjut'] = [
-                'kdppk'        => $data['kdPpkRujukan'],
-                'tglEstRujuk'  => $data['tglEstRujukan'],
+                'kdppk'        => $kdPpk,
+                'tglEstRujuk'  => $tglEst,
                 'subSpesialis' => [
-                    'kdSubSpesialis1' => $data['kdSubSpesialis'],
-                    'kdSarana'        => $data['kdSarana'],
+                    'kdSubSpesialis1' => $data['kdSubSpesialis'] ?? null,
+                    'kdSarana'        => $data['kdSarana'] ?? null,
                 ],
                 'khusus' => null,
             ];
-            $extra['kdTacc']    = $data['kdTacc'] ?? '-1';
-            $extra['alasanTacc']= $data['alasanTacc'] ?? null;
+            $extra['kdTacc']    = $data['kdTacc'] ?? $data['kdTACC'] ?? '-1';
+            $extra['alasanTacc']= $data['alasanTacc'] ?? $data['alasanTACC'] ?? null;
         } elseif ($jenis === 'khusus') {
             $extra['rujukLanjut'] = [
-                'kdppk'       => $data['kdPpkRujukan'],
-                'tglEstRujuk' => $data['tglEstRujukan'],
+                'kdppk'       => $kdPpk,
+                'tglEstRujuk' => $tglEst,
                 'subSpesialis'=> null,
                 'khusus'      => [
-                    'kdKhusus'    => $data['kdKhusus'],
-                    'kdSubSpesialis' => $data['kdKhususSub'],
-                    'catatan'     => $data['catatanKhusus'],
+                    'kdKhusus'       => $data['kdKhusus'] ?? null,
+                    'kdSubSpesialis' => $data['kdKhususSub'] ?? $data['kdSubSpesialis'] ?? null,
+                    'catatan'        => $data['catatanKhusus'] ?? $data['catatanRujuk'] ?? null,
                 ],
             ];
-            $extra['kdTacc']    = $data['kdTacc'] ?? '-1';
-            $extra['alasanTacc']= $data['alasanTacc'] ?? null;
+            $extra['kdTacc']    = $data['kdTacc'] ?? $data['kdTACC'] ?? '-1';
+            $extra['alasanTacc']= $data['alasanTacc'] ?? $data['alasanTACC'] ?? null;
         } elseif ($jenis === 'internal') {
             $extra['rujukLanjut'] = [
-                'kdppk'       => $data['kdPpkRujukan'],
-                'tglEstRujuk' => $data['tglEstRujukan'],
+                'kdppk'       => $kdPpk,
+                'tglEstRujuk' => $tglEst,
                 'subSpesialis'=> null,
             ];
-            $extra['kdTacc']    = $data['kdTacc'] ?? '-1';
-            $extra['alasanTacc']= $data['alasanTacc'] ?? null;
+            $extra['kdTacc']    = $data['kdTacc'] ?? $data['kdTACC'] ?? '-1';
+            $extra['alasanTacc']= $data['alasanTacc'] ?? $data['alasanTACC'] ?? null;
         }
 
         return $extra;

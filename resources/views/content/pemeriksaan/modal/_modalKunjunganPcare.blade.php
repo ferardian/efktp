@@ -1195,13 +1195,13 @@
                         data['spesialis'] = formRujukanSpesialis.find('input[name=subSpesialis]').val();
                         data['kdSubSpesialis'] = formRujukanSpesialis.find('input[name=kdSubSpesialis]').val();
 
-                        data['kdPpkRujukan'] = formRujukanSpesialis.find('#ppkRujukan').val();
-                        data['ppkRujukan'] = formRujukanSpesialis.find('input[name=nmPpkRujukan]').val();
+                        data['kdPpkRujukan'] = $('#kdPpkRujukan').val() || formKunjunganPcare.find('input[name=kdPpkRujukan]').val();
+                        data['ppkRujukan'] = $('#ppkRujukan').val() || formKunjunganPcare.find('input[name=ppkRujukan]').val();
 
-                        data['kdSarana'] = formRujukanSpesialis.find('#saranaRujukan').val();
+                        data['kdSarana'] = formRujukanSpesialis.find('#saranaRujukan').val() || $('#saranaRujukan').val();
                         data['sarana'] = formRujukanSpesialis.find('input[name=nmSaranaRujukan]').val();
 
-                        data['tglEstRujukan'] = formRujukanSpesialis.find('#tglEstRujukan').val();
+                        data['tglEstRujukan'] = formRujukanSpesialis.find('#tglEstRujukan').val() || $('#tglEstRujukan').val();
 
                         data['catatanRujuk'] = formRujukanSpesialis.find('#catatanRujuk').val();
                         data['jadwal'] = formRujukanSpesialis.find('#jadwalRujuk').val();
@@ -1213,10 +1213,10 @@
                         data['kdSubSpesialis'] = formRujukanKhusus.find('input[name=subSpesialisKhusus]').val();
                         data['subSpesialis'] = formRujukanKhusus.find('input[name=kdSubSpesialisKhusus]').val();
 
-                        data['kdPpkRujukan'] = formRujukanKhusus.find('#ppkKhusus').val();
-                        data['ppkRujukan'] = formRujukanKhusus.find('input[name=nmPpkKhusus]').val();
+                        data['kdPpkRujukan'] = $('#kdPpkRujukan').val() || formKunjunganPcare.find('input[name=kdPpkRujukan]').val();
+                        data['ppkRujukan'] = $('#ppkRujukan').val() || formKunjunganPcare.find('input[name=ppkRujukan]').val();
 
-                        data['tglEstRujukan'] = formRujukanKhusus.find('#tglEstKhusus').val();
+                        data['tglEstRujukan'] = formRujukanKhusus.find('#tglEstKhusus').val() || $('#tglEstRujukan').val();
                         data['catatanRujuk'] = formRujukanKhusus.find('#catatanKhusus').val();
                     }
 
