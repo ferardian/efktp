@@ -145,7 +145,29 @@ class PCareKunjungan extends PCareClient
         $extra = [];
         $jenis = $data['jenisRujukan'] ?? null;
         $kdPpk = $data['kdPpkRujukan'] ?? $data['kdPPK'] ?? '';
-        $tglEst = $data['tglEstRujukan'] ?? $data['tglEstRujuk'] ?? '';
+
+        $tglDaftarRaw = $data['tgl_daftar'] ?? $data['tglDaftar'] ?? date('d-m-Y');
+        try {
+            $tglDaftarObj = Carbon::parse(str_replace('/', '-', $tglDaftarRaw));
+        } catch (\Exception $e) {
+            $tglDaftarObj = Carbon::now();
+        }
+
+        $tglEstRaw = $data['tglEstRujukan'] ?? $data['tglEstRujuk'] ?? null;
+        if (!empty($tglEstRaw) && $tglEstRaw !== '-') {
+            try {
+                $tglEstObj = Carbon::parse(str_replace('/', '-', $tglEstRaw));
+                if ($tglEstObj->lt($tglDaftarObj)) {
+                    $tglEstObj = clone $tglDaftarObj;
+                }
+            } catch (\Exception $e) {
+                $tglEstObj = clone $tglDaftarObj;
+            }
+        } else {
+            $tglEstObj = clone $tglDaftarObj;
+        }
+
+        $tglEst = $tglEstObj->format('d-m-Y');
 
         if ($jenis === 'spesialis') {
             $extra['rujukLanjut'] = [
