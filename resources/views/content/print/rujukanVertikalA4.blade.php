@@ -10,8 +10,8 @@
                     <img src="{{ asset('/public/img/logo-bpjs.png') }}" alt="" width="350" style="margin-top:15px:top:0" />
                 </td>
                 <td width="50%">
-                    <h3 style="margin-bottom:0px;margin-top:0px">Divisi Regional : {{ $data['detail']['nmKR'] }}</h3>
-                    <h3 style="margin-bottom:0px;margin-top:0px">Kantor Cabang : {{ $data['detail']['nmKC'] }}</h3>
+                    <h3 style="margin-bottom:0px;margin-top:0px">Divisi Regional : {{ $data['detail']['nmKR'] ?? '-' }}</h3>
+                    <h3 style="margin-bottom:0px;margin-top:0px">Kantor Cabang : {{ $data['detail']['nmKC'] ?? '-' }}</h3>
                 </td>
             </tr>
         </table>
@@ -28,12 +28,12 @@
                     <tr>
                         <td>Puskesmas/Dokter Keluarga</td>
                         <td>:</td>
-                        <td>{{ $data['detail']['nmPpkAsal'] }}</td>
+                        <td>{{ $data['detail']['nmPpkAsal'] ?? '-' }}</td>
                     </tr>
                     <tr>
                         <td>Kabupaten/Kota</td>
                         <td>:</td>
-                        <td>{{ $data['detail']['nmKC'] }}</td>
+                        <td>{{ $data['detail']['nmKC'] ?? '-' }}</td>
                     </tr>
                 </table>
             </div>
@@ -54,10 +54,10 @@
                 <tr>
                     <td width="15%">Nama </td>
                     <td width="2%">:</td>
-                    <td width="50%">{{ $data['nm_pasien'] }} ({{ $data['pasien']['jk'] == 'L' ? 'Laki-laki' : 'Perempuan' }})</td>
+                    <td width="50%">{{ $data['nm_pasien'] }} ({{ ($data['pasien']['jk'] ?? '') == 'L' ? 'Laki-laki' : 'Perempuan' }})</td>
                     <td width="10%">Umur</td>
                     <td width="2%">:</td>
-                    <td width="20%">{{ $data['reg_periksa']['umurdaftar'] }} {{ $data['reg_periksa']['sttsumur'] }} / {{ Carbon\Carbon::parse($data['pasien']['tgl_lahir'])->translatedFormat('d F Y') }}</td>
+                    <td width="20%">{{ $data['reg_periksa']['umurdaftar'] ?? '-' }} {{ $data['reg_periksa']['sttsumur'] ?? '' }} / {{ !empty($data['pasien']['tgl_lahir']) ? Carbon\Carbon::parse($data['pasien']['tgl_lahir'])->translatedFormat('d F Y') : '-' }}</td>
                 </tr>
                 <tr>
                     <td>No Kartu BPJS</td>
@@ -72,7 +72,7 @@
                 <tr>
                     <td>Catatan</td>
                     <td>:</td>
-                    <td style="vertical-align: bottom;">{{ $data['detail']['catatanRujuk'] }}</td>
+                    <td style="vertical-align: bottom;">{{ $data['detail']['catatanRujuk'] ?? '-' }}</td>
                 </tr>
             </table>
             <p style="margin:10px">Atas bantuannya, diucapkan terimakasih</p>
@@ -80,13 +80,13 @@
                 <tr>
                     <td width="650px">
                         <p>
-                            Tgl Renc. Kunjungan : <strong>{{ date('d-m-Y', strtotime($data['tglEstRujuk'])) }}</strong>
+                            Tgl Renc. Kunjungan : <strong>{{ !empty($data['tglEstRujuk']) ? date('d-m-Y', strtotime($data['tglEstRujuk'])) : '-' }}</strong>
                         </p>
                         <p>
-                            Jadwal : <strong>{{ $data['detail']['jadwal'] }}</strong>
+                            Jadwal : <strong>{{ $data['detail']['jadwal'] ?? '-' }}</strong>
                         </p>
                         <p>
-                            Surat rujukan berlaku satu kali kunjungan, berlaku sampai : <strong>{{ date('d-m-Y', strtotime($data['detail']['tglAkhirRujuk'])) }}</strong>
+                            Surat rujukan berlaku satu kali kunjungan, berlaku sampai : <strong>{{ !empty($data['detail']['tglAkhirRujuk']) ? date('d-m-Y', strtotime($data['detail']['tglAkhirRujuk'])) : '-' }}</strong>
                         </p>
 
                     </td>
@@ -96,7 +96,7 @@
                     </td>
                 </tr>
             </table>
-            Info Denda : {{ $data['detail']['infoDenda'] }}
+            Info Denda : {{ $data['detail']['infoDenda'] ?? '-' }}
         </div>
     </div>
     {{-- @dd($data) --}}
