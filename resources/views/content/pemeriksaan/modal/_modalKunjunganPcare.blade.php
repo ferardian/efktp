@@ -1124,6 +1124,7 @@
                                     setStatusLayan(data['no_rawat'], 'Dirujuk');
                                     $('#modalCppt').modal('hide');
                                     modalKunjunganPcare.modal('hide');
+                                    window.location.href = `{{ url('/pcare/kunjungan') }}`;
                                 });
                             }).fail((errRujukan) => {
                                 Swal.close();
@@ -1242,6 +1243,7 @@
                                         alertSuccessAjax('BERHASIL UBAH KUNJUNGAN').then(() => {
                                             $('#modalCppt').modal('hide');
                                             modalKunjunganPcare.modal('hide');
+                                            window.location.href = `{{ url('/pcare/kunjungan') }}`;
                                         });
                                     }).fail((err) => {
                                         Swal.close();
