@@ -117,10 +117,15 @@ class BpjsHttpClient
         try {
             $response = Http::withHeaders($this->headers())
                 ->withoutVerifying()
-                ->put($url, $data);
+                ->withBody(json_encode($data), 'text/plain')
+                ->put($url);
+
+            if (!$response->successful()) {
+                Log::error("[BPJS PUT Error] Status: {$response->status()}, URL: {$url}, Body: {$response->body()}");
+            }
 
             $body = $response->json() ?? [];
-            return $this->handleResponse($body);
+            return $this->handleResponse($body, $response->body());
         } catch (\Exception $e) {
             Log::error("[BPJS PUT Error] {$e->getMessage()}");
             return ['metaData' => ['code' => 500, 'message' => $e->getMessage()]];
@@ -140,7 +145,7 @@ class BpjsHttpClient
                 ->delete($url);
 
             $body = $response->json() ?? [];
-            return $this->handleResponse($body);
+            return $this->handleResponse($body, $response->body());
         } catch (\Exception $e) {
             Log::error("[BPJS DELETE Error] {$e->getMessage()}");
             return ['metaData' => ['code' => 500, 'message' => $e->getMessage()]];
@@ -150,13 +155,14 @@ class BpjsHttpClient
     /**
      * Otomatis dekripsi respons jika 'response' berupa string acak
      */
-    protected function handleResponse($body): array
+    protected function handleResponse($body, string $rawBody = ''): array
     {
         if (empty($body)) {
+            $msg = !empty($rawBody) ? strip_tags(substr($rawBody, 0, 300)) : 'Respons kosong dari BPJS. Pastikan URL dan Kredensial benar.';
             return [
                 'metaData' => [
                     'code'    => 500,
-                    'message' => 'Respons kosong dari BPJS. Pastikan URL dan Kredensial benar.'
+                    'message' => $msg
                 ]
             ];
         }
