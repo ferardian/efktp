@@ -1067,14 +1067,13 @@
                             }
                         }
 
-                        const isPendaftaranSuccess = resBridgingPendaftaran && (
-                            (resBridgingPendaftaran.metaData && (resBridgingPendaftaran.metaData.code == 201 || resBridgingPendaftaran.metaData.code == 200)) ||
-                            (resBridgingPendaftaran.metadata && (resBridgingPendaftaran.metadata.code == 201 || resBridgingPendaftaran.metadata.code == 200))
-                        );
+                        const pendaftaranRes = resBridgingPendaftaran?.pendaftaran || resBridgingPendaftaran;
+                        const pendaftaranMetaData = pendaftaranRes?.metaData || pendaftaranRes?.metadata;
+                        const isPendaftaranSuccess = pendaftaranRes && pendaftaranMetaData && (pendaftaranMetaData.code == 201 || pendaftaranMetaData.code == 200);
 
                         if (isPendaftaranSuccess) {
-                            const resObj = resBridgingPendaftaran.response || resBridgingPendaftaran.response;
-                            pendaftaranData['noUrut'] = resObj ? (resObj.message || resObj) : '';
+                            const resObj = pendaftaranRes.response;
+                            pendaftaranData['noUrut'] = (typeof resObj === 'object' && resObj !== null) ? (resObj.message || resObj) : (resObj || '');
                             pendaftaranData['status'] = 'Terkirim';
                             
                             // Simpan Pendaftaran ke Lokal
@@ -1082,7 +1081,7 @@
                             showToast('Berhasil mendaftarkan pasien ke PCare secara otomatis');
                         } else {
                             Swal.close();
-                            alertErrorBpjs(resBridgingPendaftaran || { metaData: { message: 'Gagal Bridging Pendaftaran', code: 500 } });
+                            alertErrorBpjs(pendaftaranRes || { metaData: { message: 'Gagal Bridging Pendaftaran', code: 500 } });
                             return; // Berhenti jika pendaftaran gagal
                         }
                     }
