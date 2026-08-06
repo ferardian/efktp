@@ -1043,9 +1043,38 @@
                         }
 
                         // Panggil API Bridging Pendaftaran
-                        const resBridgingPendaftaran = await $.post(`{{ url('/bridging/pcare/pendaftaran') }}`, pendaftaranData);
-                                                if (resBridgingPendaftaran && resBridgingPendaftaran.metaData && resBridgingPendaftaran.metaData.code == 201) {
-                            pendaftaranData['noUrut'] = resBridgingPendaftaran.response ? resBridgingPendaftaran.response.message : '';
+                        let resBridgingPendaftaran = await $.post(`{{ url('/bridging/pcare/pendaftaran') }}`, pendaftaranData);
+
+                        if (resBridgingPendaftaran && resBridgingPendaftaran.requires_confirm) {
+                            Swal.close();
+                            const confirmResult = await Swal.fire({
+                                title: 'Konfirmasi Antrean BPJS',
+                                html: `<p>Pengiriman ke Antrean BPJS terkendala:</p><strong class="text-danger">${resBridgingPendaftaran.antrian_error}</strong><p class="mt-2">Apakah Anda ingin melanjutkan pendaftaran langsung ke PCare?</p>`,
+                                icon: 'warning',
+                                showCancelButton: true,
+                                confirmButtonText: 'Ya, Lanjutkan ke PCare',
+                                cancelButtonText: 'Batal',
+                                confirmButtonColor: '#3085d6',
+                                cancelButtonColor: '#d33'
+                            });
+
+                            if (confirmResult.isConfirmed) {
+                                loadingAjax('Mendaftarkan pasien ke PCare...');
+                                pendaftaranData['skip_antrian'] = true;
+                                resBridgingPendaftaran = await $.post(`{{ url('/bridging/pcare/pendaftaran') }}`, pendaftaranData);
+                            } else {
+                                return; // User membatalkan
+                            }
+                        }
+
+                        const isPendaftaranSuccess = resBridgingPendaftaran && (
+                            (resBridgingPendaftaran.metaData && (resBridgingPendaftaran.metaData.code == 201 || resBridgingPendaftaran.metaData.code == 200)) ||
+                            (resBridgingPendaftaran.metadata && (resBridgingPendaftaran.metadata.code == 201 || resBridgingPendaftaran.metadata.code == 200))
+                        );
+
+                        if (isPendaftaranSuccess) {
+                            const resObj = resBridgingPendaftaran.response || resBridgingPendaftaran.response;
+                            pendaftaranData['noUrut'] = resObj ? (resObj.message || resObj) : '';
                             pendaftaranData['status'] = 'Terkirim';
                             
                             // Simpan Pendaftaran ke Lokal
