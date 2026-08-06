@@ -209,11 +209,17 @@
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label required">Club Prolanis</label>
-                            <select class="form-select" name="clubId" id="formClubId" required>
-                                <option value="">-- Memuat Club Prolanis --</option>
-                            </select>
+                            <label class="form-label required">Club Prolanis <span class="text-danger">*</span></label>
+                            <input type="hidden" id="clubInputMode" value="select">
+                            <div id="clubSelectContainer">
+                                <select class="form-select" id="formClubIdSelect">
+                                    <option value="">-- Memuat Club Prolanis --</option>
+                                </select>
+                            </div>
+                            <input type="text" class="form-control d-none" id="formManualClubId" placeholder="Ketik ID / Nama Club (misal: 34)">
+                            <input type="hidden" name="clubId" id="formFinalClubId">
                             <input type="hidden" name="namaClub" id="formNamaClub">
+                            <small class="form-hint text-muted" id="clubHintText">Diambil otomatis dari data Club BPJS</small>
                         </div>
                     </div>
                     <div class="row">
@@ -449,21 +455,58 @@
 
     // 3. UPDATE DROPDOWN CLUB DI MODAL TAMBAH
     function updateClubDropdown() {
-        const select = $('#formClubId');
-        select.empty();
+        const kdKelompok = $('#formKdKelompok').val() || '01';
+        const selectContainer = $('#clubSelectContainer');
+        const select = $('#formClubIdSelect');
+        const manualInput = $('#formManualClubId');
+        const hintText = $('#clubHintText');
 
-        if (listClubCache.length > 0) {
-            listClubCache.forEach(item => {
-                select.append(`<option value="${item.clubId}" data-nama="${item.nama}">${item.clubId} - ${item.nama}</option>`);
-            });
-            $('#formNamaClub').val(listClubCache[0].nama);
-        } else {
-            select.append(`<option value="">-- Tidak ada club prolanis --</option>`);
-        }
+        select.empty().append('<option value="">-- Memuat Club Prolanis --</option>');
+        hintText.text('Mencari data Club Prolanis dari BPJS...');
+
+        $.get(`{{ url('/bridging/pcare/kelompok/club') }}/${kdKelompok}`).done(function(res) {
+            const list = res?.response?.list || [];
+
+            if (list.length > 0) {
+                $('#clubInputMode').val('select');
+                selectContainer.removeClass('d-none');
+                manualInput.addClass('d-none').prop('required', false);
+                select.empty();
+
+                list.forEach(item => {
+                    select.append(`<option value="${item.clubId}" data-nama="${item.nama}">${item.clubId} - ${item.nama}</option>`);
+                });
+
+                const firstOpt = select.find('option:first');
+                $('#formFinalClubId').val(firstOpt.val());
+                $('#formNamaClub').val(firstOpt.data('nama') || '');
+                hintText.text('Otomatis diambil dari data Club Prolanis BPJS');
+            } else {
+                // Jika BPJS mengembalikan list kosong (belum terdaftar club di BPJS): ijinkan input manual ID
+                $('#clubInputMode').val('manual');
+                selectContainer.addClass('d-none');
+                manualInput.removeClass('d-none').prop('required', true);
+                hintText.html('<span class="text-warning"><i class="ti ti-alert-triangle me-1"></i>Belum ada Club terdaftar di BPJS untuk program ini. Silahkan isi ID Club secara manual.</span>');
+                $('#formNamaClub').val('Club Prolanis Manual');
+                $('#formFinalClubId').val(manualInput.val());
+            }
+        }).fail(function() {
+            $('#clubInputMode').val('manual');
+            selectContainer.addClass('d-none');
+            manualInput.removeClass('d-none').prop('required', true);
+            hintText.html('<span class="text-warning"><i class="ti ti-alert-triangle me-1"></i>Gagal mengambil data Club. Silahkan isi ID Club secara manual.</span>');
+            $('#formNamaClub').val('Club Prolanis Manual');
+            $('#formFinalClubId').val(manualInput.val());
+        });
 
         select.off('change').on('change', function() {
-            const selectedOpt = $(this).find('option:selected');
-            $('#formNamaClub').val(selectedOpt.data('nama') || '');
+            const opt = $(this).find('option:selected');
+            $('#formFinalClubId').val(opt.val());
+            $('#formNamaClub').val(opt.data('nama') || '');
+        });
+
+        manualInput.off('input').on('input', function() {
+            $('#formFinalClubId').val($(this).val());
         });
     }
 
