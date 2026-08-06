@@ -274,6 +274,7 @@
         let checkJam = $('.checkJam');
         let setTime = '';
         const switchPendaftaranPcare = $('#switchPendaftaranPcare');
+        const antrianEnabled = {{ config('bpjs.antrian.enabled', false) ? 'true' : 'false' }};
 
 
         switchPendaftaranPcare.on('change', (e) => {
@@ -658,12 +659,17 @@
                     setMappingPoliPcare(kdPoli)
                     setMappingDokterPcare(kd_dokter.val())
                 } else if (response.penjab.png_jawab.includes('BPJS')) {
-                    periksaPendaftaran.removeClass('d-none');
-                    switchPendaftaranPcare.prop('checked', false);
+                    if (antrianEnabled) {
+                        periksaPendaftaran.addClass('d-none');
+                        switchPendaftaranPcare.prop('checked', false);
+                    } else {
+                        periksaPendaftaran.removeClass('d-none');
+                        switchPendaftaranPcare.prop('checked', true);
 
-                    const kdPoli = formRegistrasiPoli.find('select[name=kd_poli]').val();
-                    setMappingPoliPcare(kdPoli)
-                    setMappingDokterPcare(kd_dokter.val())
+                        const kdPoli = formRegistrasiPoli.find('select[name=kd_poli]').val();
+                        setMappingPoliPcare(kdPoli);
+                        setMappingDokterPcare(kd_dokter.val());
+                    }
                 } else {
                     periksaPendaftaran.addClass('d-none');
                     switchPendaftaranPcare.prop('checked', false);
