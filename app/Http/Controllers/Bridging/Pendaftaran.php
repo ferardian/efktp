@@ -97,7 +97,7 @@ class Pendaftaran extends Controller
                 'tanggalperiksa'=> date('Y-m-d', strtotime($request->tgl_registrasi)),
                 'kodedokter'    => (int) $request->kd_dokter_pcare,
                 'namadokter'    => $request->nm_dokter ?? 'Dokter Faskes',
-                'jampraktek'    => $this->getJamPraktek($request->kd_dokter, $request->tgl_registrasi),
+                'jampraktek'    => $this->getJamPraktek($request->kd_dokter ?? $request->kdDokter ?? $request->kd_dokter_pcare, $request->tgl_registrasi),
                 'nomorantrean'  => $request->no_reg,
                 'angkaantrean'  => (int) $request->no_reg,
                 'keterangan'    => 'Peserta harap 30 menit lebih awal guna pencatatan administrasi.',
