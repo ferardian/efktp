@@ -362,10 +362,11 @@ function alertErrorAjax(request) {
 }
 
 function alertErrorBpjs(data) {
-    const metaData = data?.metaData || {};
+    const antrianError = data?.antrian_error || data?.antrian_response?.metadata?.message || data?.antrian_response?.metaData?.message;
+    const metaData = data?.metaData || data?.metadata || {};
     const response = data?.response || '';
-    const message = metaData.message || 'Terjadi kesalahan sistem';
-    const code = metaData.code || '500';
+    const message = antrianError || metaData.message || data?.message || 'Terjadi kesalahan sistem';
+    const code = metaData.code || (antrianError ? '201' : (data?.code || '500'));
 
     const errors = Array.isArray(response) ? response.map(
         ({ field, message }) => `${field} : ${message}`

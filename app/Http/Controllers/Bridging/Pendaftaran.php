@@ -83,8 +83,8 @@ class Pendaftaran extends Controller
             }
 
             $noHp = trim($request->no_tlp ?? '');
-            if ($noHp === '-' || strtolower($noHp) === 'null') {
-                $noHp = '';
+            if ($noHp === '' || $noHp === '-' || strtolower($noHp) === 'null') {
+                $noHp = '08000000000';
             }
 
             $antrianPayload = [
