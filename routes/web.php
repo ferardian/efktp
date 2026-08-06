@@ -608,6 +608,7 @@ Route::middleware('auth:web,admin')->group(function () {
 
 	// OBAT
 	Route::post('/bridging/pcare/obat', [Bridging\Obat::class, 'create']);
+	Route::post('/bridging/pcare/obat/sync', [Bridging\Obat::class, 'syncByNoRawat']);
 	Route::get('/bridging/pcare/obat/{keyword?}', [Bridging\Obat::class, 'get']);
 
 	//    Diagnosa

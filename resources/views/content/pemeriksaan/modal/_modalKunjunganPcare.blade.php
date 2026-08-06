@@ -1141,7 +1141,19 @@
                     // UPDATE OR CREATE LOCAL KUNJUNGAN
                     const checkKunjunganLokal = await $.get(`{{ url('pcare/kunjungan/get') }}`, { no_rawat: data.no_rawat });
                     const urlSaveKunjungan = (checkKunjunganLokal && Object.keys(checkKunjunganLokal).length > 0) ? `{{ url('pcare/kunjungan/update') }}` : `{{ url('pcare/kunjungan') }}`;
-                    $.post(urlSaveKunjungan, data).done((response) => {
+                    $.post(urlSaveKunjungan, data).done(async (response) => {
+                        // Sinkronkan data obat ke PCare BPJS jika ada resepnya
+                        if (noKunjungan && noKunjungan !== '') {
+                            try {
+                                await $.post(`{{ url('/bridging/pcare/obat/sync') }}`, {
+                                    no_rawat: data.no_rawat,
+                                    noKunjungan: noKunjungan
+                                });
+                            } catch (eObat) {
+                                console.warn('Gagal sync obat PCare:', eObat);
+                            }
+                        }
+
                         if (data['kdStatusPulang'] == 4 || data['kdStatusPulang'] == 6) {
                             data['nmSubSpesialis'] = formRujukanSpesialis.find('input[name=subSpesialis]').val();
                             data['kdSubSpesialis'] = formRujukanSpesialis.find('input[name=kdSubSpesialis]').val();
