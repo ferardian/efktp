@@ -183,6 +183,10 @@
                        class="dropdown-item {{ Request::is('pcare/kunjungan') ? 'active' : '' }}">
                         Kunjungan
                     </a>
+                    <a href="{{ url('pcare/kelompok') }}"
+                       class="dropdown-item {{ Request::is('pcare/kelompok*') ? 'active' : '' }}">
+                        Kegiatan & Club Prolanis
+                    </a>
                     {{-- <a href="{{ url('pcare/rujukan') }}" class="dropdown-item {{ Request::is('pcare/rujukan') ? 'active' : '' }}">
                         Rujuk Keluar
                     </a> --}}
