@@ -611,9 +611,17 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::post('/bridging/pcare/obat/sync', [Bridging\Obat::class, 'syncByNoRawat']);
 	Route::get('/bridging/pcare/obat/{keyword?}', [Bridging\Obat::class, 'get']);
 
-	//    Diagnosa
-	Route::get('/bridging/pcare/diagnosa/{diagnosa}', [Bridging\Diagnosa::class, 'get']);
+	// KELOMPOK / CLUB PROLANIS
+	Route::get('/bridging/pcare/kelompok/club/{kdProgram?}', [Bridging\Kelompok::class, 'getClub']);
+	Route::get('/bridging/pcare/kelompok/kegiatan/{bulan?}', [Bridging\Kelompok::class, 'getKegiatan']);
+	Route::get('/bridging/pcare/kelompok/peserta/{eduId}', [Bridging\Kelompok::class, 'getPeserta']);
+	Route::post('/bridging/pcare/kelompok/kegiatan', [Bridging\Kelompok::class, 'storeKegiatan']);
+	Route::post('/bridging/pcare/kelompok/peserta', [Bridging\Kelompok::class, 'storePeserta']);
+	Route::delete('/bridging/pcare/kelompok/kegiatan/{eduId}', [Bridging\Kelompok::class, 'destroyKegiatan']);
+	Route::delete('/bridging/pcare/kelompok/peserta/{eduId}/{noKartu}', [Bridging\Kelompok::class, 'destroyPeserta']);
 });
+
+Route::get('/pcare/kelompok', [Bridging\Kelompok::class, 'index']);
 
 Route::get('/test/{no_resep}', [ResepObatController::class, 'copyResep']);
 
