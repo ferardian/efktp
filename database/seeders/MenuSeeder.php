@@ -73,6 +73,7 @@ class MenuSeeder extends Seeder
             // submenus under Pcare (parent_id = 5)
             ['id' => 15, 'name' => 'Pendaftaran', 'url' => 'pcare/pendaftaran', 'icon' => null, 'parent_id' => 5, 'order_num' => 1, 'target' => '_self', 'position' => 'navbar', 'roles' => ['admin', 'petugas', 'owner']],
             ['id' => 16, 'name' => 'Kunjungan', 'url' => 'pcare/kunjungan', 'icon' => null, 'parent_id' => 5, 'order_num' => 2, 'target' => '_self', 'position' => 'navbar', 'roles' => ['admin', 'petugas', 'owner']],
+            ['id' => 45, 'name' => 'Kegiatan & Club Prolanis', 'url' => 'pcare/kelompok', 'icon' => null, 'parent_id' => 5, 'order_num' => 3, 'target' => '_self', 'position' => 'navbar', 'roles' => ['admin', 'dokter', 'petugas', 'owner']],
 
             // submenus under Antrean (parent_id = 7)
             ['id' => 17, 'name' => 'Poliklinik', 'url' => 'antrean/poliklinik', 'icon' => null, 'parent_id' => 7, 'order_num' => 1, 'target' => '_blank', 'position' => 'navbar', 'roles' => ['admin', 'dokter', 'apoteker', 'petugas', 'owner']],

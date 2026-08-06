@@ -11,11 +11,13 @@ class MenuController extends Controller
 {
     public function index()
     {
+        $this->ensureProlanisMenu();
         return view('content.master.menu');
     }
 
     public function getPermissions(Request $request)
     {
+        $this->ensureProlanisMenu();
         $request->validate([
             'role' => 'required|string',
         ]);
@@ -84,6 +86,34 @@ class MenuController extends Controller
             return response()->json([
                 'message' => 'Gagal memperbarui hak akses menu: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    private function ensureProlanisMenu()
+    {
+        try {
+            $pcareParent = Menu::where('name', 'Pcare')->whereNull('parent_id')->first();
+            if ($pcareParent) {
+                $existing = Menu::where('url', 'pcare/kelompok')->first();
+                if (!$existing) {
+                    $newMenu = Menu::create([
+                        'name'      => 'Kegiatan & Club Prolanis',
+                        'url'       => 'pcare/kelompok',
+                        'icon'      => null,
+                        'parent_id' => $pcareParent->id,
+                        'order_num' => 3,
+                        'target'    => '_self',
+                        'position'  => 'navbar',
+                    ]);
+
+                    $roles = ['admin', 'dokter', 'petugas', 'owner'];
+                    foreach ($roles as $r) {
+                        MenuRole::firstOrCreate(['menu_id' => $newMenu->id, 'role' => $r]);
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            // ignore
         }
     }
 }
