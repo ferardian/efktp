@@ -188,6 +188,31 @@
                             </div>
                         </div>
                     </div>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#navbar-pcare" data-bs-toggle="dropdown"
+                       data-bs-auto-close="false" role="button" aria-expanded="false">
+                        <span class="nav-link-icon d-md-none d-lg-inline-block">
+                            <i class="ti ti-heartbeat"></i>
+                        </span>
+                        <span class="nav-link-title">
+                            BPJS PCARE
+                        </span>
+                    </a>
+                    <div class="dropdown-menu">
+                        <div class="dropdown-menu-columns">
+                            <div class="dropdown-menu-column">
+                                <a class="dropdown-item {{ Request::is('pcare/pendaftaran*') ? 'active' : '' }}" href="{{ url('pcare/pendaftaran') }}">
+                                    Pendaftaran PCare
+                                </a>
+                                <a class="dropdown-item {{ Request::is('pcare/kunjungan*') ? 'active' : '' }}" href="{{ url('pcare/kunjungan') }}">
+                                    Kunjungan PCare
+                                </a>
+                                <a class="dropdown-item {{ Request::is('pcare/kelompok*') ? 'active' : '' }}" href="{{ url('pcare/kelompok') }}">
+                                    Kegiatan & Club Prolanis
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
