@@ -659,7 +659,7 @@
                     setMappingDokterPcare(kd_dokter.val())
                 } else if (response.penjab.png_jawab.includes('BPJS')) {
                     periksaPendaftaran.removeClass('d-none');
-                    switchPendaftaranPcare.prop('checked', true);
+                    switchPendaftaranPcare.prop('checked', false);
 
                     const kdPoli = formRegistrasiPoli.find('select[name=kd_poli]').val();
                     setMappingPoliPcare(kdPoli)
