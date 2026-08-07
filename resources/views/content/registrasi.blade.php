@@ -119,9 +119,14 @@
                 formRegistrasiPoli.find('select[name=kd_poli]').append(poli);
 
                 if (penjab.png_jawab.includes('BPJS')) {
-                    periksaPendaftaran.removeClass('d-none')
-                    switchPendaftaranPcare.prop('checked', true)
-                    periksaPendaftaran.find('input').prop('disabled', false)
+                    if (typeof antrianEnabled !== 'undefined' && antrianEnabled) {
+                        periksaPendaftaran.addClass('d-none');
+                        switchPendaftaranPcare.prop('checked', false);
+                    } else {
+                        periksaPendaftaran.removeClass('d-none');
+                        switchPendaftaranPcare.prop('checked', true);
+                        periksaPendaftaran.find('input').prop('disabled', false);
+                    }
                     $.get(`{{ url('/mapping/pcare/poliklinik') }}`, {
                         kdPoli: poliklinik.kd_poli
                     }).done((response) => {
@@ -144,7 +149,7 @@
                         }
                     })
                 } else {
-                    switchPendaftaranPcare.attr('checked', false)
+                    switchPendaftaranPcare.prop('checked', false)
                     periksaPendaftaran.addClass('d-none')
                     formRegistrasiPoli.find('input[name=no_peserta]').val('-')
                 }
