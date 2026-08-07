@@ -205,7 +205,6 @@ class Kunjungan extends Controller
             'NmPrognosa'     => $request->nmPrognosa ?? '',
             'terapi_non_obat'=> $request->instruksi,
             'bmhp'           => '-',
-            'jadwal'         => $request->jadwal ?? $request->jadwalRujuk ?? null,
         ];
 
         if ($update) {

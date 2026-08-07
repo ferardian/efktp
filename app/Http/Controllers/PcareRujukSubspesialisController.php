@@ -73,7 +73,6 @@ class PcareRujukSubspesialisController extends Controller
             'kdTACC' => $request->kdTACC ?? $request->kdTacc,
             'nmTACC' => $request->nmTACC ?? $request->nmTacc,
             'alasanTACC' => $request->alasanTACC ?? $request->alasanTacc,
-            'jadwal' => $request->jadwal ?? $request->jadwalRujuk,
         ];
 
         if (empty($data['noKunjungan']) && !empty($data['no_rawat'])) {
@@ -103,7 +102,7 @@ class PcareRujukSubspesialisController extends Controller
                         'kdKC' => $request->kdKC,
                         'nmKC' => $request->nmKC ?? $setting?->kabupaten ?? '-',
                         'tglAkhirRujuk' => $tglAkhirRujukVal,
-                        'jadwal' => $request->jadwal ? $request->jadwal : 'Setiap Hari Kerja',
+                        'jadwal' => $request->jadwal ?? $request->jadwalRujuk ?? 'Setiap Hari Kerja',
                         'infoDenda' => $request->infoDenda ? $request->infoDenda : '-',
                         'catatanRujuk' => $request->catatanRujuk,
                     ];
@@ -173,7 +172,6 @@ class PcareRujukSubspesialisController extends Controller
             'kdTACC' => $request->kdTACC ?? $request->kdTacc,
             'nmTACC' => $request->nmTACC ?? $request->nmTacc,
             'alasanTACC' => $request->alasanTACC ?? $request->alasanTacc,
-            'jadwal' => $request->jadwal ?? $request->jadwalRujuk,
         ];
 
         if (empty($data['noKunjungan']) && !empty($data['no_rawat'])) {
@@ -205,7 +203,7 @@ class PcareRujukSubspesialisController extends Controller
                         'kdKC' => $request->kdKC,
                         'nmKC' => $request->nmKC ?? $setting?->kabupaten ?? '-',
                         'tglAkhirRujuk' => $tglAkhirRujukVal,
-                        'jadwal' => $request->jadwal ? $request->jadwal : 'Setiap Hari Kerja',
+                        'jadwal' => $request->jadwal ?? $request->jadwalRujuk ?? 'Setiap Hari Kerja',
                         'infoDenda' => $request->infoDenda ? $request->infoDenda : '-',
                         'catatanRujuk' => $request->catatanRujuk,
                     ];
