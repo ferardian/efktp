@@ -93,14 +93,21 @@ class PcareRujukSubspesialisController extends Controller
                         ? $this->parseDateToYmd($request->tglAkhirRujuk) 
                         : date('Y-m-d', strtotime('+89 days', strtotime($tglEstForAkhir)));
 
+                    $pcareSetting = BridgingPcareSetting::first();
+                    $noKunjungan = $data['noKunjungan'];
+                    $kdPpkAsalVal = $request->kdPpkAsal ?? (strlen($noKunjungan) >= 8 ? substr($noKunjungan, 0, 8) : ($pcareSetting?->user ?? null));
+                    $nmPpkAsalVal = (!empty($request->nmPpkAsal) && $request->nmPpkAsal !== '-') ? $request->nmPpkAsal : ($setting?->nama_instansi ?? '-');
+                    $nmKRVal = (!empty($request->nmKR) && $request->nmKR !== '-') ? $request->nmKR : ($setting?->propinsi ?? '-');
+                    $nmKCVal = (!empty($request->nmKC) && $request->nmKC !== '-') ? $request->nmKC : ($setting?->kabupaten ?? '-');
+
                     $dataEfktp = [
-                        'noKunjungan' => $data['noKunjungan'],
-                        'kdPpkAsal' => $request->kdPpkAsal,
-                        'nmPpkAsal' => $request->nmPpkAsal ?? $setting?->nama_instansi ?? '-',
-                        'kdKR' => $request->kdKR,
-                        'nmKR' => $request->nmKR ?? $setting?->propinsi ?? '-',
-                        'kdKC' => $request->kdKC,
-                        'nmKC' => $request->nmKC ?? $setting?->kabupaten ?? '-',
+                        'noKunjungan' => $noKunjungan,
+                        'kdPpkAsal' => $kdPpkAsalVal,
+                        'nmPpkAsal' => $nmPpkAsalVal,
+                        'kdKR' => $request->kdKR ?? '06',
+                        'nmKR' => $nmKRVal,
+                        'kdKC' => $request->kdKC ?? '1103',
+                        'nmKC' => $nmKCVal,
                         'tglAkhirRujuk' => $tglAkhirRujukVal,
                         'jadwal' => $request->jadwal ?? $request->jadwalRujuk ?? 'Setiap Hari Kerja',
                         'infoDenda' => $request->infoDenda ? $request->infoDenda : '-',
@@ -194,14 +201,21 @@ class PcareRujukSubspesialisController extends Controller
                         ? $this->parseDateToYmd($request->tglAkhirRujuk) 
                         : date('Y-m-d', strtotime('+89 days', strtotime($tglEstForAkhir)));
 
+                    $pcareSetting = BridgingPcareSetting::first();
+                    $noKunjungan = $data['noKunjungan'];
+                    $kdPpkAsalVal = $request->kdPpkAsal ?? (strlen($noKunjungan) >= 8 ? substr($noKunjungan, 0, 8) : ($pcareSetting?->user ?? null));
+                    $nmPpkAsalVal = (!empty($request->nmPpkAsal) && $request->nmPpkAsal !== '-') ? $request->nmPpkAsal : ($setting?->nama_instansi ?? '-');
+                    $nmKRVal = (!empty($request->nmKR) && $request->nmKR !== '-') ? $request->nmKR : ($setting?->propinsi ?? '-');
+                    $nmKCVal = (!empty($request->nmKC) && $request->nmKC !== '-') ? $request->nmKC : ($setting?->kabupaten ?? '-');
+
                     $dataEfktp = [
-                        'noKunjungan' => $data['noKunjungan'],
-                        'kdPpkAsal' => $request->kdPpkAsal,
-                        'nmPpkAsal' => $request->nmPpkAsal ?? $setting?->nama_instansi ?? '-',
-                        'kdKR' => $request->kdKR,
-                        'nmKR' => $request->nmKR ?? $setting?->propinsi ?? '-',
-                        'kdKC' => $request->kdKC,
-                        'nmKC' => $request->nmKC ?? $setting?->kabupaten ?? '-',
+                        'noKunjungan' => $noKunjungan,
+                        'kdPpkAsal' => $kdPpkAsalVal,
+                        'nmPpkAsal' => $nmPpkAsalVal,
+                        'kdKR' => $request->kdKR ?? '06',
+                        'nmKR' => $nmKRVal,
+                        'kdKC' => $request->kdKC ?? '1103',
+                        'nmKC' => $nmKCVal,
                         'tglAkhirRujuk' => $tglAkhirRujukVal,
                         'jadwal' => $request->jadwal ?? $request->jadwalRujuk ?? 'Setiap Hari Kerja',
                         'infoDenda' => $request->infoDenda ? $request->infoDenda : '-',
