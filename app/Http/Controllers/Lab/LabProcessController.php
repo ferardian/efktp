@@ -489,7 +489,7 @@ class LabProcessController extends Controller
             'grouped'    => $grouped,
             'setting'    => $setting,
         ])->setPaper('a4', 'portrait')
-          ->setOptions(['defaultFont' => 'Arial', 'isRemoteEnabled' => true, 'dpi' => 150]);
+          ->setOptions(['defaultFont' => 'Arial', 'isRemoteEnabled' => true]);
 
         return $pdf->stream("HasilLab-{$noorder}.pdf");
     }

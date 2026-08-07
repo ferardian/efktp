@@ -26,7 +26,7 @@
     * { box-sizing: border-box; }
     body {
         font-family: Arial, Helvetica, sans-serif;
-        font-size: 11px;
+        font-size: 10.5pt;
         color: #1a1a2e;
         margin: 0;
         padding: 0;
@@ -60,7 +60,7 @@
         padding: 0 10px;
     }
     .kop-nama {
-        font-size: 16px;
+        font-size: 15pt;
         font-weight: bold;
         text-transform: uppercase;
         color: #1565c0;
@@ -68,12 +68,12 @@
         margin: 0 0 3px 0;
     }
     .kop-alamat {
-        font-size: 10px;
+        font-size: 9.5pt;
         color: #555;
         margin: 2px 0;
     }
     .kop-kontak {
-        font-size: 10px;
+        font-size: 9.5pt;
         color: #777;
     }
 
@@ -86,7 +86,7 @@
         border-radius: 3px;
     }
     .doc-title-block h2 {
-        font-size: 14px;
+        font-size: 13pt;
         font-weight: bold;
         color: #fff;
         margin: 0;
@@ -94,7 +94,7 @@
         text-transform: uppercase;
     }
     .doc-subtitle {
-        font-size: 10px;
+        font-size: 9.5pt;
         color: #cfe2ff;
         margin: 3px 0 0 0;
     }
@@ -107,7 +107,7 @@
         background: #e3f2fd;
         border-left: 4px solid #1565c0;
         padding: 4px 8px;
-        font-size: 11px;
+        font-size: 10.5pt;
         font-weight: bold;
         color: #1565c0;
         text-transform: uppercase;
@@ -117,7 +117,7 @@
     .info-table {
         width: 100%;
         border-collapse: collapse;
-        font-size: 11px;
+        font-size: 10.5pt;
     }
     .info-table td {
         padding: 2.5px 4px;
@@ -145,7 +145,7 @@
     .paket-title {
         background: #1565c0;
         color: #fff;
-        font-size: 10.5px;
+        font-size: 10pt;
         font-weight: bold;
         padding: 5px 8px;
         text-transform: uppercase;
@@ -156,7 +156,7 @@
     .result-table {
         width: 100%;
         border-collapse: collapse;
-        font-size: 10.5px;
+        font-size: 10pt;
         border: 1px solid #c8d8f0;
         margin-bottom: 10px;
     }
@@ -166,7 +166,7 @@
     .result-table thead th {
         padding: 5px 6px;
         text-align: left;
-        font-size: 10px;
+        font-size: 9.5pt;
         font-weight: bold;
         color: #1a365d;
         border: 1px solid #93c5fd;
@@ -185,7 +185,7 @@
         padding: 5px 6px;
         border: 1px solid #d4e2f7;
         vertical-align: middle;
-        font-size: 10.5px;
+        font-size: 10pt;
     }
     .result-table tbody td.center {
         text-align: center;
@@ -233,17 +233,17 @@
         padding: 8px 0;
     }
     .sign-label {
-        font-size: 10px;
+        font-size: 9.5pt;
         color: #555;
         margin-bottom: 4px;
     }
     .sign-place {
-        font-size: 10px;
+        font-size: 9.5pt;
         font-weight: bold;
         margin-bottom: 40px;
     }
     .sign-name {
-        font-size: 11px;
+        font-size: 10.5pt;
         font-weight: bold;
         border-top: 1px solid #333;
         padding-top: 3px;
@@ -251,7 +251,7 @@
         min-width: 140px;
     }
     .sign-sub {
-        font-size: 9px;
+        font-size: 9pt;
         color: #777;
         margin-top: 2px;
     }
@@ -263,7 +263,7 @@
         border-radius: 3px;
         padding: 6px 8px;
         margin-top: 8px;
-        font-size: 10px;
+        font-size: 9.5pt;
         color: #555;
         line-height: 1.5;
     }
@@ -280,7 +280,7 @@
         height: 12mm;
         border-top: 1px solid #c8d8f0;
         text-align: center;
-        font-size: 9px;
+        font-size: 9pt;
         color: #999;
         padding-top: 3px;
     }
@@ -292,7 +292,7 @@
         color: #aaa;
         font-style: italic;
         padding: 12px;
-        font-size: 10.5px;
+        font-size: 10pt;
     }
 </style>
 
