@@ -178,9 +178,9 @@
                         data: 'tgl_sampel',
                         render: (data, type, row) => {
                             if (data && data !== '0000-00-00' && data !== '') {
-                                return `<span class="badge bg-success-lt text-success px-2 py-1" title="Sampel Diambil"><i class="ti ti-check me-1"></i>${formatTanggal(data)} ${row.jam_sampel || ''}</span>`;
+                                return `<span class="badge bg-success-lt text-success px-2 py-1 d-inline-flex align-items-center gap-1" title="Sampel Diambil"><i class="ti ti-check"></i><span>${formatTanggal(data)} ${row.jam_sampel || ''}</span></span>`;
                             }
-                            return `<span class="badge bg-warning-lt text-warning px-2 py-1"><i class="ti ti-clock me-1"></i>Belum Sampel</span>`;
+                            return `<span class="badge bg-warning-lt text-warning px-2 py-1 d-inline-flex align-items-center gap-1"><i class="ti ti-clock"></i><span>Belum Sampel</span></span>`;
                         },
                     },
                     {
@@ -188,9 +188,9 @@
                         data: 'tgl_hasil',
                         render: (data, type, row) => {
                             if (data && data !== '0000-00-00' && data !== '') {
-                                return `<span class="badge bg-primary-lt text-primary px-2 py-1" title="Hasil Selesai"><i class="ti ti-file-check me-1"></i>${formatTanggal(data)} ${row.jam_hasil || ''}</span>`;
+                                return `<span class="badge bg-primary-lt text-primary px-2 py-1 d-inline-flex align-items-center gap-1" title="Hasil Selesai"><i class="ti ti-file-check"></i><span>${formatTanggal(data)} ${row.jam_hasil || ''}</span></span>`;
                             }
-                            return `<span class="badge bg-secondary-lt text-secondary px-2 py-1"><i class="ti ti-hourglass-empty me-1"></i>Belum Hasil</span>`;
+                            return `<span class="badge bg-secondary-lt text-secondary px-2 py-1 d-inline-flex align-items-center gap-1"><i class="ti ti-hourglass-empty"></i><span>Belum Hasil</span></span>`;
                         },
                     },
                     {
@@ -199,8 +199,8 @@
                         render: (data) => {
                             if (!data) return '-';
                             return data.includes('BPJS') 
-                                ? `<span class="badge text-bg-success px-2 py-1">${data.toUpperCase()}</span>`
-                                : `<span class="badge text-bg-primary px-2 py-1">${data.toUpperCase()}</span>`;
+                                ? `<span class="badge text-bg-success px-2 py-1 d-inline-flex align-items-center">${data.toUpperCase()}</span>`
+                                : `<span class="badge text-bg-primary px-2 py-1 d-inline-flex align-items-center">${data.toUpperCase()}</span>`;
                         },
                     },
                     {
@@ -213,14 +213,14 @@
 
                             return `
                                 <div class="d-flex align-items-center gap-1">
-                                    <button class="btn btn-sm ${isSampelDone ? 'btn-outline-secondary' : 'btn-warning text-dark'} shadow-xs px-2 py-1" onclick="openModalSampelLab('${row.noorder}', '${row.tgl_sampel || ''}', '${row.jam_sampel || ''}')" title="Pengambilan Sampel">
+                                    <button class="btn btn-sm ${isSampelDone ? 'btn-outline-secondary' : 'btn-warning text-dark'} shadow-xs px-2 py-1 d-inline-flex align-items-center justify-content-center" onclick="openModalSampelLab('${row.noorder}', '${row.tgl_sampel || ''}', '${row.jam_sampel || ''}')" title="Pengambilan Sampel">
                                         <i class="ti ti-test-pipe me-1"></i> Sampel
                                     </button>
-                                    <button class="btn btn-sm ${isHasilDone ? 'btn-outline-success' : 'btn-primary'} shadow-xs px-2 py-1" onclick="openModalInputHasilLab('${row.noorder}')" title="Input / Edit Hasil Lab">
+                                    <button class="btn btn-sm ${isHasilDone ? 'btn-outline-success' : 'btn-primary'} shadow-xs px-2 py-1 d-inline-flex align-items-center justify-content-center" onclick="openModalInputHasilLab('${row.noorder}')" title="Input / Edit Hasil Lab">
                                         <i class="ti ti-edit me-1"></i> ${isHasilDone ? 'Edit Hasil' : 'Input Hasil'}
                                     </button>
                                     ${isHasilDone ? `
-                                        <button class="btn btn-sm btn-outline-info shadow-xs px-2 py-1" onclick="showHasilPermintaanLab('${row.no_rawat}', '${row.tgl_hasil}')" title="Lihat Hasil Lab">
+                                        <button class="btn btn-sm btn-outline-info shadow-xs px-2 py-1 d-inline-flex align-items-center justify-content-center" onclick="showHasilPermintaanLab('${row.no_rawat}', '${row.tgl_hasil}')" title="Lihat Hasil Lab">
                                             <i class="ti ti-eye"></i>
                                         </button>
                                     ` : ''}
