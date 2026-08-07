@@ -275,12 +275,12 @@ class LabProcessController extends Controller
                             'keterangan'             => $item['keterangan'] ?? '-',
                             'bagian_rs'              => $jnsTarif->bagian_rs ?? 0,
                             'bhp'                    => $jnsTarif->bhp ?? 0,
-                            'tarif_perujuk'          => $jnsTarif->tarif_perujuk ?? 0,
-                            'tarif_tindakan_dokter'  => $jnsTarif->tarif_tindakan_dokter ?? 0,
-                            'tarif_tindakan_petugas' => $jnsTarif->tarif_tindakan_petugas ?? 0,
+                            'bagian_perujuk'         => $jnsTarif->tarif_perujuk ?? 0,
+                            'bagian_dokter'          => $jnsTarif->tarif_tindakan_dokter ?? 0,
+                            'bagian_laborat'         => $jnsTarif->tarif_tindakan_petugas ?? 0,
                             'kso'                    => $jnsTarif->kso ?? 0,
                             'menejemen'              => $jnsTarif->menejemen ?? 0,
-                            'biaya_item'             => $jnsTarif->biaya_item ?? 0,
+                            'biaya_item'             => $jnsTarif->total_byr ?? $jnsTarif->biaya_item ?? 0,
                         ]
                     );
                 }
