@@ -110,15 +110,29 @@ class Pendaftaran extends Controller
 
             // Antrian gagal → kembalikan response khusus untuk konfirmasi frontend
             if ($antrianCode != 200) {
-                $antrianMessage = $antrianResult['metadata']['message']
-                               ?? $antrianResult['metaData']['message']
-                               ?? $antrianResult['metadata']['msg']
-                               ?? $antrianResult['metaData']['msg']
-                               ?? (is_string($antrianResult['response'] ?? null) ? $antrianResult['response'] : ($antrianResult['response']['message'] ?? $antrianResult['response']['keterangan'] ?? null))
-                               ?? "Server BPJS Antrean mengembalikan respon Code {$antrianCode}.";
+                $possibleMessages = [
+                    $antrianResult['metadata']['message'] ?? null,
+                    $antrianResult['metaData']['message'] ?? null,
+                    $antrianResult['metadata']['msg'] ?? null,
+                    $antrianResult['metaData']['msg'] ?? null,
+                    is_string($antrianResult['response'] ?? null) ? $antrianResult['response'] : null,
+                    $antrianResult['response']['message'] ?? null,
+                    $antrianResult['response']['keterangan'] ?? null,
+                ];
 
-                if (is_array($antrianMessage)) {
-                    $antrianMessage = json_encode($antrianMessage);
+                $antrianMessage = null;
+                foreach ($possibleMessages as $msg) {
+                    if (is_array($msg)) {
+                        $msg = json_encode($msg);
+                    }
+                    if (!empty($msg) && is_string($msg) && trim($msg) !== '') {
+                        $antrianMessage = trim($msg);
+                        break;
+                    }
+                }
+
+                if (!$antrianMessage) {
+                    $antrianMessage = "Server BPJS Antrean mengembalikan respon Code {$antrianCode}.";
                 }
 
                 return response()->json([

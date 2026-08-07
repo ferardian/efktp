@@ -84,6 +84,8 @@ class BpjsHttpClient
         $this->prepare();
         $url = $this->baseUrl . '/' . ltrim($endpoint, '/');
 
+        Log::info("[BPJS POST] {$url}", $data);
+
         try {
             $response = Http::withHeaders($this->headers())
                 ->withoutVerifying()
@@ -100,7 +102,9 @@ class BpjsHttpClient
                 Log::warning("[BPJS POST Warning] Response is not JSON: " . substr($response->body(), 0, 200));
             }
 
-            return $this->handleResponse($body);
+            $result = $this->handleResponse($body);
+            Log::info("[BPJS POST Response]", $result);
+            return $result;
         } catch (\Exception $e) {
             Log::error("[BPJS POST Exception] {$e->getMessage()}");
             return ['metaData' => ['code' => 500, 'message' => $e->getMessage()]];
