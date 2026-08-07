@@ -946,21 +946,24 @@
             }
 
             // Validasi panjang karakter (sebelum loading, agar dialog error tampil benar)
+            $('#formKunjunganPcare .is-invalid').removeClass('is-invalid');
+
             const fieldLimits = [
                 { name: 'anamnesa',  label: 'Anamnesa',        min: 10, max: 500 },
                 { name: 'rtl',       label: 'Terapi Obat',     min: 10, max: 500 },
                 { name: 'instruksi', label: 'Terapi Non-obat', min: 10, max: 500 },
             ];
             for (const f of fieldLimits) {
-                const val = $('#formKunjunganPcare input[name=' + f.name + ']').val() || '';
+                const $input = $(`#formKunjunganPcare input[name=${f.name}]`);
+                const val = $input.val() || '';
                 if (val.length < f.min) {
+                    $input.addClass('is-invalid').focus();
                     alertError(`${f.label} minimal ${f.min} karakter (saat ini ${val.length} karakter).`);
-                    $(`#formKunjunganPcare input[name=${f.name}]`).focus();
                     return;
                 }
                 if (val.length > f.max) {
+                    $input.addClass('is-invalid').focus();
                     alertError(`${f.label} melebihi batas ${f.max} karakter (saat ini ${val.length} karakter). Harap dipersingkat.`);
-                    $(`#formKunjunganPcare input[name=${f.name}]`).focus();
                     return;
                 }
             }
@@ -1315,6 +1318,9 @@
             });;
 
 
+            $(document).on('input change', '#formKunjunganPcare input', function () {
+                $(this).removeClass('is-invalid');
+            });
         }
     </script>
 @endpush
