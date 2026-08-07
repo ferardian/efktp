@@ -95,8 +95,8 @@
         </table>
 
         <p class="mt-1">Info Denda : {{ $data['detail']['infoDenda'] ?? '-' }}</p>
-        <div style="margin-top:20px;text-align: center;left:0px;font-size:12px;">
-            <p style="margin-bottom:50">Salam Sejawat,{{ date('d/m/Y H:i:s') }}</p>
+        <div style="margin-top:15px; text-align: right; font-size:11px;">
+            <p style="margin-bottom:35px">Salam Sejawat,<br/>{{ date('d F Y') }}</p>
             <p><b><u>{{ $data['nmDokter'] }}</u></b></p>
         </div>
     </div>

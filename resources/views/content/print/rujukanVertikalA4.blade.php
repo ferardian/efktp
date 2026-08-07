@@ -3,27 +3,31 @@
     Carbon\Carbon::setLocale('id');
 @endphp
 @section('content')
-    <div width="100%" style="margin:10px;font-size:19px">
+    <div style="font-size: 13px; margin: 10px;">
         <table width="100%">
             <tr>
-                <td width="50%" style="padding-right: 10px">
-                    <img src="{{ asset('img/logo-bpjs.png') }}" alt="" width="350" style="margin-top:15px:top:0" />
+                <td width="55%" style="vertical-align: top;">
+                    <img src="{{ asset('img/logo-bpjs.png') }}" alt="" width="260px" style="margin-top: 2px;" />
                 </td>
-                <td width="50%">
-                    <h3 style="margin-bottom:0px;margin-top:0px">Divisi Regional : {{ !empty($data['detail']['nmKR']) && $data['detail']['nmKR'] !== '-' ? $data['detail']['nmKR'] : ($setting['propinsi'] ?? '-') }}</h3>
-                    <h3 style="margin-bottom:0px;margin-top:0px">Kantor Cabang : {{ !empty($data['detail']['nmKC']) && $data['detail']['nmKC'] !== '-' ? $data['detail']['nmKC'] : ($setting['kabupaten'] ?? '-') }}</h3>
+                <td width="45%" style="text-align: right; vertical-align: top;">
+                    <p style="font-size: 13px; margin: 0;"><strong>Divisi Regional : {{ !empty($data['detail']['nmKR']) && $data['detail']['nmKR'] !== '-' ? $data['detail']['nmKR'] : ($setting['propinsi'] ?? '-') }}</strong></p>
+                    <p style="font-size: 13px; margin: 0;"><strong>Kantor Cabang : {{ !empty($data['detail']['nmKC']) && $data['detail']['nmKC'] !== '-' ? $data['detail']['nmKC'] : ($setting['kabupaten'] ?? '-') }}</strong></p>
                 </td>
             </tr>
         </table>
-        <img style="position: absolute;top:150px;right:40px" src="data:image/png;base64,{{ DNS1D::getBarcodePNG($data['noKunjungan'], 'C39E') }}" height="50" width="350" />
-        <h2 style="text-align:center" class="m-2">Surat Rujukan FKTP</h2>
-        <div style="border:1px solid; padding:20px">
-            <div style="border:1px solid; padding:10px;">
-                <table>
+        
+        <h2 style="text-align:center; font-size: 18px; margin: 6px 0;">Surat Rujukan FKTP</h2>
+        
+        <div style="border: 1px solid #000; padding: 10px;">
+            <div style="border: 1px solid #000; padding: 8px;">
+                <table width="100%">
                     <tr>
-                        <td>No. Rujukan</td>
-                        <td>:</td>
-                        <td>{{ $data['noKunjungan'] }}</td>
+                        <td width="16%">No. Rujukan</td>
+                        <td width="2%">:</td>
+                        <td width="47%"><strong>{{ $data['noKunjungan'] }}</strong></td>
+                        <td width="35%" rowspan="3" style="text-align: right; vertical-align: middle;">
+                            <img src="data:image/png;base64,{{ DNS1D::getBarcodePNG($data['noKunjungan'], 'C39E') }}" height="40" width="240" />
+                        </td>
                     </tr>
                     <tr>
                         <td>FKTP</td>
@@ -37,10 +41,11 @@
                     </tr>
                 </table>
             </div>
-            <table class="mt-2">
+            
+            <table width="100%" style="margin-top: 6px;">
                 <tr>
-                    <td>Kepada Yth. TS Dokter</td>
-                    <td>:</td>
+                    <td width="16%">Kepada Yth. TS Dokter</td>
+                    <td width="2%">:</td>
                     <td>{{ $data['nmSubSpesialis'] ?? $data['nmPoli'] }}</td>
                 </tr>
                 <tr>
@@ -49,15 +54,17 @@
                     <td>{{ $data['nmPPK'] }}</td>
                 </tr>
             </table>
-            <p style="margin:10px">Mohon pemeriksaan dan penanganan lebih lanjut pasien : </p>
-            <table width="100%" class="table" style="vertical-align: top;">
+            
+            <p style="margin: 6px 0 3px 0;">Mohon pemeriksaan dan penanganan lebih lanjut pasien : </p>
+            
+            <table width="100%" class="table" style="vertical-align: top; line-height: 1.3;">
                 <tr>
-                    <td width="18%">Nama</td>
+                    <td width="16%">Nama</td>
                     <td width="2%">:</td>
-                    <td width="40%">{{ $data['nm_pasien'] }}</td>
+                    <td width="38%"><strong>{{ $data['nm_pasien'] }}</strong></td>
                     <td width="10%">Umur</td>
                     <td width="2%">:</td>
-                    <td width="28%">{{ $data['reg_periksa']['umurdaftar'] ?? '-' }} Tahun : {{ !empty($data['pasien']['tgl_lahir']) ? date('d-M-Y', strtotime($data['pasien']['tgl_lahir'])) : '-' }}</td>
+                    <td width="32%">{{ $data['reg_periksa']['umurdaftar'] ?? '-' }} Tahun : {{ !empty($data['pasien']['tgl_lahir']) ? date('d-M-Y', strtotime($data['pasien']['tgl_lahir'])) : '-' }}</td>
                 </tr>
                 <tr>
                     <td>No. Kartu BPJS</td>
@@ -65,7 +72,7 @@
                     <td>{{ $data['noKartu'] }}</td>
                     <td>Status</td>
                     <td>:</td>
-                    <td>[ 1 ] Utama/Tanggungan &nbsp;&nbsp;&nbsp;&nbsp; [ {{ $data['pasien']['jk'] ?? 'L' }} ] (L / P)</td>
+                    <td>[ 1 ] Utama/Tanggungan &nbsp;&nbsp; [ {{ $data['pasien']['jk'] ?? 'L' }} ] (L / P)</td>
                 </tr>
                 <tr>
                     <td>Diagnosa</td>
@@ -75,7 +82,7 @@
                 <tr>
                     <td>Catatan</td>
                     <td>:</td>
-                    <td colspan="4" style="vertical-align: bottom;">{{ $data['detail']['catatanRujuk'] ?? '-' }}</td>
+                    <td colspan="4">{{ $data['detail']['catatanRujuk'] ?? '-' }}</td>
                 </tr>
                 <tr>
                     <td>Telah diberikan</td>
@@ -83,30 +90,26 @@
                     <td colspan="4">{{ $data['terapi'] ?? '-' }}</td>
                 </tr>
             </table>
-            <p style="margin:10px 10px 30px 10px">Atas bantuannya, diucapkan terima kasih</p>
-            <table>
+            
+            <p style="margin: 6px 0 10px 0;">Atas bantuannya, diucapkan terima kasih</p>
+            
+            <table width="100%" style="margin-top: 4px;">
                 <tr>
-                    <td width="650px">
-                        <p>
-                            Tgl. Rencana Berkunjung : <strong>{{ !empty($data['tglEstRujuk']) ? date('d-M-Y', strtotime($data['tglEstRujuk'])) : '-' }}</strong>
-                        </p>
-                        <p>
-                            Jadwal Praktek : <strong>{{ !empty($data['detail']['jadwal']) && $data['detail']['jadwal'] !== '-' ? $data['detail']['jadwal'] : (!empty($data['jadwal']) && $data['jadwal'] !== '-' ? $data['jadwal'] : 'Setiap Hari Kerja') }}</strong>
-                        </p>
-                        <p>
-                            Surat rujukan berlaku 1[satu] kali kunjungan, berlaku sampai dengan : <strong>{{ !empty($data['detail']['tglAkhirRujuk']) && $data['detail']['tglAkhirRujuk'] !== '-' ? date('d-M-Y', strtotime($data['detail']['tglAkhirRujuk'])) : date('d-M-Y', strtotime('+89 days', strtotime($data['tglEstRujuk'] ?? date('Y-m-d')))) }}</strong>
-                        </p>
-
+                    <td width="65%" style="vertical-align: top; line-height: 1.3;">
+                        <p>Tgl. Rencana Berkunjung : <strong>{{ !empty($data['tglEstRujuk']) ? date('d-M-Y', strtotime($data['tglEstRujuk'])) : '-' }}</strong></p>
+                        <p>Jadwal Praktek : <strong>{{ !empty($data['detail']['jadwal']) && $data['detail']['jadwal'] !== '-' ? $data['detail']['jadwal'] : (!empty($data['jadwal']) && $data['jadwal'] !== '-' ? $data['jadwal'] : 'Setiap Hari Kerja') }}</strong></p>
+                        <p>Surat rujukan berlaku 1[satu] kali kunjungan, berlaku sampai dengan : <strong>{{ !empty($data['detail']['tglAkhirRujuk']) && $data['detail']['tglAkhirRujuk'] !== '-' ? date('d-M-Y', strtotime($data['detail']['tglAkhirRujuk'])) : date('d-M-Y', strtotime('+89 days', strtotime($data['tglEstRujuk'] ?? date('Y-m-d')))) }}</strong></p>
                     </td>
-                    <td style="text-align: center">
-                        <p style="margin-bottom: 70px">Salam sejawat,<br/>{{ date('d F Y') }}</p>
-                        <p class="mt-5"><b><u>{{ $data['nmDokter'] }}</u></b></p>
+                    <td width="35%" style="text-align: right; vertical-align: top;">
+                        <p style="margin-bottom: 45px;">Salam sejawat,<br/>{{ date('d F Y') }}</p>
+                        <p><b><u>{{ $data['nmDokter'] }}</u></b></p>
                     </td>
                 </tr>
             </table>
-            Info Denda : {{ $data['detail']['infoDenda'] ?? '-' }}
+
+            <div style="margin-top: 8px; border-top: 1px dotted #888; padding-top: 4px; font-size: 11px;">
+                Info Denda : {{ $data['detail']['infoDenda'] ?? '-' }}
+            </div>
         </div>
     </div>
-    {{-- @dd($data) --}}
-    {{-- {{ print_r($data) }} --}}
 @endsection
