@@ -1,6 +1,39 @@
 @extends('layout')
 
 @section('body')
+    <style>
+        /* Sticky Column untuk Checkbox, Kode, & Nama Obat */
+        #tabelBarangObat th:nth-child(1), #tabelBarangObat td:nth-child(1) {
+            position: sticky !important;
+            left: 0 !important;
+            z-index: 2 !important;
+            background-color: #ffffff !important;
+        }
+        #tabelBarangObat th:nth-child(2), #tabelBarangObat td:nth-child(2) {
+            position: sticky !important;
+            left: 32px !important;
+            z-index: 2 !important;
+            background-color: #ffffff !important;
+        }
+        #tabelBarangObat th:nth-child(3), #tabelBarangObat td:nth-child(3) {
+            position: sticky !important;
+            left: 110px !important;
+            z-index: 2 !important;
+            background-color: #ffffff !important;
+            box-shadow: 4px 0 6px -2px rgba(0, 0, 0, 0.12) !important;
+        }
+        #tabelBarangObat thead th:nth-child(1),
+        #tabelBarangObat thead th:nth-child(2),
+        #tabelBarangObat thead th:nth-child(3) {
+            background-color: #f8fafc !important;
+            z-index: 3 !important;
+        }
+        #tabelBarangObat tbody tr:nth-child(even) td:nth-child(1),
+        #tabelBarangObat tbody tr:nth-child(even) td:nth-child(2),
+        #tabelBarangObat tbody tr:nth-child(even) td:nth-child(3) {
+            background-color: #f8fafc !important;
+        }
+    </style>
     <div class="container-fluid">
         <div class="row gy-2">
             <div class="col-xl-8 col-lg-8 col-md-12 col-sm-12">
@@ -428,28 +461,37 @@
                         data: 'mapping.nama_brng_pcare',
                         name: 'mapping.nama_brng_pcare',
                         defaultContent: '-',
-                        width: '15%',
-                        render: (data, type, row, meta) => {
-                            const mappingObatPcareElementId = `mappingObatPcare${row.kode_brng}`;
-                            const btnObatElementId = `btnObat${row.kode_brng}`;
-                            const keyword = (row.mapping && row.mapping.nama_brng_pcare) ? row.mapping.nama_brng_pcare.split('/')[0] : (row.nama_brng ? row.nama_brng.substring(0, 5) : '');
+                        width: '16%',
+                        render: (data, type, row) => {
+                            const isMapped = row.mapping && row.mapping.nama_brng_pcare;
+                            const pcareNama = isMapped ? row.mapping.nama_brng_pcare : '';
+                            const pcareKode = isMapped ? row.mapping.kode_brng_pcare : '';
 
-                            const labelMapping = (row.mapping && row.mapping.nama_brng_pcare) ?
-                                `<div id="${btnObatElementId}"><span class="me-2">${row.mapping.nama_brng_pcare}</span>
-                                    <a href="javascript:void(0)" class="text-primary" onclick="setMappingObatPcare('${row.kode_brng}', '${keyword}')"><i class="ti ti-pencil"></i></a>
-                                    <a href="javascript:void(0)" class="text-danger" onclick="deleteObatPcareMapping('${row.kode_brng}')"><i class="ti ti-x"></i></a>
-                                </div>` :
-                                `<button type="button" class="btn btn-sm btn-warning" id="${btnObatElementId}" onclick="setMappingObatPcare('${row.kode_brng}', '${keyword}')"><i class="ti ti-search me-2"></i> Cari Referensi</button>`;
+                            const safeNama = (row.nama_brng || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                            const safePcareNama = (pcareNama || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                            const safeKapasitas = (row.kapasitas || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                            const safeSatuan = (row.satuan?.satuan || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+                            if (isMapped) {
+                                return `
+                                    <div class="d-flex align-items-center justify-content-between gap-1">
+                                        <span class="badge bg-success-lt text-wrap text-start small me-1 px-2 py-1" style="max-width: 180px;">
+                                            <i class="ti ti-check me-1 text-success"></i> ${pcareNama}
+                                        </span>
+                                        <button type="button" class="btn btn-sm btn-icon btn-ghost-primary" 
+                                                onclick="openModalMappingObatPcare('${row.kode_brng}', '${safeNama}', '${safeKapasitas}', '${safeSatuan}', '${pcareKode}', '${safePcareNama}')"
+                                                title="Edit Mapping PCare">
+                                            <i class="ti ti-pencil"></i>
+                                        </button>
+                                    </div>
+                                `;
+                            }
 
                             return `
-                                <div id="labelMapping${row.kode_brng}">
-                                    ${labelMapping}
-                                </div>
-                                <div class="input-group d-none" id="${mappingObatPcareElementId}">
-                                    <select class="form-select form-select-2" id="selectMappingObatPcare${row.kode_brng}" style="width: 80%;" data-dropdown-parent="body"></select>
-                                    <button class="btn btn-primary btn-sm" type="button" id="btnCariObat${row.kode_brng}" onclick="createObatPcareMapping('${row.kode_brng}')"><i class="ti ti-device-floppy"></i></button>
-                                    <button class="btn btn-danger btn-sm" type="button" id="btnCancelObat${row.kode_brng}" onclick="cancelObatPcareMapping('${row.kode_brng}')"><i class="ti ti-x"></i></button>
-                                </div>
+                                <button type="button" class="btn btn-sm btn-warning shadow-xs py-1 px-2 d-inline-flex align-items-center" 
+                                        onclick="openModalMappingObatPcare('${row.kode_brng}', '${safeNama}', '${safeKapasitas}', '${safeSatuan}', '', '')">
+                                    <i class="ti ti-link me-1"></i> Mapping PCare
+                                </button>
                             `;
                         }
                     },
@@ -617,139 +659,7 @@
         }
 
 
-        function setMappingObatPcare(kode_brng, keyword) {
-            const select = $(`#selectMappingObatPcare${kode_brng}`);
-            const inputMapping = $(`#mappingObatPcare${kode_brng}`);
-            const btnObat = $(`#btnObat${kode_brng}`);
 
-            if (inputMapping.hasClass('d-none')) {
-                inputMapping.removeClass('d-none');
-                btnObat.addClass('d-none');
-
-                $.get(`{{ url('/bridging/pcare/obat') }}/${keyword}`).done((data) => {
-                    const {
-                        metaData,
-                        response
-                    } = data;
-
-                    if (metaData.code == 200) {
-                        const options = response.list.map((item) => {
-                            return `<option value="${item.kdObat}">${item.nmObat}</option>`;
-                        });
-
-                        select.empty().append(options); // Append the new options
-                        select.select2({
-                            allowClear: true,
-                            placeholder: 'Pilih Obat'
-                        }).on('select2:clearing', (e) => {
-                            getObatPcare(kode_brng)
-                        });
-                    } else {
-                        getObatPcare(kode_brng);
-                    }
-                }).fail((error) => {
-                    alertErrorAjax(error)
-                });
-
-            } else {
-                inputMapping.addClass('d-none');
-                select.select2('destroy');
-                getObatPcare(kode_brng);
-                btnObat.removeClass('d-none');
-            }
-        }
-
-        function cancelObatPcareMapping(kode_brng) {
-            const select = $(`#selectMappingObatPcare${kode_brng}`);
-            if (select.data('select2')) {
-                select.select2('destroy');
-                $(`#mappingObatPcare${kode_brng}`).addClass('d-none');
-                $(`#btnObat${kode_brng}`).removeClass('d-none');
-            }
-        }
-
-        function getObatPcare(kode_brng) {
-            const select = $(`#selectMappingObatPcare${kode_brng}`);
-            select.select2({
-                width: 'resolve',
-                ajax: {
-                    url: (params) => {
-                        const keyword = params.term || 'A';
-                        return `{{ url('/bridging/pcare/obat') }}/${keyword}`;
-                    },
-                    dataType: 'json',
-                    delay: 200,
-                    processResults: function (data) {
-                        return {
-                            results: data.response.list.map(function (item) {
-                                return {
-                                    id: item.kdObat,
-                                    text: `${item.nmObat}`
-                                };
-                            })
-                        };
-                    },
-                    language: {
-                        noResults: function () {
-                            return "No matching medicines found"; // Custom no-results message
-                        }
-                    },
-                }
-            });
-
-        }
-
-        function createObatPcareMapping(kodeBrng) {
-            const select = $(`#selectMappingObatPcare${kodeBrng}`);
-            const mappingContainer = $(`#mappingObatPcare${kodeBrng}`);
-            const labelContainer = $(`#labelMapping${kodeBrng}`);
-            const selectedObat = select.select2('data');
-            const kodeObat = selectedObat[0].id;
-            const namaObat = selectedObat[0].text;
-
-            $.post(`{{ url('/mapping/pcare/obat') }}`, {
-                kode_brng: kodeBrng,
-                kode: kodeObat,
-                nama: namaObat
-            }).done((response) => {
-                toast('response')
-                mappingContainer.addClass('d-none');
-                select.select2('destroy');
-                labelContainer.empty().html(`
-                    <div id="btnObat${kodeBrng}">
-                        <span class="me-2">${namaObat}</span>
-                        <a href="javascript:void(0)" class="text-primary" onclick="setMappingObatPcare('${kodeBrng}', '${namaObat.split('/')[0]}')"><i class="ti ti-pencil"></i></a>
-                        <a href="javascript:void(0)" class="text-danger" onclick="deleteObatPcareMapping('${kodeBrng}')"><i class="ti ti-x"></i></a>
-                    </div>
-                `);
-            }).fail((error) => {
-                alertErrorAjax(error);
-            });
-        }
-
-        function deleteObatPcareMapping(kodeBrng) {
-            Swal.fire({
-                title: "Yakin hapus data ini ?",
-                html: "Data mapping obat Pcare akan dihapus",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: "#d33",
-                cancelButtonColor: "#3085d6",
-                confirmButtonText: "Iya, Yakin",
-                cancelButtonText: "Tidak, Batalkan"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.post(`{{ url('/mapping/pcare/obat/delete') }}/${kodeBrng}`, {
-                        _token: "{{ csrf_token() }}"
-                    }).done((response) => {
-                        toast('Menghapus data mapping obat Pcare ')
-                        $(`#labelMapping${kodeBrng}`).empty().html(`
-                            <button type="button" class="btn btn-sm btn-warning" id="btnObat${kodeBrng}" onclick="setMappingObatPcare('${kodeBrng}', '${kodeBrng}')"><i class="ti ti-search me-2"></i> Cari Referensi</button>`);
-                    }).fail((error) => {
-                    });
-                }
-            })
-        }
 
         // Batch selection logic
         const selectedBarangCodes = new Set();
