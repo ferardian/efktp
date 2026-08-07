@@ -32,8 +32,10 @@ class Antrian extends Controller
             $noHp = '08000000000';
         }
 
+        $kdDokter = (string) ($request->kd_dokter ?? $request->kdDokter ?? $request->kodedokter ?? '');
+        $tglReg   = (string) ($request->tgl_registrasi ?? $request->tanggalperiksa ?? date('Y-m-d'));
         $pendaftaran = new Pendaftaran();
-        $jamPraktek = $pendaftaran->getJamPraktek($request->kd_dokter ?? $request->kdDokter ?? $request->kodedokter, $request->tgl_registrasi ?? $request->tanggalperiksa);
+        $jamPraktek = $pendaftaran->getJamPraktek($kdDokter, $tglReg);
 
         $payload = [
             'nomorkartu'    => $noKartu,

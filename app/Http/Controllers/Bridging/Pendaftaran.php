@@ -183,7 +183,7 @@ class Pendaftaran extends Controller
      * Format output: 'HH:mm-HH:mm' (contoh: '15:30-20:00')
      * Fallback ke '08:00-16:00' jika jadwal tidak ditemukan.
      */
-    private function getJamPraktek(string $kdDokter, string $tglRegistrasi): string
+    public function getJamPraktek(string $kdDokter, string $tglRegistrasi): string
     {
         // Map nama hari Indonesia ke format di tabel jadwal
         $hariMap = [
