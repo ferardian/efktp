@@ -121,7 +121,15 @@
             });
         });
 
-        function loadTablePermintaan(keyword = {}) {
+        function getActiveFilter() {
+            return {
+                tgl_permintaan: [tglFilterAwal.val(), tglFilterAkhir.val()],
+                status: $('#selectStatusLanjut').val()
+            };
+        }
+
+        function loadTablePermintaan(keyword = null) {
+            if (!keyword) keyword = getActiveFilter();
             const table = new DataTable('#tablePermintaanLab', {
                 responsive: true,
                 stateSave: true,

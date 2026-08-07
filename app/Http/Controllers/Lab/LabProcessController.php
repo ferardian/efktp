@@ -128,12 +128,21 @@ class LabProcessController extends Controller
             ->orderBy('nama')
             ->get();
 
+        // Fetch existing periksa_lab record to pre-fill petugas & dokter
+        $periksaExisting = DB::table('periksa_lab')
+            ->where('no_rawat', $permintaan->no_rawat)
+            ->orderByDesc('tgl_periksa')
+            ->orderByDesc('jam')
+            ->first();
+
         return response()->json([
-            'status'     => true,
-            'permintaan' => $permintaan,
-            'details'    => $formattedDetails,
-            'dokters'    => $dokters,
-            'petugas'    => $petugas,
+            'status'             => true,
+            'permintaan'         => $permintaan,
+            'details'            => $formattedDetails,
+            'dokters'            => $dokters,
+            'petugas'            => $petugas,
+            'nip_existing'       => $periksaExisting->nip ?? null,
+            'kd_dokter_existing' => $periksaExisting->kd_dokter ?? $permintaan->dokter_perujuk ?? null,
         ]);
     }
 

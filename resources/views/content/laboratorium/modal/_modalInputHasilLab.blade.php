@@ -103,7 +103,7 @@
                 return;
             }
 
-            const { permintaan, details, dokters, petugas } = res;
+            const { permintaan, details, dokters, petugas, nip_existing, kd_dokter_existing } = res;
             $('#inputLabNoorder').val(permintaan.noorder);
             $('#inputLabNoRawat').val(permintaan.no_rawat);
 
@@ -111,18 +111,20 @@
             $('#labelNamaPasien').text(`${permintaan.pasien?.nm_pasien} (${permintaan.pasien?.jk})`);
             $('#labelPoliPerujuk').text(`${permintaan.poliklinik?.nm_poli || '-'} / ${permintaan.perujuk?.nm_dokter || '-'}`);
 
-            // Populate Dokter select
+            // Populate Dokter select (pre-select kd_dokter_existing if in edit mode)
+            const activeDokter = kd_dokter_existing || permintaan.dokter_perujuk;
             let optDokter = '<option value="">-- Pilih Dokter --</option>';
             dokters.forEach((d) => {
-                const selected = (d.kd_dokter === permintaan.dokter_perujuk) ? 'selected' : '';
+                const selected = (d.kd_dokter === activeDokter) ? 'selected' : '';
                 optDokter += `<option value="${d.kd_dokter}" ${selected}>${d.nm_dokter}</option>`;
             });
             $('#selectDokterLab').html(optDokter);
 
-            // Populate Petugas select
+            // Populate Petugas select (pre-select nip_existing if in edit mode)
             let optPetugas = '<option value="">-- Pilih Petugas --</option>';
             petugas.forEach((p) => {
-                optPetugas += `<option value="${p.nip}">${p.nama} (${p.nip})</option>`;
+                const selected = (nip_existing && p.nip === nip_existing) ? 'selected' : '';
+                optPetugas += `<option value="${p.nip}" ${selected}>${p.nama} (${p.nip})</option>`;
             });
             $('#selectPetugasLab').html(optPetugas);
 
