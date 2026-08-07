@@ -26,7 +26,7 @@
     * { box-sizing: border-box; }
     body {
         font-family: Arial, Helvetica, sans-serif;
-        font-size: 10px;
+        font-size: 11px;
         color: #1a1a2e;
         margin: 0;
         padding: 0;
@@ -60,20 +60,20 @@
         padding: 0 10px;
     }
     .kop-nama {
-        font-size: 15px;
+        font-size: 16px;
         font-weight: bold;
         text-transform: uppercase;
         color: #1565c0;
         letter-spacing: 0.5px;
-        margin: 0 0 2px 0;
+        margin: 0 0 3px 0;
     }
     .kop-alamat {
-        font-size: 9px;
+        font-size: 10px;
         color: #555;
-        margin: 1px 0;
+        margin: 2px 0;
     }
     .kop-kontak {
-        font-size: 8.5px;
+        font-size: 10px;
         color: #777;
     }
 
@@ -81,12 +81,12 @@
     .doc-title-block {
         text-align: center;
         margin: 8px 0 10px 0;
-        padding: 6px 0;
+        padding: 7px 0;
         background: #1565c0;
         border-radius: 3px;
     }
     .doc-title-block h2 {
-        font-size: 13px;
+        font-size: 14px;
         font-weight: bold;
         color: #fff;
         margin: 0;
@@ -94,9 +94,9 @@
         text-transform: uppercase;
     }
     .doc-subtitle {
-        font-size: 9px;
+        font-size: 10px;
         color: #cfe2ff;
-        margin: 2px 0 0 0;
+        margin: 3px 0 0 0;
     }
 
     /* ======== INFO PASIEN ======== */
@@ -106,8 +106,8 @@
     .section-header {
         background: #e3f2fd;
         border-left: 4px solid #1565c0;
-        padding: 3px 8px;
-        font-size: 9.5px;
+        padding: 4px 8px;
+        font-size: 11px;
         font-weight: bold;
         color: #1565c0;
         text-transform: uppercase;
@@ -117,14 +117,14 @@
     .info-table {
         width: 100%;
         border-collapse: collapse;
-        font-size: 9.5px;
+        font-size: 11px;
     }
     .info-table td {
-        padding: 2px 4px;
+        padding: 2.5px 4px;
         vertical-align: top;
     }
     .info-table td.label {
-        width: 130px;
+        width: 140px;
         color: #555;
         font-weight: normal;
     }
@@ -145,9 +145,9 @@
     .paket-title {
         background: #1565c0;
         color: #fff;
-        font-size: 9px;
+        font-size: 10.5px;
         font-weight: bold;
-        padding: 4px 8px;
+        padding: 5px 8px;
         text-transform: uppercase;
         letter-spacing: 0.4px;
         margin-bottom: 0;
@@ -156,7 +156,7 @@
     .result-table {
         width: 100%;
         border-collapse: collapse;
-        font-size: 9px;
+        font-size: 10.5px;
         border: 1px solid #c8d8f0;
         margin-bottom: 10px;
     }
@@ -164,9 +164,9 @@
         background: #dbeafe;
     }
     .result-table thead th {
-        padding: 4px 6px;
+        padding: 5px 6px;
         text-align: left;
-        font-size: 8.5px;
+        font-size: 10px;
         font-weight: bold;
         color: #1a365d;
         border: 1px solid #93c5fd;
@@ -182,9 +182,10 @@
         background: #f7faff;
     }
     .result-table tbody td {
-        padding: 4px 6px;
+        padding: 5px 6px;
         border: 1px solid #d4e2f7;
         vertical-align: middle;
+        font-size: 10.5px;
     }
     .result-table tbody td.center {
         text-align: center;
@@ -202,6 +203,14 @@
         font-weight: bold;
     }
     .nilai-bold {
+        font-weight: bold;
+    }
+    .nilai-high {
+        color: #dc2626;
+        font-weight: bold;
+    }
+    .nilai-low {
+        color: #d97706;
         font-weight: bold;
     }
 
@@ -224,17 +233,17 @@
         padding: 8px 0;
     }
     .sign-label {
-        font-size: 9px;
+        font-size: 10px;
         color: #555;
         margin-bottom: 4px;
     }
     .sign-place {
-        font-size: 9px;
+        font-size: 10px;
         font-weight: bold;
         margin-bottom: 40px;
     }
     .sign-name {
-        font-size: 9.5px;
+        font-size: 11px;
         font-weight: bold;
         border-top: 1px solid #333;
         padding-top: 3px;
@@ -242,7 +251,7 @@
         min-width: 140px;
     }
     .sign-sub {
-        font-size: 8px;
+        font-size: 9px;
         color: #777;
         margin-top: 2px;
     }
@@ -252,10 +261,11 @@
         border: 1px dashed #90bff9;
         background: #f0f7ff;
         border-radius: 3px;
-        padding: 5px 8px;
+        padding: 6px 8px;
         margin-top: 8px;
-        font-size: 8.5px;
+        font-size: 10px;
         color: #555;
+        line-height: 1.5;
     }
     .note-box strong {
         color: #1565c0;
@@ -270,32 +280,19 @@
         height: 12mm;
         border-top: 1px solid #c8d8f0;
         text-align: center;
-        font-size: 8px;
+        font-size: 9px;
         color: #999;
         padding-top: 3px;
     }
     .page-number:before {
         content: "Halaman " counter(page) " dari " counter(pages);
     }
-
-    .divider {
-        border: none;
-        border-top: 1px solid #e0ecff;
-        margin: 6px 0;
-    }
-    .badge-anomaly {
-        background: #fee2e2;
-        color: #b91c1c;
-        border-radius: 3px;
-        padding: 1px 5px;
-        font-size: 8px;
-        font-weight: bold;
-    }
     .no-result {
         text-align: center;
         color: #aaa;
         font-style: italic;
-        padding: 10px;
+        padding: 12px;
+        font-size: 10.5px;
     }
 </style>
 
@@ -326,12 +323,12 @@
 <!-- ======== JUDUL ======== -->
 <div class="doc-title-block">
     <h2>Hasil Pemeriksaan Laboratorium</h2>
-    <p class="doc-subtitle">Dokumen Resmi – Dicetak: {{ $tglCetak }}</p>
+    <p class="doc-subtitle">Dokumen Resmi &nbsp;-&nbsp; Dicetak: {{ $tglCetak }}</p>
 </div>
 
 <!-- ======== INFO PASIEN ======== -->
 <div class="info-section">
-    <div class="section-header">&#128100; Informasi Pasien</div>
+    <div class="section-header">Informasi Pasien</div>
     <table class="info-table">
         <tr>
             <td class="label">No. Order</td>
@@ -405,7 +402,7 @@
 
 <!-- ======== TABEL HASIL ======== -->
 <div class="result-section">
-    <div class="section-header">&#128300; Hasil Pemeriksaan</div>
+    <div class="section-header">Hasil Pemeriksaan</div>
 
     @if(empty($grouped))
         <p class="no-result">Belum ada data hasil pemeriksaan untuk order ini.</p>
@@ -417,31 +414,35 @@
                 <tr>
                     <th style="width:5%;" class="center">No.</th>
                     <th style="width:30%;">Nama Pemeriksaan</th>
-                    <th style="width:15%;" class="center">Hasil</th>
+                    <th style="width:13%;" class="center">Hasil</th>
                     <th style="width:8%;" class="center">Satuan</th>
-                    <th style="width:27%;">Nilai Rujukan</th>
-                    <th style="width:15%;" class="center">Keterangan</th>
+                    <th style="width:28%;">Nilai Rujukan</th>
+                    <th style="width:16%;" class="center">Keterangan</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($items as $no => $item)
+                @php
+                    $ket = trim($item->keterangan ?? '-');
+                    $isHigh = ($ket === 'H');
+                    $isLow  = ($ket === 'L');
+                    $isNorm = !$isHigh && !$isLow;
+                @endphp
                 <tr>
                     <td class="center">{{ $no + 1 }}</td>
                     <td>{{ $item->item_nama }}</td>
-                    <td class="center nilai-bold {{ $item->keterangan !== '-' ? ($item->keterangan === 'H' ? 'ket-high' : 'ket-low') : '' }}">
-                        {{ $item->nilai !== '' && $item->nilai !== null ? $item->nilai : '-' }}
+                    <td class="center {{ $isHigh ? 'nilai-high' : ($isLow ? 'nilai-low' : 'nilai-bold') }}">
+                        {{ ($item->nilai !== '' && $item->nilai !== null) ? $item->nilai : '-' }}
                     </td>
                     <td class="center">{{ $item->satuan ?? '' }}</td>
                     <td>{{ $item->nilai_rujukan ?? '-' }}</td>
                     <td class="center">
-                        @if($item->keterangan === '-' || empty($item->keterangan))
-                            <span class="ket-normal">&#10003; Normal</span>
-                        @elseif($item->keterangan === 'H')
-                            <span class="ket-high">&#9650; Tinggi</span>
-                        @elseif($item->keterangan === 'L')
-                            <span class="ket-low">&#9660; Rendah</span>
+                        @if($isHigh)
+                            <span class="ket-high">Tinggi (H)</span>
+                        @elseif($isLow)
+                            <span class="ket-low">Rendah (L)</span>
                         @else
-                            {{ $item->keterangan }}
+                            <span class="ket-normal">Normal</span>
                         @endif
                     </td>
                 </tr>
@@ -454,10 +455,10 @@
 
 <!-- ======== CATATAN ======== -->
 <div class="note-box">
-    <strong>&#9888; Catatan:</strong>
+    <strong>Catatan:</strong>
     Hasil pemeriksaan ini bersifat rahasia medis dan hanya untuk keperluan pelayanan kesehatan pasien yang bersangkutan.
     Nilai rujukan dapat bervariasi tergantung pada metode dan peralatan yang digunakan.
-    Simbol <strong style="color:#dc2626;">▲ Tinggi (H)</strong> dan <strong style="color:#d97706;">▼ Rendah (L)</strong> menunjukkan nilai di luar kisaran normal.
+    Keterangan <strong style="color:#dc2626;">Tinggi (H)</strong> dan <strong style="color:#d97706;">Rendah (L)</strong> menunjukkan nilai di luar kisaran normal.
 </div>
 
 <!-- ======== TANDA TANGAN ======== -->
