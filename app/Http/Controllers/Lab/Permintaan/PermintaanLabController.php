@@ -9,8 +9,6 @@ use App\Traits\Track;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Yajra\DataTables\DataTables;
-use Yajra\DataTables\Services\DataTable;
 
 class PermintaanLabController extends Controller
 {
@@ -139,7 +137,26 @@ class PermintaanLabController extends Controller
 			}
 		}
 
-		return DataTables::of($permintaan)->make(true);
+		$data = $permintaan->get()->map(function ($row) {
+			return [
+				'noorder'        => $row->noorder,
+				'no_rawat'       => $row->no_rawat,
+				'tgl_permintaan' => $row->tgl_permintaan,
+				'jam_permintaan' => $row->jam_permintaan,
+				'tgl_sampel'     => $row->tgl_sampel,
+				'jam_sampel'     => $row->jam_sampel,
+				'tgl_hasil'      => $row->tgl_hasil,
+				'jam_hasil'      => $row->jam_hasil,
+				'status'         => $row->status,
+				'pasien'         => $row->pasien ? ['nm_pasien' => $row->pasien->nm_pasien, 'no_rkm_medis' => $row->pasien->no_rkm_medis] : null,
+				'registrasi'     => $row->registrasi ? ['no_rawat' => $row->registrasi->no_rawat] : null,
+				'perujuk'        => $row->perujuk ? ['nm_dokter' => $row->perujuk->nm_dokter] : null,
+				'poliklinik'     => $row->poliklinik ? ['nm_poli' => $row->poliklinik->nm_poli] : null,
+				'penjab'         => $row->penjab ? ['png_jawab' => $row->penjab->png_jawab] : null,
+			];
+		});
+
+		return response()->json(['data' => $data]);
 	}
 
 }
