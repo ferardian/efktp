@@ -15,9 +15,9 @@ class PCareObat extends PCareClient
     /**
      * Hapus data obat kunjungan dari BPJS PCare
      */
-    public function delete(string $kdObatSK, string $noKunjungan): array
+    public function hapus(string $kdObatSK, string $noKunjungan): array
     {
-        return $this->delete("obat/$kdObatSK/kunjungan/$noKunjungan");
+        return parent::delete("obat/$kdObatSK/kunjungan/$noKunjungan");
     }
 
     /**
