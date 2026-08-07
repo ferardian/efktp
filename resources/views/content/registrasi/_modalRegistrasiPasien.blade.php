@@ -521,6 +521,31 @@
 
                 if ((data.no_peserta !== '-' || data.no_peserta.length > 1) && checkPendaftaranPcare) {
                     createBridgingPendaftaranPcare(data)
+                } else if (antrianEnabled && data.no_peserta && data.no_peserta !== '-' && data.no_peserta.length > 1) {
+                    loadingAjax('Mengirim data Antrean ke BPJS...');
+                    $.post(`{{ url('/bridging/antrean/add') }}`, data).done((resAntrean) => {
+                        const code = (resAntrean && resAntrean.metadata) ? resAntrean.metadata.code : ((resAntrean && resAntrean.metaData) ? resAntrean.metaData.code : 0);
+                        if (code == 200 || code == 201) {
+                            alertSuccessAjax('Registrasi Berhasil & Antrean BPJS Berhasil Dikirim (No. Antrean: ' + data.no_reg + ')').then(() => {
+                                modalRegistrasi.modal('hide');
+                                modalPasien.modal('hide');
+                            });
+                        } else {
+                            const errorMsg = (resAntrean.metadata && resAntrean.metadata.message) || (resAntrean.metaData && resAntrean.metaData.message) || (resAntrean.response && resAntrean.response.message) || (typeof resAntrean.response === 'string' ? resAntrean.response : 'Gagal mengirim antrean ke BPJS');
+                            Swal.fire({
+                                title: "Gagal Kirim Antrean BPJS",
+                                html: `<span class="text-danger">${errorMsg}</span>`,
+                                icon: 'warning',
+                            }).then(() => {
+                                modalRegistrasi.modal('hide');
+                                modalPasien.modal('hide');
+                            });
+                        }
+                    }).fail((err) => {
+                        alertErrorAjax(err);
+                        modalRegistrasi.modal('hide');
+                        modalPasien.modal('hide');
+                    });
                 } else {
                     modalRegistrasi.modal('hide');
                     modalPasien.modal('hide');

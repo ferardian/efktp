@@ -575,6 +575,7 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::get('/bridging/pcare/pendaftaran/nourut/{noUrut}', [Bridging\Pendaftaran::class, 'getUrut']);
 
 	// ANTREAN BPJS (ANTROL)
+	Route::post('/bridging/antrean/add', [Bridging\Antrian::class, 'add']);
 	Route::post('/bridging/antrean/batal', [Bridging\Antrian::class, 'batal']);
 
 	// KUNJUNGAN
