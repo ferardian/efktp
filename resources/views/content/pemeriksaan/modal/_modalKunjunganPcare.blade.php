@@ -1031,6 +1031,7 @@
                         
                         // Persiapkan data pendaftaran
                         const pendaftaranData = { ...data };
+                        pendaftaranData['skip_antrian'] = true; // Antrean sudah diproses saat registrasi awal & CPPT
                         pendaftaranData['tgl_registrasi'] = data.tgl_daftar;
                         pendaftaranData['kunjunganSakit'] = $('#formKunjunganPcare input[name=kunjSakit]:checked').parent().text().trim();
                         pendaftaranData['kdTkp'] = $('#formKunjunganPcare input[name=kdTkp]:checked').val();
