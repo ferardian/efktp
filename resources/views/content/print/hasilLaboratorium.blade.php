@@ -302,16 +302,12 @@
 
 <script type="text/php">
     if (isset($pdf)) {
-        $pageCount = $pdf->get_page_count();
-        $pageWidth = $pdf->get_width();
-        $pageHeight = $pdf->get_height();
-        for ($i = 1; $i <= $pageCount; $i++) {
-            $pdf->page($i);
-            $text = "Halaman {$i} dari {$pageCount}";
-            $font = $fontMetrics->getFont("Arial, Helvetica, sans-serif");
-            $textWidth = $fontMetrics->getTextWidth($text, $font, 8);
-            $pdf->text(($pageWidth - $textWidth) / 2 + 100, $pageHeight - 22, $text, $font, 8, array(0.6, 0.6, 0.6));
-        }
+        $text = "Halaman {$PAGE_NUM} dari {$PAGE_COUNT}";
+        $font = $fontMetrics->getFont("Arial, Helvetica, sans-serif");
+        $textWidth = $fontMetrics->getTextWidth($text, $font, 8);
+        $x = ($pdf->get_width() - $textWidth) / 2 + 100;
+        $y = $pdf->get_height() - 22;
+        $pdf->text($x, $y, $text, $font, 8, array(0.6, 0.6, 0.6));
     }
 </script>
 
