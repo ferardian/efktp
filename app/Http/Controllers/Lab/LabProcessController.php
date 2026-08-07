@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\Setting;
 
 class LabProcessController extends Controller
 {
@@ -479,7 +480,7 @@ class LabProcessController extends Controller
         }
 
         // Fetch setting (klinik info)
-        $setting = DB::table('set_puskesmas')->first()
+        $setting = Setting::first()
             ?? (object)['nama_instansi' => config('app.name'), 'alamat_instansi' => '-', 'kabupaten' => '', 'propinsi' => '', 'kontak' => '-', 'email' => '-', 'logo' => null];
 
         $pdf = Pdf::loadView('content.print.hasilLaboratorium', [
