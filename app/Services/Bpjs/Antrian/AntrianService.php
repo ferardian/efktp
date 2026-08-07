@@ -59,8 +59,8 @@ class AntrianService extends AntrianClient
             'tanggalperiksa' => $data['tanggalperiksa'],
             'kodepoli'       => $data['kodepoli'],
             'nomorkartu'     => $data['nomorkartu'] ?? '',
-            'status'         => (string) $data['status'],
-            'waktu'          => (string) $data['waktu'],
+            'status'         => (int) $data['status'],
+            'waktu'          => (int) $data['waktu'],
         ];
 
         return $this->post('antrean/panggil', $payload);
