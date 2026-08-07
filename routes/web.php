@@ -20,6 +20,7 @@ use App\Http\Controllers\KecamatanController;
 use App\Http\Controllers\KelurahanController;
 use App\Http\Controllers\Lab\JnsPerawatanLabController;
 use App\Http\Controllers\Lab\PeriksaLabController;
+use App\Http\Controllers\Lab\LabProcessController;
 use App\Http\Controllers\Lab\Permintaan\DetailPermintaanLabController;
 use App\Http\Controllers\Lab\Permintaan\PermintaanLabController;
 use App\Http\Controllers\Lab\Permintaan\PermintaanPemeriksaanLabController;
@@ -399,6 +400,9 @@ Route::middleware('auth:web,admin')->group(function () {
 			Route::get('/detail/{noorder}/{kd_jenis_prw?}', [DetailPermintaanLabController::class, 'get']);
 
 			Route::get('/noorder', [PermintaanLabController::class, 'getNoOrder']);
+			Route::post('/sampel', [LabProcessController::class, 'updateSampel']);
+			Route::get('/form-hasil/{noorder}', [LabProcessController::class, 'getFormHasil']);
+			Route::post('/hasil', [LabProcessController::class, 'simpanHasil']);
 		});
 	});
 
