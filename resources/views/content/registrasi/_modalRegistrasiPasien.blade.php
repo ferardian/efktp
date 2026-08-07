@@ -525,7 +525,7 @@
                     loadingAjax('Mengirim data Antrean ke BPJS...');
                     $.post(`{{ url('/bridging/antrean/add') }}`, data).done((resAntrean) => {
                         const code = (resAntrean && resAntrean.metadata) ? resAntrean.metadata.code : ((resAntrean && resAntrean.metaData) ? resAntrean.metaData.code : 0);
-                        if (code == 200 || code == 201) {
+                        if (code == 200) {
                             alertSuccessAjax('Registrasi Berhasil & Antrean BPJS Berhasil Dikirim (No. Antrean: ' + data.no_reg + ')').then(() => {
                                 modalRegistrasi.modal('hide');
                                 modalPasien.modal('hide');
@@ -598,7 +598,7 @@
                 noReg.val(response)
             })
 
-            if (switchPendaftaranPcare.is(':checked') && kdDokter && kdDokter !== '-') {
+            if (kdDokter && kdDokter !== '-') {
                 setMappingDokterPcare(kdDokter)
             } else {
                 formRegistrasiPoli.find('input[name=kd_dokter_pcare]').val('');

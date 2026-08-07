@@ -37,15 +37,34 @@ class Antrian extends Controller
         $pendaftaran = new Pendaftaran();
         $jamPraktek = $pendaftaran->getJamPraktek($kdDokter, $tglReg);
 
+        $kdDokterPcare = (int) ($request->kd_dokter_pcare ?? $request->kodedokter ?? 0);
+        if (empty($kdDokterPcare) && !empty($kdDokter)) {
+            $mapDokter = \App\Models\MapingDokterPcare::where('kd_dokter', $kdDokter)->first();
+            if ($mapDokter) {
+                $kdDokterPcare = (int) $mapDokter->kd_dokter_pcare;
+            }
+        }
+
+        $kdPoliPcare = $request->kd_poli_pcare ?? $request->kodepoli ?? '';
+        $nmPoliPcare = $request->nm_poli_pcare ?? $request->namapoli ?? '';
+        $kdPoliRs    = $request->kd_poli_rs ?? $request->kd_poli ?? '';
+        if (empty($kdPoliPcare) && !empty($kdPoliRs)) {
+            $mapPoli = \App\Models\MappingPoliklinikPcare::where('kd_poli_rs', $kdPoliRs)->first();
+            if ($mapPoli) {
+                $kdPoliPcare = $mapPoli->kd_poli_pcare;
+                $nmPoliPcare = $mapPoli->nm_poli_pcare;
+            }
+        }
+
         $payload = [
             'nomorkartu'    => $noKartu,
             'nik'           => $nik,
             'nohp'          => $noHp,
-            'kodepoli'      => $request->kd_poli_pcare ?? $request->kodepoli,
-            'namapoli'      => $request->nm_poli_pcare ?? $request->namapoli,
+            'kodepoli'      => $kdPoliPcare,
+            'namapoli'      => $nmPoliPcare,
             'norm'          => $request->no_rkm_medis ?? $request->norm,
             'tanggalperiksa'=> date('Y-m-d', strtotime($request->tgl_registrasi ?? $request->tanggalperiksa ?? date('Y-m-d'))),
-            'kodedokter'    => (int) ($request->kd_dokter_pcare ?? $request->kodedokter ?? 0),
+            'kodedokter'    => $kdDokterPcare,
             'namadokter'    => $request->nm_dokter ?? $request->namadokter ?? 'Dokter Faskes',
             'jampraktek'    => $jamPraktek,
             'nomorantrean'  => $request->no_reg ?? $request->nomorantrean,
