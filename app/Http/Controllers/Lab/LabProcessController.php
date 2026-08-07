@@ -231,7 +231,7 @@ class LabProcessController extends Controller
                         'kso'                    => $jnsTarif->kso ?? 0,
                         'menejemen'              => $jnsTarif->menejemen ?? 0,
                         'biaya'                  => $jnsTarif->total_byr ?? $jnsTarif->biaya_item ?? 0,
-                        'kd_pj'                  => $kdPj,
+                        'kd_dokter'              => $kdDokter,
                         'status'                 => $statusLanjut,
                         'kategori'               => 'PK',
                     ]
