@@ -90,11 +90,13 @@ class Obat extends Controller
     }
 
     /**
-     * Synchronize resep obat dari SIMRS ke BPJS PCare berdasarkan no_rawat & noKunjungan
+     * Synchronize resep obat dari SIMRS ke BPJS PCare berdasarkan no_rawat & noKunjungan.
+     * Hanya mengirim obat yang BELUM pernah berhasil dikirim (berdasarkan pcare_obat_diberikan).
+     * Obat yang sudah ada dengan kdObatSK valid (bukan '0') akan di-skip agar tidak duplikat.
      */
     public function syncByNoRawat(Request $request)
     {
-        $noRawat = $request->no_rawat;
+        $noRawat     = $request->no_rawat;
         $noKunjungan = $request->noKunjungan;
 
         if (!$noRawat || !$noKunjungan) {
@@ -109,19 +111,32 @@ class Obat extends Controller
             return response()->json(['message' => 'Tidak ada data resep obat untuk kunjungan ini', 'results' => []], 200);
         }
 
+        // Ambil semua obat yang sudah berhasil terkirim ke PCare (kdObatSK valid != '0')
+        $sudahTerkirim = \App\Models\PcareObatDiberikan::where('no_rawat', $noRawat)
+            ->where('noKunjungan', $noKunjungan)
+            ->where('kdObatSK', '!=', '0')
+            ->whereNotNull('kdObatSK')
+            ->pluck('kdObatSK', 'kode_brng') // key = kode_brng, value = kdObatSK
+            ->toArray();
+
         $tglPerawatan = $resep->tgl_perawatan ?? date('Y-m-d');
-        $jam = $resep->jam ?? date('H:i:s');
-        $results = [];
+        $jam          = $resep->jam ?? date('H:i:s');
+        $results      = [];
 
         // 1. Process Obat Non-Racikan (resep_dokter)
         if ($resep->resepDokter && count($resep->resepDokter) > 0) {
             foreach ($resep->resepDokter as $item) {
-                $mapping = MappingObatPcare::where('kode_brng', $item->kode_brng)->first();
-                $kdObat = $mapping?->kode_brng_pcare ?? '130199999';
-                $isDpho = ($kdObat !== '130199999' && !empty($mapping?->kode_brng_pcare));
-                $nmObat = $mapping?->nama_brng_pcare ?? $item->obat?->nama_brng ?? 'Obat Non DPHO';
+                // Skip jika obat ini sudah pernah berhasil dikirim
+                if (isset($sudahTerkirim[$item->kode_brng])) {
+                    $results[] = ['item' => $item->kode_brng, 'status' => 'skipped', 'reason' => 'sudah terkirim', 'kdObatSK' => $sudahTerkirim[$item->kode_brng]];
+                    continue;
+                }
 
-                $signa = $this->parseSigna($item->aturan_pakai);
+                $mapping = MappingObatPcare::where('kode_brng', $item->kode_brng)->first();
+                $kdObat  = $mapping?->kode_brng_pcare ?? '130199999';
+                $isDpho  = ($kdObat !== '130199999' && !empty($mapping?->kode_brng_pcare));
+                $nmObat  = $mapping?->nama_brng_pcare ?? $item->obat?->nama_brng ?? 'Obat Non DPHO';
+                $signa   = $this->parseSigna($item->aturan_pakai);
 
                 $payload = [
                     'kdObatSK'      => 0,
@@ -133,19 +148,17 @@ class Obat extends Controller
                     'signa1'        => $signa['signa1'],
                     'signa2'        => $signa['signa2'],
                     'jmlObat'       => (int) $item->jml,
-                    'jmlPermintaan'  => (int) $item->jml,
+                    'jmlPermintaan' => (int) $item->jml,
                     'nmObatNonDPHO' => $nmObat,
                 ];
 
                 try {
-                    $res = $this->pcareObat->simpan($payload);
+                    $res  = $this->pcareObat->simpan($payload);
                     $code = $res['metaData']['code'] ?? $res['metadata']['code'] ?? 500;
-                    
+
                     if ($code == 201 || $code == 200) {
                         $kdObatSK = $res['response']['message'] ?? $res['response'] ?? '0';
-                        if (!is_numeric($kdObatSK)) {
-                            $kdObatSK = '0';
-                        }
+                        if (!is_numeric($kdObatSK)) $kdObatSK = '0';
 
                         $this->savePcareObatDiberikan([
                             'no_rawat'      => $noRawat,
@@ -168,15 +181,21 @@ class Obat extends Controller
         // 2. Process Obat Racikan (resep_dokter_racikan & detail)
         if ($resep->resepRacikan && count($resep->resepRacikan) > 0) {
             foreach ($resep->resepRacikan as $racik) {
-                $signa = $this->parseSigna($racik->aturan_pakai);
+                $signa      = $this->parseSigna($racik->aturan_pakai);
                 $kdRacikStr = $racik->kd_racik ?? 'R01';
 
                 if ($racik->detail && count($racik->detail) > 0) {
                     foreach ($racik->detail as $detail) {
+                        // Skip jika obat ini sudah pernah berhasil dikirim
+                        if (isset($sudahTerkirim[$detail->kode_brng])) {
+                            $results[] = ['racik' => $kdRacikStr, 'item' => $detail->kode_brng, 'status' => 'skipped', 'reason' => 'sudah terkirim'];
+                            continue;
+                        }
+
                         $mapping = MappingObatPcare::where('kode_brng', $detail->kode_brng)->first();
-                        $kdObat = $mapping?->kode_brng_pcare ?? '130199999';
-                        $isDpho = ($kdObat !== '130199999' && !empty($mapping?->kode_brng_pcare));
-                        $nmObat = $mapping?->nama_brng_pcare ?? $detail->obat?->nama_brng ?? 'Racikan Non DPHO';
+                        $kdObat  = $mapping?->kode_brng_pcare ?? '130199999';
+                        $isDpho  = ($kdObat !== '130199999' && !empty($mapping?->kode_brng_pcare));
+                        $nmObat  = $mapping?->nama_brng_pcare ?? $detail->obat?->nama_brng ?? 'Racikan Non DPHO';
 
                         $payload = [
                             'kdObatSK'      => 0,
@@ -188,19 +207,17 @@ class Obat extends Controller
                             'signa1'        => $signa['signa1'],
                             'signa2'        => $signa['signa2'],
                             'jmlObat'       => (int) ($detail->jml ?? $racik->jml_dr),
-                            'jmlPermintaan'  => (int) $racik->jml_dr,
+                            'jmlPermintaan' => (int) $racik->jml_dr,
                             'nmObatNonDPHO' => $nmObat,
                         ];
 
                         try {
-                            $res = $this->pcareObat->simpan($payload);
+                            $res  = $this->pcareObat->simpan($payload);
                             $code = $res['metaData']['code'] ?? $res['metadata']['code'] ?? 500;
 
                             if ($code == 201 || $code == 200) {
                                 $kdObatSK = $res['response']['message'] ?? $res['response'] ?? '0';
-                                if (!is_numeric($kdObatSK)) {
-                                    $kdObatSK = '0';
-                                }
+                                if (!is_numeric($kdObatSK)) $kdObatSK = '0';
 
                                 $this->savePcareObatDiberikan([
                                     'no_rawat'      => $noRawat,
@@ -224,7 +241,13 @@ class Obat extends Controller
 
         return response()->json([
             'message' => 'Proses sinkronisasi obat PCare selesai',
-            'results' => $results
+            'results' => $results,
+            'summary' => [
+                'total'    => count($results),
+                'sent'     => count(array_filter($results, fn($r) => ($r['status'] ?? '') === 'success')),
+                'skipped'  => count(array_filter($results, fn($r) => ($r['status'] ?? '') === 'skipped')),
+                'failed'   => count(array_filter($results, fn($r) => ($r['status'] ?? '') === 'error')),
+            ]
         ], 200);
     }
 
