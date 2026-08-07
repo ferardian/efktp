@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BridgingPcareSetting;
 use App\Models\EfktpPcareRujukSubspesialis;
 use App\Models\PcareRujukSubspesialis;
 use App\Models\Setting;
