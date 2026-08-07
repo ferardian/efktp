@@ -128,10 +128,20 @@ class Kunjungan extends Controller
             $result = $this->kunjungan->hapus($noKunjungan);
             Log::info("[KUNJUNGAN DELETE] Respons BPJS:", $result);
 
-            return $result;
+            $code = $result['metaData']['code'] ?? $result['metadata']['code'] ?? 0;
+            if ($code != 200 && $code != 201) {
+                $altResult = $this->kunjungan->delete("kunjungan/V1/{$noKunjungan}");
+                Log::info("[KUNJUNGAN DELETE Alt V1] Respons BPJS:", $altResult);
+                $altCode = $altResult['metaData']['code'] ?? $altResult['metadata']['code'] ?? 0;
+                if ($altCode == 200 || $altCode == 201) {
+                    $result = $altResult;
+                }
+            }
+
+            return response()->json($result);
         } catch (\Exception $e) {
             Log::error("[KUNJUNGAN DELETE] Error: " . $e->getMessage());
-            return ['metaData' => ['code' => 500, 'message' => $e->getMessage()]];
+            return response()->json(['metaData' => ['code' => 500, 'message' => $e->getMessage()]], 500);
         }
     }
 

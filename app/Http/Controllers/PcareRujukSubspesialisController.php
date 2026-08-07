@@ -279,7 +279,7 @@ class PcareRujukSubspesialisController extends Controller
                 $delete = $kunjungan->delete();
                 if ($delete) {
                     if ($kunjunganDetail) {
-                        $deleteDetail = $kunjungan->delete();
+                        $deleteDetail = $kunjunganDetail->delete();
                         if ($deleteDetail) {
                             $this->deleteSql(new EfktpPcareRujukSubspesialis(), ['noKunjungan' => $noKunjungan]);
                         }

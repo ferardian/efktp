@@ -161,7 +161,7 @@ class BpjsHttpClient
      */
     protected function handleResponse($body, string $rawBody = ''): array
     {
-        if (empty($body)) {
+        if (empty($body) || !is_array($body)) {
             $msg = !empty($rawBody) ? strip_tags(substr($rawBody, 0, 300)) : 'Respons kosong dari BPJS. Pastikan URL dan Kredensial benar.';
             return [
                 'metaData' => [
@@ -171,12 +171,20 @@ class BpjsHttpClient
             ];
         }
 
-        if (isset($body['response']) && is_string($body['response'])) {
+        if (isset($body['response']) && is_string($body['response']) && !empty($body['response'])) {
             $decrypted = $this->decrypt($body['response']);
             if ($decrypted) {
                 $decoded = json_decode($decrypted, true);
                 $body['response'] = $decoded ?: $decrypted;
             }
+        }
+
+        if (!isset($body['metaData']) && isset($body['metadata'])) {
+            $body['metaData'] = $body['metadata'];
+        }
+
+        if (isset($body['metaData']['code'])) {
+            $body['metaData']['code'] = (int) $body['metaData']['code'];
         }
 
         return $body;
