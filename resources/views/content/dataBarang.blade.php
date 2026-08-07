@@ -467,10 +467,10 @@
                             const pcareNama = isMapped ? row.mapping.nama_brng_pcare : '';
                             const pcareKode = isMapped ? row.mapping.kode_brng_pcare : '';
 
-                            const safeNama = (row.nama_brng || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-                            const safePcareNama = (pcareNama || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-                            const safeKapasitas = (row.kapasitas || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-                            const safeSatuan = (row.satuan?.satuan || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                            const safeNama = String(row.nama_brng || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                            const safePcareNama = String(pcareNama || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                            const safeKapasitas = String(row.kapasitas || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                            const safeSatuan = String(row.satuan?.satuan || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
                             if (isMapped) {
                                 return `
