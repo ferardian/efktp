@@ -137,6 +137,19 @@ class Kunjungan extends Controller
 
     // -------------------------------------------------------------------------
 
+    private function parseDateToYmd(?string $dateStr): ?string
+    {
+        if (empty($dateStr) || $dateStr === '-') return null;
+        $clean = trim($dateStr);
+        if (preg_match('/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})$/', $clean, $m)) {
+            return sprintf('%04d-%02d-%02d', $m[1], $m[2], $m[3]);
+        }
+        if (preg_match('/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})$/', $clean, $m)) {
+            return sprintf('%04d-%02d-%02d', $m[3], $m[2], $m[1]);
+        }
+        return date('Y-m-d', strtotime($clean));
+    }
+
     /**
      * Simpan atau update data ke tabel pcare_rujuk_subspesialis
      */
@@ -144,9 +157,7 @@ class Kunjungan extends Controller
     {
         $dataRujuk = [
             'noKunjungan'    => $noKunjungan,
-            'tglDaftar'      => $request->tgl_daftar
-                                ? date('Y-m-d', strtotime(str_replace('-', '/', $request->tgl_daftar)))
-                                : null,
+            'tglDaftar'      => $this->parseDateToYmd($request->tgl_daftar ?? $request->tglDaftar),
             'no_rkm_medis'   => $request->no_rkm_medis,
             'nm_pasien'      => $request->nm_pasien,
             'noKartu'        => $request->no_peserta,
@@ -165,9 +176,7 @@ class Kunjungan extends Controller
             'terapi'         => $request->rtl,
             'kdStatusPulang' => $request->sttsPulang,
             'nmStatusPulang' => $request->nmStatusPulang,
-            'tglPulang'      => $request->tglPulang
-                                ? date('Y-m-d', strtotime(str_replace('-', '/', $request->tglPulang)))
-                                : null,
+            'tglPulang'      => $this->parseDateToYmd($request->tglPulang),
             'kdDokter'       => $request->kd_dokter_pcare,
             'nmDokter'       => $request->nm_dokter,
             'kdDiag1'        => $request->kdDiagnosa1,
@@ -176,9 +185,7 @@ class Kunjungan extends Controller
             'nmDiag2'        => $request->diagnosa2,
             'kdDiag3'        => $request->kdDiagnosa3,
             'nmDiag3'        => $request->diagnosa3,
-            'tglEstRujuk'    => $request->tglEstRujukan
-                                ? date('Y-m-d', strtotime(str_replace('-', '/', $request->tglEstRujukan)))
-                                : ($request->tglEstRujuk ? date('Y-m-d', strtotime(str_replace('-', '/', $request->tglEstRujuk))) : null),
+            'tglEstRujuk'    => $this->parseDateToYmd($request->tglEstRujukan ?? $request->tglEstRujuk),
             'kdPPK'          => $request->kdPpkRujukan ?? $request->kdPPK ?? null,
             'nmPPK'          => $request->ppkRujukan ?? $request->nmPPK ?? null,
             'kdSubSpesialis' => $request->kdSubSpesialis ?? null,

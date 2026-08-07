@@ -13,6 +13,19 @@ use Illuminate\Http\Request;
 class PcareRujukSubspesialisController extends Controller
 {
     use Track;
+    private function parseDateToYmd(?string $dateStr): ?string
+    {
+        if (empty($dateStr) || $dateStr === '-') return date('Y-m-d');
+        $clean = trim($dateStr);
+        if (preg_match('/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})$/', $clean, $m)) {
+            return sprintf('%04d-%02d-%02d', $m[1], $m[2], $m[3]);
+        }
+        if (preg_match('/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})$/', $clean, $m)) {
+            return sprintf('%04d-%02d-%02d', $m[3], $m[2], $m[1]);
+        }
+        return date('Y-m-d', strtotime($clean));
+    }
+
     public function create(Request $request)
     {
         $tglDaftarRaw = $request->tglDaftar ?? $request->tgl_daftar;
@@ -22,7 +35,7 @@ class PcareRujukSubspesialisController extends Controller
         $data = [
             'no_rawat' => $request->no_rawat,
             'noKunjungan' => $request->noKunjungan,
-            'tglDaftar' => $tglDaftarRaw ? date('Y-m-d', strtotime(str_replace('-', '/', $tglDaftarRaw))) : date('Y-m-d'),
+            'tglDaftar' => $this->parseDateToYmd($tglDaftarRaw),
             'no_rkm_medis' => $request->no_rkm_medis,
             'nm_pasien' => $request->nm_pasien,
             'noKartu' => $request->noKartu ?? $request->no_peserta,
@@ -41,7 +54,7 @@ class PcareRujukSubspesialisController extends Controller
             'terapi' => $request->terapi ?? $request->rtl ?? '-',
             'kdStatusPulang' => $request->kdStatusPulang ?? $request->sttsPulang,
             'nmStatusPulang' => $request->nmStatusPulang,
-            'tglPulang' => $tglPulangRaw ? date('Y-m-d', strtotime(str_replace('-', '/', $tglPulangRaw))) : date('Y-m-d'),
+            'tglPulang' => $this->parseDateToYmd($tglPulangRaw),
             'kdDokter' => $request->kdDokter ?? $request->kd_dokter_pcare,
             'nmDokter' => $request->nmDokter ?? $request->nm_dokter,
             'kdDiag1' => $request->kdDiag1 ?? $request->kdDiagnosa1,
@@ -50,7 +63,7 @@ class PcareRujukSubspesialisController extends Controller
             'nmDiag2' => $request->nmDiag2 ?? $request->diagnosa2,
             'kdDiag3' => $request->kdDiag3 ?? $request->kdDiagnosa3,
             'nmDiag3' => $request->nmDiag3 ?? $request->diagnosa3,
-            'tglEstRujuk' => $tglEstRaw ? date('Y-m-d', strtotime(str_replace('-', '/', $tglEstRaw))) : date('Y-m-d'),
+            'tglEstRujuk' => $this->parseDateToYmd($tglEstRaw),
             'kdPPK' => $request->kdPPK ?? $request->kdPpkRujukan,
             'nmPPK' => $request->nmPPK ?? $request->ppkRujukan,
             'kdSubSpesialis' => $request->kdSubSpesialis,
@@ -77,7 +90,7 @@ class PcareRujukSubspesialisController extends Controller
                     $setting = Setting::first();
                     $tglEstForAkhir = $data['tglEstRujuk'] ?? date('Y-m-d');
                     $tglAkhirRujukVal = !empty($request->tglAkhirRujuk) 
-                        ? date('Y-m-d', strtotime(str_replace('-', '/', $request->tglAkhirRujuk))) 
+                        ? $this->parseDateToYmd($request->tglAkhirRujuk) 
                         : date('Y-m-d', strtotime('+89 days', strtotime($tglEstForAkhir)));
 
                     $dataEfktp = [
@@ -121,7 +134,7 @@ class PcareRujukSubspesialisController extends Controller
         $data = [
             'no_rawat' => $request->no_rawat,
             'noKunjungan' => $request->noKunjungan,
-            'tglDaftar' => $tglDaftarRaw ? date('Y-m-d', strtotime(str_replace('-', '/', $tglDaftarRaw))) : date('Y-m-d'),
+            'tglDaftar' => $this->parseDateToYmd($tglDaftarRaw),
             'no_rkm_medis' => $request->no_rkm_medis,
             'nm_pasien' => $request->nm_pasien,
             'noKartu' => $request->noKartu ?? $request->no_peserta,
@@ -140,7 +153,7 @@ class PcareRujukSubspesialisController extends Controller
             'terapi' => $request->terapi ?? $request->rtl ?? '-',
             'kdStatusPulang' => $request->kdStatusPulang ?? $request->sttsPulang,
             'nmStatusPulang' => $request->nmStatusPulang,
-            'tglPulang' => $tglPulangRaw ? date('Y-m-d', strtotime(str_replace('-', '/', $tglPulangRaw))) : date('Y-m-d'),
+            'tglPulang' => $this->parseDateToYmd($tglPulangRaw),
             'kdDokter' => $request->kdDokter ?? $request->kd_dokter_pcare,
             'nmDokter' => $request->nmDokter ?? $request->nm_dokter,
             'kdDiag1' => $request->kdDiag1 ?? $request->kdDiagnosa1,
@@ -149,7 +162,7 @@ class PcareRujukSubspesialisController extends Controller
             'nmDiag2' => $request->nmDiag2 ?? $request->diagnosa2,
             'kdDiag3' => $request->kdDiag3 ?? $request->kdDiagnosa3,
             'nmDiag3' => $request->nmDiag3 ?? $request->diagnosa3,
-            'tglEstRujuk' => $tglEstRaw ? date('Y-m-d', strtotime(str_replace('-', '/', $tglEstRaw))) : date('Y-m-d'),
+            'tglEstRujuk' => $this->parseDateToYmd($tglEstRaw),
             'kdPPK' => $request->kdPPK ?? $request->kdPpkRujukan,
             'nmPPK' => $request->nmPPK ?? $request->ppkRujukan,
             'kdSubSpesialis' => $request->kdSubSpesialis,
@@ -178,7 +191,7 @@ class PcareRujukSubspesialisController extends Controller
                     $setting = Setting::first();
                     $tglEstForAkhir = $data['tglEstRujuk'] ?? date('Y-m-d');
                     $tglAkhirRujukVal = !empty($request->tglAkhirRujuk) 
-                        ? date('Y-m-d', strtotime(str_replace('-', '/', $request->tglAkhirRujuk))) 
+                        ? $this->parseDateToYmd($request->tglAkhirRujuk) 
                         : date('Y-m-d', strtotime('+89 days', strtotime($tglEstForAkhir)));
 
                     $dataEfktp = [
