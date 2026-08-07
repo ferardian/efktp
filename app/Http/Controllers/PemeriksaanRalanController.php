@@ -77,8 +77,11 @@ class PemeriksaanRalanController extends Controller
 			$pemeriksaan = $this->pemeriksaan->create($data);
 			if ($pemeriksaan) {
 				$this->insertSql(new PemeriksaanRalan(), $data);
-				$this->updateAntrianPanggil($req->no_rawat);
-				return response()->json('SUKSES', 201);
+				$antrianRes = $this->updateAntrianPanggil($req->no_rawat);
+				return response()->json([
+					'status'  => 'SUKSES',
+					'antrian' => $antrianRes
+				], 201);
 			}
 		} catch (QueryException $e) {
 			return response()->json($e->errorInfo, 400);
@@ -112,11 +115,15 @@ class PemeriksaanRalanController extends Controller
 		];
 		try {
 			$pemeriksaan = $this->pemeriksaan->where($keys)->update($data);
+			$antrianRes = null;
 			if ($pemeriksaan) {
 				$this->updateSql(new PemeriksaanRalan(), $data, $keys);
-				$this->updateAntrianPanggil($req->no_rawat);
+				$antrianRes = $this->updateAntrianPanggil($req->no_rawat);
 			}
-			return response()->json('SUKSES', 201);
+			return response()->json([
+				'status'  => 'SUKSES',
+				'antrian' => $antrianRes
+			], 201);
 		} catch (QueryException $e) {
 			return response()->json($e->errorInfo, 400);
 		}
@@ -126,10 +133,10 @@ class PemeriksaanRalanController extends Controller
 	 * Kirim update status antrean Task 1 (Panggil / Mulai Pelayanan Poli) ke BPJS Antrol
 	 * jika config ANTRIAN_ENABLED=true di .env
 	 */
-	private function updateAntrianPanggil(string $noRawat): void
+	private function updateAntrianPanggil(string $noRawat): ?array
 	{
 		if (!config('bpjs.antrian.enabled', false)) {
-			return;
+			return null;
 		}
 
 		try {
@@ -138,12 +145,12 @@ class PemeriksaanRalanController extends Controller
 				->first();
 
 			if (!$regPeriksa) {
-				return;
+				return null;
 			}
 
 			$kdPoliPcare = $regPeriksa->poliklinik->maping->kd_poli_pcare ?? '';
 			if (empty($kdPoliPcare)) {
-				return;
+				return null;
 			}
 
 			$noPeserta = trim($regPeriksa->pasien->no_peserta ?? '');
@@ -156,8 +163,8 @@ class PemeriksaanRalanController extends Controller
 				'tanggalperiksa' => date('Y-m-d', strtotime($regPeriksa->tgl_registrasi)),
 				'kodepoli'       => $kdPoliPcare,
 				'nomorkartu'     => $noPeserta,
-				'status'         => '1', // 1 = Mulai Pelayanan Poli / Panggil
-				'waktu'          => (string) $waktu,
+				'status'         => 1, // 1 = Mulai Pelayanan Poli / Panggil
+				'waktu'          => $waktu,
 			];
 
 			$antrianService = new \App\Services\Bpjs\Antrian\AntrianService();
@@ -167,8 +174,20 @@ class PemeriksaanRalanController extends Controller
 				'payload'  => $payload,
 				'response' => $res,
 			]);
+
+			$code = $res['metadata']['code'] ?? $res['metaData']['code'] ?? 500;
+			$msg  = $res['metadata']['message'] ?? $res['metaData']['message'] ?? ($res['response'] ?? 'Gagal update status antrean');
+
+			return [
+				'code'    => (int) $code,
+				'message' => is_string($msg) ? $msg : json_encode($msg),
+			];
 		} catch (\Throwable $e) {
 			\Illuminate\Support\Facades\Log::error("[ANTRIAN PANGGIL TASK 1 ERROR] no_rawat: {$noRawat} - " . $e->getMessage());
+			return [
+				'code'    => 500,
+				'message' => $e->getMessage(),
+			];
 		}
 	}
 }

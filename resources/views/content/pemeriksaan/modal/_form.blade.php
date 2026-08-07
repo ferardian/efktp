@@ -332,6 +332,13 @@
             })
             data['alergi'] = alergi.join(', ');
             $.post(`{{ url('/pemeriksaan/ralan/create') }}`, data).done((response) => {
+                if (response && response.antrian) {
+                    if (response.antrian.code == 200) {
+                        showToast('Berhasil Simpan CPPT & Update Antrean BPJS (Hadir)');
+                    } else {
+                        showToast(`Simpan CPPT Berhasil. Antrean BPJS: ${response.antrian.message}`, 'warning');
+                    }
+                }
                 if (typeof setAlergiMakan === 'function') setAlergiMakan();
                 if (typeof setAlergiUdara === 'function') setAlergiUdara();
                 if (typeof setAlergiObat === 'function') setAlergiObat();
