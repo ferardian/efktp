@@ -27,14 +27,18 @@ class LabProcessController extends Controller
         ]);
 
         try {
-            $permintaan = PermintaanLab::where('noorder', $request->noorder)->first();
-            if (!$permintaan) {
+            $affected = DB::table('permintaan_lab')
+                ->where('noorder', $request->noorder)
+                ->update([
+                    'tgl_sampel' => $request->tgl_sampel,
+                    'jam_sampel' => $request->jam_sampel,
+                ]);
+
+            if ($affected === 0 && !DB::table('permintaan_lab')->where('noorder', $request->noorder)->exists()) {
                 return response()->json(['message' => 'Data permintaan lab tidak ditemukan'], 404);
             }
 
-            $permintaan->tgl_sampel = $request->tgl_sampel;
-            $permintaan->jam_sampel = $request->jam_sampel;
-            $permintaan->save();
+            $permintaan = PermintaanLab::where('noorder', $request->noorder)->first();
 
             $this->updateSql($permintaan, [
                 'tgl_sampel' => $request->tgl_sampel,

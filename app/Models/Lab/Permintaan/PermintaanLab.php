@@ -20,6 +20,9 @@ class PermintaanLab extends Model
     use HasFactory;
 
     protected $table = 'permintaan_lab';
+    protected $primaryKey = 'noorder';
+    public $incrementing = false;
+    protected $keyType = 'string';
     protected $guarded = [];
     public $timestamps = false;
 
