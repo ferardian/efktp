@@ -17,26 +17,26 @@
 
                 <!-- Filter Controls Toolbar Top -->
                 <div class="d-flex flex-wrap align-items-center gap-2">
-                    <div class="input-group input-group-sm shadow-xs" style="max-width: 320px;">
-                        <span class="input-group-text bg-light text-muted"><i class="ti ti-calendar me-1"></i> Periode</span>
-                        <input type="text" class="form-control filterTangal bg-white text-center" id="tglFilterAwal" placeholder="Awal" />
-                        <span class="input-group-text bg-light text-muted">s.d.</span>
-                        <input type="text" class="form-control filterTangal bg-white text-center" id="tglFilterAkhir" placeholder="Akhir" />
+                    <div class="input-group input-group-sm shadow-xs" style="max-width: 330px; height: 32px;">
+                        <span class="input-group-text bg-light text-muted border-end-0 py-0" style="font-size: 11px; height: 32px;"><i class="ti ti-calendar me-1"></i> Periode</span>
+                        <input type="text" class="form-control filterTangal bg-white text-center py-0" id="tglFilterAwal" placeholder="Awal" style="height: 32px; font-size: 11px;" />
+                        <span class="input-group-text bg-light text-muted py-0" style="font-size: 11px; height: 32px;">s.d.</span>
+                        <input type="text" class="form-control filterTangal bg-white text-center py-0" id="tglFilterAkhir" placeholder="Akhir" style="height: 32px; font-size: 11px;" />
                     </div>
 
-                    <div class="shadow-xs" style="width: 140px;">
-                        <select class="form-select form-select-sm" id="selectStatusLanjut">
+                    <div class="shadow-xs" style="width: 140px; height: 32px;">
+                        <select class="form-select form-select-sm py-0" id="selectStatusLanjut" style="height: 32px; font-size: 11px;">
                             <option value="">-- Semua --</option>
                             <option value="ralan" selected>Rawat Jalan</option>
                             <option value="ranap">Rawat Inap</option>
                         </select>
                     </div>
 
-                    <button type="button" class="btn btn-primary btn-sm shadow-xs px-3" id="btnFilterSearch">
+                    <button type="button" class="btn btn-primary btn-sm shadow-xs px-3 d-inline-flex align-items-center justify-content-center m-0" id="btnFilterSearch" style="height: 32px; font-size: 11px;">
                         <i class="ti ti-search me-1"></i> Filter
                     </button>
 
-                    <button type="button" class="btn btn-outline-secondary btn-sm shadow-xs px-2" id="btnRefreshLab" title="Refresh Data">
+                    <button type="button" class="btn btn-outline-secondary btn-sm shadow-xs p-0 d-inline-flex align-items-center justify-content-center m-0" id="btnRefreshLab" title="Refresh Data" style="height: 32px; width: 32px; font-size: 11px;">
                         <i class="ti ti-refresh"></i>
                     </button>
                 </div>
