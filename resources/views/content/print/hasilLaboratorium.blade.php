@@ -285,7 +285,7 @@
         padding-top: 3px;
     }
     .page-number:before {
-        content: "Halaman " counter(page) " dari " counter(pages);
+        content: "Halaman " counter(page);
     }
     .no-result {
         text-align: center;
@@ -297,9 +297,23 @@
 </style>
 
 <footer>
-    <span>Dicetak: {{ $tglCetak }} &nbsp;|&nbsp; No. Order: <strong>{{ $permintaan->noorder }}</strong> &nbsp;|&nbsp; No. Rawat: <strong>{{ $permintaan->no_rawat }}</strong> &nbsp;|&nbsp;</span>
-    <span class="page-number"></span>
+    <span>Dicetak: {{ $tglCetak }} &nbsp;|&nbsp; No. Order: <strong>{{ $permintaan->noorder }}</strong> &nbsp;|&nbsp; No. Rawat: <strong>{{ $permintaan->no_rawat }}</strong> &nbsp;|&nbsp; <span class="page-number"></span></span>
 </footer>
+
+<script type="text/php">
+    if (isset($pdf)) {
+        $pageCount = $pdf->get_page_count();
+        $pageWidth = $pdf->get_width();
+        $pageHeight = $pdf->get_height();
+        for ($i = 1; $i <= $pageCount; $i++) {
+            $pdf->page($i);
+            $text = "Halaman {$i} dari {$pageCount}";
+            $font = $fontMetrics->getFont("Arial, Helvetica, sans-serif");
+            $textWidth = $fontMetrics->getTextWidth($text, $font, 8);
+            $pdf->text(($pageWidth - $textWidth) / 2 + 100, $pageHeight - 22, $text, $font, 8, array(0.6, 0.6, 0.6));
+        }
+    }
+</script>
 
 <!-- ======== KOP SURAT ======== -->
 <div class="kop-wrapper">
