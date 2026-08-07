@@ -135,6 +135,7 @@
                     data: {
                         dataTable: keyword,
                     },
+                    dataSrc: 'data',
                 },
                 columns: [
                     {
@@ -319,6 +320,8 @@
                 return;
             }
 
+            if (document.activeElement) document.activeElement.blur();
+
             loadingAjax('Saving sample timestamp...');
             $.post(`{{ url('/lab/permintaan/sampel') }}`, {
                 noorder: noorder,
@@ -327,8 +330,8 @@
             }).done((res) => {
                 Swal.close();
                 if (res.status) {
+                    $('#modalSampelLab').modal('hide');
                     Swal.fire('Berhasil', res.message, 'success').then(() => {
-                        $('#modalSampelLab').modal('hide');
                         loadTablePermintaan();
                     });
                 } else {
