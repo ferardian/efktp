@@ -77,7 +77,8 @@ class PcareRujukSubspesialisController extends Controller
         ];
 
         if (empty($data['noKunjungan']) && !empty($data['no_rawat'])) {
-            $data['noKunjungan'] = \App\Models\PcareKunjungan::where('no_rawat', $data['no_rawat'])->value('noKunjungan');
+            $data['noKunjungan'] = \App\Models\PcareKunjungan::where('no_rawat', $data['no_rawat'])->value('noKunjungan')
+                ?? PcareRujukSubspesialis::where('no_rawat', $data['no_rawat'])->value('noKunjungan');
         }
 
         try {
@@ -87,44 +88,12 @@ class PcareRujukSubspesialisController extends Controller
             );
             if ($rujuk) {
                 $this->insertSql(new PcareRujukSubspesialis(), $data);
-                if (!empty($data['noKunjungan'])) {
-                    $setting = Setting::first();
-                    $tglEstForAkhir = $data['tglEstRujuk'] ?? date('Y-m-d');
-                    $tglAkhirRujukVal = !empty($request->tglAkhirRujuk) 
-                        ? $this->parseDateToYmd($request->tglAkhirRujuk) 
-                        : date('Y-m-d', strtotime('+89 days', strtotime($tglEstForAkhir)));
-
-                    $pcareSetting = BridgingPcareSetting::first();
-                    $noKunjungan = $data['noKunjungan'];
-                    $kdPpkAsalVal = $request->kdPpkAsal ?? (strlen($noKunjungan) >= 8 ? substr($noKunjungan, 0, 8) : ($pcareSetting?->user ?? null));
-                    $nmPpkAsalVal = (!empty($request->nmPpkAsal) && $request->nmPpkAsal !== '-') ? $request->nmPpkAsal : ($setting?->nama_instansi ?? '-');
-                    $nmKRVal = (!empty($request->nmKR) && $request->nmKR !== '-') ? $request->nmKR : ($setting?->propinsi ?? '-');
-                    $nmKCVal = (!empty($request->nmKC) && $request->nmKC !== '-') ? $request->nmKC : ($setting?->kabupaten ?? '-');
-
-                    $dataEfktp = [
-                        'noKunjungan' => $noKunjungan,
-                        'kdPpkAsal' => $kdPpkAsalVal,
-                        'nmPpkAsal' => $nmPpkAsalVal,
-                        'kdKR' => $request->kdKR ?? '06',
-                        'nmKR' => $nmKRVal,
-                        'kdKC' => $request->kdKC ?? '1103',
-                        'nmKC' => $nmKCVal,
-                        'tglAkhirRujuk' => $tglAkhirRujukVal,
-                        'jadwal' => $request->jadwal ?? $request->jadwalRujuk ?? 'Setiap Hari Kerja',
-                        'infoDenda' => $request->infoDenda ? $request->infoDenda : '-',
-                        'catatanRujuk' => $request->catatanRujuk,
-                    ];
-                    try {
-                        $rujukEfktp = EfktpPcareRujukSubspesialis::updateOrCreate(
-                            ['noKunjungan' => $data['noKunjungan']],
-                            $dataEfktp
-                        );
-                        if ($rujukEfktp) {
-                            $this->insertSql(new EfktpPcareRujukSubspesialis(), $dataEfktp);
-                        }
-                    } catch (QueryException $e) {
-                        // ignore secondary table failure
-                    }
+                if (empty($rujuk->noKunjungan) && !empty($data['noKunjungan'])) {
+                    $rujuk->noKunjungan = $data['noKunjungan'];
+                    $rujuk->save();
+                }
+                if (!empty($rujuk->noKunjungan)) {
+                    $this->syncEfktpDetail($rujuk, $request);
                 }
             }
             return response()->json(['SUKSES'], 201);
@@ -183,7 +152,8 @@ class PcareRujukSubspesialisController extends Controller
         ];
 
         if (empty($data['noKunjungan']) && !empty($data['no_rawat'])) {
-            $data['noKunjungan'] = \App\Models\PcareKunjungan::where('no_rawat', $data['no_rawat'])->value('noKunjungan');
+            $data['noKunjungan'] = \App\Models\PcareKunjungan::where('no_rawat', $data['no_rawat'])->value('noKunjungan')
+                ?? PcareRujukSubspesialis::where('no_rawat', $data['no_rawat'])->value('noKunjungan');
         }
 
         try {
@@ -194,48 +164,74 @@ class PcareRujukSubspesialisController extends Controller
 
             if ($rujuk) {
                 $this->updateSql(new PcareRujukSubspesialis(), $data, ['no_rawat' => $data['no_rawat']]);
-
-                if (!empty($data['noKunjungan'])) {
-                    $setting = Setting::first();
-                    $tglEstForAkhir = $data['tglEstRujuk'] ?? date('Y-m-d');
-                    $tglAkhirRujukVal = !empty($request->tglAkhirRujuk) 
-                        ? $this->parseDateToYmd($request->tglAkhirRujuk) 
-                        : date('Y-m-d', strtotime('+89 days', strtotime($tglEstForAkhir)));
-
-                    $pcareSetting = BridgingPcareSetting::first();
-                    $noKunjungan = $data['noKunjungan'];
-                    $kdPpkAsalVal = $request->kdPpkAsal ?? (strlen($noKunjungan) >= 8 ? substr($noKunjungan, 0, 8) : ($pcareSetting?->user ?? null));
-                    $nmPpkAsalVal = (!empty($request->nmPpkAsal) && $request->nmPpkAsal !== '-') ? $request->nmPpkAsal : ($setting?->nama_instansi ?? '-');
-                    $nmKRVal = (!empty($request->nmKR) && $request->nmKR !== '-') ? $request->nmKR : ($setting?->propinsi ?? '-');
-                    $nmKCVal = (!empty($request->nmKC) && $request->nmKC !== '-') ? $request->nmKC : ($setting?->kabupaten ?? '-');
-
-                    $dataEfktp = [
-                        'noKunjungan' => $noKunjungan,
-                        'kdPpkAsal' => $kdPpkAsalVal,
-                        'nmPpkAsal' => $nmPpkAsalVal,
-                        'kdKR' => $request->kdKR ?? '06',
-                        'nmKR' => $nmKRVal,
-                        'kdKC' => $request->kdKC ?? '1103',
-                        'nmKC' => $nmKCVal,
-                        'tglAkhirRujuk' => $tglAkhirRujukVal,
-                        'jadwal' => $request->jadwal ?? $request->jadwalRujuk ?? 'Setiap Hari Kerja',
-                        'infoDenda' => $request->infoDenda ? $request->infoDenda : '-',
-                        'catatanRujuk' => $request->catatanRujuk,
-                    ];
-                    try {
-                        EfktpPcareRujukSubspesialis::updateOrCreate(
-                            ['noKunjungan' => $data['noKunjungan']],
-                            $dataEfktp
-                        );
-                        $this->updateSql(new EfktpPcareRujukSubspesialis(), $dataEfktp, ['noKunjungan' => $data['noKunjungan']]);
-                    } catch (QueryException $e) {
-                        // ignore secondary table failure
-                    }
+                if (empty($rujuk->noKunjungan) && !empty($data['noKunjungan'])) {
+                    $rujuk->noKunjungan = $data['noKunjungan'];
+                    $rujuk->save();
+                }
+                if (!empty($rujuk->noKunjungan)) {
+                    $this->syncEfktpDetail($rujuk, $request);
                 }
             }
             return response()->json(['SUKSES'], 200);
         } catch (QueryException $e) {
             return response()->json($e->errorInfo, 500);
+        }
+    }
+
+    private function syncEfktpDetail(PcareRujukSubspesialis $rujuk, ?Request $request = null): ?EfktpPcareRujukSubspesialis
+    {
+        $noKunjungan = $rujuk->noKunjungan;
+        if (empty($noKunjungan)) return null;
+
+        $setting = Setting::first();
+        $pcareSetting = BridgingPcareSetting::first();
+
+        $tglEstForAkhir = $rujuk->tglEstRujuk ?? date('Y-m-d');
+        $tglAkhirRujukVal = ($request && !empty($request->tglAkhirRujuk))
+            ? $this->parseDateToYmd($request->tglAkhirRujuk) 
+            : date('Y-m-d', strtotime('+89 days', strtotime($tglEstForAkhir)));
+
+        $kdPpkAsalVal = ($request && !empty($request->kdPpkAsal)) 
+            ? $request->kdPpkAsal 
+            : (strlen($noKunjungan) >= 8 ? substr($noKunjungan, 0, 8) : ($pcareSetting?->user ?? null));
+
+        $nmPpkAsalVal = ($request && !empty($request->nmPpkAsal) && $request->nmPpkAsal !== '-')
+            ? $request->nmPpkAsal 
+            : ($setting?->nama_instansi ?? '-');
+
+        $nmKRVal = ($request && !empty($request->nmKR) && $request->nmKR !== '-') 
+            ? $request->nmKR 
+            : ($setting?->propinsi ?? '-');
+
+        $nmKCVal = ($request && !empty($request->nmKC) && $request->nmKC !== '-') 
+            ? $request->nmKC 
+            : ($setting?->kabupaten ?? '-');
+
+        $dataEfktp = [
+            'noKunjungan'   => $noKunjungan,
+            'kdPpkAsal'     => $kdPpkAsalVal,
+            'nmPpkAsal'     => $nmPpkAsalVal,
+            'kdKR'          => ($request && $request->kdKR) ? $request->kdKR : '06',
+            'nmKR'          => $nmKRVal,
+            'kdKC'          => ($request && $request->kdKC) ? $request->kdKC : '1103',
+            'nmKC'          => $nmKCVal,
+            'tglAkhirRujuk' => $tglAkhirRujukVal,
+            'jadwal'        => ($request && ($request->jadwal ?? $request->jadwalRujuk)) ? ($request->jadwal ?? $request->jadwalRujuk) : 'Setiap Hari Kerja',
+            'infoDenda'     => ($request && $request->infoDenda) ? $request->infoDenda : '-',
+            'catatanRujuk'  => $request ? $request->catatanRujuk : null,
+        ];
+
+        try {
+            $rujukEfktp = EfktpPcareRujukSubspesialis::updateOrCreate(
+                ['noKunjungan' => $noKunjungan],
+                $dataEfktp
+            );
+            if ($rujukEfktp) {
+                $this->insertSql(new EfktpPcareRujukSubspesialis(), $dataEfktp);
+            }
+            return $rujukEfktp;
+        } catch (QueryException $e) {
+            return null;
         }
     }
 
@@ -265,6 +261,11 @@ class PcareRujukSubspesialisController extends Controller
                 <p>Data rujukan lokal untuk No. Kunjungan <b>' . htmlspecialchars($noKunjungan) . '</b> belum tersimpan di database.</p>
                 <p>Silakan buka menu <b>CPPT / Edit Kunjungan</b> pasien dan klik <b>Ubah Kunjungan</b> untuk memperbarui data rujukan.</p>
             </div>', 404);
+        }
+
+        if (!$pcareModel->detail) {
+            $this->syncEfktpDetail($pcareModel, $request);
+            $pcareModel->load('detail');
         }
 
         $pcare = $pcareModel->toArray();
@@ -311,6 +312,12 @@ class PcareRujukSubspesialisController extends Controller
     public function getAll($no_rkm_medis)
     {
         $kunjungan = PcareRujukSubspesialis::where('no_rkm_medis', $no_rkm_medis)->with('detail')->orderBy('tglEstRujuk', 'ASC')->get();
+        foreach ($kunjungan as $item) {
+            if (!$item->detail && !empty($item->noKunjungan)) {
+                $this->syncEfktpDetail($item);
+                $item->load('detail');
+            }
+        }
         return response()->json($kunjungan);
     }
 }
