@@ -110,19 +110,35 @@ class PermintaanLabController extends Controller
 
 	function getDataTable(Request $request)
 	{
-		$keyword = $request->dataTable;
-		$tgl_permintaan = $request->dataTable['tgl_permintaan'];
-		unset($keyword['tgl_permintaan']);
-//		if($request->dataTable){
-			$permintaan = $this->permintaan
-				->whereBetween('tgl_permintaan', $tgl_permintaan)
-				->orWhere($keyword)
-			->with('registrasi', 'pasien', 'perujuk', 'poliklinik', 'penjab');
-//
-//		}else{
-//			$permintaan = $this->permintaan;
-//		}
-//
+		$permintaan = $this->permintaan->with(['registrasi', 'pasien', 'perujuk', 'poliklinik', 'penjab']);
+
+		if ($request->has('dataTable')) {
+			$dt = $request->dataTable;
+			if (isset($dt['tgl_permintaan']) && is_array($dt['tgl_permintaan']) && count($dt['tgl_permintaan']) == 2) {
+				$tglAwal = $dt['tgl_permintaan'][0];
+				$tglAkhir = $dt['tgl_permintaan'][1];
+
+				$formatDate = function ($d) {
+					if (preg_match('/^(\d{2})-(\d{2})-(\d{4})$/', $d, $m)) {
+						return "{$m[3]}-{$m[2]}-{$m[1]}";
+					}
+					return $d;
+				};
+
+				$tglAwalFormatted = $formatDate($tglAwal);
+				$tglAkhirFormatted = $formatDate($tglAkhir);
+
+				$permintaan->whereBetween('tgl_permintaan', [$tglAwalFormatted, $tglAkhirFormatted]);
+			}
+
+			if (isset($dt['status']) && !empty($dt['status'])) {
+				$st = strtolower($dt['status']);
+				$permintaan->where(function ($q) use ($st) {
+					$q->where('status', $st)->orWhere('status', ucfirst($st));
+				});
+			}
+		}
+
 		return DataTables::of($permintaan)->make(true);
 	}
 
