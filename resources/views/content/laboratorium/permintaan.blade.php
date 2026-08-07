@@ -1,38 +1,52 @@
 @extends('layout')
 
 @section('body')
-    <div class="containet-xl h-100">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="ti ti-flask me-2"></i>Daftar Permintaan & Processing Laboratorium</h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-lg-12 col-xl-12 col-md-12 col-sm-12">
-                        <table class="table table-sm table-hover align-middle" id="tablePermintaanLab" style="font-size:11px; width:100%;">
-
-                        </table>
+    <div class="container-fluid h-100 p-0">
+        <div class="card shadow-sm border-0">
+            <!-- Header Filter Bar Top -->
+            <div class="card-header bg-white py-3 border-bottom d-flex flex-wrap align-items-center justify-content-between gap-3">
+                <div class="d-flex align-items-center">
+                    <div class="avatar bg-primary-lt text-primary me-3 rounded-circle" style="width:40px; height:40px;">
+                        <i class="ti ti-flask fs-2"></i>
+                    </div>
+                    <div>
+                        <h4 class="card-title mb-0 fw-bold text-dark">Daftar Permintaan & Processing Laboratorium</h4>
+                        <small class="text-muted">Kelola sampel, input hasil lab, dan pengakuan jurnal akuntansi</small>
                     </div>
                 </div>
-            </div>
-            <div class="card-footer">
-                <div class="row g-2 align-items-center">
-                    <div class="col-xl-4 col-lg-5 col-md-12 col-sm-12">
-                        <div class="input-group input-group-sm">
-                            <span class="input-group-text">Periode</span>
-                            <input type="text" class="form-control filterTangal" id="tglFilterAwal" />
-                            <span class="input-group-text">s.d.</span>
-                            <input type="text" class="form-control filterTangal" id="tglFilterAkhir" />
-                            <button type="button" class="btn btn-primary" id="btnFilterSearch"><i class="ti ti-search me-1"></i> Cari</button>
-                        </div>
+
+                <!-- Filter Controls Toolbar Top -->
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <div class="input-group input-group-sm shadow-xs" style="max-width: 320px;">
+                        <span class="input-group-text bg-light text-muted"><i class="ti ti-calendar me-1"></i> Periode</span>
+                        <input type="text" class="form-control filterTangal bg-white text-center" id="tglFilterAwal" placeholder="Awal" />
+                        <span class="input-group-text bg-light text-muted">s.d.</span>
+                        <input type="text" class="form-control filterTangal bg-white text-center" id="tglFilterAkhir" placeholder="Akhir" />
                     </div>
-                    <div class="col-xl-2 col-lg-3 col-md-12 col-sm-12">
+
+                    <div class="shadow-xs" style="width: 140px;">
                         <select class="form-select form-select-sm" id="selectStatusLanjut">
-                            <option value="">-- Semua Status --</option>
+                            <option value="">-- Semua --</option>
                             <option value="ralan" selected>Rawat Jalan</option>
                             <option value="ranap">Rawat Inap</option>
                         </select>
                     </div>
+
+                    <button type="button" class="btn btn-primary btn-sm shadow-xs px-3" id="btnFilterSearch">
+                        <i class="ti ti-search me-1"></i> Filter
+                    </button>
+
+                    <button type="button" class="btn btn-outline-secondary btn-sm shadow-xs px-2" id="btnRefreshLab" title="Refresh Data">
+                        <i class="ti ti-refresh"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Card Body Table -->
+            <div class="card-body p-3">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover align-middle" id="tablePermintaanLab" style="font-size:11px; width:100%;">
+                    </table>
                 </div>
             </div>
         </div>
@@ -41,23 +55,23 @@
     <!-- Modal Pengambilan Sampel -->
     <div class="modal modal-blur fade" id="modalSampelLab" tabindex="-1" role="dialog" aria-labelledby="modalSampelLab" aria-hidden="true">
         <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header bg-warning text-white">
-                    <h5 class="modal-title"><i class="ti ti-test-pipe me-1"></i> Pengambilan Sampel</h5>
+            <div class="modal-content shadow-lg border-0">
+                <div class="modal-header bg-warning text-white py-2">
+                    <h5 class="modal-title mb-0"><i class="ti ti-test-pipe me-1"></i> Pengambilan Sampel</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body p-3">
                     <input type="hidden" id="sampelNoorder">
-                    <div class="mb-2">
-                        <label class="form-label required">Tgl Sampel</label>
+                    <div class="mb-3">
+                        <label class="form-label required small fw-bold">Tgl Sampel</label>
                         <input type="date" class="form-control form-control-sm" id="sampelTgl" value="{{ date('Y-m-d') }}" />
                     </div>
                     <div class="mb-2">
-                        <label class="form-label required">Jam Sampel</label>
+                        <label class="form-label required small fw-bold">Jam Sampel</label>
                         <input type="time" class="form-control form-control-sm" id="sampelJam" value="{{ date('H:i:s') }}" step="1" />
                     </div>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer bg-light py-2">
                     <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
                     <button type="button" class="btn btn-primary btn-sm" id="btnSimpanSampelLab">
                         <i class="ti ti-device-floppy me-1"></i> Simpan Sampel
@@ -82,12 +96,28 @@
 
             loadTablePermintaan({
                 tgl_permintaan: [tglAwal, tglAkhir],
+                status: $('#selectStatusLanjut').val()
             });
         });
 
         $('#btnFilterSearch').on('click', () => {
             loadTablePermintaan({
                 tgl_permintaan: [tglFilterAwal.val(), tglFilterAkhir.val()],
+                status: $('#selectStatusLanjut').val()
+            });
+        });
+
+        $('#selectStatusLanjut').on('change', () => {
+            loadTablePermintaan({
+                tgl_permintaan: [tglFilterAwal.val(), tglFilterAkhir.val()],
+                status: $('#selectStatusLanjut').val()
+            });
+        });
+
+        $('#btnRefreshLab').on('click', () => {
+            loadTablePermintaan({
+                tgl_permintaan: [tglFilterAwal.val(), tglFilterAkhir.val()],
+                status: $('#selectStatusLanjut').val()
             });
         });
 
@@ -98,7 +128,7 @@
                 serverSide: false,
                 destroy: true,
                 processing: true,
-                scrollY: '55vh',
+                scrollY: '60vh',
                 scrollX: true,
                 ajax: {
                     url: `{{ url('/lab/permintaan/get') }}`,
@@ -116,7 +146,7 @@
                     {
                         title: 'No. Order',
                         data: 'noorder',
-                        render: (data) => `<strong>${data}</strong>`,
+                        render: (data) => `<strong class="text-primary">${data}</strong>`,
                     },
                     {
                         title: 'Tgl Permintaan',
@@ -148,9 +178,9 @@
                         data: 'tgl_sampel',
                         render: (data, type, row) => {
                             if (data && data !== '0000-00-00' && data !== '') {
-                                return `<span class="badge bg-success-lt text-success" title="Sampel Diambil"><i class="ti ti-check me-1"></i>${formatTanggal(data)} ${row.jam_sampel || ''}</span>`;
+                                return `<span class="badge bg-success-lt text-success px-2 py-1" title="Sampel Diambil"><i class="ti ti-check me-1"></i>${formatTanggal(data)} ${row.jam_sampel || ''}</span>`;
                             }
-                            return `<span class="badge bg-warning-lt text-warning"><i class="ti ti-clock me-1"></i>Belum Sampel</span>`;
+                            return `<span class="badge bg-warning-lt text-warning px-2 py-1"><i class="ti ti-clock me-1"></i>Belum Sampel</span>`;
                         },
                     },
                     {
@@ -158,9 +188,9 @@
                         data: 'tgl_hasil',
                         render: (data, type, row) => {
                             if (data && data !== '0000-00-00' && data !== '') {
-                                return `<span class="badge bg-primary-lt text-primary" title="Hasil Selesai"><i class="ti ti-file-check me-1"></i>${formatTanggal(data)} ${row.jam_hasil || ''}</span>`;
+                                return `<span class="badge bg-primary-lt text-primary px-2 py-1" title="Hasil Selesai"><i class="ti ti-file-check me-1"></i>${formatTanggal(data)} ${row.jam_hasil || ''}</span>`;
                             }
-                            return `<span class="badge bg-secondary-lt text-secondary"><i class="ti ti-hourglass-empty me-1"></i>Belum Hasil</span>`;
+                            return `<span class="badge bg-secondary-lt text-secondary px-2 py-1"><i class="ti ti-hourglass-empty me-1"></i>Belum Hasil</span>`;
                         },
                     },
                     {
@@ -169,8 +199,8 @@
                         render: (data) => {
                             if (!data) return '-';
                             return data.includes('BPJS') 
-                                ? `<span class="badge text-bg-success">${data.toUpperCase()}</span>`
-                                : `<span class="badge text-bg-primary">${data.toUpperCase()}</span>`;
+                                ? `<span class="badge text-bg-success px-2 py-1">${data.toUpperCase()}</span>`
+                                : `<span class="badge text-bg-primary px-2 py-1">${data.toUpperCase()}</span>`;
                         },
                     },
                     {
@@ -182,16 +212,16 @@
                             const isHasilDone = row.tgl_hasil && row.tgl_hasil !== '0000-00-00' && row.tgl_hasil !== '';
 
                             return `
-                                <div class="btn-group btn-group-sm" role="group">
-                                    <button class="btn ${isSampelDone ? 'btn-outline-secondary' : 'btn-outline-warning'} btn-sm" onclick="openModalSampelLab('${row.noorder}', '${row.tgl_sampel || ''}', '${row.jam_sampel || ''}')" title="Pengambilan Sampel">
+                                <div class="d-flex align-items-center gap-1">
+                                    <button class="btn btn-sm ${isSampelDone ? 'btn-outline-secondary' : 'btn-warning text-dark'} shadow-xs px-2 py-1" onclick="openModalSampelLab('${row.noorder}', '${row.tgl_sampel || ''}', '${row.jam_sampel || ''}')" title="Pengambilan Sampel">
                                         <i class="ti ti-test-pipe me-1"></i> Sampel
                                     </button>
-                                    <button class="btn ${isHasilDone ? 'btn-outline-success' : 'btn-primary'} btn-sm" onclick="openModalInputHasilLab('${row.noorder}')" title="Input / Edit Hasil Lab">
+                                    <button class="btn btn-sm ${isHasilDone ? 'btn-outline-success' : 'btn-primary'} shadow-xs px-2 py-1" onclick="openModalInputHasilLab('${row.noorder}')" title="Input / Edit Hasil Lab">
                                         <i class="ti ti-edit me-1"></i> ${isHasilDone ? 'Edit Hasil' : 'Input Hasil'}
                                     </button>
                                     ${isHasilDone ? `
-                                        <button class="btn btn-outline-info btn-sm" onclick="showHasilPermintaanLab('${row.no_rawat}', '${row.tgl_hasil}')" title="Lihat Hasil Lab">
-                                            <i class="ti ti-eye me-1"></i> Lihat
+                                        <button class="btn btn-sm btn-outline-info shadow-xs px-2 py-1" onclick="showHasilPermintaanLab('${row.no_rawat}', '${row.tgl_hasil}')" title="Lihat Hasil Lab">
+                                            <i class="ti ti-eye"></i>
                                         </button>
                                     ` : ''}
                                 </div>
