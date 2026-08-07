@@ -112,8 +112,10 @@ class Pendaftaran extends Controller
             if ($antrianCode != 200) {
                 $antrianMessage = $antrianResult['metadata']['message']
                                ?? $antrianResult['metaData']['message']
-                               ?? (is_string($antrianResult['response'] ?? null) ? $antrianResult['response'] : ($antrianResult['response']['message'] ?? null))
-                               ?? 'Gagal terhubung ke server Antrian BPJS.';
+                               ?? $antrianResult['metadata']['msg']
+                               ?? $antrianResult['metaData']['msg']
+                               ?? (is_string($antrianResult['response'] ?? null) ? $antrianResult['response'] : ($antrianResult['response']['message'] ?? $antrianResult['response']['keterangan'] ?? null))
+                               ?? "Server BPJS Antrean mengembalikan respon Code {$antrianCode}.";
 
                 if (is_array($antrianMessage)) {
                     $antrianMessage = json_encode($antrianMessage);
