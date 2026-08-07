@@ -232,6 +232,10 @@
                                         <button class="btn btn-sm btn-outline-info shadow-xs px-2 py-1 d-inline-flex align-items-center justify-content-center" onclick="showHasilPermintaanLab('${row.no_rawat}', '${row.tgl_hasil}')" title="Lihat Hasil Lab">
                                             <i class="ti ti-eye"></i>
                                         </button>
+                                        <a href="{{ url('/lab/permintaan/cetak') }}/${row.noorder}" target="_blank"
+                                           class="btn btn-sm btn-danger shadow-xs px-2 py-1 d-inline-flex align-items-center justify-content-center" title="Cetak PDF Hasil Lab">
+                                            <i class="ti ti-printer me-1"></i> PDF
+                                        </a>
                                     ` : ''}
                                 </div>
                             `;

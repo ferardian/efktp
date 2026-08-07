@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class LabProcessController extends Controller
 {
@@ -425,5 +426,70 @@ class LabProcessController extends Controller
         if (!empty($insertDetails)) {
             DB::table('detailjurnal')->insert($insertDetails);
         }
+    }
+
+    /**
+     * Cetak Hasil Pemeriksaan Laboratorium sebagai PDF
+     */
+    public function cetakHasil(string $noorder)
+    {
+        $permintaan = PermintaanLab::where('noorder', $noorder)
+            ->with(['pasien', 'registrasi', 'poliklinik', 'perujuk', 'penjab'])
+            ->firstOrFail();
+
+        // Get periksa_lab header (dokter & petugas)
+        $periksa = DB::table('periksa_lab')
+            ->join('dokter', 'periksa_lab.kd_dokter', '=', 'dokter.kd_dokter')
+            ->join('petugas', 'periksa_lab.nip', '=', 'petugas.nip')
+            ->where('periksa_lab.no_rawat', $permintaan->no_rawat)
+            ->select(
+                'dokter.nm_dokter',
+                'dokter.no_ijn_praktek',
+                'petugas.nama as nm_petugas',
+                'periksa_lab.tgl_periksa',
+                'periksa_lab.jam'
+            )
+            ->orderByDesc('periksa_lab.tgl_periksa')
+            ->orderByDesc('periksa_lab.jam')
+            ->first();
+
+        // Get detail results grouped by paket
+        $detailRaw = DB::table('detail_periksa_lab')
+            ->join('jns_perawatan_lab', 'detail_periksa_lab.kd_jenis_prw', '=', 'jns_perawatan_lab.kd_jenis_prw')
+            ->join('template_laboratorium', 'detail_periksa_lab.id_template', '=', 'template_laboratorium.id_template')
+            ->where('detail_periksa_lab.no_rawat', $permintaan->no_rawat)
+            ->where('detail_periksa_lab.tgl_periksa', $periksa?->tgl_periksa ?? date('Y-m-d'))
+            ->select(
+                'jns_perawatan_lab.nm_perawatan as paket',
+                'template_laboratorium.Pemeriksaan as item_nama',
+                'template_laboratorium.satuan',
+                'detail_periksa_lab.nilai',
+                'detail_periksa_lab.nilai_rujukan',
+                'detail_periksa_lab.keterangan',
+                'template_laboratorium.urut'
+            )
+            ->orderBy('jns_perawatan_lab.kd_jenis_prw')
+            ->orderBy('template_laboratorium.urut')
+            ->get();
+
+        // Group by paket
+        $grouped = [];
+        foreach ($detailRaw as $row) {
+            $grouped[$row->paket][] = $row;
+        }
+
+        // Fetch setting (klinik info)
+        $setting = DB::table('set_puskesmas')->first()
+            ?? (object)['nama_instansi' => config('app.name'), 'alamat_instansi' => '-', 'kabupaten' => '', 'propinsi' => '', 'kontak' => '-', 'email' => '-', 'logo' => null];
+
+        $pdf = Pdf::loadView('content.print.hasilLaboratorium', [
+            'permintaan' => $permintaan,
+            'periksa'    => $periksa,
+            'grouped'    => $grouped,
+            'setting'    => $setting,
+        ])->setPaper('a4', 'portrait')
+          ->setOptions(['defaultFont' => 'Arial', 'isRemoteEnabled' => true, 'dpi' => 150]);
+
+        return $pdf->stream("HasilLab-{$noorder}.pdf");
     }
 }

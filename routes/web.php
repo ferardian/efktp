@@ -403,6 +403,7 @@ Route::middleware('auth:web,admin')->group(function () {
 			Route::post('/sampel', [LabProcessController::class, 'updateSampel']);
 			Route::get('/form-hasil/{noorder}', [LabProcessController::class, 'getFormHasil']);
 			Route::post('/hasil', [LabProcessController::class, 'simpanHasil']);
+			Route::get('/cetak/{noorder}', [LabProcessController::class, 'cetakHasil']);
 		});
 	});
 
