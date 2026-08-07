@@ -1,11 +1,11 @@
 <div class="modal modal-blur fade" id="modalInputHasilLab" tabindex="-1" role="dialog" aria-labelledby="modalInputHasilLab" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" role="document">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" role="document">
         <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title"><i class="ti ti-report-medical me-2"></i>Input Hasil Pemeriksaan Laboratorium</h5>
+            <div class="modal-header bg-primary text-white py-2">
+                <h5 class="modal-title mb-0"><i class="ti ti-report-medical me-2"></i>Input Hasil Pemeriksaan Laboratorium</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body p-3">
                 <form id="formInputHasilLab">
                     <input type="hidden" name="noorder" id="inputLabNoorder">
                     <input type="hidden" name="no_rawat" id="inputLabNoRawat">
@@ -16,15 +16,15 @@
                             <div class="row g-2">
                                 <div class="col-md-3">
                                     <label class="form-label mb-0 fw-bold">No. Order / Rawat</label>
-                                    <span id="labelOrderRawat" class="text-primary fw-bold"></span>
+                                    <span id="labelOrderRawat" class="text-primary fw-bold d-block"></span>
                                 </div>
                                 <div class="col-md-5">
                                     <label class="form-label mb-0 fw-bold">Pasien</label>
-                                    <span id="labelNamaPasien"></span>
+                                    <span id="labelNamaPasien" class="d-block"></span>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label mb-0 fw-bold">Poliklinik / Perujuk</label>
-                                    <span id="labelPoliPerujuk"></span>
+                                    <span id="labelPoliPerujuk" class="d-block"></span>
                                 </div>
                             </div>
                         </div>
@@ -56,25 +56,26 @@
 
                     <!-- Items table -->
                     <div class="table-responsive">
-                        <table class="table table-sm table-bordered table-hover" id="tableItemInputHasil">
+                        <table class="table table-sm table-bordered table-hover align-middle mb-0" id="tableItemInputHasil">
                             <thead class="bg-light text-center">
                                 <tr>
-                                    <th width="25%">Paket / Pemeriksaan</th>
-                                    <th width="30%">Hasil</th>
-                                    <th width="25%">Nilai Rujukan</th>
-                                    <th width="20%">Keterangan</th>
+                                    <th width="20%">Paket Periksa</th>
+                                    <th width="25%">Item Detail</th>
+                                    <th width="22%">Hasil</th>
+                                    <th width="18%">Nilai Rujukan</th>
+                                    <th width="15%">Keterangan</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td colspan="4" class="text-center text-muted">Memuat item pemeriksaan...</td>
+                                    <td colspan="5" class="text-center text-muted py-3">Memuat item pemeriksaan...</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer py-2">
                 <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">
                     <i class="ti ti-x me-1"></i> Batal
                 </button>
@@ -94,7 +95,7 @@
 
     function openModalInputHasilLab(noorder) {
         modalInputHasilLab.modal('show');
-        tableItemInputHasil.find('tbody').html('<tr><td colspan="4" class="text-center"><div class="spinner-border spinner-border-sm text-primary"></div> Memuat item...</td></tr>');
+        tableItemInputHasil.find('tbody').html('<tr><td colspan="5" class="text-center py-3"><div class="spinner-border spinner-border-sm text-primary me-2"></div> Memuat item...</td></tr>');
         
         $.get(`{{ url('/lab/permintaan/form-hasil') }}/${noorder}`).done((res) => {
             if (!res.status) {
@@ -141,8 +142,8 @@
                     tbodyHtml += `
                         <tr class="${rowClass}">
                             ${index === 0 ? `<td rowspan="${items.length}" class="align-middle fw-bold bg-light">${nmPerawatan}</td>` : ''}
-                            <td>
-                                <div>${item.item_nama}</div>
+                            <td class="align-middle">
+                                <div class="fw-semibold">${item.item_nama}</div>
                                 <input type="hidden" class="item-kd-prw" value="${item.kd_jenis_prw}">
                                 <input type="hidden" class="item-id-template" value="${item.id_template}">
                                 <input type="hidden" class="item-nilai-rujukan" value="${item.nilai_rujukan}">
@@ -150,7 +151,7 @@
                             <td>
                                 <input type="text" class="form-control form-control-sm item-nilai" value="${item.nilai_existing || ''}" placeholder="Masukkan Nilai">
                             </td>
-                            <td class="align-middle small text-muted">${item.nilai_rujukan}</td>
+                            <td class="align-middle small text-muted text-center">${item.nilai_rujukan}</td>
                             <td>
                                 <select class="form-select form-select-sm item-keterangan">
                                     <option value="-" ${item.keterangan_existing === '-' ? 'selected' : ''}>- (Normal)</option>
@@ -164,7 +165,7 @@
             });
 
             if (Object.keys(grouped).length === 0) {
-                tbodyHtml = '<tr><td colspan="4" class="text-center text-muted">Belum ada template detail permintaan.</td></tr>';
+                tbodyHtml = '<tr><td colspan="5" class="text-center text-muted py-3">Belum ada template detail permintaan.</td></tr>';
             }
 
             tableItemInputHasil.find('tbody').html(tbodyHtml);
@@ -224,6 +225,8 @@
             detail_hasil: detail_hasil
         };
 
+        if (document.activeElement) document.activeElement.blur();
+
         loadingAjax('Saving lab results & posting journal entries...');
         $.ajax({
             url: `{{ url('/lab/permintaan/hasil') }}`,
@@ -236,8 +239,8 @@
             success: function(res) {
                 Swal.close();
                 if (res.status) {
+                    modalInputHasilLab.modal('hide');
                     Swal.fire('Berhasil', res.message, 'success').then(() => {
-                        modalInputHasilLab.modal('hide');
                         if (typeof loadTablePermintaan === 'function') {
                             loadTablePermintaan();
                         }
