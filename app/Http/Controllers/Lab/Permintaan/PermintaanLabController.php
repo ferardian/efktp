@@ -148,11 +148,19 @@ class PermintaanLabController extends Controller
 				'tgl_hasil'      => $row->tgl_hasil,
 				'jam_hasil'      => $row->jam_hasil,
 				'status'         => $row->status,
-				'pasien'         => $row->pasien ? ['nm_pasien' => $row->pasien->nm_pasien, 'no_rkm_medis' => $row->pasien->no_rkm_medis] : null,
-				'registrasi'     => $row->registrasi ? ['no_rawat' => $row->registrasi->no_rawat] : null,
+				'pasien'         => $row->pasien ? [
+					'nm_pasien'    => $row->pasien->nm_pasien,
+					'no_rkm_medis' => $row->pasien->no_rkm_medis,
+					'jk'           => $row->pasien->jk,
+				] : null,
+				'registrasi'     => $row->registrasi ? [
+					'no_rawat'   => $row->registrasi->no_rawat,
+					'umurdaftar' => $row->registrasi->umurdaftar,
+					'sttsumur'   => $row->registrasi->sttsumur,
+				] : null,
 				'perujuk'        => $row->perujuk ? ['nm_dokter' => $row->perujuk->nm_dokter] : null,
 				'poliklinik'     => $row->poliklinik ? ['nm_poli' => $row->poliklinik->nm_poli] : null,
-				'penjab'         => $row->penjab ? ['png_jawab' => $row->penjab->png_jawab] : null,
+				'penjab'         => $row->penjab ? ['nama' => $row->penjab->png_jawab] : null,
 			];
 		});
 
