@@ -563,6 +563,7 @@ Route::middleware('auth:web,admin')->group(function () {
 
 	// BRIDGING
 	Route::get('/bridging/pcare/dokter/{start?}/{limit?}', [Bridging\Dokter::class, 'dokter']);
+	Route::get('/bridging/pcare/diagnosa/{diagnosa?}', [Bridging\Diagnosa::class, 'get']);
 	Route::get('/bridging/pcare/alergi/{keyword?}', [Bridging\Alergi::class, 'get']);
 	Route::get('/bridging/pcare/prognosa', [Bridging\Prognosa::class, 'get']);
 
