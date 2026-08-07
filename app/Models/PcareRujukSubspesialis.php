@@ -9,6 +9,9 @@ class PcareRujukSubspesialis extends Model
 {
     use HasFactory;
     protected $table = 'pcare_rujuk_subspesialis';
+    protected $primaryKey = 'no_rawat';
+    public $incrementing = false;
+    protected $keyType = 'string';
     protected $guarded = [];
     public $timestamps = false;
 

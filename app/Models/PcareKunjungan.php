@@ -9,6 +9,9 @@ class PcareKunjungan extends Model
 {
     use HasFactory;
     protected $table = 'pcare_kunjungan_umum';
+    protected $primaryKey = 'no_rawat';
+    public $incrementing = false;
+    protected $keyType = 'string';
     protected $guarded = [];
     public $timestamps = false;
 
