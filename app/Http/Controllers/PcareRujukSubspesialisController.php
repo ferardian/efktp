@@ -73,6 +73,7 @@ class PcareRujukSubspesialisController extends Controller
             'kdTACC' => $request->kdTACC ?? $request->kdTacc,
             'nmTACC' => $request->nmTACC ?? $request->nmTacc,
             'alasanTACC' => $request->alasanTACC ?? $request->alasanTacc,
+            'jadwal' => $request->jadwal ?? $request->jadwalRujuk,
         ];
 
         if (empty($data['noKunjungan']) && !empty($data['no_rawat'])) {
@@ -172,6 +173,7 @@ class PcareRujukSubspesialisController extends Controller
             'kdTACC' => $request->kdTACC ?? $request->kdTacc,
             'nmTACC' => $request->nmTACC ?? $request->nmTacc,
             'alasanTACC' => $request->alasanTACC ?? $request->alasanTacc,
+            'jadwal' => $request->jadwal ?? $request->jadwalRujuk,
         ];
 
         if (empty($data['noKunjungan']) && !empty($data['no_rawat'])) {

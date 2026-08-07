@@ -18,9 +18,10 @@
 </div>
 @push('script')
     <script>
-        function setPpkRujukan(kdPpk, nmPpk) {
+        function setPpkRujukan(kdPpk, nmPpk, jadwal = '') {
             $('#kdPpkRujukan').val(kdPpk)
             $('#ppkRujukan').val(nmPpk)
+            $('#jadwalRujuk').val(jadwal)
             formKunjunganPcare.find('button[name=btnPpkRujukan]').attr('disabled', false).attr('onclick', 'renderRujukan()');
             $('#modalReferensiRujukan').modal('hide')
         }
@@ -46,7 +47,8 @@
                         columnDefs: [{
                             'targets': [0, 1],
                             'createdCell': (td, cellData, rowData, row, col) => {
-                                $(td).attr('onclick', `setPpkRujukan('${rowData.kdppk}', '${rowData.nmppk}')`);
+                                const escapedJadwal = (rowData.jadwal || '').replace(/'/g, "\\'");
+                                $(td).attr('onclick', `setPpkRujukan('${rowData.kdppk}', '${rowData.nmppk}', '${escapedJadwal}')`);
                                 $(td).attr('style', `cursor:pointer`);
                             }
                         }],

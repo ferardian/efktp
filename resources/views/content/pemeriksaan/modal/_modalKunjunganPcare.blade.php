@@ -349,6 +349,7 @@
                                         </div>
                                         <input type="hidden" id="kdSpesialis" name="kdSpesialis">
                                         <input type="hidden" id="kdSubSpesialis" name="kdSubSpesialis">
+                                        <input type="hidden" id="jadwalRujuk" name="jadwalRujuk">
                                     </div>
                                     <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12">
                                         <label class="form-label">

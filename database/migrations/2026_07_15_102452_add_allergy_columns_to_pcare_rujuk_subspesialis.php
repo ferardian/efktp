@@ -42,6 +42,9 @@ return new class extends Migration
             if (!Schema::hasColumn('pcare_rujuk_subspesialis', 'bmhp')) {
                 $table->string('bmhp', 2000)->after('terapi_non_obat')->default('');
             }
+            if (!Schema::hasColumn('pcare_rujuk_subspesialis', 'jadwal')) {
+                $table->string('jadwal', 500)->after('bmhp')->nullable();
+            }
         });
     }
 
