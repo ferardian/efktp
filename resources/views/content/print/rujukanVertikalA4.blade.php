@@ -3,7 +3,7 @@
     Carbon\Carbon::setLocale('id');
 @endphp
 @section('content')
-    <div style="font-size: 13px; margin: 10px;">
+    <div style="font-size: 13px; margin: 5px 25px;">
         <table width="100%">
             <tr>
                 <td width="55%" style="vertical-align: top;">

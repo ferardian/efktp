@@ -28,10 +28,10 @@
         }
 
         @page {
-            margin-top: 0px;
-            margin-right: 5px;
-            margin-left: 5px;
-            margin-bottom: 0px;
+            margin-top: 5px;
+            margin-right: 15px;
+            margin-left: 15px;
+            margin-bottom: 5px;
         }
 
         p {
