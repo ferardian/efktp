@@ -2,6 +2,47 @@
 
 @section('title', 'Laporan Kunjungan Rawat Jalan')
 
+@push('style')
+<style>
+    .select2-container--default .select2-selection--single {
+        border: 1px solid #dadcde !important;
+        border-radius: 4px !important;
+        height: 38px !important;
+        padding: 3px 6px !important;
+        background-color: #ffffff !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 30px !important;
+        color: #1e293b !important;
+        font-size: 0.875rem !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 36px !important;
+    }
+    .card-filter {
+        border: 1px solid #e6e8e9;
+        border-radius: 8px;
+    }
+    .card-filter .card-header {
+        background-color: #f8fafc;
+        border-bottom: 1px solid #e6e8e9;
+    }
+    .form-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #475569;
+        margin-bottom: 4px;
+    }
+    .form-control, .form-select {
+        font-size: 0.875rem;
+        border-color: #dadcde;
+    }
+    .table-hover tbody tr:hover {
+        background-color: #f1f5f9 !important;
+    }
+</style>
+@endpush
+
 @section('body')
 <div class="container-xl">
     <!-- Page Header -->
@@ -98,11 +139,11 @@
     </div>
 
     <!-- Filter Card -->
-    <div class="card shadow-sm mb-3">
-        <div class="card-header bg-light">
-            <h3 class="card-title text-primary"><i class="ti ti-filter me-2"></i>Filter Data Kunjungan</h3>
+    <div class="card card-filter shadow-sm mb-3">
+        <div class="card-header">
+            <h3 class="card-title text-primary fw-bold"><i class="ti ti-filter me-2"></i>Filter Data Kunjungan</h3>
         </div>
-        <div class="card-body">
+        <div class="card-body p-3">
             <form id="formFilterKunjungan">
                 <div class="row g-3">
                     <div class="col-md-3">
@@ -115,7 +156,7 @@
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Poliklinik / Unit</label>
-                        <select class="form-select select2-basic" name="kd_poli" id="kd_poli">
+                        <select class="form-select form-select-2" name="kd_poli" id="kd_poli">
                             <option value="-">-- Semua Poliklinik --</option>
                             @foreach($poliklinik as $p)
                                 <option value="{{ $p->kd_poli }}">{{ $p->nm_poli }}</option>
@@ -124,7 +165,7 @@
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Dokter Pemeriksa</label>
-                        <select class="form-select select2-basic" name="kd_dokter" id="kd_dokter">
+                        <select class="form-select form-select-2" name="kd_dokter" id="kd_dokter">
                             <option value="-">-- Semua Dokter --</option>
                             @foreach($dokter as $d)
                                 <option value="{{ $d->kd_dokter }}">{{ $d->nm_dokter }}</option>
@@ -134,7 +175,7 @@
 
                     <div class="col-md-3">
                         <label class="form-label">Jenis Bayar / Penjab</label>
-                        <select class="form-select select2-basic" name="kd_pj" id="kd_pj">
+                        <select class="form-select form-select-2" name="kd_pj" id="kd_pj">
                             <option value="-">-- Semua Penjab --</option>
                             @foreach($penjab as $pj)
                                 <option value="{{ $pj->kd_pj }}">{{ $pj->png_jawab }}</option>
@@ -151,7 +192,7 @@
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Kabupaten / Kota</label>
-                        <select class="form-select select2-basic" name="kd_kab" id="kd_kab">
+                        <select class="form-select form-select-2" name="kd_kab" id="kd_kab">
                             <option value="">-- Semua Kabupaten --</option>
                             @foreach($kabupaten as $kab)
                                 <option value="{{ $kab->kd_kab }}">{{ $kab->nm_kab }}</option>
@@ -160,7 +201,7 @@
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Kecamatan</label>
-                        <select class="form-select select2-basic" name="kd_kec" id="kd_kec">
+                        <select class="form-select form-select-2" name="kd_kec" id="kd_kec">
                             <option value="">-- Semua Kecamatan --</option>
                             @foreach($kecamatan as $kec)
                                 <option value="{{ $kec->kd_kec }}">{{ $kec->nm_kec }}</option>
@@ -168,18 +209,18 @@
                         </select>
                     </div>
 
-                    <div class="col-md-9">
+                    <div class="col-md-8">
                         <label class="form-label">Pencarian Kata Kunci</label>
                         <div class="input-icon">
-                            <span class="input-icon-addon"><i class="ti ti-search"></i></span>
+                            <span class="input-icon-addon"><i class="ti ti-search text-muted"></i></span>
                             <input type="text" class="form-control" name="keyword" id="keyword" placeholder="Ketik No. Rawat, No. RM, Nama Pasien, Alamat, atau Diagnosa...">
                         </div>
                     </div>
-                    <div class="col-md-3 d-flex align-items-end">
-                        <button type="submit" class="btn btn-primary w-100 me-2" id="btnTampilkan">
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary flex-fill me-2" id="btnTampilkan">
                             <i class="ti ti-filter me-1"></i> Tampilkan Data
                         </button>
-                        <button type="button" class="btn btn-light w-50" id="btnReset">
+                        <button type="button" class="btn btn-outline-secondary" id="btnReset">
                             <i class="ti ti-refresh me-1"></i> Reset
                         </button>
                     </div>
@@ -190,8 +231,8 @@
 
     <!-- Data Table Card -->
     <div class="card shadow-sm mb-4">
-        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-            <h3 class="card-title text-white m-0"><i class="ti ti-table me-2"></i>Daftar Kunjungan Pasien Rawat Jalan</h3>
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-2">
+            <h3 class="card-title text-white m-0 fw-bold"><i class="ti ti-table me-2"></i>Daftar Kunjungan Pasien Rawat Jalan</h3>
             <span class="badge bg-white text-primary fw-bold" id="labelPeriodeInfo">-</span>
         </div>
         <div class="table-responsive">
@@ -233,8 +274,7 @@
         });
 
         if ($.fn.select2) {
-            $('.select2-basic').select2({
-                theme: 'bootstrap-5',
+            $('.form-select-2').select2({
                 width: '100%'
             });
         }
@@ -249,7 +289,7 @@
 
         $('#btnReset').on('click', function() {
             $('#formFilterKunjungan')[0].reset();
-            $('.select2-basic').val('-').trigger('change');
+            $('.form-select-2').val('-').trigger('change');
             $('#tglAwal').val('{{ date("d-m-Y") }}');
             $('#tglAkhir').val('{{ date("d-m-Y") }}');
             loadDataKunjungan();
@@ -318,7 +358,7 @@
                             <td class="small">${item.tgl_registrasi}</td>
                             <td>
                                 <div><strong class="text-primary">${item.nm_pasien}</strong></div>
-                                <small class="text-muted"><i class="ti ti-id me-1"></i>No. RM: <strong>${item.no_rkm_medis}</strong> | No. Rawat: ${item.no_rawat}</small>
+                                <small class="text-muted"><i class="ti ti-id me-1"></i>RM: <strong>${item.no_rkm_medis}</strong> | No. Rawat: ${item.no_rawat}</small>
                             </td>
                             <td class="text-center">
                                 ${jkBadge}
