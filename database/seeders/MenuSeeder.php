@@ -86,7 +86,7 @@ class MenuSeeder extends Seeder
             ['id' => 19, 'name' => 'Farmasi', 'url' => 'antrean/farmasi', 'icon' => null, 'parent_id' => 7, 'order_num' => 3, 'target' => '_blank', 'position' => 'navbar', 'roles' => ['admin', 'dokter', 'apoteker', 'petugas', 'owner']],
 
             // submenus under Keuangan (parent_id = 44)
-            ['id' => 45, 'name' => 'Pembayaran Rawat Jalan', 'url' => 'keuangan/pembayaran-ralan', 'icon' => null, 'parent_id' => 44, 'order_num' => 1, 'target' => '_self', 'position' => 'navbar', 'roles' => ['admin', 'dokter', 'petugas', 'owner']],
+            ['id' => 48, 'name' => 'Pembayaran Rawat Jalan', 'url' => 'keuangan/pembayaran-ralan', 'icon' => null, 'parent_id' => 44, 'order_num' => 1, 'target' => '_self', 'position' => 'navbar', 'roles' => ['admin', 'dokter', 'petugas', 'owner']],
 
             // submenus under Laporan (parent_id = 46)
             ['id' => 47, 'name' => 'Kunjungan Rawat Jalan', 'url' => 'laporan/kunjungan-ralan', 'icon' => null, 'parent_id' => 46, 'order_num' => 1, 'target' => '_self', 'position' => 'navbar', 'roles' => ['admin', 'dokter', 'petugas', 'owner']],
