@@ -112,6 +112,43 @@ class MenuController extends Controller
                     }
                 }
             }
+
+            // Ensure Laporan parent & Kunjungan Rawat Jalan menu
+            $laporanParent = Menu::where('name', 'Laporan')->whereNull('parent_id')->first();
+            if (!$laporanParent) {
+                $laporanParent = Menu::create([
+                    'name'      => 'Laporan',
+                    'url'       => null,
+                    'icon'      => '<i class="ti ti-report-medical fs-2"></i>',
+                    'parent_id' => null,
+                    'order_num' => 9,
+                    'target'    => '_self',
+                    'position'  => 'navbar',
+                ]);
+
+                $roles = ['admin', 'dokter', 'petugas', 'owner', 'apoteker'];
+                foreach ($roles as $r) {
+                    MenuRole::firstOrCreate(['menu_id' => $laporanParent->id, 'role' => $r]);
+                }
+            }
+
+            $existingKunjunganRalan = Menu::where('url', 'laporan/kunjungan-ralan')->first();
+            if (!$existingKunjunganRalan && $laporanParent) {
+                $newKunjunganRalan = Menu::create([
+                    'name'      => 'Kunjungan Rawat Jalan',
+                    'url'       => 'laporan/kunjungan-ralan',
+                    'icon'      => null,
+                    'parent_id' => $laporanParent->id,
+                    'order_num' => 1,
+                    'target'    => '_self',
+                    'position'  => 'navbar',
+                ]);
+
+                $roles = ['admin', 'dokter', 'petugas', 'owner'];
+                foreach ($roles as $r) {
+                    MenuRole::firstOrCreate(['menu_id' => $newKunjunganRalan->id, 'role' => $r]);
+                }
+            }
         } catch (\Throwable $e) {
             // ignore
         }

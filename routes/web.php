@@ -184,6 +184,10 @@ Route::middleware('auth:web,admin')->group(function () {
     Route::get('/master/menu/permissions', [\App\Http\Controllers\MenuController::class, 'getPermissions']);
     Route::post('/master/menu/permissions', [\App\Http\Controllers\MenuController::class, 'updatePermissions']);
 
+    // LAPORAN KUNJUNGAN RAWAT JALAN
+    Route::get('/laporan/kunjungan-ralan', [\App\Http\Controllers\Laporan\LaporanKunjunganRalanController::class, 'index']);
+    Route::get('/laporan/kunjungan-ralan/data', [\App\Http\Controllers\Laporan\LaporanKunjunganRalanController::class, 'getData']);
+
     // PETUGAS MANAGEMENT
     Route::get('/master/petugas', [PetugasController::class, 'index']);
     Route::get('/petugas/data', [PetugasController::class, 'data']);

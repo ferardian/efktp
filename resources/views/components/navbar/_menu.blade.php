@@ -232,6 +232,26 @@
             </div>
         </div>
     </li>
+    <li class="nav-item {{ Request::segment(1) == 'laporan' ? 'active' : '' }} dropdown">
+        <a class="nav-link dropdown-toggle" href="javascript:void(0)" data-bs-toggle="dropdown"
+           data-bs-auto-close="outside" role="button" aria-expanded="true">
+             <span class="nav-link-icon d-md-none d-lg-inline-block mt-1">
+                 <i class="ti ti-report-medical fs-2"></i>
+             </span>
+            <span class="nav-link-title">
+                 Laporan
+             </span>
+        </a>
+        <div class="dropdown-menu" data-bs-popper="static">
+            <div class="dropdown-menu-columns">
+                <div class="dropdown-menu-column">
+                    <a href="{{ url('laporan/kunjungan-ralan') }}" class="dropdown-item {{ Request::is('laporan/kunjungan-ralan*') ? 'active' : '' }}">
+                        Kunjungan Rawat Jalan
+                    </a>
+                </div>
+            </div>
+        </div>
+    </li>
     <li class="nav-item {{ Request::is('antrean') ? 'active' : '' }} dropdown">
         <a class="nav-link dropdown-toggle" href="javascript:void(0)" data-bs-toggle="dropdown"
            data-bs-auto-close="outside" role="button" aria-expanded="true">

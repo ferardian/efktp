@@ -60,6 +60,11 @@ class MenuSeeder extends Seeder
                 'icon' => '<i class="ti ti-report-money fs-2"></i>', 
                 'parent_id' => null, 'order_num' => 8, 'target' => '_self', 'position' => 'navbar', 'roles' => ['admin', 'dokter', 'petugas', 'owner']
             ],
+            [
+                'id' => 46, 'name' => 'Laporan', 'url' => null, 
+                'icon' => '<i class="ti ti-report-medical fs-2"></i>', 
+                'parent_id' => null, 'order_num' => 9, 'target' => '_self', 'position' => 'navbar', 'roles' => ['admin', 'dokter', 'petugas', 'owner', 'apoteker']
+            ],
 
             // submenus under Farmasi (parent_id = 4)
             ['id' => 8, 'name' => 'Obat & BHP', 'url' => 'farmasi/obat', 'icon' => null, 'parent_id' => 4, 'order_num' => 1, 'target' => '_self', 'position' => 'navbar', 'roles' => ['admin', 'apoteker', 'petugas', 'owner']],
@@ -82,6 +87,9 @@ class MenuSeeder extends Seeder
 
             // submenus under Keuangan (parent_id = 44)
             ['id' => 45, 'name' => 'Pembayaran Rawat Jalan', 'url' => 'keuangan/pembayaran-ralan', 'icon' => null, 'parent_id' => 44, 'order_num' => 1, 'target' => '_self', 'position' => 'navbar', 'roles' => ['admin', 'dokter', 'petugas', 'owner']],
+
+            // submenus under Laporan (parent_id = 46)
+            ['id' => 47, 'name' => 'Kunjungan Rawat Jalan', 'url' => 'laporan/kunjungan-ralan', 'icon' => null, 'parent_id' => 46, 'order_num' => 1, 'target' => '_self', 'position' => 'navbar', 'roles' => ['admin', 'dokter', 'petugas', 'owner']],
 
             // position = sidebar (offcanvas)
             [
