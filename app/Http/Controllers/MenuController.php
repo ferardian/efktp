@@ -11,13 +11,13 @@ class MenuController extends Controller
 {
     public function index()
     {
-        $this->ensureProlanisMenu();
+        self::ensureMenusExist();
         return view('content.master.menu');
     }
 
     public function getPermissions(Request $request)
     {
-        $this->ensureProlanisMenu();
+        self::ensureMenusExist();
         $request->validate([
             'role' => 'required|string',
         ]);
@@ -89,7 +89,7 @@ class MenuController extends Controller
         }
     }
 
-    private function ensureProlanisMenu()
+    public static function ensureMenusExist()
     {
         try {
             $pcareParent = Menu::where('name', 'Pcare')->whereNull('parent_id')->first();

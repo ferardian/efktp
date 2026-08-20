@@ -1,5 +1,6 @@
 @if(config('app.enable_menu_role'))
     @php
+        \App\Http\Controllers\MenuController::ensureMenusExist();
         $userRole = session('role');
         $menus = \App\Models\Menu::whereNull('parent_id')
                     ->where('position', 'navbar')
