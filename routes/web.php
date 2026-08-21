@@ -332,6 +332,7 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::post('/penerimaan/store', [\App\Http\Controllers\PemesananController::class, 'store']);
 	Route::delete('/penerimaan/delete/{no_faktur}', [\App\Http\Controllers\PemesananController::class, 'destroy']);
 	Route::get('/penerimaan/detail', [\App\Http\Controllers\PemesananController::class, 'detail']);
+	Route::get('/penerimaan/edit-data/{no_faktur}', [\App\Http\Controllers\PemesananController::class, 'editData']);
 
 	// Stok Opname
 	Route::get('/farmasi/opname', [\App\Http\Controllers\OpnameController::class, 'index']);

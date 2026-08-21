@@ -23,6 +23,22 @@
                     <div class="tab-pane fade show active" id="tab-input" role="tabpanel">
                         <form id="formPenerimaan">
                             @csrf
+                            <input type="hidden" id="is_edit" value="0">
+                            <input type="hidden" id="original_no_faktur" value="">
+
+                            <!-- Edit Mode Alert Banner -->
+                            <div class="alert alert-warning d-none mb-3" id="alert_edit_mode">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="ti ti-pencil me-2 fs-3"></i> Mode Edit Faktur: <strong id="lbl_edit_faktur"></strong>
+                                        <span class="ms-2 text-muted small">(Perubahan akan merevisi stok & jurnal lama)</span>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="cancelEditMode()">
+                                        <i class="ti ti-x me-1"></i> Batal Edit
+                                    </button>
+                                </div>
+                            </div>
+
                             <div class="row">
                                 <!-- Header Transaksi -->
                                 <div class="col-md-12 mb-3">
@@ -172,7 +188,7 @@
                                                         <span class="h2 text-success mb-0" id="lblGrandTotal">Rp 0</span>
                                                     </div>
                                                     
-                                                    <button type="button" class="btn btn-success w-100 btn-lg" onclick="savePenerimaan()">
+                                                    <button type="button" class="btn btn-success w-100 btn-lg" id="btn_save_penerimaan" onclick="savePenerimaan()">
                                                         <i class="ti ti-device-floppy me-2"></i> Simpan Transaksi Penerimaan
                                                     </button>
                                                 </div>
@@ -186,6 +202,27 @@
 
                     <!-- Tab Riwayat -->
                     <div class="tab-pane fade" id="tab-history" role="tabpanel">
+                        <!-- Filter Bar -->
+                        <div class="row row-cards mb-3 align-items-end bg-light-lt p-3 rounded border mx-0">
+                            <div class="col-md-3">
+                                <label class="form-label">Tanggal Awal Faktur</label>
+                                <input type="date" class="form-control" id="filter_tgl_awal" value="{{ date('Y-m-01') }}">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Tanggal Akhir Faktur</label>
+                                <input type="date" class="form-control" id="filter_tgl_akhir" value="{{ date('Y-m-d') }}">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Cari (No. Faktur / SP / Supplier)</label>
+                                <input type="text" class="form-control" id="filter_search" placeholder="Ketik kata kunci pencarian...">
+                            </div>
+                            <div class="col-md-2 d-flex gap-1">
+                                <button type="button" class="btn btn-primary w-100" onclick="renderTableHistory()">
+                                    <i class="ti ti-filter me-1"></i> Filter
+                                </button>
+                            </div>
+                        </div>
+
                         <div class="table-responsive">
                             <table class="table table-striped table-hover nowrap w-100" id="tbPenerimaan">
                                 <thead>
@@ -199,7 +236,7 @@
                                         <th>Subtotal</th>
                                         <th>PPN</th>
                                         <th>Grand Total</th>
-                                        <th>NIP Petugas</th>
+                                        <th>Petugas Penerima</th>
                                         <th>Aksi</th>
                                     </tr>
                                 </thead>
@@ -435,6 +472,13 @@
                 calculateSummary();
             });
 
+            // Trigger search filter on Enter key
+            $('#filter_search').on('keypress', function(e) {
+                if (e.which === 13) {
+                    renderTableHistory();
+                }
+            });
+
             // Load DataTable on tab shown
             $('#btnTabHistory').on('shown.bs.tab', function () {
                 renderTableHistory();
@@ -443,6 +487,7 @@
 
         // Generate No. Faktur otomatis dari server
         function generateNoFaktur() {
+            if ($('#is_edit').val() === '1') return;
             const tgl = $('#tgl_faktur').val() || "{{ date('Y-m-d') }}";
             $.get("{{ url('/penerimaan/get-next-faktur') }}", { tgl_faktur: tgl })
                 .done((response) => {
@@ -829,6 +874,8 @@
 
             const data = {
                 _token: "{{ csrf_token() }}",
+                is_edit: $('#is_edit').val(),
+                original_no_faktur: $('#original_no_faktur').val(),
                 no_faktur: $('#no_faktur').val(),
                 no_order: $('#no_order').val(),
                 kode_suplier: $('#kode_suplier').val(),
@@ -846,7 +893,8 @@
                 items: cartItems
             };
 
-            loadingAjax('Sedang memproses penerimaan obat & jurnal...');
+            const isEditMode = $('#is_edit').val() === '1';
+            loadingAjax(isEditMode ? 'Sedang meng-update penerimaan obat & jurnal...' : 'Sedang memproses penerimaan obat & jurnal...');
 
             $.ajax({
                 url: "{{ url('/penerimaan/store') }}",
@@ -867,9 +915,17 @@
 
         // Reset the whole header and cart fields
         function resetAllForm() {
+            $('#is_edit').val('0');
+            $('#original_no_faktur').val('');
+            $('#alert_edit_mode').addClass('d-none');
+            $('#btn_save_penerimaan')
+                .removeClass('btn-warning')
+                .addClass('btn-success')
+                .html('<i class="ti ti-device-floppy me-2"></i> Simpan Transaksi Penerimaan');
             $('#formPenerimaan').trigger('reset');
             $('.select-suplier').val('').trigger('change');
             $('.select-bangsal').val('').trigger('change');
+            $('.select-petugas').val('').trigger('change');
             cartItems = [];
             renderCartTable();
             $('#input_kode_brng_batch').val(null).trigger('change');
@@ -878,6 +934,10 @@
 
         // Load receipts list
         function renderTableHistory() {
+            const tglAwal = $('#filter_tgl_awal').val();
+            const tglAkhir = $('#filter_tgl_akhir').val();
+            const search = $('#filter_search').val();
+
             $('#tbPenerimaan').DataTable({
                 responsive: true,
                 serverSide: false,
@@ -885,6 +945,11 @@
                 processing: true,
                 ajax: {
                     url: "{{ url('/penerimaan/data') }}",
+                    data: {
+                        tgl_awal: tglAwal,
+                        tgl_akhir: tglAkhir,
+                        search: search
+                    },
                     dataSrc: ""
                 },
                 columns: [
@@ -923,11 +988,14 @@
                         render: (data) => {
                             return `
                                 <div class="d-flex gap-1">
-                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="showDetailPenerimaan('${data.no_faktur}')">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="showDetailPenerimaan('${data.no_faktur}')" title="Lihat Detail">
                                         <i class="ti ti-eye me-1"></i> Detail
                                     </button>
-                                    <button type="button" class="btn btn-sm btn-danger" onclick="deleteHistory('${data.no_faktur}')">
-                                        <i class="ti ti-trash me-1"></i> Batal / Hapus
+                                    <button type="button" class="btn btn-sm btn-warning" onclick="editPenerimaan('${data.no_faktur}')" title="Edit Transaksi">
+                                        <i class="ti ti-pencil me-1"></i> Edit
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-danger" onclick="deleteHistory('${data.no_faktur}')" title="Batal Transaksi">
+                                        <i class="ti ti-trash me-1"></i> Batal
                                     </button>
                                 </div>
                             `;
@@ -935,6 +1003,99 @@
                     }
                 ]
             });
+        }
+
+        // Load receipt data into input form for editing
+        function editPenerimaan(no_faktur) {
+            loadingAjax('Memuat data penerimaan ' + no_faktur + '...');
+
+            $.get(`{{ url('/penerimaan/edit-data') }}/${no_faktur}`)
+                .done((data) => {
+                    Swal.close();
+                    if (!data) return;
+
+                    // Set Edit state
+                    $('#is_edit').val('1');
+                    $('#original_no_faktur').val(data.no_faktur);
+
+                    // Set header inputs
+                    $('#no_faktur').val(data.no_faktur);
+                    $('#no_order').val(data.no_order || '');
+                    if (data.kode_suplier) $('#kode_suplier').val(data.kode_suplier).trigger('change');
+                    if (data.kd_bangsal) $('#kd_bangsal').val(data.kd_bangsal).trigger('change');
+                    if (data.nip) $('#nip').val(data.nip).trigger('change');
+                    if (data.tgl_faktur) $('#tgl_faktur').val(data.tgl_faktur);
+                    if (data.tgl_pesan) $('#tgl_pesan').val(data.tgl_pesan);
+                    if (data.tgl_tempo) $('#tgl_tempo').val(data.tgl_tempo);
+
+                    // Calculate PPN %
+                    const total2 = parseFloat(data.total2) || 1;
+                    const ppnVal = parseFloat(data.ppn) || 0;
+                    const ppnPct = total2 > 0 ? ((ppnVal / total2) * 100).toFixed(1) : 11;
+                    $('#ppn_percent').val(ppnPct);
+                    $('#meterai_header').val(data.meterai || 0);
+                    $('#potongan_header').val(data.potongan || 0);
+
+                    // Load cartItems
+                    cartItems = [];
+                    if (data.detail && data.detail.length > 0) {
+                        data.detail.forEach((d) => {
+                            const barang = d.barang || {};
+                            const satuanNama = barang.satuan ? barang.satuan.satuan : (d.kode_sat || '-');
+                            cartItems.push({
+                                kode_brng: d.kode_brng,
+                                nama_brng: barang.nama_brng || d.kode_brng,
+                                kode_sat: d.kode_sat || barang.kode_sat || '-',
+                                satuan_nama: satuanNama,
+                                isi: parseFloat(barang.isi) || 1,
+                                jumlah: parseFloat(d.jumlah) || 1,
+                                h_beli: parseFloat(d.h_pesan) || 0,
+                                dis: parseFloat(d.dis) || 0,
+                                no_batch: d.no_batch || '',
+                                kadaluarsa: d.kadaluarsa || "{{ date('Y-m-d', strtotime('+2 years')) }}",
+                                ralan: parseFloat(d.ralan || barang.ralan || 0),
+                                jualbebas: parseFloat(d.jualbebas || barang.jualbebas || 0),
+                                kelas1: parseFloat(d.kelas1 || barang.kelas1 || 0),
+                                kelas2: parseFloat(d.kelas2 || barang.kelas2 || 0),
+                                kelas3: parseFloat(d.kelas3 || barang.kelas3 || 0),
+                                utama: parseFloat(d.utama || barang.utama || 0),
+                                vip: parseFloat(d.vip || barang.vip || 0),
+                                vvip: parseFloat(d.vvip || barang.vvip || 0),
+                                karyawan: parseFloat(d.karyawan || barang.karyawan || 0),
+                                beliluar: parseFloat(d.beliluar || barang.beliluar || 0)
+                            });
+                        });
+                    }
+
+                    renderCartTable();
+
+                    // Display alert and switch tab
+                    $('#lbl_edit_faktur').text(data.no_faktur);
+                    $('#alert_edit_mode').removeClass('d-none');
+                    $('#btn_save_penerimaan')
+                        .removeClass('btn-success')
+                        .addClass('btn-warning')
+                        .html('<i class="ti ti-pencil me-2"></i> Update Transaksi Penerimaan');
+
+                    // Switch tab to input
+                    const tabInputEl = document.querySelector('a[href="#tab-input"]');
+                    if (tabInputEl) {
+                        const tabInput = new bootstrap.Tab(tabInputEl);
+                        tabInput.show();
+                    }
+
+                    showToast('Data faktur ' + data.no_faktur + ' dimuat ke form input', 'info');
+                })
+                .fail((xhr) => {
+                    Swal.close();
+                    showToast('Gagal memuat data faktur: ' + (xhr.responseJSON?.message || 'Error'), 'error');
+                });
+        }
+
+        // Cancel edit mode
+        function cancelEditMode() {
+            resetAllForm();
+            showToast('Mode Edit dibatalkan');
         }
 
         // Fetch and show items inside the detail modal
@@ -993,7 +1154,7 @@
                         data: { _token: "{{ csrf_token() }}" },
                         success: (response) => {
                             showToast(response.message);
-                            $('#tbPenerimaan').DataTable().ajax.reload(null, false);
+                            renderTableHistory();
                         },
                         error: (xhr) => {
                             showToast(xhr.responseJSON?.message || 'Gagal membatalkan transaksi', 'error');

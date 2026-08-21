@@ -28,11 +28,75 @@ class PemesananController extends Controller
 
     public function data(Request $request)
     {
-        $data = Pemesanan::with(['suplier', 'bangsal', 'petugas'])
-            ->orderBy('tgl_faktur', 'desc')
-            ->get();
-            
+        $tglAwal = $request->tgl_awal ?? date('Y-m-01');
+        $tglAkhir = $request->tgl_akhir ?? date('Y-m-d');
+
+        $query = Pemesanan::with(['suplier', 'bangsal', 'petugas'])
+            ->whereBetween('tgl_faktur', [$tglAwal, $tglAkhir])
+            ->orderBy('tgl_faktur', 'desc');
+
+        if ($request->search) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('no_faktur', 'like', "%{$search}%")
+                  ->orWhere('no_order', 'like', "%{$search}%")
+                  ->orWhereHas('suplier', function($qs) use ($search) {
+                      $qs->where('nama_suplier', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $data = $query->get();
         return response()->json($data);
+    }
+
+    /**
+     * Get full penerimaan data for edit form
+     */
+    public function editData($no_faktur)
+    {
+        $pemesanan = Pemesanan::with(['suplier', 'bangsal', 'petugas', 'detail.barang.satuan'])
+            ->where('no_faktur', $no_faktur)
+            ->first();
+
+        if (!$pemesanan) {
+            return response()->json(['message' => 'Data penerimaan tidak ditemukan'], 404);
+        }
+
+        if ($pemesanan->detail && count($pemesanan->detail) > 0) {
+            foreach ($pemesanan->detail as $item) {
+                $batch = DataBatch::where('no_faktur', $no_faktur)
+                    ->where('kode_brng', $item->kode_brng)
+                    ->where('no_batch', $item->no_batch)
+                    ->first();
+
+                if ($batch) {
+                    $item->ralan = $batch->ralan;
+                    $item->kelas1 = $batch->kelas1;
+                    $item->kelas2 = $batch->kelas2;
+                    $item->kelas3 = $batch->kelas3;
+                    $item->utama = $batch->utama;
+                    $item->vip = $batch->vip;
+                    $item->vvip = $batch->vvip;
+                    $item->karyawan = $batch->karyawan;
+                    $item->beliluar = $batch->beliluar;
+                    $item->jualbebas = $batch->jualbebas;
+                } else if ($item->barang) {
+                    $item->ralan = $item->barang->ralan;
+                    $item->kelas1 = $item->barang->kelas1;
+                    $item->kelas2 = $item->barang->kelas2;
+                    $item->kelas3 = $item->barang->kelas3;
+                    $item->utama = $item->barang->utama;
+                    $item->vip = $item->barang->vip;
+                    $item->vvip = $item->barang->vvip;
+                    $item->karyawan = $item->barang->karyawan;
+                    $item->beliluar = $item->barang->beliluar;
+                    $item->jualbebas = $item->barang->jualbebas;
+                }
+            }
+        }
+
+        return response()->json($pemesanan);
     }
 
     /**
@@ -164,19 +228,83 @@ class PemesananController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'no_faktur' => 'required|unique:pemesanan,no_faktur',
-            'kode_suplier' => 'required',
-            'kd_bangsal' => 'required',
-            'tgl_faktur' => 'required|date',
-            'items' => 'required|array|min:1',
-            'items.*.kode_brng' => 'required',
-            'items.*.jumlah' => 'required|numeric|min:0.01',
-            'items.*.h_beli' => 'required|numeric',
-        ]);
+        $isEdit = filter_var($request->is_edit ?? false, FILTER_VALIDATE_BOOLEAN);
+        $originalNoFaktur = trim($request->original_no_faktur ?? '');
+
+        if ($isEdit && !empty($originalNoFaktur)) {
+            $request->validate([
+                'no_faktur' => 'required',
+                'kode_suplier' => 'required',
+                'kd_bangsal' => 'required',
+                'tgl_faktur' => 'required|date',
+                'items' => 'required|array|min:1',
+                'items.*.kode_brng' => 'required',
+                'items.*.jumlah' => 'required|numeric|min:0.01',
+                'items.*.h_beli' => 'required|numeric',
+            ]);
+
+            if ($request->no_faktur !== $originalNoFaktur) {
+                if (Pemesanan::where('no_faktur', $request->no_faktur)->exists()) {
+                    return response()->json(['message' => 'No. Faktur baru sudah digunakan pada transaksi lain'], 422);
+                }
+            }
+        } else {
+            $request->validate([
+                'no_faktur' => 'required|unique:pemesanan,no_faktur',
+                'kode_suplier' => 'required',
+                'kd_bangsal' => 'required',
+                'tgl_faktur' => 'required|date',
+                'items' => 'required|array|min:1',
+                'items.*.kode_brng' => 'required',
+                'items.*.jumlah' => 'required|numeric|min:0.01',
+                'items.*.h_beli' => 'required|numeric',
+            ]);
+        }
 
         try {
             DB::beginTransaction();
+
+            // Reverse previous record if editing
+            if ($isEdit && !empty($originalNoFaktur)) {
+                $prevPemesanan = Pemesanan::where('no_faktur', $originalNoFaktur)->first();
+                if ($prevPemesanan) {
+                    $prevDetails = DetailPesan::where('no_faktur', $originalNoFaktur)->get();
+                    $nipRevert = session()->get('pegawai')->nik ?? session()->get('nik') ?? '-';
+
+                    foreach ($prevDetails as $pDetail) {
+                        $pJumlah2 = floatval($pDetail->jumlah2 > 0 ? $pDetail->jumlah2 : $pDetail->jumlah);
+                        $pBatch = trim($pDetail->no_batch ?? '');
+
+                        $this->recordRiwayatMedis(
+                            $pDetail->kode_brng,
+                            0,
+                            $pJumlah2,
+                            'Penerimaan',
+                            date('Y-m-d'),
+                            $nipRevert,
+                            $prevPemesanan->kd_bangsal,
+                            'Hapus',
+                            $pBatch,
+                            $originalNoFaktur,
+                            'Revisi Penerimaan ' . $originalNoFaktur
+                        );
+
+                        DB::table('gudangbarang')
+                            ->where('kode_brng', $pDetail->kode_brng)
+                            ->where('kd_bangsal', $prevPemesanan->kd_bangsal)
+                            ->where('no_batch', $pBatch)
+                            ->where('no_faktur', $originalNoFaktur)
+                            ->decrement('stok', $pJumlah2);
+                    }
+
+                    $this->deleteJurnalPenerimaan($originalNoFaktur);
+
+                    DetailPesan::where('no_faktur', $originalNoFaktur)->delete();
+                    DataBatch::where('no_faktur', $originalNoFaktur)->delete();
+                    $prevPemesanan->delete();
+                    DB::table('gudangbarang')->where('stok', '<=', 0)->delete();
+                }
+            }
 
             // Validate NIP Petugas against petugas table for Foreign Key integrity
             $nipInput = $request->nip ?? session()->get('pegawai')->nik ?? session()->get('nik') ?? '';
