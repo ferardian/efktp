@@ -334,6 +334,14 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::get('/penerimaan/detail', [\App\Http\Controllers\PemesananController::class, 'detail']);
 	Route::get('/penerimaan/edit-data/{no_faktur}', [\App\Http\Controllers\PemesananController::class, 'editData']);
 
+	// Data Supplier
+	Route::get('/farmasi/suplier', [\App\Http\Controllers\DataSuplierController::class, 'index']);
+	Route::get('/suplier/data', [\App\Http\Controllers\DataSuplierController::class, 'data']);
+	Route::get('/suplier/get-next-kode', [\App\Http\Controllers\DataSuplierController::class, 'getNextKode']);
+	Route::get('/suplier/show/{kode_suplier}', [\App\Http\Controllers\DataSuplierController::class, 'show']);
+	Route::post('/suplier/store', [\App\Http\Controllers\DataSuplierController::class, 'store']);
+	Route::delete('/suplier/delete/{kode_suplier}', [\App\Http\Controllers\DataSuplierController::class, 'destroy']);
+
 	// Stok Opname
 	Route::get('/farmasi/opname', [\App\Http\Controllers\OpnameController::class, 'index']);
 	Route::get('/opname/data', [\App\Http\Controllers\OpnameController::class, 'data']);

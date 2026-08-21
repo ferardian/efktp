@@ -133,6 +133,9 @@
                     <a href="{{ url('farmasi/penerimaan') }}" class="dropdown-item {{ Request::is('farmasi/penerimaan') ? 'active' : '' }}">
                         Penerimaan Obat & BHP
                     </a>
+                    <a href="{{ url('farmasi/suplier') }}" class="dropdown-item {{ Request::is('farmasi/suplier') ? 'active' : '' }}">
+                        Data Supplier
+                    </a>
                     <a href="{{ url('farmasi/opname') }}" class="dropdown-item {{ Request::is('farmasi/opname') ? 'active' : '' }}">
                         Stok Opname
                     </a>

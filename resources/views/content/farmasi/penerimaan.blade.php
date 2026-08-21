@@ -64,7 +64,12 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-md-3">
-                                                    <label class="form-label required">Supplier</label>
+                                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                                        <label class="form-label required mb-0">Supplier</label>
+                                                        <button type="button" class="btn btn-sm btn-link p-0 text-primary" onclick="openModalQuickSuplier()" title="Tambah Supplier Baru">
+                                                            <i class="ti ti-plus"></i> Tambah Baru
+                                                        </button>
+                                                    </div>
                                                     <select class="form-select select-suplier" name="kode_suplier" id="kode_suplier" style="width: 100%" required>
                                                         <option value="">-- Pilih Supplier --</option>
                                                         @foreach($suplier as $sup)
@@ -386,6 +391,42 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Quick Add Supplier -->
+    <div class="modal fade" id="modalQuickSuplier" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="ti ti-truck me-2 text-white"></i> Tambah Supplier Baru</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="formQuickSuplier" onsubmit="event.preventDefault(); saveQuickSuplier();">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label required">Kode Supplier</label>
+                            <input type="text" class="form-control" id="quick_kode_suplier" readonly required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label required">Nama Supplier / PT</label>
+                            <input type="text" class="form-control" id="quick_nama_suplier" placeholder="PT. Kimia Farma Trading" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Alamat</label>
+                            <input type="text" class="form-control" id="quick_alamat" placeholder="Alamat kantor / distributor">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">No. Telepon</label>
+                            <input type="text" class="form-control" id="quick_no_telp" placeholder="021-12345678">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary"><i class="ti ti-device-floppy me-1"></i> Simpan & Gunakan</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -1170,6 +1211,56 @@
         // Helper to format values as currency string
         function formatRupiah(number) {
             return number.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+        }
+
+        // Quick Add Supplier functions
+        function openModalQuickSuplier() {
+            $('#formQuickSuplier').trigger('reset');
+            $.get("{{ url('/suplier/get-next-kode') }}").done((res) => {
+                if (res && res.kode_suplier) {
+                    $('#quick_kode_suplier').val(res.kode_suplier);
+                }
+            });
+            $('#modalQuickSuplier').modal('show');
+        }
+
+        function saveQuickSuplier() {
+            const data = {
+                _token: "{{ csrf_token() }}",
+                kode_suplier: $('#quick_kode_suplier').val(),
+                nama_suplier: $('#quick_nama_suplier').val(),
+                alamat: $('#quick_alamat').val(),
+                no_telp: $('#quick_no_telp').val()
+            };
+
+            loadingAjax('Menyimpan supplier baru...');
+            $.post("{{ url('/suplier/store') }}", data)
+                .done((res) => {
+                    Swal.close();
+                    if (res && res.data) {
+                        showToast('Supplier ' + res.data.nama_suplier + ' berhasil ditambahkan');
+                        $('#modalQuickSuplier').modal('hide');
+                        reloadSuplierOptions(res.data.kode_suplier);
+                    }
+                })
+                .fail((xhr) => {
+                    Swal.close();
+                    showToast(xhr.responseJSON?.message || 'Gagal menyimpan supplier baru', 'error');
+                });
+        }
+
+        function reloadSuplierOptions(selectedCode) {
+            $.get("{{ url('/suplier/data') }}").done((list) => {
+                const select = $('#kode_suplier');
+                select.empty().append('<option value="">-- Pilih Supplier --</option>');
+                if (list && list.length > 0) {
+                    list.forEach((s) => {
+                        const isSelected = s.kode_suplier === selectedCode ? 'selected' : '';
+                        select.append(`<option value="${s.kode_suplier}" ${isSelected}>${s.nama_suplier}</option>`);
+                    });
+                }
+                select.trigger('change');
+            });
         }
     </script>
 @endpush
