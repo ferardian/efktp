@@ -64,18 +64,18 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-md-3">
-                                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                                        <label class="form-label required mb-0">Supplier</label>
-                                                        <button type="button" class="btn btn-sm btn-link p-0 text-primary" onclick="openModalQuickSuplier()" title="Tambah Supplier Baru">
-                                                            <i class="ti ti-plus"></i> Tambah Baru
+                                                    <label class="form-label required">Supplier</label>
+                                                    <div class="input-group">
+                                                        <select class="form-select select-suplier" name="kode_suplier" id="kode_suplier" style="width: 100%" required>
+                                                            <option value="">-- Pilih Supplier --</option>
+                                                            @foreach($suplier as $sup)
+                                                                <option value="{{ $sup->kode_suplier }}">{{ $sup->nama_suplier }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                        <button type="button" class="btn btn-outline-primary" onclick="openModalQuickSuplier()" title="Tambah Supplier Baru">
+                                                            <i class="ti ti-plus"></i>
                                                         </button>
                                                     </div>
-                                                    <select class="form-select select-suplier" name="kode_suplier" id="kode_suplier" style="width: 100%" required>
-                                                        <option value="">-- Pilih Supplier --</option>
-                                                        @foreach($suplier as $sup)
-                                                            <option value="{{ $sup->kode_suplier }}">{{ $sup->nama_suplier }}</option>
-                                                        @endforeach
-                                                    </select>
                                                 </div>
                                                 <div class="col-md-3">
                                                     <label class="form-label required">Lokasi Gudang/Depo Penerima</label>
@@ -1290,6 +1290,22 @@
         #tableCart input.form-control-sm {
             padding-left: 6px !important;
             padding-right: 6px !important;
+        }
+        .input-group > .select2-container--default {
+            flex: 1 1 auto;
+            width: 1% !important;
+        }
+        .input-group > .select2-container--default .select2-selection--single {
+            height: 36px !important;
+            border-top-right-radius: 0 !important;
+            border-bottom-right-radius: 0 !important;
+        }
+        .input-group > .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 34px !important;
+            color: #232e3c !important;
+        }
+        .input-group > .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 34px !important;
         }
     </style>
 @endpush

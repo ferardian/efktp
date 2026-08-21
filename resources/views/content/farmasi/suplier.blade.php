@@ -2,11 +2,14 @@
 
 @section('body')
     <div class="container-fluid">
-        <div class="card mb-3">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h3 class="card-title text-primary mb-0">
-                    <i class="ti ti-truck me-2"></i> Data Supplier / Distributor Obat & BHP
-                </h3>
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <div>
+                    <h3 class="card-title text-primary fw-bold mb-0">
+                        <i class="ti ti-truck me-2 text-primary fs-2"></i> Data Supplier / Distributor Obat & BHP
+                    </h3>
+                    <div class="text-muted small mt-1">Kelola data distributor, alamat, nomor telepon, dan informasi rekening supplier</div>
+                </div>
                 <button type="button" class="btn btn-primary" onclick="openModalTambahSuplier()">
                     <i class="ti ti-plus me-1"></i> Tambah Supplier Baru
                 </button>
@@ -33,20 +36,20 @@
     <!-- Modal Form Tambah/Edit Supplier -->
     <div class="modal fade" id="modalSuplier" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content">
+            <div class="modal-content border-0 shadow">
                 <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title" id="modal_suplier_title"><i class="ti ti-truck me-2 text-white"></i> Tambah Supplier Baru</h5>
+                    <h5 class="modal-title fw-bold" id="modal_suplier_title"><i class="ti ti-truck me-2 text-white"></i> Tambah Supplier Baru</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form id="formSuplier">
                     @csrf
                     <input type="hidden" id="is_edit_suplier" value="0">
-                    <div class="modal-body">
+                    <div class="modal-body p-4">
                         <div class="row row-cards">
                             <div class="col-md-4">
                                 <label class="form-label required">Kode Supplier</label>
                                 <div class="input-group">
-                                    <input type="text" class="form-control" name="kode_suplier" id="kode_suplier" placeholder="S0001" maxlength="5" required>
+                                    <input type="text" class="form-control font-monospace fw-bold" name="kode_suplier" id="kode_suplier" placeholder="S0001" maxlength="5" required>
                                     <button type="button" class="btn btn-outline-secondary" onclick="generateKodeSuplier()" title="Generate Kode Otomatis">
                                         <i class="ti ti-refresh"></i>
                                     </button>
@@ -56,29 +59,29 @@
                                 <label class="form-label required">Nama Supplier / PT</label>
                                 <input type="text" class="form-control" name="nama_suplier" id="nama_suplier" placeholder="PT. Kimia Farma Trading & Distribution" maxlength="50" required>
                             </div>
-                            <div class="col-md-8 mt-2">
+                            <div class="col-md-8 mt-3">
                                 <label class="form-label">Alamat Lengkap</label>
                                 <input type="text" class="form-control" name="alamat" id="alamat" placeholder="Jl. Sudirman No. 123" maxlength="50">
                             </div>
-                            <div class="col-md-4 mt-2">
+                            <div class="col-md-4 mt-3">
                                 <label class="form-label">Kota / Kabupaten</label>
                                 <input type="text" class="form-control" name="kota" id="kota" placeholder="Jakarta Pusat" maxlength="20">
                             </div>
-                            <div class="col-md-4 mt-2">
+                            <div class="col-md-4 mt-3">
                                 <label class="form-label">No. Telepon / HP</label>
                                 <input type="text" class="form-control" name="no_telp" id="no_telp" placeholder="021-12345678" maxlength="13">
                             </div>
-                            <div class="col-md-4 mt-2">
+                            <div class="col-md-4 mt-3">
                                 <label class="form-label">Nama Bank</label>
                                 <input type="text" class="form-control" name="nama_bank" id="nama_bank" placeholder="Bank Mandiri / BCA" maxlength="30">
                             </div>
-                            <div class="col-md-4 mt-2">
+                            <div class="col-md-4 mt-3">
                                 <label class="form-label">Nomor Rekening</label>
                                 <input type="text" class="form-control" name="rekening" id="rekening" placeholder="123-00-0123456-7" maxlength="20">
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer">
+                    <div class="modal-footer bg-light px-4">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
                         <button type="submit" class="btn btn-primary" id="btn_save_suplier">
                             <i class="ti ti-device-floppy me-1"></i> Simpan Data Supplier
@@ -114,26 +117,29 @@
                 columns: [
                     { 
                         data: 'kode_suplier',
-                        render: (data) => `<span class="fw-bold text-primary">${data}</span>`
+                        render: (data) => `<span class="badge bg-blue-lt font-monospace px-2 py-1 fs-4">${data}</span>`
                     },
                     { 
                         data: 'nama_suplier',
-                        render: (data) => `<span class="fw-bold text-dark">${data}</span>`
+                        render: (data) => `<div class="fw-bold text-dark fs-3">${data}</div>`
                     },
                     { 
                         data: null,
                         render: (row) => {
                             let text = row.alamat || '-';
                             if (row.kota) text += `, ${row.kota}`;
-                            return text;
+                            return `<div class="text-secondary"><i class="ti ti-map-pin me-1 text-muted"></i>${text}</div>`;
                         }
                     },
-                    { data: 'no_telp', defaultContent: '-' },
+                    { 
+                        data: 'no_telp',
+                        render: (data) => data ? `<a href="tel:${data}" class="text-decoration-none text-dark"><i class="ti ti-phone me-1 text-success"></i>${data}</a>` : '-'
+                    },
                     { 
                         data: null,
                         render: (row) => {
                             if (!row.nama_bank && !row.rekening) return '-';
-                            return `<div>${row.nama_bank || ''}</div><small class="text-muted">${row.rekening || ''}</small>`;
+                            return `<div class="badge bg-light text-dark border px-2 py-1 text-start"><i class="ti ti-building-bank me-1 text-primary"></i>${row.nama_bank || ''} - ${row.rekening || ''}</div>`;
                         }
                     },
                     {
