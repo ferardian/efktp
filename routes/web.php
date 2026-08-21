@@ -325,6 +325,10 @@ Route::middleware('auth:web,admin')->group(function () {
 	// Penerimaan Barang Medis / Obat (Pemesanan)
 	Route::get('/farmasi/penerimaan', [\App\Http\Controllers\PemesananController::class, 'index']);
 	Route::get('/penerimaan/data', [\App\Http\Controllers\PemesananController::class, 'data']);
+	Route::get('/penerimaan/get-next-faktur', [\App\Http\Controllers\PemesananController::class, 'getNextNoFaktur']);
+	Route::get('/penerimaan/sp-list', [\App\Http\Controllers\PemesananController::class, 'getSuratPemesananList']);
+	Route::get('/penerimaan/sp-detail/{no_order}', [\App\Http\Controllers\PemesananController::class, 'getSuratPemesananDetail']);
+	Route::post('/penerimaan/calculate-prices', [\App\Http\Controllers\PemesananController::class, 'calculatePrices']);
 	Route::post('/penerimaan/store', [\App\Http\Controllers\PemesananController::class, 'store']);
 	Route::delete('/penerimaan/delete/{no_faktur}', [\App\Http\Controllers\PemesananController::class, 'destroy']);
 	Route::get('/penerimaan/detail', [\App\Http\Controllers\PemesananController::class, 'detail']);
