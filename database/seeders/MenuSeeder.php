@@ -74,6 +74,7 @@ class MenuSeeder extends Seeder
             ['id' => 12, 'name' => 'Resep Obat', 'url' => 'farmasi/resep', 'icon' => null, 'parent_id' => 4, 'order_num' => 5, 'target' => '_self', 'position' => 'navbar', 'roles' => ['admin', 'apoteker', 'dokter', 'petugas', 'owner']],
             ['id' => 13, 'name' => 'Rekap Resep', 'url' => 'farmasi/resep/rekap', 'icon' => null, 'parent_id' => 4, 'order_num' => 6, 'target' => '_self', 'position' => 'navbar', 'roles' => ['admin', 'apoteker', 'owner']],
             ['id' => 14, 'name' => 'Paket Obat', 'url' => 'master/paket-obat', 'icon' => null, 'parent_id' => 4, 'order_num' => 7, 'target' => '_self', 'position' => 'navbar', 'roles' => ['admin', 'apoteker', 'owner']],
+            ['id' => 49, 'name' => 'Data Supplier', 'url' => 'farmasi/suplier', 'icon' => null, 'parent_id' => 4, 'order_num' => 8, 'target' => '_self', 'position' => 'navbar', 'roles' => ['admin', 'apoteker', 'owner']],
 
             // submenus under Pcare (parent_id = 5)
             ['id' => 15, 'name' => 'Pendaftaran', 'url' => 'pcare/pendaftaran', 'icon' => null, 'parent_id' => 5, 'order_num' => 1, 'target' => '_self', 'position' => 'navbar', 'roles' => ['admin', 'petugas', 'owner']],
