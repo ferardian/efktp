@@ -67,6 +67,17 @@
                                                 </div>
                                             </div>
                                             <div class="row row-cards mt-2">
+                                                <div class="col-md-3">
+                                                    <label class="form-label required">Petugas Penerima Obat</label>
+                                                    <select class="form-select select-petugas" name="nip" id="nip" style="width: 100%" required>
+                                                        <option value="">-- Pilih Petugas --</option>
+                                                        @foreach($petugas as $ptg)
+                                                            <option value="{{ $ptg->nip }}" {{ (session('pegawai') && session('pegawai')->nik == $ptg->nip) ? 'selected' : '' }}>
+                                                                {{ $ptg->nama }} ({{ $ptg->nip }})
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
                                                 <div class="col-md-2">
                                                     <label class="form-label required">Tanggal Faktur</label>
                                                     <input type="date" class="form-control" name="tgl_faktur" id="tgl_faktur" value="{{ date('Y-m-d') }}" required>
@@ -79,16 +90,16 @@
                                                     <label class="form-label">Tanggal Jatuh Tempo</label>
                                                     <input type="date" class="form-control" name="tgl_tempo" id="tgl_tempo" value="{{ date('Y-m-d', strtotime('+30 days')) }}">
                                                 </div>
-                                                <div class="col-md-2">
+                                                <div class="col-md-1">
                                                     <label class="form-label">PPN (%)</label>
                                                     <input type="number" class="form-control" name="ppn_percent" id="ppn_percent" value="11" min="0" step="0.1">
                                                 </div>
-                                                <div class="col-md-2">
-                                                    <label class="form-label">Meterai (Rp)</label>
+                                                <div class="col-md-1">
+                                                    <label class="form-label">Meterai</label>
                                                     <input type="number" class="form-control" name="meterai" id="meterai_header" value="0" min="0">
                                                 </div>
-                                                <div class="col-md-2">
-                                                    <label class="form-label">Potongan Faktur (Rp)</label>
+                                                <div class="col-md-1">
+                                                    <label class="form-label">Potongan</label>
                                                     <input type="number" class="form-control" name="potongan" id="potongan_header" value="0" min="0">
                                                 </div>
                                             </div>
@@ -352,6 +363,7 @@
             // Initialize select2
             $('.select-suplier').select2();
             $('.select-bangsal').select2();
+            $('.select-petugas').select2();
 
             // Setup select2 data barang search using utility function
             selectDataBarang($('#input_kode_brng_batch'), 'body');
@@ -794,6 +806,10 @@
                 showToast('Pilih Gudang terlebih dahulu', 'warning');
                 return;
             }
+            if (!$('#nip').val()) {
+                showToast('Pilih Petugas Penerima Obat terlebih dahulu', 'warning');
+                return;
+            }
             if (cartItems.length === 0) {
                 showToast('Keranjang item obat masih kosong', 'warning');
                 return;
@@ -817,6 +833,7 @@
                 no_order: $('#no_order').val(),
                 kode_suplier: $('#kode_suplier').val(),
                 kd_bangsal: $('#kd_bangsal').val(),
+                nip: $('#nip').val(),
                 tgl_faktur: $('#tgl_faktur').val(),
                 tgl_pesan: $('#tgl_pesan').val(),
                 tgl_tempo: $('#tgl_tempo').val(),
@@ -896,7 +913,10 @@
                         data: 'tagihan',
                         render: (data) => '<span class="fw-bold text-success">Rp ' + formatRupiah(data) + '</span>'
                     },
-                    { data: 'nip' },
+                    { 
+                        data: 'nip',
+                        render: (data, type, row) => row.petugas ? `${row.petugas.nama} (${data})` : data
+                    },
                     {
                         data: null,
                         orderable: false,

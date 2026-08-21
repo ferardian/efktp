@@ -30,4 +30,9 @@ class Pemesanan extends Model
     {
         return $this->belongsTo(Bangsal::class, 'kd_bangsal', 'kd_bangsal');
     }
+
+    public function petugas()
+    {
+        return $this->belongsTo(Petugas::class, 'nip', 'nip');
+    }
 }

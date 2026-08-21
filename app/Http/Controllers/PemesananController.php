@@ -8,6 +8,7 @@ use App\Models\DataBatch;
 use App\Models\DataBarang;
 use App\Models\Bangsal;
 use App\Models\DataSuplier;
+use App\Models\Petugas;
 use App\Models\SuratPemesananMedis;
 use App\Models\DetailSuratPemesananMedis;
 use Illuminate\Http\Request;
@@ -20,13 +21,14 @@ class PemesananController extends Controller
     {
         $suplier = DataSuplier::orderBy('nama_suplier', 'asc')->get();
         $bangsal = Bangsal::where('status', '1')->orderBy('nm_bangsal', 'asc')->get();
+        $petugas = Petugas::where('status', '1')->orderBy('nama', 'asc')->get();
         
-        return view('content.farmasi.penerimaan', compact('suplier', 'bangsal'));
+        return view('content.farmasi.penerimaan', compact('suplier', 'bangsal', 'petugas'));
     }
 
     public function data(Request $request)
     {
-        $data = Pemesanan::with(['suplier', 'bangsal'])
+        $data = Pemesanan::with(['suplier', 'bangsal', 'petugas'])
             ->orderBy('tgl_faktur', 'desc')
             ->get();
             
@@ -176,7 +178,15 @@ class PemesananController extends Controller
         try {
             DB::beginTransaction();
 
-            $nip = session()->get('pegawai')->nik ?? session()->get('nik') ?? '-';
+            // Validate NIP Petugas against petugas table for Foreign Key integrity
+            $nipInput = $request->nip ?? session()->get('pegawai')->nik ?? session()->get('nik') ?? '';
+            $petugasObj = Petugas::where('nip', $nipInput)->first();
+            if (!$petugasObj) {
+                // Fallback to first active petugas if nip is missing or 'spv'
+                $petugasObj = Petugas::where('status', '1')->first() ?? Petugas::first();
+            }
+            $nip = $petugasObj ? $petugasObj->nip : '-';
+
             $suplier = DataSuplier::where('kode_suplier', $request->kode_suplier)->first();
             $namaSuplier = $suplier ? $suplier->nama_suplier : $request->kode_suplier;
 
@@ -345,7 +355,13 @@ class PemesananController extends Controller
 
             $pemesanan = Pemesanan::where('no_faktur', $no_faktur)->firstOrFail();
             $details = DetailPesan::where('no_faktur', $no_faktur)->get();
-            $nip = session()->get('pegawai')->nik ?? session()->get('nik') ?? '-';
+
+            $nipInput = session()->get('pegawai')->nik ?? session()->get('nik') ?? '';
+            $petugasObj = Petugas::where('nip', $nipInput)->first();
+            if (!$petugasObj) {
+                $petugasObj = Petugas::where('status', '1')->first() ?? Petugas::first();
+            }
+            $nip = $petugasObj ? $petugasObj->nip : '-';
 
             // Reverse stock & audit trail
             foreach ($details as $detail) {
