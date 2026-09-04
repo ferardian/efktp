@@ -449,22 +449,20 @@
                             const formatRp = (n) => 'Rp ' + (parseFloat(n) || 0).toLocaleString('id-ID');
                             
                             const details = `
-                                <div style="font-size: 11px; text-align: left;">
-                                    <div class="fw-bold border-bottom pb-1 mb-1 text-primary">Rincian Harga (${row.kode_brng}):</div>
-                                    <table class="table table-sm table-borderless text-nowrap mb-0" style="font-size: 11px;">
-                                        <tr><td class="pe-3">Dasar:</td><td class="text-end fw-bold">${formatRp(row.dasar)}</td></tr>
-                                        <tr><td class="pe-3">H. Beli:</td><td class="text-end fw-bold">${formatRp(row.h_beli)}</td></tr>
-                                        <tr class="table-success"><td class="pe-3">Ralan:</td><td class="text-end fw-bold text-success">${formatRp(row.ralan)}</td></tr>
-                                        <tr><td class="pe-3">Kelas 1:</td><td class="text-end">${formatRp(row.kelas1)}</td></tr>
-                                        <tr><td class="pe-3">Kelas 2:</td><td class="text-end">${formatRp(row.kelas2)}</td></tr>
-                                        <tr><td class="pe-3">Kelas 3:</td><td class="text-end">${formatRp(row.kelas3)}</td></tr>
-                                        <tr><td class="pe-3">Utama:</td><td class="text-end">${formatRp(row.utama)}</td></tr>
-                                        <tr><td class="pe-3">VIP:</td><td class="text-end">${formatRp(row.vip)}</td></tr>
-                                        <tr><td class="pe-3">VVIP:</td><td class="text-end">${formatRp(row.vvip)}</td></tr>
-                                        <tr><td class="pe-3">Jual Bebas:</td><td class="text-end">${formatRp(row.jualbebas)}</td></tr>
-                                        <tr><td class="pe-3">Karyawan:</td><td class="text-end">${formatRp(row.karyawan)}</td></tr>
-                                        <tr><td class="pe-3">Beli Luar:</td><td class="text-end">${formatRp(row.beliluar)}</td></tr>
-                                    </table>
+                                <div style="min-width: 190px; font-size: 11px; text-align: left;" class="p-1">
+                                    <div class="fw-bold border-bottom border-secondary pb-1 mb-1 text-info">Rincian Harga (${row.kode_brng})</div>
+                                    <div class="d-flex justify-content-between py-1 border-bottom border-light"><span>Dasar:</span><span class="fw-bold">${formatRp(row.dasar)}</span></div>
+                                    <div class="d-flex justify-content-between py-1 border-bottom border-light"><span>H. Beli:</span><span class="fw-bold">${formatRp(row.h_beli)}</span></div>
+                                    <div class="d-flex justify-content-between py-1 border-bottom border-light text-success"><span>Ralan:</span><span class="fw-bold text-success">${formatRp(row.ralan)}</span></div>
+                                    <div class="d-flex justify-content-between py-1 border-bottom border-light"><span>Kelas 1:</span><span>${formatRp(row.kelas1)}</span></div>
+                                    <div class="d-flex justify-content-between py-1 border-bottom border-light"><span>Kelas 2:</span><span>${formatRp(row.kelas2)}</span></div>
+                                    <div class="d-flex justify-content-between py-1 border-bottom border-light"><span>Kelas 3:</span><span>${formatRp(row.kelas3)}</span></div>
+                                    <div class="d-flex justify-content-between py-1 border-bottom border-light"><span>Utama:</span><span>${formatRp(row.utama)}</span></div>
+                                    <div class="d-flex justify-content-between py-1 border-bottom border-light"><span>VIP:</span><span>${formatRp(row.vip)}</span></div>
+                                    <div class="d-flex justify-content-between py-1 border-bottom border-light"><span>VVIP:</span><span>${formatRp(row.vvip)}</span></div>
+                                    <div class="d-flex justify-content-between py-1 border-bottom border-light"><span>Jual Bebas:</span><span>${formatRp(row.jualbebas)}</span></div>
+                                    <div class="d-flex justify-content-between py-1 border-bottom border-light"><span>Karyawan:</span><span>${formatRp(row.karyawan)}</span></div>
+                                    <div class="d-flex justify-content-between py-1"><span>Beli Luar:</span><span>${formatRp(row.beliluar)}</span></div>
                                 </div>
                             `;
                             
@@ -596,7 +594,8 @@
                     // Initialize tooltips on table draw
                     $('[data-bs-toggle="tooltip"]').tooltip({
                         trigger: 'hover',
-                        html: true
+                        html: true,
+                        sanitize: false
                     });
                 }
             })
