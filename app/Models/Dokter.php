@@ -9,6 +9,9 @@ class Dokter extends Model
 {
     use HasFactory;
     protected $table = 'dokter';
+    protected $primaryKey = 'kd_dokter';
+    public $incrementing = false;
+    protected $keyType = 'string';
     protected $guarded = [];
     public $timestamps = false;
 
