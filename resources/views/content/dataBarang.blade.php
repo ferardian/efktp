@@ -447,10 +447,11 @@
                         render: (data, type, row) => {
                             const val = parseFloat(data) || 0;
                             const formatRp = (n) => 'Rp ' + (parseFloat(n) || 0).toLocaleString('id-ID');
+                            const safeNama = String(row.nama_brng || '-').replace(/"/g, '&quot;');
                             
                             const details = `
                                 <div style="min-width: 190px; font-size: 11px; text-align: left;" class="p-1">
-                                    <div class="fw-bold border-bottom border-secondary pb-1 mb-1 text-info">Rincian Harga (${row.kode_brng})</div>
+                                    <div class="fw-bold border-bottom border-secondary pb-1 mb-1 text-info text-wrap">${safeNama}</div>
                                     <div class="d-flex justify-content-between py-1 border-bottom border-light"><span>Dasar:</span><span class="fw-bold">${formatRp(row.dasar)}</span></div>
                                     <div class="d-flex justify-content-between py-1 border-bottom border-light"><span>H. Beli:</span><span class="fw-bold">${formatRp(row.h_beli)}</span></div>
                                     <div class="d-flex justify-content-between py-1 border-bottom border-light text-success"><span>Ralan:</span><span class="fw-bold text-success">${formatRp(row.ralan)}</span></div>
