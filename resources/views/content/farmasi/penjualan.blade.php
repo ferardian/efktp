@@ -43,20 +43,20 @@
                                     <div class="row g-2">
                                         <div class="col-md-3 col-sm-6">
                                             <label class="form-label small fw-bold mb-1">No. Nota</label>
-                                            <div class="input-group input-group-sm">
-                                                <input type="text" class="form-control fw-bold text-primary bg-light" id="nota_jual" name="nota_jual" value="{{ $nextNota }}" readonly>
-                                                <button type="button" class="btn btn-outline-secondary" onclick="reloadNextNota()" title="Refresh No. Nota">
+                                            <div class="input-group input-group-sm" style="height: 36px;">
+                                                <input type="text" class="form-control form-control-sm fw-bold text-primary bg-light" id="nota_jual" name="nota_jual" value="{{ $nextNota }}" readonly style="height: 36px;">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="reloadNextNota()" title="Refresh No. Nota" style="height: 36px;">
                                                     <i class="ti ti-refresh"></i>
                                                 </button>
                                             </div>
                                         </div>
                                         <div class="col-md-3 col-sm-6">
                                             <label class="form-label small fw-bold mb-1">Tanggal Transaksi</label>
-                                            <input type="date" class="form-control form-control-sm" id="tgl_jual" name="tgl_jual" value="{{ $today }}">
+                                            <input type="date" class="form-control form-control-sm" id="tgl_jual" name="tgl_jual" value="{{ $today }}" style="height: 36px;">
                                         </div>
                                         <div class="col-md-3 col-sm-6">
                                             <label class="form-label small fw-bold mb-1">Lokasi Gudang / Depo</label>
-                                            <select class="form-select form-select-sm" id="kd_bangsal" name="kd_bangsal">
+                                            <select class="form-select form-select-sm" id="kd_bangsal" name="kd_bangsal" style="height: 36px;">
                                                 @foreach($bangsal as $b)
                                                     <option value="{{ $b->kd_bangsal }}" {{ $b->kd_bangsal == 'AP' ? 'selected' : '' }}>
                                                         {{ $b->nm_bangsal }}
@@ -66,7 +66,7 @@
                                         </div>
                                         <div class="col-md-3 col-sm-6">
                                             <label class="form-label small fw-bold mb-1">Petugas / Kasir</label>
-                                            <select class="form-select form-select-sm" id="nip" name="nip">
+                                            <select class="form-select form-select-sm" id="nip" name="nip" style="height: 36px;">
                                                 @foreach($petugas as $p)
                                                     <option value="{{ $p->nip }}" {{ $p->nip == $currentNip ? 'selected' : '' }}>
                                                         {{ $p->nama }}
@@ -77,9 +77,9 @@
                                     </div>
 
                                     <div class="row g-2 mt-1 pt-2 border-top">
-                                        <div class="col-md-3 col-sm-6">
+                                        <div class="col-md-4 col-sm-12">
                                             <label class="form-label small fw-bold mb-1">Jenis Penjualan</label>
-                                            <select class="form-select form-select-sm text-primary fw-bold" id="jns_jual" name="jns_jual">
+                                            <select class="form-select form-select-sm text-primary fw-bold" id="jns_jual" name="jns_jual" style="height: 36px;">
                                                 <option value="Jual Bebas" selected>Jual Bebas</option>
                                                 <option value="Karyawan">Karyawan</option>
                                                 <option value="Beli Luar">Beli Luar</option>
@@ -92,15 +92,15 @@
                                                 <option value="VVIP">VVIP</option>
                                             </select>
                                         </div>
-                                        <div class="col-md-5 col-sm-6">
+                                        <div class="col-md-4 col-sm-12">
                                             <label class="form-label small fw-bold mb-1">Nama Pasien / Pembeli</label>
-                                            <div class="input-group input-group-sm">
-                                                <input type="text" class="form-control" id="nm_pasien" name="nm_pasien" value="UMUM" placeholder="Nama Pembeli / Pasien">
+                                            <div class="input-group input-group-sm" style="height: 36px;">
+                                                <input type="text" class="form-control form-control-sm" id="nm_pasien" name="nm_pasien" value="UMUM" placeholder="Nama Pembeli / Pasien" style="height: 36px;">
                                                 <input type="hidden" id="no_rkm_medis" name="no_rkm_medis" value="-">
-                                                <button type="button" class="btn btn-outline-primary" onclick="openModalCariPasien()" title="Cari Pasien Rekam Medis">
+                                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="openModalCariPasien()" title="Cari Pasien Rekam Medis" style="height: 36px;">
                                                     <i class="ti ti-user-search me-1"></i> Cari RM
                                                 </button>
-                                                <button type="button" class="btn btn-outline-secondary" onclick="resetPasienUmum()" title="Set Pembeli Umum">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="resetPasienUmum()" title="Set Pembeli Umum" style="height: 36px;">
                                                     Umum
                                                 </button>
                                             </div>
@@ -110,7 +110,7 @@
                                         </div>
                                         <div class="col-md-4 col-sm-12">
                                             <label class="form-label small fw-bold mb-1">Keterangan / Catatan</label>
-                                            <input type="text" class="form-control form-control-sm" id="keterangan" name="keterangan" placeholder="Catatan transaksi (opsional)">
+                                            <input type="text" class="form-control form-control-sm" id="keterangan" name="keterangan" placeholder="Catatan transaksi (opsional)" style="height: 36px;">
                                         </div>
                                     </div>
                                 </div>
