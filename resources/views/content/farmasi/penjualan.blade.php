@@ -163,15 +163,15 @@
                                         <thead class="table-light sticky-top" style="z-index: 1;">
                                             <tr class="text-center small fw-bold">
                                                 <th width="3%">#</th>
-                                                <th width="12%">Kode</th>
-                                                <th width="24%">Nama Obat / Barang</th>
-                                                <th width="8%">Satuan</th>
-                                                <th width="7%">Stok</th>
+                                                <th width="10%">Kode</th>
+                                                <th width="22%">Nama Obat / Barang</th>
+                                                <th width="12%">Satuan Jual</th>
+                                                <th width="8%">Stok Gudang</th>
                                                 <th width="12%">Harga (Rp)</th>
-                                                <th width="8%">Qty</th>
-                                                <th width="8%">Disc (%)</th>
-                                                <th width="14%">Subtotal (Rp)</th>
-                                                <th width="14%">Aturan Pakai</th>
+                                                <th width="9%">Qty</th>
+                                                <th width="6%">Disc(%)</th>
+                                                <th width="12%">Subtotal (Rp)</th>
+                                                <th width="12%">Aturan Pakai</th>
                                                 <th width="4%">Aksi</th>
                                             </tr>
                                         </thead>
@@ -227,6 +227,24 @@
                                             <label class="form-label small mb-1 text-secondary">PPN (Rp)</label>
                                             <input type="number" class="form-control form-control-sm text-end" id="ppn" name="ppn" value="0" min="0" oninput="calculateBilling()">
                                         </div>
+                                    </div>
+
+                                    <!-- Opsi Pembulatan Otomatis -->
+                                    <div class="py-2 border-bottom">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <label class="form-label small mb-0 text-secondary fw-semibold">
+                                                <i class="ti ti-adjustments-horizontal me-1"></i> Pembulatan Harga
+                                            </label>
+                                            <span class="badge bg-secondary-lt fw-bold" id="labelSelisihPembulatan">Rp 0</span>
+                                        </div>
+                                        <select class="form-select form-select-sm" id="opsi_pembulatan" onchange="calculateBilling()">
+                                            <option value="none">Tanpa Pembulatan</option>
+                                            <option value="ceil100" selected>Ke Atas 100 (Ceil Rp 100)</option>
+                                            <option value="round100">Terdekat 100 (Round Rp 100)</option>
+                                            <option value="ceil500">Ke Atas 500 (Ceil Rp 500)</option>
+                                            <option value="ceil1000">Ke Atas 1.000 (Ceil Rp 1.000)</option>
+                                        </select>
+                                        <input type="hidden" id="pembulatan" name="pembulatan" value="0">
                                     </div>
 
                                     <!-- Metode Akun Bayar -->
@@ -517,25 +535,43 @@
         const currentJenis = $('#jns_jual').val();
 
         items.forEach((item, idx) => {
-            const price = getPriceByJenis(item, currentJenis);
+            const basePrice = getPriceByJenis(item, currentJenis);
+            const isi = parseFloat(item.isi) || 1;
             const stockColor = item.stok > 0 ? 'badge bg-teal-lt' : 'badge bg-danger-lt';
             const safeItem = JSON.stringify(item).replace(/"/g, '&quot;');
 
+            let stripBadge = '';
+            let quickStripBtn = '';
+            if (item.satuan_besar && isi > 1) {
+                const stripPrice = basePrice * isi;
+                stripBadge = `<span class="badge bg-azure-lt ms-1" title="1 ${item.satuan_besar} = ${isi} ${item.satuan}">1 ${item.satuan_besar} = ${isi} ${item.satuan}</span>`;
+                quickStripBtn = `
+                    <button type="button" class="btn btn-xs btn-outline-primary mt-1" 
+                            onclick="event.stopPropagation(); addToCartQuickStrip(${safeItem})">
+                        <i class="ti ti-box me-1"></i> +1 ${item.satuan_besar} (Rp ${formatNumber(stripPrice)})
+                    </button>
+                `;
+            }
+
             container.append(`
-                <a href="javascript:void(0)" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2 px-3 search-obat-item" 
-                   onclick="addToCart(${safeItem})">
+                <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2 px-3 search-obat-item" 
+                   style="cursor: pointer;" onclick="addToCart(${safeItem}, 'kecil')">
                     <div>
-                        <div class="fw-bold text-dark">${item.nama_brng}</div>
+                        <div class="fw-bold text-dark d-flex align-items-center flex-wrap">
+                            <span>${item.nama_brng}</span>
+                            ${stripBadge}
+                        </div>
                         <div class="small text-muted">
                             <span class="badge bg-secondary-lt me-1">${item.kode_brng}</span>
                             Satuan: <b>${item.satuan}</b> | Dosis: ${item.kapasitas}
                         </div>
                     </div>
                     <div class="text-end">
-                        <div class="fw-bold text-success fs-4">Rp ${formatNumber(price)}</div>
-                        <span class="${stockColor}">Stok: ${item.stok}</span>
+                        <div class="fw-bold text-success fs-4">Rp ${formatNumber(basePrice)} <small class="text-muted fs-6">/${item.satuan}</small></div>
+                        <div><span class="${stockColor}">Stok: ${item.stok} ${item.satuan}</span></div>
+                        ${quickStripBtn}
                     </div>
-                </a>
+                </div>
             `);
         });
 
@@ -559,24 +595,43 @@
         }
     }
 
-    function addToCart(item) {
+    function addToCart(item, forcedUnit = 'kecil') {
         const currentJenis = $('#jns_jual').val();
-        const price = getPriceByJenis(item, currentJenis);
+        const basePrice = getPriceByJenis(item, currentJenis);
+        const isi = parseFloat(item.isi) || 1;
 
         const existingIdx = cartItems.findIndex(c => c.kode_brng === item.kode_brng);
         if (existingIdx !== -1) {
-            // Already in cart, increment quantity
-            cartItems[existingIdx].jumlah += 1;
+            // Sudah ada di keranjang, tambah kuantitas
+            if (forcedUnit === 'besar' && cartItems[existingIdx].isi > 1) {
+                cartItems[existingIdx].qty_input += 1;
+                cartItems[existingIdx].satuan_tipe = 'besar';
+                cartItems[existingIdx].h_jual = cartItems[existingIdx].base_h_jual * cartItems[existingIdx].isi;
+            } else {
+                cartItems[existingIdx].qty_input += 1;
+            }
+            recalculateCartItem(existingIdx);
         } else {
-            // Add new line
+            // Item baru ditambahkan
+            const isBesar = (forcedUnit === 'besar' && isi > 1);
+            const satuanTipe = isBesar ? 'besar' : 'kecil';
+            const unitPrice = isBesar ? (basePrice * isi) : basePrice;
+
             cartItems.push({
                 kode_brng: item.kode_brng,
                 nama_brng: item.nama_brng,
                 kode_sat: item.kode_sat,
                 satuan: item.satuan,
+                kode_satbesar: item.kode_satbesar || item.kode_sat,
+                satuan_besar: item.satuan_besar || null,
+                isi: isi,
                 stok: item.stok,
-                h_beli: item.h_beli,
-                h_jual: price,
+                base_h_beli: item.h_beli,
+                base_h_jual: basePrice,
+                h_jual: unitPrice,
+                satuan_tipe: satuanTipe,
+                qty_input: 1,
+                jumlah: isBesar ? isi : 1,
                 raw_prices: {
                     jualbebas: item.jualbebas,
                     karyawan: item.karyawan,
@@ -589,7 +644,6 @@
                     vip: item.vip,
                     vvip: item.vvip
                 },
-                jumlah: 1,
                 dis: 0,
                 bsr_dis: 0,
                 tambahan: 0,
@@ -607,10 +661,63 @@
         calculateBilling();
     }
 
+    function addToCartQuickStrip(item) {
+        addToCart(item, 'besar');
+    }
+
+    function recalculateCartItem(index) {
+        const item = cartItems[index];
+        if (!item) return;
+
+        if (item.satuan_tipe === 'besar' && item.isi > 1) {
+            item.jumlah = (item.qty_input || 0) * item.isi;
+        } else {
+            item.jumlah = item.qty_input || 0;
+        }
+    }
+
+    function changeItemSatuan(index, tipe) {
+        const item = cartItems[index];
+        if (!item) return;
+
+        item.satuan_tipe = tipe;
+        if (tipe === 'besar' && item.isi > 1) {
+            item.h_jual = item.base_h_jual * item.isi;
+        } else {
+            item.h_jual = item.base_h_jual;
+        }
+
+        recalculateCartItem(index);
+        renderCartTable();
+        calculateBilling();
+    }
+
+    function quickAddStrip(index) {
+        const item = cartItems[index];
+        if (!item || !item.satuan_besar || item.isi <= 1) return;
+
+        if (item.satuan_tipe === 'besar') {
+            item.qty_input += 1;
+        } else {
+            item.satuan_tipe = 'besar';
+            item.h_jual = item.base_h_jual * item.isi;
+            item.qty_input = Math.max(1, Math.ceil(item.jumlah / item.isi) + 1);
+        }
+
+        recalculateCartItem(index);
+        renderCartTable();
+        calculateBilling();
+    }
+
     function updateCartPricesByJenis(jenis) {
-        cartItems.forEach(c => {
+        cartItems.forEach((c, idx) => {
             if (c.raw_prices) {
-                c.h_jual = getPriceByJenis(c.raw_prices, jenis);
+                c.base_h_jual = getPriceByJenis(c.raw_prices, jenis);
+                if (c.satuan_tipe === 'besar' && c.isi > 1) {
+                    c.h_jual = c.base_h_jual * c.isi;
+                } else {
+                    c.h_jual = c.base_h_jual;
+                }
             }
         });
         renderCartTable();
@@ -639,14 +746,42 @@
         $('#badgeJumlahItemKeranjang').text(`${cartItems.length} Item`);
 
         cartItems.forEach((item, index) => {
-            const subtotal = item.jumlah * item.h_jual;
-            const bsrDis = (subtotal * item.dis) / 100;
-            const itemTotal = subtotal - bsrDis + item.tambahan + item.embalase + item.tuslah;
+            const subtotal = (item.qty_input || 0) * (item.h_jual || 0);
+            const bsrDis = (subtotal * (item.dis || 0)) / 100;
+            const itemTotal = subtotal - bsrDis + (item.tambahan || 0) + (item.embalase || 0) + (item.tuslah || 0);
 
             const isStockDeficit = item.stok < item.jumlah;
             const stockBadge = isStockDeficit 
-                ? `<span class="badge bg-danger text-white" title="Stok gudang tidak mencukupi">${item.stok}</span>` 
-                : `<span class="badge bg-teal-lt">${item.stok}</span>`;
+                ? `<span class="badge bg-danger text-white" title="Stok gudang tidak mencukupi">${item.stok} ${item.satuan}</span>` 
+                : `<span class="badge bg-teal-lt">${item.stok} ${item.satuan}</span>`;
+
+            // Satuan selector
+            let satuanHtml = '';
+            if (item.satuan_besar && item.isi > 1) {
+                satuanHtml = `
+                    <select class="form-select form-select-sm" onchange="changeItemSatuan(${index}, this.value)">
+                        <option value="kecil" ${item.satuan_tipe === 'kecil' ? 'selected' : ''}>${item.satuan} (Kecil)</option>
+                        <option value="besar" ${item.satuan_tipe === 'besar' ? 'selected' : ''}>${item.satuan_besar} (@${item.isi})</option>
+                    </select>
+                `;
+            } else {
+                satuanHtml = `<span class="badge bg-secondary-lt fw-bold">${item.satuan}</span>`;
+            }
+
+            // Qty helper text & shortcut
+            let qtyHelper = '';
+            let quickStripBtn = '';
+            if (item.satuan_besar && item.isi > 1) {
+                if (item.satuan_tipe === 'besar') {
+                    qtyHelper = `<div class="small text-muted text-center mt-1">= ${item.jumlah} ${item.satuan}</div>`;
+                }
+                quickStripBtn = `
+                    <button type="button" class="btn btn-xs btn-outline-secondary mt-1 py-0 px-1 w-100" 
+                            onclick="quickAddStrip(${index})" title="Tambah 1 ${item.satuan_besar}">
+                        +1 ${item.satuan_besar}
+                    </button>
+                `;
+            }
 
             tbody.append(`
                 <tr>
@@ -654,20 +789,27 @@
                     <td class="font-monospace small">${item.kode_brng}</td>
                     <td>
                         <div class="fw-bold text-dark">${item.nama_brng}</div>
+                        ${item.satuan_besar && item.isi > 1 ? `<small class="text-muted"><i class="ti ti-box me-1"></i>1 ${item.satuan_besar} = ${item.isi} ${item.satuan}</small>` : ''}
                     </td>
-                    <td class="text-center small">${item.satuan}</td>
-                    <td class="text-center">${stockBadge}</td>
+                    <td style="min-width: 110px;">${satuanHtml}</td>
+                    <td class="text-center small">
+                        ${stockBadge}
+                        ${item.satuan_besar && item.isi > 1 ? `<div class="small text-muted mt-1">(~${(item.stok / item.isi).toFixed(1)} ${item.satuan_besar})</div>` : ''}
+                    </td>
                     <td style="min-width: 110px;">
                         <input type="number" class="form-control form-control-sm text-end" 
                                value="${item.h_jual}" min="0" 
                                onchange="updateCartItemField(${index}, 'h_jual', this.value)">
+                        <div class="small text-muted text-end mt-1">/${item.satuan_tipe === 'besar' ? item.satuan_besar : item.satuan}</div>
                     </td>
-                    <td style="min-width: 80px;">
-                        <input type="number" class="form-control form-control-sm text-center fw-bold ${isStockDeficit ? 'border-danger' : ''}" 
-                               value="${item.jumlah}" min="0.01" step="any"
-                               onchange="updateCartItemField(${index}, 'jumlah', this.value)">
+                    <td style="min-width: 90px;">
+                        <input type="number" class="form-control form-control-sm text-center fw-bold ${isStockDeficit ? 'border-danger text-danger' : ''}" 
+                               value="${item.qty_input}" min="0.01" step="any"
+                               onchange="updateCartItemField(${index}, 'qty_input', this.value)">
+                        ${qtyHelper}
+                        ${quickStripBtn}
                     </td>
-                    <td style="min-width: 70px;">
+                    <td style="min-width: 65px;">
                         <input type="number" class="form-control form-control-sm text-center text-danger" 
                                value="${item.dis}" min="0" max="100"
                                onchange="updateCartItemField(${index}, 'dis', this.value)">
@@ -693,10 +835,17 @@
     function updateCartItemField(index, field, value) {
         if (!cartItems[index]) return;
 
-        if (field === 'jumlah') {
-            cartItems[index].jumlah = parseFloat(value) || 1;
+        if (field === 'qty_input') {
+            cartItems[index].qty_input = parseFloat(value) || 0;
+            recalculateCartItem(index);
         } else if (field === 'h_jual') {
-            cartItems[index].h_jual = parseFloat(value) || 0;
+            const newPrice = parseFloat(value) || 0;
+            cartItems[index].h_jual = newPrice;
+            if (cartItems[index].satuan_tipe === 'besar' && cartItems[index].isi > 1) {
+                cartItems[index].base_h_jual = newPrice / cartItems[index].isi;
+            } else {
+                cartItems[index].base_h_jual = newPrice;
+            }
         } else if (field === 'dis') {
             cartItems[index].dis = parseFloat(value) || 0;
         } else if (field === 'aturan_pakai') {
@@ -740,24 +889,51 @@
         let totalTambahan = 0;
 
         cartItems.forEach(item => {
-            const sub = item.jumlah * item.h_jual;
-            const dis = (sub * item.dis) / 100;
-            const tot = sub - dis + item.tambahan + item.embalase + item.tuslah;
+            const sub = (item.qty_input || 0) * (item.h_jual || 0);
+            const dis = (sub * (item.dis || 0)) / 100;
+            const tot = sub - dis + (item.tambahan || 0) + (item.embalase || 0) + (item.tuslah || 0);
 
             subtotalObat += sub;
             totalDiskon += dis;
-            totalTambahan += (item.tambahan + item.embalase + item.tuslah);
+            totalTambahan += (item.tambahan || 0) + (item.embalase || 0) + (item.tuslah || 0);
         });
 
         const totalNetObat = subtotalObat - totalDiskon + totalTambahan;
         const ongkir = parseFloat($('#ongkir').val()) || 0;
         const ppn = parseFloat($('#ppn').val()) || 0;
-        const grandTotal = totalNetObat + ongkir + ppn;
+        const rawGrandTotal = totalNetObat + ongkir + ppn;
+
+        // Opsi Pembulatan Otomatis
+        const opsiBulat = $('#opsi_pembulatan').val() || 'none';
+        let roundedGrandTotal = rawGrandTotal;
+
+        if (rawGrandTotal > 0) {
+            if (opsiBulat === 'ceil100') {
+                roundedGrandTotal = Math.ceil(rawGrandTotal / 100) * 100;
+            } else if (opsiBulat === 'round100') {
+                roundedGrandTotal = Math.round(rawGrandTotal / 100) * 100;
+            } else if (opsiBulat === 'ceil500') {
+                roundedGrandTotal = Math.ceil(rawGrandTotal / 500) * 500;
+            } else if (opsiBulat === 'ceil1000') {
+                roundedGrandTotal = Math.ceil(rawGrandTotal / 1000) * 1000;
+            }
+        }
+
+        const selisihPembulatan = roundedGrandTotal - rawGrandTotal;
+        $('#pembulatan').val(selisihPembulatan);
+
+        if (selisihPembulatan > 0) {
+            $('#labelSelisihPembulatan').text(`+ Rp ${formatNumber(selisihPembulatan)}`).removeClass('bg-danger-lt bg-secondary-lt').addClass('bg-blue-lt');
+        } else if (selisihPembulatan < 0) {
+            $('#labelSelisihPembulatan').text(`- Rp ${formatNumber(Math.abs(selisihPembulatan))}`).removeClass('bg-blue-lt bg-secondary-lt').addClass('bg-danger-lt');
+        } else {
+            $('#labelSelisihPembulatan').text('Rp 0').removeClass('bg-blue-lt bg-danger-lt').addClass('bg-secondary-lt');
+        }
 
         $('#labelSubtotalObat').text(`Rp ${formatNumber(subtotalObat)}`);
         $('#labelTotalDiskon').text(`- Rp ${formatNumber(totalDiskon)}`);
         $('#labelTotalTambahan').text(`Rp ${formatNumber(totalTambahan)}`);
-        $('#labelGrandTotal').text(`Rp ${formatNumber(grandTotal)}`);
+        $('#labelGrandTotal').text(`Rp ${formatNumber(roundedGrandTotal)}`);
 
         calculateKembalian();
     }
@@ -867,23 +1043,36 @@
             keterangan: $('#keterangan').val(),
             ongkir: $('#ongkir').val(),
             ppn: $('#ppn').val(),
+            pembulatan: $('#pembulatan').val(),
             nama_bayar: $('#nama_bayar').val(),
             kd_rek: $('#kd_rek').val(),
             status: $('#status_bayar').val(),
-            items: cartItems.map(item => ({
-                kode_brng: item.kode_brng,
-                kode_sat: item.kode_sat,
-                h_jual: item.h_jual,
-                h_beli: item.h_beli,
-                jumlah: item.jumlah,
-                dis: item.dis,
-                tambahan: item.tambahan,
-                embalase: item.embalase,
-                tuslah: item.tuslah,
-                aturan_pakai: item.aturan_pakai,
-                no_batch: item.no_batch,
-                no_faktur: item.no_faktur
-            }))
+            items: cartItems.map(item => {
+                let finalKodeSat = item.kode_sat;
+                let finalAturanPakai = item.aturan_pakai || '';
+                if (item.satuan_tipe === 'besar' && item.satuan_besar && item.isi > 1) {
+                    if (!finalAturanPakai.includes(item.satuan_besar)) {
+                        finalAturanPakai = finalAturanPakai 
+                            ? `(${item.qty_input} ${item.satuan_besar}) ${finalAturanPakai}`
+                            : `(${item.qty_input} ${item.satuan_besar})`;
+                    }
+                }
+
+                return {
+                    kode_brng: item.kode_brng,
+                    kode_sat: finalKodeSat,
+                    h_jual: item.base_h_jual,
+                    h_beli: item.base_h_beli,
+                    jumlah: item.jumlah,
+                    dis: item.dis,
+                    tambahan: item.tambahan,
+                    embalase: item.embalase,
+                    tuslah: item.tuslah,
+                    aturan_pakai: finalAturanPakai,
+                    no_batch: item.no_batch,
+                    no_faktur: item.no_faktur
+                };
+            })
         };
 
         loadingAjax('Menyimpan transaksi penjualan obat...');
@@ -919,6 +1108,8 @@
         $('#keterangan').val('');
         $('#ongkir').val('0');
         $('#ppn').val('0');
+        $('#pembulatan').val('0');
+        $('#opsi_pembulatan').val('ceil100');
         $('#uang_bayar').val('');
         reloadNextNota();
         calculateBilling();

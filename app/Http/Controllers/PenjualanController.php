@@ -116,7 +116,7 @@ class PenjualanController extends Controller
         $term = trim($request->term ?? $request->q ?? '');
         $kdBangsal = $request->kd_bangsal ?? 'AP';
 
-        $query = DataBarang::with(['satuan', 'jenis', 'kategori'])
+        $query = DataBarang::with(['satuan', 'satuanBesar', 'jenis', 'kategori'])
             ->where('status', '1');
 
         if (!empty($term)) {
@@ -135,25 +135,32 @@ class PenjualanController extends Controller
                 ->where('kd_bangsal', $kdBangsal)
                 ->sum('stok');
 
+            $satuanKecil = $item->satuan->satuan ?? '-';
+            $satuanBesar = $item->satuanBesar->satuan ?? null;
+            $isi = floatval($item->isi ?: 1);
+
             return [
-                'kode_brng'   => $item->kode_brng,
-                'nama_brng'   => $item->nama_brng,
-                'kode_sat'    => $item->kode_sat,
-                'satuan'      => $item->satuan->satuan ?? '-',
-                'kapasitas'   => $item->kapasitas ?: '-',
-                'stok'        => floatval($stokGudang ?: 0),
-                'h_beli'      => floatval($item->h_beli ?: $item->dasar ?: 0),
-                'dasar'       => floatval($item->dasar ?: $item->h_beli ?: 0),
-                'jualbebas'   => floatval($item->jualbebas ?: 0),
-                'karyawan'    => floatval($item->karyawan ?: 0),
-                'beliluar'    => floatval($item->beliluar ?: 0),
-                'ralan'       => floatval($item->ralan ?: 0),
-                'kelas1'      => floatval($item->kelas1 ?: 0),
-                'kelas2'      => floatval($item->kelas2 ?: 0),
-                'kelas3'      => floatval($item->kelas3 ?: 0),
-                'utama'       => floatval($item->utama ?: 0),
-                'vip'         => floatval($item->vip ?: 0),
-                'vvip'        => floatval($item->vvip ?: 0),
+                'kode_brng'     => $item->kode_brng,
+                'nama_brng'     => $item->nama_brng,
+                'kode_sat'      => $item->kode_sat,
+                'satuan'        => $satuanKecil,
+                'kode_satbesar' => $item->kode_satbesar,
+                'satuan_besar'  => $satuanBesar,
+                'isi'           => $isi,
+                'kapasitas'     => $item->kapasitas ?: '-',
+                'stok'          => floatval($stokGudang ?: 0),
+                'h_beli'        => floatval($item->h_beli ?: $item->dasar ?: 0),
+                'dasar'         => floatval($item->dasar ?: $item->h_beli ?: 0),
+                'jualbebas'     => floatval($item->jualbebas ?: 0),
+                'karyawan'      => floatval($item->karyawan ?: 0),
+                'beliluar'      => floatval($item->beliluar ?: 0),
+                'ralan'         => floatval($item->ralan ?: 0),
+                'kelas1'        => floatval($item->kelas1 ?: 0),
+                'kelas2'        => floatval($item->kelas2 ?: 0),
+                'kelas3'        => floatval($item->kelas3 ?: 0),
+                'utama'         => floatval($item->utama ?: 0),
+                'vip'           => floatval($item->vip ?: 0),
+                'vvip'          => floatval($item->vvip ?: 0),
             ];
         });
 
@@ -217,7 +224,16 @@ class PenjualanController extends Controller
 
             $ongkir = floatval($request->ongkir ?? 0);
             $ppn = floatval($request->ppn ?? 0);
+            $pembulatan = floatval($request->pembulatan ?? 0);
             $status = $request->status ?? 'Sudah Dibayar';
+
+            // Catatan keterangan jika ada pembulatan
+            $keterangan = $request->keterangan ?: '-';
+            if ($pembulatan != 0) {
+                $sign = $pembulatan > 0 ? '+' : '';
+                $bulatText = "Pembulatan: {$sign}" . number_format($pembulatan, 0, ',', '.');
+                $keterangan = ($keterangan === '-' ? '' : $keterangan . ' | ') . $bulatText;
+            }
 
             // 1. Simpan Header Penjualan
             $penjualan = Penjualan::create([
@@ -226,7 +242,7 @@ class PenjualanController extends Controller
                 'nip'          => $nip,
                 'no_rkm_medis' => $request->no_rkm_medis ?: '-',
                 'nm_pasien'    => $request->nm_pasien ?: 'UMUM',
-                'keterangan'   => $request->keterangan ?: '-',
+                'keterangan'   => $keterangan,
                 'jns_jual'     => $request->jns_jual,
                 'ongkir'       => $ongkir,
                 'ppn'          => $ppn,
@@ -323,7 +339,8 @@ class PenjualanController extends Controller
 
             // 3. Posting Jurnal Akuntansi (jika status Lunas/Sudah Dibayar)
             if ($status === 'Sudah Dibayar') {
-                $grandTotal = $totalObat + $ongkir + $ppn;
+                $totalNet = $totalObat + $ongkir + $ppn;
+                $grandTotal = $totalNet + $pembulatan;
                 $this->postJurnalPenjualan(
                     $notaJual,
                     $tglJual,
@@ -331,6 +348,8 @@ class PenjualanController extends Controller
                     $kdRek,
                     $namaBayar,
                     $grandTotal,
+                    $totalNet,
+                    $pembulatan,
                     $totalHpp,
                     $nip
                 );
@@ -446,17 +465,26 @@ class PenjualanController extends Controller
 
         $setting = Setting::first();
         $totalObat = $penjualan->detailJual->sum('total');
-        $grandTotal = $totalObat + floatval($penjualan->ongkir ?? 0) + floatval($penjualan->ppn ?? 0);
+
+        // Deteksi pembulatan dari keterangan
+        $pembulatan = 0;
+        if (!empty($penjualan->keterangan) && preg_match('/Pembulatan:\s*([+-]?\d+[\d\.]*)/', $penjualan->keterangan, $matches)) {
+            $cleaned = str_replace('.', '', $matches[1]);
+            $pembulatan = floatval($cleaned);
+        }
+
+        $grandTotal = $totalObat + floatval($penjualan->ongkir ?? 0) + floatval($penjualan->ppn ?? 0) + $pembulatan;
 
         return view('content.print.notaPenjualan', compact(
             'penjualan',
             'setting',
             'totalObat',
+            'pembulatan',
             'grandTotal'
         ));
     }
 
-    private function postJurnalPenjualan($notaJual, $tglJual, $kdBangsal, $kdRek, $namaBayar, $grandTotal, $totalHpp, $nip)
+    private function postJurnalPenjualan($notaJual, $tglJual, $kdBangsal, $kdRek, $namaBayar, $grandTotal, $totalNetObat, $pembulatan, $totalHpp, $nip)
     {
         try {
             $setAkun = DB::table('set_akun')->first();
@@ -469,7 +497,7 @@ class PenjualanController extends Controller
 
             DB::table('tampjurnal')->delete();
 
-            // 1. Debet: Akun Bayar Kas/Bank
+            // 1. Debet: Akun Bayar Kas/Bank (sebesar uang yang diterima kasir / grandTotal dibulatkan)
             DB::table('tampjurnal')->insert([
                 'kd_rek' => $kdRek,
                 'nm_rek' => $namaBayar,
@@ -477,13 +505,32 @@ class PenjualanController extends Controller
                 'kredit' => 0,
             ]);
 
-            // 2. Kredit: Penjualan Obat Bebas
+            // 2. Kredit: Penjualan Obat Bebas (sebesar nilai transaksi obat sebenarnya + ongkir + ppn)
             DB::table('tampjurnal')->insert([
                 'kd_rek' => $setAkun->Penjualan_Obat,
                 'nm_rek' => 'PENJUALAN OBAT BEBAS',
                 'debet'  => 0,
-                'kredit' => $grandTotal,
+                'kredit' => $totalNetObat,
             ]);
+
+            // 3. Selisih Pembulatan (Rounding)
+            if ($pembulatan > 0) {
+                // Pembulatan ke atas diakui sebagai PENDAPATAN LAIN-LAIN / PEMBULATAN di sisi Kredit
+                DB::table('tampjurnal')->insert([
+                    'kd_rek' => '430107',
+                    'nm_rek' => 'PENDAPATAN PEMBULATAN PENJUALAN',
+                    'debet'  => 0,
+                    'kredit' => $pembulatan,
+                ]);
+            } elseif ($pembulatan < 0) {
+                // Pembulatan ke bawah diakui sebagai BEBAN LAIN-LAIN / PEMBULATAN di sisi Debet
+                DB::table('tampjurnal')->insert([
+                    'kd_rek' => '5103',
+                    'nm_rek' => 'BEBAN PEMBULATAN PENJUALAN',
+                    'debet'  => abs($pembulatan),
+                    'kredit' => 0,
+                ]);
+            }
 
             // 3. Debet: HPP Obat Jual Bebas
             if (!empty($setAkun->HPP_Obat_Jual_Bebas) && $totalHpp > 0) {

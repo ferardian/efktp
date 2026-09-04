@@ -175,6 +175,12 @@
                 <td class="text-end">Rp {{ number_format($penjualan->ppn, 0, ',', '.') }}</td>
             </tr>
         @endif
+        @if(isset($pembulatan) && $pembulatan != 0)
+            <tr>
+                <td>Pembulatan</td>
+                <td class="text-end">{{ $pembulatan > 0 ? '+' : '' }}Rp {{ number_format($pembulatan, 0, ',', '.') }}</td>
+            </tr>
+        @endif
         <tr class="fw-bold" style="font-size: 12px;">
             <td>TOTAL TAGIHAN</td>
             <td class="text-end">Rp {{ number_format($grandTotal, 0, ',', '.') }}</td>
