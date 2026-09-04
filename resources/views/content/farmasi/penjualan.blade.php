@@ -163,15 +163,15 @@
                                         <thead class="table-light sticky-top" style="z-index: 1;">
                                             <tr class="text-center small fw-bold">
                                                 <th width="3%">#</th>
-                                                <th width="10%">Kode</th>
-                                                <th width="22%">Nama Obat / Barang</th>
-                                                <th width="12%">Satuan Jual</th>
+                                                <th width="9%">Kode</th>
+                                                <th width="19%">Nama Obat / Barang</th>
+                                                <th width="14%">Satuan Jual</th>
                                                 <th width="8%">Stok Gudang</th>
-                                                <th width="12%">Harga (Rp)</th>
-                                                <th width="9%">Qty</th>
+                                                <th width="11%">Harga (Rp)</th>
+                                                <th width="12%">Qty</th>
                                                 <th width="6%">Disc(%)</th>
-                                                <th width="12%">Subtotal (Rp)</th>
-                                                <th width="12%">Aturan Pakai</th>
+                                                <th width="11%">Subtotal (Rp)</th>
+                                                <th width="11%">Aturan Pakai</th>
                                                 <th width="4%">Aksi</th>
                                             </tr>
                                         </thead>
@@ -539,16 +539,42 @@
             const isi = parseFloat(item.isi) || 1;
             const stockColor = item.stok > 0 ? 'badge bg-teal-lt' : 'badge bg-danger-lt';
             const safeItem = JSON.stringify(item).replace(/"/g, '&quot;');
+            const isSolid = isSolidForm(item.satuan);
 
-            let stripBadge = '';
-            let quickStripBtn = '';
+            let badgesHtml = '';
             if (item.satuan_besar && isi > 1) {
-                const stripPrice = basePrice * isi;
-                stripBadge = `<span class="badge bg-azure-lt ms-1" title="1 ${item.satuan_besar} = ${isi} ${item.satuan}">1 ${item.satuan_besar} = ${isi} ${item.satuan}</span>`;
-                quickStripBtn = `
-                    <button type="button" class="btn btn-xs btn-outline-primary mt-1" 
-                            onclick="event.stopPropagation(); addToCartQuickStrip(${safeItem})">
-                        <i class="ti ti-box me-1"></i> +1 ${item.satuan_besar} (Rp ${formatNumber(stripPrice)})
+                badgesHtml = `<span class="badge bg-azure-lt ms-1" title="Konversi Kemasan">1 ${item.satuan_besar} = ${isi} ${item.satuan}</span>`;
+            } else if (isSolid) {
+                badgesHtml = `<span class="badge bg-secondary-lt ms-1" title="Sediaan Tablet/Kapsul">Strip @10</span>`;
+            }
+
+            // Quick add buttons di kartu pencarian
+            let quickButtons = `
+                <button type="button" class="btn btn-xs btn-outline-primary" 
+                        onclick="event.stopPropagation(); addToCart(${safeItem}, 'kecil')"
+                        title="Beli Eceran 1 ${item.satuan}">
+                    +1 ${item.satuan}
+                </button>
+            `;
+
+            if (isSolid && isi !== 10) {
+                const stripPrice = basePrice * 10;
+                quickButtons += `
+                    <button type="button" class="btn btn-xs btn-outline-success" 
+                            onclick="event.stopPropagation(); addToCart(${safeItem}, 'strip10')"
+                            title="1 Strip = 10 ${item.satuan}">
+                        <i class="ti ti-box me-1"></i> +1 Strip (Rp ${formatNumber(stripPrice)})
+                    </button>
+                `;
+            }
+
+            if (item.satuan_besar && isi > 1) {
+                const boxPrice = basePrice * isi;
+                quickButtons += `
+                    <button type="button" class="btn btn-xs btn-outline-info" 
+                            onclick="event.stopPropagation(); addToCart(${safeItem}, 'master_besar')"
+                            title="1 ${item.satuan_besar} = ${isi} ${item.satuan}">
+                        <i class="ti ti-package me-1"></i> +1 ${item.satuan_besar} (Rp ${formatNumber(boxPrice)})
                     </button>
                 `;
             }
@@ -559,7 +585,7 @@
                     <div>
                         <div class="fw-bold text-dark d-flex align-items-center flex-wrap">
                             <span>${item.nama_brng}</span>
-                            ${stripBadge}
+                            ${badgesHtml}
                         </div>
                         <div class="small text-muted">
                             <span class="badge bg-secondary-lt me-1">${item.kode_brng}</span>
@@ -569,13 +595,64 @@
                     <div class="text-end">
                         <div class="fw-bold text-success fs-4">Rp ${formatNumber(basePrice)} <small class="text-muted fs-6">/${item.satuan}</small></div>
                         <div><span class="${stockColor}">Stok: ${item.stok} ${item.satuan}</span></div>
-                        ${quickStripBtn}
+                        <div class="d-flex gap-1 justify-content-end mt-1 flex-wrap">
+                            ${quickButtons}
+                        </div>
                     </div>
                 </div>
             `);
         });
 
         container.show();
+    }
+
+    // Cek apakah bentuk sediaan padat (Tablet, Kapsul, Kaplet, dsb)
+    function isSolidForm(satuan) {
+        if (!satuan) return false;
+        const s = satuan.toUpperCase().trim();
+        return ['TAB', 'TABLET', 'KAP', 'KAPLET', 'KAPSUL', 'CAP', 'CAPS', 'PIL', 'BLL'].some(u => s.includes(u));
+    }
+
+    // Generator opsi kemasan cerdas (Eceran, Strip x10, Strip Mini x4, Box master)
+    function getPackagingOptions(item) {
+        const opts = [
+            { id: 'kecil', label: `${item.satuan} (Eceran)`, multiplier: 1, name: item.satuan }
+        ];
+
+        const isi = parseFloat(item.isi) || 1;
+        const isSolid = isSolidForm(item.satuan);
+
+        // Jika tablet/kapsul tapi di master data isi bukan 10 (misal Box isi 100 atau isi 1)
+        if (isSolid && isi !== 10) {
+            opts.push({
+                id: 'strip10',
+                label: `Strip (@10 ${item.satuan})`,
+                multiplier: 10,
+                name: 'STRIP'
+            });
+        }
+
+        // Jika tablet/kapsul dan bukan isi 4 (Strip mini OTC misal Bodrex/Panadol)
+        if (isSolid && isi !== 4) {
+            opts.push({
+                id: 'strip4',
+                label: `Strip Mini (@4 ${item.satuan})`,
+                multiplier: 4,
+                name: 'STRIP MINI'
+            });
+        }
+
+        // Jika di master data ada satuan_besar dan isi > 1
+        if (item.satuan_besar && isi > 1) {
+            opts.push({
+                id: 'master_besar',
+                label: `${item.satuan_besar} (@${isi} ${item.satuan})`,
+                multiplier: isi,
+                name: item.satuan_besar
+            });
+        }
+
+        return opts;
     }
 
     function getPriceByJenis(item, jenis) {
@@ -595,28 +672,32 @@
         }
     }
 
-    function addToCart(item, forcedUnit = 'kecil') {
+    function addToCart(item, targetOptionId = 'kecil') {
         const currentJenis = $('#jns_jual').val();
         const basePrice = getPriceByJenis(item, currentJenis);
         const isi = parseFloat(item.isi) || 1;
+        const options = getPackagingOptions(item);
+
+        let selectedOpt = options.find(o => o.id === targetOptionId) || options[0];
+        const multiplier = selectedOpt.multiplier;
+        const unitPrice = basePrice * multiplier;
 
         const existingIdx = cartItems.findIndex(c => c.kode_brng === item.kode_brng);
         if (existingIdx !== -1) {
-            // Sudah ada di keranjang, tambah kuantitas
-            if (forcedUnit === 'besar' && cartItems[existingIdx].isi > 1) {
+            // Sudah ada di keranjang, tambah kuantitas sesuai opsi yang dipilih
+            if (cartItems[existingIdx].current_option_id === targetOptionId) {
                 cartItems[existingIdx].qty_input += 1;
-                cartItems[existingIdx].satuan_tipe = 'besar';
-                cartItems[existingIdx].h_jual = cartItems[existingIdx].base_h_jual * cartItems[existingIdx].isi;
             } else {
+                // Kasir memilih kemasan lain untuk obat yang sama -> sesuaikan opsi kemasan dan tambah
+                cartItems[existingIdx].current_option_id = selectedOpt.id;
+                cartItems[existingIdx].current_multiplier = multiplier;
+                cartItems[existingIdx].current_satuan_name = selectedOpt.name;
+                cartItems[existingIdx].h_jual = cartItems[existingIdx].base_h_jual * multiplier;
                 cartItems[existingIdx].qty_input += 1;
             }
             recalculateCartItem(existingIdx);
         } else {
             // Item baru ditambahkan
-            const isBesar = (forcedUnit === 'besar' && isi > 1);
-            const satuanTipe = isBesar ? 'besar' : 'kecil';
-            const unitPrice = isBesar ? (basePrice * isi) : basePrice;
-
             cartItems.push({
                 kode_brng: item.kode_brng,
                 nama_brng: item.nama_brng,
@@ -629,9 +710,11 @@
                 base_h_beli: item.h_beli,
                 base_h_jual: basePrice,
                 h_jual: unitPrice,
-                satuan_tipe: satuanTipe,
+                current_option_id: selectedOpt.id,
+                current_multiplier: multiplier,
+                current_satuan_name: selectedOpt.name,
                 qty_input: 1,
-                jumlah: isBesar ? isi : 1,
+                jumlah: multiplier, // base units
                 raw_prices: {
                     jualbebas: item.jualbebas,
                     karyawan: item.karyawan,
@@ -649,7 +732,7 @@
                 tambahan: 0,
                 embalase: 0,
                 tuslah: 0,
-                aturan_pakai: '',
+                aturan_pakai: multiplier > 1 ? `1 ${selectedOpt.name}` : '',
                 no_batch: '',
                 no_faktur: ''
             });
@@ -661,30 +744,28 @@
         calculateBilling();
     }
 
-    function addToCartQuickStrip(item) {
-        addToCart(item, 'besar');
-    }
-
     function recalculateCartItem(index) {
         const item = cartItems[index];
         if (!item) return;
 
-        if (item.satuan_tipe === 'besar' && item.isi > 1) {
-            item.jumlah = (item.qty_input || 0) * item.isi;
-        } else {
-            item.jumlah = item.qty_input || 0;
-        }
+        const mult = item.current_multiplier || 1;
+        item.jumlah = (item.qty_input || 0) * mult;
     }
 
-    function changeItemSatuan(index, tipe) {
+    function changeItemSatuan(index, optionId) {
         const item = cartItems[index];
         if (!item) return;
 
-        item.satuan_tipe = tipe;
-        if (tipe === 'besar' && item.isi > 1) {
-            item.h_jual = item.base_h_jual * item.isi;
-        } else {
-            item.h_jual = item.base_h_jual;
+        const options = getPackagingOptions(item);
+        const selectedOpt = options.find(o => o.id === optionId) || options[0];
+
+        item.current_option_id = selectedOpt.id;
+        item.current_multiplier = selectedOpt.multiplier;
+        item.current_satuan_name = selectedOpt.name;
+        item.h_jual = item.base_h_jual * selectedOpt.multiplier;
+
+        if (selectedOpt.multiplier > 1 && (!item.aturan_pakai || item.aturan_pakai.trim() === '')) {
+            item.aturan_pakai = `${item.qty_input} ${selectedOpt.name}`;
         }
 
         recalculateCartItem(index);
@@ -692,18 +773,35 @@
         calculateBilling();
     }
 
-    function quickAddStrip(index) {
+    function stepQty(index, delta) {
         const item = cartItems[index];
-        if (!item || !item.satuan_besar || item.isi <= 1) return;
+        if (!item) return;
 
-        if (item.satuan_tipe === 'besar') {
-            item.qty_input += 1;
-        } else {
-            item.satuan_tipe = 'besar';
-            item.h_jual = item.base_h_jual * item.isi;
-            item.qty_input = Math.max(1, Math.ceil(item.jumlah / item.isi) + 1);
-        }
+        let newQty = (parseFloat(item.qty_input) || 0) + delta;
+        if (newQty < 0.01) newQty = 0.01;
+        item.qty_input = parseFloat(newQty.toFixed(2));
+        recalculateCartItem(index);
+        renderCartTable();
+        calculateBilling();
+    }
 
+    function addQtyDirect(index, count) {
+        const item = cartItems[index];
+        if (!item) return;
+
+        item.qty_input = (parseFloat(item.qty_input) || 0) + count;
+        recalculateCartItem(index);
+        renderCartTable();
+        calculateBilling();
+    }
+
+    function addBaseQtyDirect(index, baseCount) {
+        const item = cartItems[index];
+        if (!item) return;
+
+        const mult = item.current_multiplier || 1;
+        const addPacks = baseCount / mult;
+        item.qty_input = parseFloat(((item.qty_input || 0) + addPacks).toFixed(2));
         recalculateCartItem(index);
         renderCartTable();
         calculateBilling();
@@ -713,11 +811,8 @@
         cartItems.forEach((c, idx) => {
             if (c.raw_prices) {
                 c.base_h_jual = getPriceByJenis(c.raw_prices, jenis);
-                if (c.satuan_tipe === 'besar' && c.isi > 1) {
-                    c.h_jual = c.base_h_jual * c.isi;
-                } else {
-                    c.h_jual = c.base_h_jual;
-                }
+                const mult = c.current_multiplier || 1;
+                c.h_jual = c.base_h_jual * mult;
             }
         });
         renderCartTable();
@@ -755,31 +850,49 @@
                 ? `<span class="badge bg-danger text-white" title="Stok gudang tidak mencukupi">${item.stok} ${item.satuan}</span>` 
                 : `<span class="badge bg-teal-lt">${item.stok} ${item.satuan}</span>`;
 
-            // Satuan selector
-            let satuanHtml = '';
-            if (item.satuan_besar && item.isi > 1) {
-                satuanHtml = `
-                    <select class="form-select form-select-sm" onchange="changeItemSatuan(${index}, this.value)">
-                        <option value="kecil" ${item.satuan_tipe === 'kecil' ? 'selected' : ''}>${item.satuan} (Kecil)</option>
-                        <option value="besar" ${item.satuan_tipe === 'besar' ? 'selected' : ''}>${item.satuan_besar} (@${item.isi})</option>
-                    </select>
-                `;
-            } else {
-                satuanHtml = `<span class="badge bg-secondary-lt fw-bold">${item.satuan}</span>`;
+            const options = getPackagingOptions(item);
+            const currentOptId = item.current_option_id || 'kecil';
+            const mult = item.current_multiplier || 1;
+            const isSolid = isSolidForm(item.satuan);
+
+            // Satuan selector dropdown
+            let satuanSelect = `<select class="form-select form-select-sm" onchange="changeItemSatuan(${index}, this.value)">`;
+            options.forEach(opt => {
+                const isSel = opt.id === currentOptId ? 'selected' : '';
+                satuanSelect += `<option value="${opt.id}" ${isSel}>${opt.label}</option>`;
+            });
+            satuanSelect += `</select>`;
+
+            // Qty helper text (misal: = 10 TAB jika pilih Strip)
+            let qtyHelper = '';
+            if (mult > 1) {
+                qtyHelper = `<div class="small text-muted text-center mt-1 fw-semibold">= ${item.jumlah} ${item.satuan}</div>`;
             }
 
-            // Qty helper text & shortcut
-            let qtyHelper = '';
-            let quickStripBtn = '';
-            if (item.satuan_besar && item.isi > 1) {
-                if (item.satuan_tipe === 'besar') {
-                    qtyHelper = `<div class="small text-muted text-center mt-1">= ${item.jumlah} ${item.satuan}</div>`;
-                }
-                quickStripBtn = `
-                    <button type="button" class="btn btn-xs btn-outline-secondary mt-1 py-0 px-1 w-100" 
-                            onclick="quickAddStrip(${index})" title="Tambah 1 ${item.satuan_besar}">
-                        +1 ${item.satuan_besar}
-                    </button>
+            // Quick increment chips
+            let quickChips = '';
+            if (mult === 1) {
+                // Di satuan eceran terkecil
+                quickChips = `
+                    <div class="d-flex flex-wrap justify-content-center gap-1 mt-1">
+                        <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-1" onclick="addQtyDirect(${index}, 1)" title="Tambah 1">+1</button>
+                        ${isSolid ? `
+                            <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-1" onclick="addQtyDirect(${index}, 5)" title="Tambah 5">+5</button>
+                            <button type="button" class="btn btn-xs btn-outline-success py-0 px-1" onclick="addQtyDirect(${index}, 10)" title="Tambah 10 (1 Strip)">+10</button>
+                        ` : ''}
+                        ${item.isi > 1 && item.satuan_besar ? `
+                            <button type="button" class="btn btn-xs btn-outline-info py-0 px-1" onclick="addBaseQtyDirect(${index}, ${item.isi})" title="Tambah 1 ${item.satuan_besar} (${item.isi} ${item.satuan})">+Box</button>
+                        ` : ''}
+                    </div>
+                `;
+            } else {
+                // Di satuan kemasan (Strip / Box)
+                quickChips = `
+                    <div class="d-flex flex-wrap justify-content-center gap-1 mt-1">
+                        <button type="button" class="btn btn-xs btn-outline-primary py-0 px-1" onclick="addQtyDirect(${index}, 1)" title="Tambah 1 ${item.current_satuan_name}">+1</button>
+                        <button type="button" class="btn btn-xs btn-outline-primary py-0 px-1" onclick="addQtyDirect(${index}, 2)" title="Tambah 2 ${item.current_satuan_name}">+2</button>
+                        <button type="button" class="btn btn-xs btn-outline-primary py-0 px-1" onclick="addQtyDirect(${index}, 5)" title="Tambah 5 ${item.current_satuan_name}">+5</button>
+                    </div>
                 `;
             }
 
@@ -789,27 +902,32 @@
                     <td class="font-monospace small">${item.kode_brng}</td>
                     <td>
                         <div class="fw-bold text-dark">${item.nama_brng}</div>
-                        ${item.satuan_besar && item.isi > 1 ? `<small class="text-muted"><i class="ti ti-box me-1"></i>1 ${item.satuan_besar} = ${item.isi} ${item.satuan}</small>` : ''}
+                        ${mult > 1 ? `<small class="text-muted"><i class="ti ti-box me-1"></i>1 ${item.current_satuan_name} = ${mult} ${item.satuan}</small>` : ''}
                     </td>
-                    <td style="min-width: 110px;">${satuanHtml}</td>
+                    <td style="min-width: 120px;">${satuanSelect}</td>
                     <td class="text-center small">
                         ${stockBadge}
-                        ${item.satuan_besar && item.isi > 1 ? `<div class="small text-muted mt-1">(~${(item.stok / item.isi).toFixed(1)} ${item.satuan_besar})</div>` : ''}
+                        ${mult > 1 ? `<div class="small text-muted mt-1">(~${(item.stok / mult).toFixed(1)} ${item.current_satuan_name})</div>` : ''}
                     </td>
-                    <td style="min-width: 110px;">
+                    <td style="min-width: 105px;">
                         <input type="number" class="form-control form-control-sm text-end" 
                                value="${item.h_jual}" min="0" 
                                onchange="updateCartItemField(${index}, 'h_jual', this.value)">
-                        <div class="small text-muted text-end mt-1">/${item.satuan_tipe === 'besar' ? item.satuan_besar : item.satuan}</div>
+                        <div class="small text-muted text-end mt-1">/${item.current_satuan_name}</div>
                     </td>
-                    <td style="min-width: 90px;">
-                        <input type="number" class="form-control form-control-sm text-center fw-bold ${isStockDeficit ? 'border-danger text-danger' : ''}" 
-                               value="${item.qty_input}" min="0.01" step="any"
-                               onchange="updateCartItemField(${index}, 'qty_input', this.value)">
+                    <td style="min-width: 110px;">
+                        <div class="d-flex align-items-center justify-content-center">
+                            <button type="button" class="btn btn-xs btn-outline-secondary px-1 py-0" onclick="stepQty(${index}, -1)" title="Kurang 1">-</button>
+                            <input type="number" class="form-control form-control-sm text-center fw-bold mx-1 ${isStockDeficit ? 'border-danger text-danger' : ''}" 
+                                   style="width: 50px;"
+                                   value="${item.qty_input}" min="0.01" step="any"
+                                   onchange="updateCartItemField(${index}, 'qty_input', this.value)">
+                            <button type="button" class="btn btn-xs btn-outline-secondary px-1 py-0" onclick="stepQty(${index}, 1)" title="Tambah 1">+</button>
+                        </div>
                         ${qtyHelper}
-                        ${quickStripBtn}
+                        ${quickChips}
                     </td>
-                    <td style="min-width: 65px;">
+                    <td style="min-width: 60px;">
                         <input type="number" class="form-control form-control-sm text-center text-danger" 
                                value="${item.dis}" min="0" max="100"
                                onchange="updateCartItemField(${index}, 'dis', this.value)">
@@ -817,7 +935,7 @@
                     <td class="text-end fw-bold text-success fs-5">
                         Rp ${formatNumber(itemTotal)}
                     </td>
-                    <td style="min-width: 120px;">
+                    <td style="min-width: 110px;">
                         <input type="text" class="form-control form-control-sm" 
                                placeholder="Aturan Pakai" value="${item.aturan_pakai}"
                                onchange="updateCartItemField(${index}, 'aturan_pakai', this.value)">
@@ -841,11 +959,8 @@
         } else if (field === 'h_jual') {
             const newPrice = parseFloat(value) || 0;
             cartItems[index].h_jual = newPrice;
-            if (cartItems[index].satuan_tipe === 'besar' && cartItems[index].isi > 1) {
-                cartItems[index].base_h_jual = newPrice / cartItems[index].isi;
-            } else {
-                cartItems[index].base_h_jual = newPrice;
-            }
+            const mult = cartItems[index].current_multiplier || 1;
+            cartItems[index].base_h_jual = newPrice / mult;
         } else if (field === 'dis') {
             cartItems[index].dis = parseFloat(value) || 0;
         } else if (field === 'aturan_pakai') {
@@ -1050,11 +1165,13 @@
             items: cartItems.map(item => {
                 let finalKodeSat = item.kode_sat;
                 let finalAturanPakai = item.aturan_pakai || '';
-                if (item.satuan_tipe === 'besar' && item.satuan_besar && item.isi > 1) {
-                    if (!finalAturanPakai.includes(item.satuan_besar)) {
+                const mult = item.current_multiplier || 1;
+                const packName = item.current_satuan_name || item.satuan;
+                if (mult > 1) {
+                    if (!finalAturanPakai.includes(packName)) {
                         finalAturanPakai = finalAturanPakai 
-                            ? `(${item.qty_input} ${item.satuan_besar}) ${finalAturanPakai}`
-                            : `(${item.qty_input} ${item.satuan_besar})`;
+                            ? `(${item.qty_input} ${packName}) ${finalAturanPakai}`
+                            : `(${item.qty_input} ${packName})`;
                     }
                 }
 
