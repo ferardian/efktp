@@ -113,6 +113,48 @@ class MenuController extends Controller
                 }
             }
 
+            // Ensure Farmasi submenus: Penjualan Bebas & Data Supplier
+            $farmasiParent = Menu::where('name', 'Farmasi')->whereNull('parent_id')->first();
+            if ($farmasiParent) {
+                $existingPenjualan = Menu::where('url', 'farmasi/penjualan')->first();
+                if (!$existingPenjualan) {
+                    $newPenjualan = Menu::create([
+                        'id'        => 50,
+                        'name'      => 'Penjualan Bebas',
+                        'url'       => 'farmasi/penjualan',
+                        'icon'      => null,
+                        'parent_id' => $farmasiParent->id,
+                        'order_num' => 3,
+                        'target'    => '_self',
+                        'position'  => 'navbar',
+                    ]);
+
+                    $roles = ['admin', 'apoteker', 'petugas', 'owner'];
+                    foreach ($roles as $r) {
+                        MenuRole::firstOrCreate(['menu_id' => $newPenjualan->id, 'role' => $r]);
+                    }
+                }
+
+                $existingSuplier = Menu::where('url', 'farmasi/suplier')->first();
+                if (!$existingSuplier) {
+                    $newSuplier = Menu::create([
+                        'id'        => 49,
+                        'name'      => 'Data Supplier',
+                        'url'       => 'farmasi/suplier',
+                        'icon'      => null,
+                        'parent_id' => $farmasiParent->id,
+                        'order_num' => 4,
+                        'target'    => '_self',
+                        'position'  => 'navbar',
+                    ]);
+
+                    $roles = ['admin', 'apoteker', 'owner'];
+                    foreach ($roles as $r) {
+                        MenuRole::firstOrCreate(['menu_id' => $newSuplier->id, 'role' => $r]);
+                    }
+                }
+            }
+
             // Ensure Laporan parent & Kunjungan Rawat Jalan menu
             $laporanParent = Menu::where('name', 'Laporan')->whereNull('parent_id')->first();
             if (!$laporanParent) {
