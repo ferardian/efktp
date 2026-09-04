@@ -4,8 +4,8 @@
             <div class="col-xl-3 col-md-6 col-sm-12">
                 <label for="no_surat">Nomor Surat</label>
                 <div class="input-group">
-                    <input type="text" class="form-control" name="no_surat" id="no_surat" readonly />
-                    <button class="btn btn-secondary" type="button" id="btnNoSurat"><i class="ti ti-reload"></i></button>
+                    <input type="text" class="form-control" name="no_surat" id="no_surat" />
+                    <button class="btn btn-secondary" type="button" id="btnNoSurat" title="Generate Ulang Nomor Surat"><i class="ti ti-reload"></i></button>
                 </div>
             </div>
             <div class="col-xl-2 col-md-6 col-sm-12">

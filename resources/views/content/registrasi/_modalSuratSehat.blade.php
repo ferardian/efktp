@@ -245,6 +245,14 @@
             })
         })
 
+        formSuratSehat.find('#btnNoSuratSehat').on('click', () => {
+            const rawTanggal = formSuratSehat.find('#tanggalsurat').val();
+            const tanggal = rawTanggal ? splitTanggal(rawTanggal) : '';
+            setNoSuratSehat(tanggal).done((no) => {
+                formSuratSehat.find('#no_surat').val(no);
+            });
+        });
+
         $('#btnSimpanSuratSehat').on('click', (e) => {
             e.preventDefault();
             const data = getDataForm('formSuratSehat', ['input', 'select']);

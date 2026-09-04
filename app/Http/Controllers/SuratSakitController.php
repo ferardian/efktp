@@ -56,22 +56,9 @@ class SuratSakitController extends Controller
 
 	public function setNoSurat(Request $request)
 	{
-		$tgl_surat = $request->tgl_surat ? $request->tgl_surat : date('Y-m-d');
-		$strTanggal = Carbon::parse($tgl_surat)->translatedFormat('Ymd');
-		$prefix = "SKS{$strTanggal}";
-
-		$surat = SuratSakit::select('no_surat')
-			->where('no_surat', 'like', "{$prefix}%")
-			->orderBy('no_surat', 'DESC')->first();
-
-		if (!$surat) {
-			$no = '001';
-		} else {
-			$noAkhir = substr($surat->no_surat, -3);
-			$no = (int) $noAkhir + 1;
-			$no = sprintf('%03d', $no);
-		}
-		$no = "{$prefix}{$no}";
+		$tgl_surat = $request->tgl_surat ?: date('Y-m-d');
+		$tgl_surat = date('Y-m-d', strtotime(str_replace('/', '-', $tgl_surat)));
+		$no = \App\Services\NomorSuratService::generate('sakit', $tgl_surat);
 
 		return response()->json($no);
 	}

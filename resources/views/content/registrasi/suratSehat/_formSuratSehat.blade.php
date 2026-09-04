@@ -4,18 +4,21 @@
              <label for="tanggalawal">Tanggal</label>
              <input class="form-control filterTangal" name="tanggalsurat" id="tanggalsurat" value="{{ date('d-m-Y') }}" />
          </div>
-         <div class="col-xl-2 col-md-6 col-sm-12">
-             <label for="no_surat">Nomor Surat</label>
-             <input type="text" class="form-control" name="no_surat" id="no_surat" readonly />
-         </div>
-         <div class="col-xl-2 col-md-6 col-sm-12">
-             <label for="no_rawat">No Rawat</label>
-             <input type="text" class="form-control" name="no_rawat" id="no_rawat" readonly />
-         </div>
-         <div class="col-xl-4 col-md-6 col-sm-12">
-             <label for="pasien">Pasien</label>
-             <input type="text" class="form-control" name="pasien" id="pasien" readonly />
-         </div>
+         <div class="col-xl-3 col-md-6 col-sm-12">
+            <label for="no_surat">Nomor Surat</label>
+            <div class="input-group">
+                <input type="text" class="form-control" name="no_surat" id="no_surat" />
+                <button class="btn btn-secondary" type="button" id="btnNoSuratSehat" title="Generate Ulang Nomor Surat"><i class="ti ti-reload"></i></button>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-6 col-sm-12">
+            <label for="no_rawat">No Rawat</label>
+            <input type="text" class="form-control" name="no_rawat" id="no_rawat" readonly />
+        </div>
+        <div class="col-xl-5 col-md-6 col-sm-12">
+            <label for="pasien">Pasien</label>
+            <input type="text" class="form-control" name="pasien" id="pasien" readonly />
+        </div>
          <div class="col-xl-2 col-md-6 col-sm-12">
              <label for="tgl_lahir">Tgl. Lahir</label>
              <input type="text" class="form-control" name="tgl_lahir" id="tgl_lahir" readonly />
