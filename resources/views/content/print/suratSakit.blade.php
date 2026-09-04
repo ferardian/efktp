@@ -1,19 +1,8 @@
 @extends('content.print.main')
 
 @section('content')
-    <div class="container" style="margin: 20px">
-        {{-- @dd($data) --}}
-        <div width="100%">
-            <img src="{{ 'data:image/jpeg;base64,' . $data['logo'] }}" alt="" width="70px" style="top:20px;left: 25px;position:absolute">
-            <div style="text-align: center; margin-left:60px;">
-                <h5 class="m-0">{{ $data['nama_instansi'] }}</h5>
-                <p class="m-0">{{ $data['alamat_instansi'] }}</p>
-                <p class="m-0">Telp. {{ $data['kontak'] }}, Email : {{ $data['email'] }} </p>
-            </div>
-            <hr>
-
-            {{-- @dd($data) --}}
-        </div>
+    <div class="container" style="margin: 15px 20px">
+        @include('content.print._kopSurat')
         <div class="no_surat" style="text-align:center;margin-bottom:10px">
             <h5><u>SURAT KETERANGAN SAKIT</u></h5>
             <p>No. {{ $data['no_surat'] }}</p>

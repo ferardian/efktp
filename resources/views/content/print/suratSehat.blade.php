@@ -17,22 +17,8 @@
 
 
     </style>
-    <div class="container" style="margin: 20px;">
-        <div style="margin-bottom: 20px">
-            <img src="{{ 'data:image/jpeg;base64,' . $data['logo'] }}" alt="" width="60px"
-                 style="top:20px;left: 25px;position:absolute">
-            <div width="100%" style="margin-left: 80px" class="subtitle">
-                <div style="text-align: center;">
-                    <h6>{{ $data['nama_instansi'] }}</h6>
-                    <div>
-                        <span>{{ $data['alamat_instansi'] }}</span>
-                        <br/><span>Telp. {{ $data['kontak'] }}, Email : {{ $data['email'] }} </span>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-            <hr>
+    <div class="container" style="margin: 15px 20px;">
+        @include('content.print._kopSurat')
 
 
         <div class="no_surat text-center">
