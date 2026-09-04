@@ -8,6 +8,7 @@ use App\Models\Bangsal;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class OpnameController extends Controller
 {
@@ -95,7 +96,7 @@ class OpnameController extends Controller
     {
         $request->validate([
             'kd_bangsal' => 'required',
-            'tanggal' => 'required|date',
+            'tanggal' => 'required',
             'keterangan' => 'required',
             'items' => 'required|array',
             'items.*.kode_brng' => 'required',
@@ -105,6 +106,12 @@ class OpnameController extends Controller
 
         try {
             DB::beginTransaction();
+
+            $tglOpname = date('Y-m-d', strtotime(str_replace('/', '-', $request->tanggal)));
+            $nipInput = session()->get('pegawai')->nik ?? session()->get('nik') ?? '-';
+            $catatan = substr($request->keterangan ?? '-', 0, 60);
+
+            $savedCount = 0;
 
             foreach ($request->items as $item) {
                 $stok = floatval($item['stok']);
@@ -131,27 +138,36 @@ class OpnameController extends Controller
                     $nomilebih = $lebih * $h_beli;
                 }
 
-                $no_batch = $item['no_batch'] ?? '';
-                $no_faktur = $item['no_faktur'] ?? '';
+                $no_batch = substr($item['no_batch'] ?? '', 0, 20);
+                $no_faktur = substr($item['no_faktur'] ?? '', 0, 20);
 
-                // 1. Save Opname Record
-                Opname::create([
-                    'kode_brng' => $item['kode_brng'],
-                    'h_beli' => $h_beli,
-                    'tanggal' => $request->tanggal,
-                    'stok' => $stok,
-                    'real' => $real,
-                    'selisih' => $selisih,
+                // 1. Delete existing opname record on that date/batch if already exists to prevent Duplicate entry
+                DB::table('opname')
+                    ->where('kode_brng', $item['kode_brng'])
+                    ->where('tanggal', $tglOpname)
+                    ->where('kd_bangsal', $request->kd_bangsal)
+                    ->where('no_batch', $no_batch)
+                    ->where('no_faktur', $no_faktur)
+                    ->delete();
+
+                // 2. Insert Opname Record
+                DB::table('opname')->insert([
+                    'kode_brng'  => $item['kode_brng'],
+                    'h_beli'     => $h_beli,
+                    'tanggal'    => $tglOpname,
+                    'stok'       => $stok,
+                    'real'       => $real,
+                    'selisih'    => $selisih,
                     'nomihilang' => $nomihilang,
-                    'lebih' => $lebih,
-                    'nomilebih' => $nomilebih,
-                    'keterangan' => $request->keterangan ?? '-',
+                    'lebih'      => $lebih,
+                    'nomilebih'  => $nomilebih,
+                    'keterangan' => $catatan,
                     'kd_bangsal' => $request->kd_bangsal,
-                    'no_batch' => $no_batch,
-                    'no_faktur' => $no_faktur
+                    'no_batch'   => $no_batch,
+                    'no_faktur'  => $no_faktur,
                 ]);
 
-                // 2. Adjust stock in gudangbarang
+                // 3. Adjust stock in gudangbarang
                 $gudang = DB::table('gudangbarang')
                     ->where('kode_brng', $item['kode_brng'])
                     ->where('kd_bangsal', $request->kd_bangsal)
@@ -168,22 +184,54 @@ class OpnameController extends Controller
                         ->update(['stok' => $real]);
                 } else {
                     DB::table('gudangbarang')->insert([
-                        'kode_brng' => $item['kode_brng'],
+                        'kode_brng'  => $item['kode_brng'],
                         'kd_bangsal' => $request->kd_bangsal,
-                        'stok' => $real,
-                        'no_batch' => $no_batch,
-                        'no_faktur' => $no_faktur
+                        'stok'       => $real,
+                        'no_batch'   => $no_batch,
+                        'no_faktur'  => $no_faktur,
                     ]);
                 }
+
+                // 4. Catat ke riwayat_barang_medis untuk audit trail & kartu stok Khanza
+                $posisi = ($selisih > 0) ? 'Lebih' : 'Hilang';
+                $masuk = ($selisih > 0) ? $lebih : 0;
+                $keluar = ($selisih < 0) ? $kurang : 0;
+
+                try {
+                    DB::table('riwayat_barang_medis')->insert([
+                        'kode_brng'  => $item['kode_brng'],
+                        'stok_awal'  => $stok,
+                        'masuk'      => $masuk,
+                        'keluar'     => $keluar,
+                        'stok_akhir' => $real,
+                        'posisi'     => 'Opname',
+                        'tanggal'    => $tglOpname,
+                        'jam'        => date('H:i:s'),
+                        'petugas'    => $nipInput,
+                        'kd_bangsal' => $request->kd_bangsal,
+                        'status'     => 'Simpan',
+                        'no_batch'   => $no_batch,
+                        'no_faktur'  => $no_faktur,
+                        'keterangan' => substr('Stok Opname: ' . ($request->keterangan ?? '-'), 0, 100),
+                    ]);
+                } catch (\Throwable $th) {
+                    Log::warning('Riwayat barang medis opname failed: ' . $th->getMessage());
+                }
+
+                $savedCount++;
             }
 
-            // Clean up 0 stock entries
-            DB::table('gudangbarang')->where('stok', '<=', 0)->delete();
-
             DB::commit();
-            return response()->json(['message' => 'Transaksi batch stok opname berhasil disimpan']);
+            return response()->json([
+                'message'     => "Transaksi batch stok opname berhasil disimpan ({$savedCount} item diperbarui)",
+                'saved_count' => $savedCount
+            ]);
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Gagal menyimpan stok opname: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->except(['_token'])
+            ]);
             return response()->json(['message' => 'Gagal menyimpan stok opname: ' . $e->getMessage()], 500);
         }
     }
@@ -192,19 +240,20 @@ class OpnameController extends Controller
     {
         $request->validate([
             'kode_brng' => 'required',
-            'tanggal' => 'required|date',
+            'tanggal' => 'required',
             'kd_bangsal' => 'required',
         ]);
 
         try {
             DB::beginTransaction();
 
-            $no_batch = $request->no_batch ?? '';
-            $no_faktur = $request->no_faktur ?? '';
+            $tglOpname = date('Y-m-d', strtotime(str_replace('/', '-', $request->tanggal)));
+            $no_batch = substr($request->no_batch ?? '', 0, 20);
+            $no_faktur = substr($request->no_faktur ?? '', 0, 20);
 
             // Find the opname record
             $opname = Opname::where('kode_brng', $request->kode_brng)
-                ->where('tanggal', $request->tanggal)
+                ->where('tanggal', $tglOpname)
                 ->where('kd_bangsal', $request->kd_bangsal)
                 ->where('no_batch', $no_batch)
                 ->where('no_faktur', $no_faktur)
@@ -227,29 +276,57 @@ class OpnameController extends Controller
                     ->decrement('stok', $opname->selisih);
             } else {
                 DB::table('gudangbarang')->insert([
-                    'kode_brng' => $request->kode_brng,
+                    'kode_brng'  => $request->kode_brng,
                     'kd_bangsal' => $request->kd_bangsal,
-                    'stok' => $opname->stok,
-                    'no_batch' => $no_batch,
-                    'no_faktur' => $no_faktur
+                    'stok'       => $opname->stok,
+                    'no_batch'   => $no_batch,
+                    'no_faktur'  => $no_faktur
                 ]);
+            }
+
+            // Catat pembatalan ke riwayat_barang_medis
+            $nipInput = session()->get('pegawai')->nik ?? session()->get('nik') ?? '-';
+            try {
+                $curStok = DB::table('gudangbarang')
+                    ->where('kode_brng', $request->kode_brng)
+                    ->where('kd_bangsal', $request->kd_bangsal)
+                    ->where('no_batch', $no_batch)
+                    ->where('no_faktur', $no_faktur)
+                    ->value('stok') ?? 0;
+
+                DB::table('riwayat_barang_medis')->insert([
+                    'kode_brng'  => $request->kode_brng,
+                    'stok_awal'  => $opname->real,
+                    'masuk'      => ($opname->selisih < 0) ? abs($opname->selisih) : 0,
+                    'keluar'     => ($opname->selisih > 0) ? $opname->selisih : 0,
+                    'stok_akhir' => $curStok,
+                    'posisi'     => 'Opname',
+                    'tanggal'    => date('Y-m-d'),
+                    'jam'        => date('H:i:s'),
+                    'petugas'    => $nipInput,
+                    'kd_bangsal' => $request->kd_bangsal,
+                    'status'     => 'Hapus',
+                    'no_batch'   => $no_batch,
+                    'no_faktur'  => $no_faktur,
+                    'keterangan' => 'Batal Stok Opname tgl ' . $tglOpname,
+                ]);
+            } catch (\Throwable $th) {
+                Log::warning('Riwayat barang medis batal opname failed: ' . $th->getMessage());
             }
 
             // Delete opname entry
             Opname::where('kode_brng', $request->kode_brng)
-                ->where('tanggal', $request->tanggal)
+                ->where('tanggal', $tglOpname)
                 ->where('kd_bangsal', $request->kd_bangsal)
                 ->where('no_batch', $no_batch)
                 ->where('no_faktur', $no_faktur)
                 ->delete();
 
-            // Clean up 0 stock entries
-            DB::table('gudangbarang')->where('stok', '<=', 0)->delete();
-
             DB::commit();
             return response()->json(['message' => 'Riwayat stok opname berhasil dihapus dan stok gudang dikembalikan']);
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Gagal menghapus riwayat opname: ' . $e->getMessage());
             return response()->json(['message' => 'Gagal menghapus riwayat opname: ' . $e->getMessage()], 500);
         }
     }

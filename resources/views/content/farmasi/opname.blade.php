@@ -363,23 +363,39 @@
             const keterangan = $('#keterangan').val() ? $('#keterangan').val().trim() : '';
 
             if (!kd_bangsal) {
-                showToast('Pilih Gudang terlebih dahulu', 'warning');
+                Swal.fire({
+                    title: 'Gudang Belum Dipilih',
+                    text: 'Silakan pilih Lokasi Gudang/Depo terlebih dahulu.',
+                    icon: 'warning'
+                });
                 return;
             }
             if (!tanggal) {
-                showToast('Pilih Tanggal opname', 'warning');
+                Swal.fire({
+                    title: 'Tanggal Belum Dipilih',
+                    text: 'Silakan pilih Tanggal opname terlebih dahulu.',
+                    icon: 'warning'
+                });
                 return;
             }
             if (!keterangan) {
-                showToast('Keterangan/Catatan wajib diisi', 'warning');
+                Swal.fire({
+                    title: 'Catatan Belum Diisi',
+                    text: 'Keterangan/Catatan opname wajib diisi sebelum menyimpan.',
+                    icon: 'warning'
+                });
                 return;
             }
 
             // Filter items to only send ones with modifications/discrepancies
-            const adjustedItems = opnameItems.filter(item => (item.real - item.stok) !== 0);
+            const adjustedItems = opnameItems.filter(item => (parseFloat(item.real) - parseFloat(item.stok)) !== 0);
 
             if (adjustedItems.length === 0) {
-                showToast('Tidak ada penyesuaian stok (selisih) yang dilakukan', 'info');
+                Swal.fire({
+                    title: 'Tidak Ada Selisih!',
+                    text: 'Belum ada obat yang diubah stok fisiknya (selisih masih 0). Silakan masukkan nilai Stok Fisik (Real) pada daftar obat sebelum menyimpan.',
+                    icon: 'info'
+                });
                 return;
             }
 
@@ -398,6 +414,11 @@
                     $.ajax({
                         url: "{{ url('/opname/store') }}",
                         type: 'POST',
+                        dataType: 'json',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                        },
                         data: {
                             _token: "{{ csrf_token() }}",
                             tanggal: tanggal,
@@ -406,7 +427,11 @@
                             items: adjustedItems
                         },
                         success: (response) => {
-                            showToast(response.message);
+                            Swal.fire({
+                                title: 'Berhasil!',
+                                text: response.message || 'Transaksi batch stok opname berhasil disimpan',
+                                icon: 'success'
+                            });
                             opnameItems = [];
                             $('#keterangan').val('');
                             $('#filter_search').val('');
@@ -415,10 +440,26 @@
                             renderOpnameTable();
                         },
                         error: (xhr) => {
-                            showToast(xhr.responseJSON.message || 'Gagal menyimpan stok opname', 'error');
-                        },
-                        complete: () => {
-                            Swal.close();
+                            let errorMsg = 'Gagal menyimpan stok opname.';
+                            if (xhr.status === 419) {
+                                errorMsg = 'Sesi Anda telah kedaluwarsa (CSRF token expired). Silakan refresh halaman dan coba ulangi.';
+                            } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                                errorMsg = xhr.responseJSON.message;
+                            } else if (xhr.responseText) {
+                                try {
+                                    const parsed = JSON.parse(xhr.responseText);
+                                    if (parsed.message) errorMsg = parsed.message;
+                                } catch(e) {
+                                    errorMsg = `Terjadi kesalahan pada server (HTTP ${xhr.status})`;
+                                }
+                            }
+
+                            Swal.fire({
+                                title: 'Gagal Menyimpan Opname!',
+                                html: `<div class="text-danger fw-semibold">${errorMsg}</div>`,
+                                icon: 'error',
+                                confirmButtonText: 'Tutup'
+                            });
                         }
                     });
                 }
@@ -503,6 +544,11 @@
                     $.ajax({
                         url: "{{ url('/opname/delete') }}",
                         type: 'POST',
+                        dataType: 'json',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                        },
                         data: {
                             _token: "{{ csrf_token() }}",
                             kode_brng: kode_brng,
@@ -512,14 +558,25 @@
                             no_faktur: no_faktur
                         },
                         success: (response) => {
-                            showToast(response.message);
+                            Swal.fire({
+                                title: 'Berhasil!',
+                                text: response.message || 'Riwayat stok opname berhasil dihapus',
+                                icon: 'success'
+                            });
                             $('#tbOpnameHistory').DataTable().ajax.reload(null, false);
                         },
                         error: (xhr) => {
-                            showToast(xhr.responseJSON.message || 'Gagal menghapus riwayat opname', 'error');
-                        },
-                        complete: () => {
-                            Swal.close();
+                            let errorMsg = 'Gagal menghapus riwayat opname.';
+                            if (xhr.status === 419) {
+                                errorMsg = 'Sesi Anda telah kedaluwarsa. Silakan refresh halaman dan coba ulangi.';
+                            } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                                errorMsg = xhr.responseJSON.message;
+                            }
+                            Swal.fire({
+                                title: 'Gagal!',
+                                text: errorMsg,
+                                icon: 'error'
+                            });
                         }
                     });
                 }
