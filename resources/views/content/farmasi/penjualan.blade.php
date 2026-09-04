@@ -1330,7 +1330,15 @@
                     data: 'grand_total',
                     name: 'grand_total',
                     className: 'text-end fw-bold text-success',
-                    render: (data) => `Rp ${formatNumber(data)}`
+                    render: (data, type, row) => {
+                        let html = `<div>Rp ${formatNumber(data)}</div>`;
+                        if (row.pembulatan && parseFloat(row.pembulatan) !== 0) {
+                            let p = parseFloat(row.pembulatan);
+                            let sign = p > 0 ? '+' : '';
+                            html += `<div class="text-muted" style="font-size: 11px; font-weight: normal;">(Bulat: ${sign}${formatNumber(p)})</div>`;
+                        }
+                        return html;
+                    }
                 },
                 {
                     data: null,
@@ -1434,10 +1442,11 @@
                 </div>
 
                 <div class="d-flex justify-content-end">
-                    <div style="min-width: 250px;">
+                    <div style="min-width: 260px;">
                         <div class="d-flex justify-content-between py-1 small"><span>Subtotal Obat:</span><b>Rp ${formatNumber(res.total_obat)}</b></div>
-                        <div class="d-flex justify-content-between py-1 small"><span>Ongkos Kirim:</span><span>Rp ${formatNumber(p.ongkir || 0)}</span></div>
-                        <div class="d-flex justify-content-between py-1 small"><span>PPN:</span><span>Rp ${formatNumber(p.ppn || 0)}</span></div>
+                        ${(p.ongkir && parseFloat(p.ongkir) > 0) ? `<div class="d-flex justify-content-between py-1 small"><span>Ongkos Kirim:</span><span>Rp ${formatNumber(p.ongkir)}</span></div>` : ''}
+                        ${(p.ppn && parseFloat(p.ppn) > 0) ? `<div class="d-flex justify-content-between py-1 small"><span>PPN:</span><span>Rp ${formatNumber(p.ppn)}</span></div>` : ''}
+                        ${(res.pembulatan && parseFloat(res.pembulatan) !== 0) ? `<div class="d-flex justify-content-between py-1 small text-primary"><span>Pembulatan:</span><b>${parseFloat(res.pembulatan) > 0 ? '+' : ''}Rp ${formatNumber(res.pembulatan)}</b></div>` : ''}
                         <div class="d-flex justify-content-between py-2 border-top fs-3 text-success"><span>Grand Total:</span><b>Rp ${formatNumber(res.grand_total)}</b></div>
                     </div>
                 </div>

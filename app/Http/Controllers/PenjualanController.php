@@ -102,11 +102,15 @@ class PenjualanController extends Controller
             ->addColumn('total_obat', function ($row) {
                 return $row->detailJual->sum('total');
             })
+            ->addColumn('pembulatan', function ($row) {
+                return $this->extractPembulatan($row->keterangan);
+            })
             ->addColumn('grand_total', function ($row) {
                 $totObat = $row->detailJual->sum('total');
                 $ongkir = floatval($row->ongkir ?? 0);
                 $ppn = floatval($row->ppn ?? 0);
-                return $totObat + $ongkir + $ppn;
+                $pembulatan = $this->extractPembulatan($row->keterangan);
+                return $totObat + $ongkir + $ppn + $pembulatan;
             })
             ->make(true);
     }
@@ -375,11 +379,13 @@ class PenjualanController extends Controller
             ->firstOrFail();
 
         $totalObat = $penjualan->detailJual->sum('total');
-        $grandTotal = $totalObat + floatval($penjualan->ongkir ?? 0) + floatval($penjualan->ppn ?? 0);
+        $pembulatan = $this->extractPembulatan($penjualan->keterangan);
+        $grandTotal = $totalObat + floatval($penjualan->ongkir ?? 0) + floatval($penjualan->ppn ?? 0) + $pembulatan;
 
         return response()->json([
             'penjualan'   => $penjualan,
             'total_obat'  => $totalObat,
+            'pembulatan'  => $pembulatan,
             'grand_total' => $grandTotal
         ]);
     }
@@ -467,12 +473,7 @@ class PenjualanController extends Controller
         $totalObat = $penjualan->detailJual->sum('total');
 
         // Deteksi pembulatan dari keterangan
-        $pembulatan = 0;
-        if (!empty($penjualan->keterangan) && preg_match('/Pembulatan:\s*([+-]?\d+[\d\.]*)/', $penjualan->keterangan, $matches)) {
-            $cleaned = str_replace('.', '', $matches[1]);
-            $pembulatan = floatval($cleaned);
-        }
-
+        $pembulatan = $this->extractPembulatan($penjualan->keterangan);
         $grandTotal = $totalObat + floatval($penjualan->ongkir ?? 0) + floatval($penjualan->ppn ?? 0) + $pembulatan;
 
         return view('content.print.notaPenjualan', compact(
@@ -648,5 +649,14 @@ class PenjualanController extends Controller
         } catch (\Throwable $e) {
             Log::warning('Riwayat barang medis record failed: ' . $e->getMessage());
         }
+    }
+
+    private function extractPembulatan($keterangan)
+    {
+        if (!empty($keterangan) && preg_match('/Pembulatan:\s*([+-]?\d+[\d\.]*)/', $keterangan, $matches)) {
+            $cleaned = str_replace('.', '', $matches[1]);
+            return floatval($cleaned);
+        }
+        return 0;
     }
 }
