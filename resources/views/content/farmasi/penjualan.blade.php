@@ -611,7 +611,7 @@
     // Generator opsi kemasan cerdas (Eceran, Strip x10, Strip Mini x4, Box master)
     function getPackagingOptions(item) {
         const opts = [
-            { id: 'kecil', label: `${item.satuan} (Eceran)`, multiplier: 1, name: item.satuan }
+            { id: 'kecil', label: item.satuan, multiplier: 1, name: item.satuan }
         ];
 
         const isi = parseFloat(item.isi) || 1;
@@ -621,7 +621,7 @@
         if (isSolid && isi !== 10) {
             opts.push({
                 id: 'strip10',
-                label: `Strip (@10 ${item.satuan})`,
+                label: `Strip (10)`,
                 multiplier: 10,
                 name: 'STRIP'
             });
@@ -631,7 +631,7 @@
         if (isSolid && isi !== 4) {
             opts.push({
                 id: 'strip4',
-                label: `Strip Mini (@4 ${item.satuan})`,
+                label: `Strip (4)`,
                 multiplier: 4,
                 name: 'STRIP MINI'
             });
@@ -641,7 +641,7 @@
         if (item.satuan_besar && isi > 1) {
             opts.push({
                 id: 'master_besar',
-                label: `${item.satuan_besar} (@${isi} ${item.satuan})`,
+                label: `${item.satuan_besar} (${isi})`,
                 multiplier: isi,
                 name: item.satuan_besar
             });
@@ -850,43 +850,51 @@
             const mult = item.current_multiplier || 1;
             const isSolid = isSolidForm(item.satuan);
 
-            // Satuan selector dropdown
-            let satuanSelect = `<select class="form-select form-select-sm" onchange="changeItemSatuan(${index}, this.value)">`;
-            options.forEach(opt => {
-                const isSel = opt.id === currentOptId ? 'selected' : '';
-                satuanSelect += `<option value="${opt.id}" ${isSel}>${opt.label}</option>`;
-            });
-            satuanSelect += `</select>`;
+            // Satuan selector: hanya render dropdown jika ada lebih dari 1 pilihan
+            let satuanSelect = '';
+            if (options.length > 1) {
+                satuanSelect = `<select class="form-select form-select-sm" onchange="changeItemSatuan(${index}, this.value)">`;
+                options.forEach(opt => {
+                    const isSel = opt.id === currentOptId ? 'selected' : '';
+                    satuanSelect += `<option value="${opt.id}" ${isSel}>${opt.label}</option>`;
+                });
+                satuanSelect += `</select>`;
+            } else {
+                satuanSelect = `<span class="badge bg-secondary-lt fw-bold">${item.satuan}</span>`;
+            }
 
             // Qty helper text (misal: = 10 TAB jika pilih Strip)
             let qtyHelper = '';
             if (mult > 1) {
-                qtyHelper = `<div class="small text-muted text-center mt-1 fw-semibold">= ${item.jumlah} ${item.satuan}</div>`;
+                qtyHelper = `<div class="small text-muted text-center mt-1" style="font-size: 10px;">= ${item.jumlah} ${item.satuan}</div>`;
             }
 
-            // Quick increment chips
+            // Quick increment chips: HANYA untuk kelipatan relevan (tidak render +1 redundant)
             let quickChips = '';
             if (mult === 1) {
-                // Di satuan eceran terkecil
-                quickChips = `
-                    <div class="d-flex flex-wrap justify-content-center gap-1 mt-1">
-                        <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-1" onclick="addQtyDirect(${index}, 1)" title="Tambah 1">+1</button>
-                        ${isSolid ? `
-                            <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-1" onclick="addQtyDirect(${index}, 5)" title="Tambah 5">+5</button>
-                            <button type="button" class="btn btn-xs btn-outline-success py-0 px-1" onclick="addQtyDirect(${index}, 10)" title="Tambah 10 (1 Strip)">+10</button>
-                        ` : ''}
-                        ${item.isi > 1 && item.satuan_besar ? `
-                            <button type="button" class="btn btn-xs btn-outline-info py-0 px-1" onclick="addBaseQtyDirect(${index}, ${item.isi})" title="Tambah 1 ${item.satuan_besar} (${item.isi} ${item.satuan})">+Box</button>
-                        ` : ''}
-                    </div>
-                `;
+                if (isSolid) {
+                    quickChips = `
+                        <div class="d-flex justify-content-center gap-1 mt-1">
+                            <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-1" style="font-size: 10px; line-height: 1.2;" onclick="addQtyDirect(${index}, 5)" title="Tambah 5">+5</button>
+                            <button type="button" class="btn btn-xs btn-outline-success py-0 px-1" style="font-size: 10px; line-height: 1.2;" onclick="addQtyDirect(${index}, 10)" title="Tambah 10 (1 Strip)">+10</button>
+                            ${item.isi > 1 && item.satuan_besar ? `
+                                <button type="button" class="btn btn-xs btn-outline-info py-0 px-1" style="font-size: 10px; line-height: 1.2;" onclick="addBaseQtyDirect(${index}, ${item.isi})" title="Tambah 1 ${item.satuan_besar}">+Box</button>
+                            ` : ''}
+                        </div>
+                    `;
+                } else if (item.isi > 1 && item.satuan_besar) {
+                    quickChips = `
+                        <div class="d-flex justify-content-center gap-1 mt-1">
+                            <button type="button" class="btn btn-xs btn-outline-info py-0 px-1" style="font-size: 10px; line-height: 1.2;" onclick="addBaseQtyDirect(${index}, ${item.isi})" title="Tambah 1 ${item.satuan_besar}">+Box</button>
+                        </div>
+                    `;
+                }
             } else {
                 // Di satuan kemasan (Strip / Box)
                 quickChips = `
-                    <div class="d-flex flex-wrap justify-content-center gap-1 mt-1">
-                        <button type="button" class="btn btn-xs btn-outline-primary py-0 px-1" onclick="addQtyDirect(${index}, 1)" title="Tambah 1 ${item.current_satuan_name}">+1</button>
-                        <button type="button" class="btn btn-xs btn-outline-primary py-0 px-1" onclick="addQtyDirect(${index}, 2)" title="Tambah 2 ${item.current_satuan_name}">+2</button>
-                        <button type="button" class="btn btn-xs btn-outline-primary py-0 px-1" onclick="addQtyDirect(${index}, 5)" title="Tambah 5 ${item.current_satuan_name}">+5</button>
+                    <div class="d-flex justify-content-center gap-1 mt-1">
+                        <button type="button" class="btn btn-xs btn-outline-primary py-0 px-1" style="font-size: 10px; line-height: 1.2;" onclick="addQtyDirect(${index}, 1)" title="Tambah 1 ${item.current_satuan_name}">+1</button>
+                        <button type="button" class="btn btn-xs btn-outline-primary py-0 px-1" style="font-size: 10px; line-height: 1.2;" onclick="addQtyDirect(${index}, 2)" title="Tambah 2 ${item.current_satuan_name}">+2</button>
                     </div>
                 `;
             }
@@ -894,43 +902,46 @@
             tbody.append(`
                 <tr>
                     <td class="text-center">${index + 1}</td>
-                    <td class="font-monospace small">${item.kode_brng}</td>
+                    <td class="font-monospace small text-muted">${item.kode_brng}</td>
                     <td>
                         <div class="fw-bold text-dark">${item.nama_brng}</div>
                         ${mult > 1 ? `<small class="text-muted"><i class="ti ti-box me-1"></i>1 ${item.current_satuan_name} = ${mult} ${item.satuan}</small>` : ''}
                     </td>
-                    <td style="min-width: 120px;">${satuanSelect}</td>
+                    <td class="text-center" style="min-width: 100px;">${satuanSelect}</td>
                     <td class="text-center small">
                         ${stockBadge}
-                        ${mult > 1 ? `<div class="small text-muted mt-1">(~${(item.stok / mult).toFixed(1)} ${item.current_satuan_name})</div>` : ''}
+                        ${mult > 1 ? `<div class="small text-muted mt-1" style="font-size: 10px;">(~${(item.stok / mult).toFixed(1)} ${item.current_satuan_name})</div>` : ''}
                     </td>
-                    <td style="min-width: 105px;">
+                    <td style="min-width: 95px;">
                         <input type="number" class="form-control form-control-sm text-end" 
                                value="${item.h_jual}" min="0" 
                                onchange="updateCartItemField(${index}, 'h_jual', this.value)">
-                        <div class="small text-muted text-end mt-1">/${item.current_satuan_name}</div>
                     </td>
-                    <td style="min-width: 110px;">
-                        <div class="d-flex align-items-center justify-content-center">
-                            <button type="button" class="btn btn-xs btn-outline-secondary px-1 py-0" onclick="stepQty(${index}, -1)" title="Kurang 1">-</button>
-                            <input type="number" class="form-control form-control-sm text-center fw-bold mx-1 ${isStockDeficit ? 'border-danger text-danger' : ''}" 
-                                   style="width: 50px;"
+                    <td style="min-width: 95px;">
+                        <div class="input-group input-group-sm" style="max-width: 85px; margin: 0 auto;">
+                            <button class="btn btn-outline-secondary px-2 py-0" type="button" onclick="stepQty(${index}, -1)" title="Kurang 1">
+                                <i class="ti ti-minus" style="font-size: 10px;"></i>
+                            </button>
+                            <input type="number" class="form-control text-center fw-bold px-1 py-0 ${isStockDeficit ? 'border-danger text-danger' : ''}" 
                                    value="${item.qty_input}" min="0.01" step="any"
                                    onchange="updateCartItemField(${index}, 'qty_input', this.value)">
-                            <button type="button" class="btn btn-xs btn-outline-secondary px-1 py-0" onclick="stepQty(${index}, 1)" title="Tambah 1">+</button>
+                            <button class="btn btn-outline-secondary px-2 py-0" type="button" onclick="stepQty(${index}, 1)" title="Tambah 1">
+                                <i class="ti ti-plus" style="font-size: 10px;"></i>
+                            </button>
                         </div>
                         ${qtyHelper}
                         ${quickChips}
                     </td>
-                    <td style="min-width: 60px;">
-                        <input type="number" class="form-control form-control-sm text-center text-danger" 
+                    <td style="min-width: 55px;" class="text-center">
+                        <input type="number" class="form-control form-control-sm text-center text-danger mx-auto" 
+                               style="max-width: 55px;"
                                value="${item.dis}" min="0" max="100"
                                onchange="updateCartItemField(${index}, 'dis', this.value)">
                     </td>
-                    <td class="text-end fw-bold text-success fs-5">
+                    <td class="text-end fw-bold text-success fs-4 text-nowrap">
                         Rp ${formatNumber(itemTotal)}
                     </td>
-                    <td style="min-width: 110px;">
+                    <td style="min-width: 100px;">
                         <input type="text" class="form-control form-control-sm" 
                                placeholder="Aturan Pakai" value="${item.aturan_pakai}"
                                onchange="updateCartItemField(${index}, 'aturan_pakai', this.value)">
