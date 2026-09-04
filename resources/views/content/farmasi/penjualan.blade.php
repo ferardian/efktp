@@ -1,6 +1,16 @@
 @extends('layout')
 
 @section('body')
+<style>
+    input.no-spin::-webkit-inner-spin-button, 
+    input.no-spin::-webkit-outer-spin-button { 
+        -webkit-appearance: none; 
+        margin: 0; 
+    }
+    input.no-spin { 
+        -moz-appearance: textfield; 
+    }
+</style>
     <div class="container-fluid">
         <!-- Header Page Title & Tabs -->
         <div class="card mb-3">
@@ -917,16 +927,20 @@
                                value="${item.h_jual}" min="0" 
                                onchange="updateCartItemField(${index}, 'h_jual', this.value)">
                     </td>
-                    <td style="min-width: 95px;">
-                        <div class="input-group input-group-sm" style="max-width: 85px; margin: 0 auto;">
-                            <button class="btn btn-outline-secondary px-2 py-0" type="button" onclick="stepQty(${index}, -1)" title="Kurang 1">
-                                <i class="ti ti-minus" style="font-size: 10px;"></i>
+                    <td style="min-width: 125px;" class="text-center">
+                        <div class="input-group input-group-sm mx-auto" style="width: 110px;">
+                            <button class="btn btn-outline-secondary d-flex align-items-center justify-content-center" 
+                                    type="button" style="width: 28px; padding: 0;" onclick="stepQty(${index}, -1)" title="Kurang 1">
+                                <i class="ti ti-minus" style="font-size: 11px;"></i>
                             </button>
-                            <input type="number" class="form-control text-center fw-bold px-1 py-0 ${isStockDeficit ? 'border-danger text-danger' : ''}" 
+                            <input type="number" 
+                                   class="form-control form-control-sm text-center fw-bold no-spin px-1 ${isStockDeficit ? 'border-danger text-danger' : ''}" 
+                                   style="font-size: 14px; min-width: 50px;"
                                    value="${item.qty_input}" min="0.01" step="any"
                                    onchange="updateCartItemField(${index}, 'qty_input', this.value)">
-                            <button class="btn btn-outline-secondary px-2 py-0" type="button" onclick="stepQty(${index}, 1)" title="Tambah 1">
-                                <i class="ti ti-plus" style="font-size: 10px;"></i>
+                            <button class="btn btn-outline-secondary d-flex align-items-center justify-content-center" 
+                                    type="button" style="width: 28px; padding: 0;" onclick="stepQty(${index}, 1)" title="Tambah 1">
+                                <i class="ti ti-plus" style="font-size: 11px;"></i>
                             </button>
                         </div>
                         ${qtyHelper}
