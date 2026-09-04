@@ -69,6 +69,8 @@ header("Content-Disposition: attachment; filename=Data_Obat_Barang_" . $statusLa
                 <th style="width: 80px;">Dosis</th>
                 <th style="width: 100px;">Satuan Kecil</th>
                 <th style="width: 80px;">Stok Total</th>
+                <th style="width: 110px;">Harga Beli</th>
+                <th style="width: 110px;">Harga Ralan</th>
                 <th style="width: 150px;">Kandungan / Letak</th>
                 <th style="width: 120px;">Jenis</th>
                 <th style="width: 120px;">Kategori</th>
@@ -95,6 +97,8 @@ header("Content-Disposition: attachment; filename=Data_Obat_Barang_" . $statusLa
                     <td style="text-align:center;">{{ $row->kapasitas ?: '-' }}</td>
                     <td style="text-align:center;">{{ $row->satuan->satuan ?? '-' }}</td>
                     <td style="text-align:right;">{{ $stok }}</td>
+                    <td style="text-align:right;">{{ number_format($row->h_beli, 0, ',', '.') }}</td>
+                    <td style="text-align:right;">{{ number_format($row->ralan, 0, ',', '.') }}</td>
                     <td>{{ $row->letak_barang ?: '-' }}</td>
                     <td>{{ $row->jenis->nama ?? '-' }}</td>
                     <td>{{ $row->kategori->nama ?? '-' }}</td>

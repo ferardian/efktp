@@ -68,6 +68,8 @@
                                         <th>Dosis</th>
                                         <th>Satuan</th>
                                         <th>Stok</th>
+                                        <th>Harga Beli</th>
+                                        <th>Harga Ralan</th>
                                         <th>Kandungan</th>
                                         <th>Jenis</th>
                                         <th>Kategori</th>
@@ -425,6 +427,58 @@
                             }
                             const tooltipText = details.length > 0 ? details.join('<br>') : 'Kosong';
                             return `<span class="badge bg-teal-lt" data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="top" title="${tooltipText}">${total}</span>`;
+                        }
+                    },
+                    {
+                        data: 'h_beli',
+                        name: 'h_beli',
+                        defaultContent: '0',
+                        className: 'text-end',
+                        render: (data) => {
+                            const val = parseFloat(data) || 0;
+                            return `<span class="text-secondary fw-medium">Rp ${val.toLocaleString('id-ID')}</span>`;
+                        }
+                    },
+                    {
+                        data: 'ralan',
+                        name: 'ralan',
+                        defaultContent: '0',
+                        className: 'text-end',
+                        render: (data, type, row) => {
+                            const val = parseFloat(data) || 0;
+                            const formatRp = (n) => 'Rp ' + (parseFloat(n) || 0).toLocaleString('id-ID');
+                            
+                            const details = `
+                                <div style="font-size: 11px; text-align: left;">
+                                    <div class="fw-bold border-bottom pb-1 mb-1 text-primary">Rincian Harga (${row.kode_brng}):</div>
+                                    <table class="table table-sm table-borderless text-nowrap mb-0" style="font-size: 11px;">
+                                        <tr><td class="pe-3">Dasar:</td><td class="text-end fw-bold">${formatRp(row.dasar)}</td></tr>
+                                        <tr><td class="pe-3">H. Beli:</td><td class="text-end fw-bold">${formatRp(row.h_beli)}</td></tr>
+                                        <tr class="table-success"><td class="pe-3">Ralan:</td><td class="text-end fw-bold text-success">${formatRp(row.ralan)}</td></tr>
+                                        <tr><td class="pe-3">Kelas 1:</td><td class="text-end">${formatRp(row.kelas1)}</td></tr>
+                                        <tr><td class="pe-3">Kelas 2:</td><td class="text-end">${formatRp(row.kelas2)}</td></tr>
+                                        <tr><td class="pe-3">Kelas 3:</td><td class="text-end">${formatRp(row.kelas3)}</td></tr>
+                                        <tr><td class="pe-3">Utama:</td><td class="text-end">${formatRp(row.utama)}</td></tr>
+                                        <tr><td class="pe-3">VIP:</td><td class="text-end">${formatRp(row.vip)}</td></tr>
+                                        <tr><td class="pe-3">VVIP:</td><td class="text-end">${formatRp(row.vvip)}</td></tr>
+                                        <tr><td class="pe-3">Jual Bebas:</td><td class="text-end">${formatRp(row.jualbebas)}</td></tr>
+                                        <tr><td class="pe-3">Karyawan:</td><td class="text-end">${formatRp(row.karyawan)}</td></tr>
+                                        <tr><td class="pe-3">Beli Luar:</td><td class="text-end">${formatRp(row.beliluar)}</td></tr>
+                                    </table>
+                                </div>
+                            `;
+                            
+                            const safeDetails = details.replace(/"/g, '&quot;');
+                            return `
+                                <div class="d-inline-flex align-items-center gap-1">
+                                    <span class="fw-semibold text-success">Rp ${val.toLocaleString('id-ID')}</span>
+                                    <i class="ti ti-info-circle text-info cursor-pointer" 
+                                       data-bs-toggle="tooltip" 
+                                       data-bs-html="true" 
+                                       data-bs-placement="top" 
+                                       title="${safeDetails}"></i>
+                                </div>
+                            `;
                         }
                     },
                     {

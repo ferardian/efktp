@@ -86,16 +86,18 @@
             <thead>
                 <tr>
                     <th width="3%">No</th>
-                    <th width="8%">Kode</th>
-                    <th width="22%">Nama Obat / Barang</th>
-                    <th width="6%">Dosis</th>
-                    <th width="7%">Satuan</th>
-                    <th width="6%">Stok</th>
-                    <th width="10%">Kandungan</th>
-                    <th width="8%">Jenis</th>
-                    <th width="9%">Kategori</th>
-                    <th width="9%">Golongan</th>
-                    <th width="12%">Industri</th>
+                    <th width="7%">Kode</th>
+                    <th width="20%">Nama Obat / Barang</th>
+                    <th width="5%">Dosis</th>
+                    <th width="5%">Satuan</th>
+                    <th width="5%">Stok</th>
+                    <th width="8%">H. Beli</th>
+                    <th width="8%">H. Ralan</th>
+                    <th width="9%">Kandungan</th>
+                    <th width="7%">Jenis</th>
+                    <th width="7%">Kategori</th>
+                    <th width="8%">Golongan</th>
+                    <th width="8%">Industri</th>
                 </tr>
             </thead>
             <tbody>
@@ -115,6 +117,8 @@
                         <td class="text-center">{{ $row->kapasitas ?: '-' }}</td>
                         <td class="text-center">{{ $row->satuan->satuan ?? '-' }}</td>
                         <td class="text-center">{{ $stok }}</td>
+                        <td class="text-right">{{ number_format($row->h_beli, 0, ',', '.') }}</td>
+                        <td class="text-right">{{ number_format($row->ralan, 0, ',', '.') }}</td>
                         <td>{{ $row->letak_barang ?: '-' }}</td>
                         <td>{{ $row->jenis->nama ?? '-' }}</td>
                         <td>{{ $row->kategori->nama ?? '-' }}</td>
@@ -123,7 +127,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="11" class="text-center">Tidak ada data obat/barang</td>
+                        <td colspan="13" class="text-center">Tidak ada data obat/barang</td>
                     </tr>
                 @endforelse
             </tbody>
