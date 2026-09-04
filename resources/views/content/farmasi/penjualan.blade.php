@@ -190,7 +190,7 @@
 
                         <!-- Right Column: Billing & Pembayaran -->
                         <div class="col-xl-4 col-lg-4 col-md-12">
-                            <div class="card shadow-sm border-0 sticky-top" style="top: 15px;">
+                            <div class="card shadow-sm border-0" style="position: sticky; top: 75px; z-index: 10;">
                                 <div class="card-header py-2 bg-teal-lt">
                                     <h4 class="card-title text-teal mb-0">
                                         <i class="ti ti-cash me-1"></i> Pembayaran & Billing
