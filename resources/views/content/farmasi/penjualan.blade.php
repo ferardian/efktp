@@ -137,7 +137,7 @@
                                             </div>
                                             <!-- Dropdown Hasil Pencarian Obat -->
                                             <div id="listHasilCariObat" class="list-group position-absolute w-100 shadow-lg border rounded-bottom" 
-                                                 style="z-index: 1050; max-height: 280px; overflow-y: auto; display: none; top: 100%; background: #ffffff;">
+                                                 style="z-index: 1050; max-height: 380px; overflow-y: auto; display: none; top: 100%; background: #ffffff;">
                                             </div>
                                         </div>
                                         <div class="col-md-4 col-sm-12 text-md-end text-start mt-2 mt-md-0">
@@ -537,33 +537,27 @@
         items.forEach((item, idx) => {
             const basePrice = getPriceByJenis(item, currentJenis);
             const isi = parseFloat(item.isi) || 1;
-            const stockColor = item.stok > 0 ? 'badge bg-teal-lt' : 'badge bg-danger-lt';
+            const stockColor = item.stok > 0 ? 'text-teal fw-bold' : 'text-danger fw-bold';
             const safeItem = JSON.stringify(item).replace(/"/g, '&quot;');
             const isSolid = isSolidForm(item.satuan);
 
             let badgesHtml = '';
             if (item.satuan_besar && isi > 1) {
-                badgesHtml = `<span class="badge bg-azure-lt ms-1" title="Konversi Kemasan">1 ${item.satuan_besar} = ${isi} ${item.satuan}</span>`;
+                badgesHtml = `<span class="badge bg-azure-lt ms-1" style="font-size: 10px; padding: 1px 4px;">1 ${item.satuan_besar} = ${isi} ${item.satuan}</span>`;
             } else if (isSolid) {
-                badgesHtml = `<span class="badge bg-secondary-lt ms-1" title="Sediaan Tablet/Kapsul">Strip @10</span>`;
+                badgesHtml = `<span class="badge bg-secondary-lt ms-1" style="font-size: 10px; padding: 1px 4px;">Strip @10</span>`;
             }
 
-            // Quick add buttons di kartu pencarian
-            let quickButtons = `
-                <button type="button" class="btn btn-xs btn-outline-primary" 
-                        onclick="event.stopPropagation(); addToCart(${safeItem}, 'kecil')"
-                        title="Beli Eceran 1 ${item.satuan}">
-                    +1 ${item.satuan}
-                </button>
-            `;
-
+            // Shortcut compact buttons (hanya jika ada kemasan Strip atau Box)
+            let quickButtons = '';
             if (isSolid && isi !== 10) {
                 const stripPrice = basePrice * 10;
                 quickButtons += `
-                    <button type="button" class="btn btn-xs btn-outline-success" 
+                    <button type="button" class="btn btn-sm btn-outline-success py-0 px-2 ms-1" 
+                            style="font-size: 11px; height: 22px; line-height: 20px;"
                             onclick="event.stopPropagation(); addToCart(${safeItem}, 'strip10')"
-                            title="1 Strip = 10 ${item.satuan}">
-                        <i class="ti ti-box me-1"></i> +1 Strip (Rp ${formatNumber(stripPrice)})
+                            title="Tambah 1 Strip (10 ${item.satuan})">
+                        <i class="ti ti-box me-1"></i>+1 Strip (Rp ${formatNumber(stripPrice)})
                     </button>
                 `;
             }
@@ -571,10 +565,11 @@
             if (item.satuan_besar && isi > 1) {
                 const boxPrice = basePrice * isi;
                 quickButtons += `
-                    <button type="button" class="btn btn-xs btn-outline-info" 
+                    <button type="button" class="btn btn-sm btn-outline-info py-0 px-2 ms-1" 
+                            style="font-size: 11px; height: 22px; line-height: 20px;"
                             onclick="event.stopPropagation(); addToCart(${safeItem}, 'master_besar')"
-                            title="1 ${item.satuan_besar} = ${isi} ${item.satuan}">
-                        <i class="ti ti-package me-1"></i> +1 ${item.satuan_besar} (Rp ${formatNumber(boxPrice)})
+                            title="Tambah 1 ${item.satuan_besar} (${isi} ${item.satuan})">
+                        <i class="ti ti-package me-1"></i>+1 ${item.satuan_besar} (Rp ${formatNumber(boxPrice)})
                     </button>
                 `;
             }
@@ -582,22 +577,22 @@
             container.append(`
                 <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2 px-3 search-obat-item" 
                    style="cursor: pointer;" onclick="addToCart(${safeItem}, 'kecil')">
-                    <div>
-                        <div class="fw-bold text-dark d-flex align-items-center flex-wrap">
+                    <div style="max-width: 60%;">
+                        <div class="fw-bold text-dark d-flex align-items-center flex-wrap" style="font-size: 13px;">
                             <span>${item.nama_brng}</span>
                             ${badgesHtml}
                         </div>
-                        <div class="small text-muted">
-                            <span class="badge bg-secondary-lt me-1">${item.kode_brng}</span>
-                            Satuan: <b>${item.satuan}</b> | Dosis: ${item.kapasitas}
+                        <div class="small text-muted" style="font-size: 11px;">
+                            <span class="badge bg-secondary-lt me-1 font-monospace" style="font-size: 10px;">${item.kode_brng}</span>
+                            Satuan: <b>${item.satuan}</b> | Stok: <span class="${stockColor}">${item.stok}</span>
+                            ${item.kapasitas && item.kapasitas !== '-' ? ` | Dosis: ${item.kapasitas}` : ''}
                         </div>
                     </div>
                     <div class="text-end">
-                        <div class="fw-bold text-success fs-4">Rp ${formatNumber(basePrice)} <small class="text-muted fs-6">/${item.satuan}</small></div>
-                        <div><span class="${stockColor}">Stok: ${item.stok} ${item.satuan}</span></div>
-                        <div class="d-flex gap-1 justify-content-end mt-1 flex-wrap">
-                            ${quickButtons}
+                        <div class="fw-bold text-success" style="font-size: 13.5px;">
+                            Rp ${formatNumber(basePrice)} <small class="text-muted" style="font-size: 11px;">/${item.satuan}</small>
                         </div>
+                        ${quickButtons ? `<div class="d-flex justify-content-end align-items-center mt-1">${quickButtons}</div>` : ''}
                     </div>
                 </div>
             `);
