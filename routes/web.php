@@ -342,6 +342,17 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::post('/suplier/store', [\App\Http\Controllers\DataSuplierController::class, 'store']);
 	Route::delete('/suplier/delete/{kode_suplier}', [\App\Http\Controllers\DataSuplierController::class, 'destroy']);
 
+	// Penjualan Obat Bebas (Diluar Resep)
+	Route::get('/farmasi/penjualan', [\App\Http\Controllers\PenjualanController::class, 'index']);
+	Route::get('/penjualan/data', [\App\Http\Controllers\PenjualanController::class, 'data']);
+	Route::get('/penjualan/get-next-nota', [\App\Http\Controllers\PenjualanController::class, 'getNextNota']);
+	Route::get('/penjualan/search-obat', [\App\Http\Controllers\PenjualanController::class, 'searchObat']);
+	Route::get('/penjualan/search-pasien', [\App\Http\Controllers\PenjualanController::class, 'searchPasien']);
+	Route::post('/penjualan/store', [\App\Http\Controllers\PenjualanController::class, 'store']);
+	Route::get('/penjualan/detail/{nota_jual}', [\App\Http\Controllers\PenjualanController::class, 'detail']);
+	Route::delete('/penjualan/delete/{nota_jual}', [\App\Http\Controllers\PenjualanController::class, 'destroy']);
+	Route::get('/penjualan/print/{nota_jual}', [\App\Http\Controllers\PenjualanController::class, 'printNota']);
+
 	// Stok Opname
 	Route::get('/farmasi/opname', [\App\Http\Controllers\OpnameController::class, 'index']);
 	Route::get('/opname/data', [\App\Http\Controllers\OpnameController::class, 'data']);
