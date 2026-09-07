@@ -108,6 +108,7 @@ class SuratSakitController extends Controller
 
 	public function delete($noSurat)
 	{
+		$noSurat = urldecode($noSurat);
 		try {
 			$surat = SuratSakit::where('no_surat', $noSurat)->delete();
 			if ($surat) {
@@ -121,6 +122,7 @@ class SuratSakitController extends Controller
 
 	public function print($noSurat)
 	{
+		$noSurat = urldecode($noSurat);
 		$surat = SuratSakit::with([
 			'regPeriksa' => function ($q) {
 				return $q->with(['dokter', 'pasien.kel', 'pasien.kec', 'pasien.kab', 'pasien.perusahaanPasien']);
@@ -164,7 +166,8 @@ class SuratSakitController extends Controller
 		$pdf = Pdf::loadView('content.print.suratSakit', ['data' => $data])
 			->setPaper('a5', 'potrait')->setOptions(['defaultFont' => 'sherif', 'isRemoteEnabled' => true]);
 
-		return $pdf->stream("{$data['no_surat']}.pdf");
+		$filename = str_replace(['/', '\\'], '-', $data['no_surat']) . '.pdf';
+		return $pdf->stream($filename);
 
 		// 1️⃣ Generate PDF biasa dulu (DomPDF)
 		// 1️⃣ Generate PDF dengan DomPDF → simpan sementara

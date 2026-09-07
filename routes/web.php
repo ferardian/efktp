@@ -447,18 +447,18 @@ Route::middleware('auth:web,admin')->group(function () {
 
 	// SURAT SAKIT
 	Route::get('surat/sakit', [SuratSakitController::class, 'get']);
-	Route::get('surat/sakit/print/{noSurat}', [SuratSakitController::class, 'print']);
-	Route::post('surat/sakit', [SuratSakitController::class, 'create']);
-	Route::post('surat/sakit/delete/{noSurat}', [SuratSakitController::class, 'delete']);
 	Route::get('surat/sakit/setnomor', [SuratSakitController::class, 'setNoSurat']);
+	Route::get('surat/sakit/print/{noSurat}', [SuratSakitController::class, 'print'])->where('noSurat', '.*');
+	Route::post('surat/sakit', [SuratSakitController::class, 'create']);
+	Route::post('surat/sakit/delete/{noSurat}', [SuratSakitController::class, 'delete'])->where('noSurat', '.*');
 
 	// SUrat Sehat
 	Route::get('surat/sehat', [SuratSehatController::class, 'get']);
 	Route::post('surat/sehat', [SuratSehatController::class, 'create']);
 	Route::get('surat/sehat/setnomor', [SuratSehatController::class, 'setNoSurat']);
-	Route::get('surat/sehat/{noSurat}', [SuratSehatController::class, 'getSurat']);
-	Route::post('surat/sehat/delete/{noSurat}', [SuratSehatController::class, 'delete']);
-	Route::get('surat/sehat/print/{noSurat}', [SuratSehatController::class, 'print']);
+	Route::get('surat/sehat/print/{noSurat}', [SuratSehatController::class, 'print'])->where('noSurat', '.*');
+	Route::post('surat/sehat/delete/{noSurat}', [SuratSehatController::class, 'delete'])->where('noSurat', '.*');
+	Route::get('surat/sehat/{noSurat}', [SuratSehatController::class, 'getSurat'])->where('noSurat', '.*');
 
 	Route::get('ranap', function () {
 		return view('content.kamarInap');

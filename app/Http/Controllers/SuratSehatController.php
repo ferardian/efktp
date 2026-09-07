@@ -36,6 +36,7 @@ class SuratSehatController extends Controller
 
     function getSurat($noSurat)
     {
+        $noSurat = urldecode($noSurat);
         $surat = SuratSehat::where('no_surat', $noSurat)->with(['regPeriksa' => function ($q) {
             return $q->with(['pasien' => function ($q) {
                 return $q->with('kel', 'kec', 'kab', 'prop');
@@ -57,6 +58,7 @@ class SuratSehatController extends Controller
 
     function print($noSurat)
     {
+        $noSurat = urldecode($noSurat);
         $surat = SuratSehat::where('no_surat', $noSurat)->with(['regPeriksa' => function ($q) {
             return $q->with('pasien', 'pemeriksaanDokter', 'dokter.pegawai');
         }])->first();
@@ -89,7 +91,8 @@ class SuratSehatController extends Controller
         $pdf = Pdf::loadView('content.print.suratSehat', ['data' => $data])
             ->setPaper('a5', 'potrait')->setOptions(['defaultFont' => 'sherif', 'isRemoteEnabled' => true]);
 
-        return $pdf->stream("{$data['no_surat']}.pdf");
+        $filename = str_replace(['/', '\\'], '-', $data['no_surat']) . '.pdf';
+        return $pdf->stream($filename);
     }
 
     function create(Request $request)
@@ -148,6 +151,7 @@ class SuratSehatController extends Controller
 
     function delete($noSurat)
     {
+        $noSurat = urldecode($noSurat);
         try {
             $surat = SuratSehat::where('no_surat', $noSurat)->delete();
             if ($surat) {
