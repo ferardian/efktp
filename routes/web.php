@@ -369,6 +369,12 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::get('/farmasi/set-harga/data-monitoring-obat', [\App\Http\Controllers\SetHargaObatController::class, 'dataMonitoringObat']);
 	Route::get('/farmasi/set-harga/detail-obat/{kode_brng}', [\App\Http\Controllers\SetHargaObatController::class, 'detailHargaObat']);
 
+	// Laporan Penjualan Obat Per Item
+	Route::get('/farmasi/laporan-penjualan-item', [\App\Http\Controllers\LaporanPenjualanItemController::class, 'index']);
+	Route::get('/farmasi/laporan-penjualan-item/data', [\App\Http\Controllers\LaporanPenjualanItemController::class, 'data']);
+	Route::get('/farmasi/laporan-penjualan-item/print', [\App\Http\Controllers\LaporanPenjualanItemController::class, 'print']);
+	Route::get('/farmasi/laporan-penjualan-item/export', [\App\Http\Controllers\LaporanPenjualanItemController::class, 'exportExcel']);
+
 	// Stok Opname
 	Route::get('/farmasi/opname', [\App\Http\Controllers\OpnameController::class, 'index']);
 	Route::get('/opname/data', [\App\Http\Controllers\OpnameController::class, 'data']);

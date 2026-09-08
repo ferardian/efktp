@@ -171,6 +171,24 @@ class MenuController extends Controller
                         MenuRole::firstOrCreate(['menu_id' => $newSetHarga->id, 'role' => $r]);
                     }
                 }
+
+                $existingLapPenjualan = Menu::where('url', 'farmasi/laporan-penjualan-item')->first();
+                if (!$existingLapPenjualan) {
+                    $newLapPenjualan = Menu::create([
+                        'name'      => 'Laporan Penjualan Obat',
+                        'url'       => 'farmasi/laporan-penjualan-item',
+                        'icon'      => null,
+                        'parent_id' => $farmasiParent->id,
+                        'order_num' => 7,
+                        'target'    => '_self',
+                        'position'  => 'navbar',
+                    ]);
+
+                    $roles = ['admin', 'apoteker', 'owner'];
+                    foreach ($roles as $r) {
+                        MenuRole::firstOrCreate(['menu_id' => $newLapPenjualan->id, 'role' => $r]);
+                    }
+                }
             }
 
             // Ensure Laporan parent & Kunjungan Rawat Jalan menu
