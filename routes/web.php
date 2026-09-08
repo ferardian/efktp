@@ -353,6 +353,22 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::delete('/penjualan/delete/{nota_jual}', [\App\Http\Controllers\PenjualanController::class, 'destroy']);
 	Route::get('/penjualan/print/{nota_jual}', [\App\Http\Controllers\PenjualanController::class, 'printNota']);
 
+	// Setup & Margin Harga Obat (Adopsi DlgSetHarga Khanza)
+	Route::get('/farmasi/set-harga', [\App\Http\Controllers\SetHargaObatController::class, 'index']);
+	Route::post('/farmasi/set-harga/update-pengaturan', [\App\Http\Controllers\SetHargaObatController::class, 'updatePengaturanUmum']);
+	Route::post('/farmasi/set-harga/update-margin-umum', [\App\Http\Controllers\SetHargaObatController::class, 'updateMarginUmum']);
+	Route::get('/farmasi/set-harga/data-jenis', [\App\Http\Controllers\SetHargaObatController::class, 'dataJenis']);
+	Route::post('/farmasi/set-harga/store-jenis', [\App\Http\Controllers\SetHargaObatController::class, 'storeJenis']);
+	Route::delete('/farmasi/set-harga/delete-jenis/{kdjns}', [\App\Http\Controllers\SetHargaObatController::class, 'deleteJenis']);
+	Route::get('/farmasi/set-harga/data-barang', [\App\Http\Controllers\SetHargaObatController::class, 'dataBarang']);
+	Route::get('/farmasi/set-harga/search-barang', [\App\Http\Controllers\SetHargaObatController::class, 'searchBarang']);
+	Route::post('/farmasi/set-harga/store-barang', [\App\Http\Controllers\SetHargaObatController::class, 'storeBarang']);
+	Route::delete('/farmasi/set-harga/delete-barang/{kode_brng}', [\App\Http\Controllers\SetHargaObatController::class, 'deleteBarang']);
+	Route::post('/farmasi/set-harga/apply-harga', [\App\Http\Controllers\SetHargaObatController::class, 'applyHarga']);
+	Route::get('/farmasi/set-harga/simulate-price', [\App\Http\Controllers\SetHargaObatController::class, 'simulatePrice']);
+	Route::get('/farmasi/set-harga/data-monitoring-obat', [\App\Http\Controllers\SetHargaObatController::class, 'dataMonitoringObat']);
+	Route::get('/farmasi/set-harga/detail-obat/{kode_brng}', [\App\Http\Controllers\SetHargaObatController::class, 'detailHargaObat']);
+
 	// Stok Opname
 	Route::get('/farmasi/opname', [\App\Http\Controllers\OpnameController::class, 'index']);
 	Route::get('/opname/data', [\App\Http\Controllers\OpnameController::class, 'data']);

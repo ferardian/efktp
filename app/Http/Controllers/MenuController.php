@@ -153,6 +153,24 @@ class MenuController extends Controller
                         MenuRole::firstOrCreate(['menu_id' => $newSuplier->id, 'role' => $r]);
                     }
                 }
+
+                $existingSetHarga = Menu::where('url', 'farmasi/set-harga')->first();
+                if (!$existingSetHarga) {
+                    $newSetHarga = Menu::create([
+                        'name'      => 'Set Harga Obat',
+                        'url'       => 'farmasi/set-harga',
+                        'icon'      => null,
+                        'parent_id' => $farmasiParent->id,
+                        'order_num' => 6,
+                        'target'    => '_self',
+                        'position'  => 'navbar',
+                    ]);
+
+                    $roles = ['admin', 'apoteker', 'owner'];
+                    foreach ($roles as $r) {
+                        MenuRole::firstOrCreate(['menu_id' => $newSetHarga->id, 'role' => $r]);
+                    }
+                }
             }
 
             // Ensure Laporan parent & Kunjungan Rawat Jalan menu

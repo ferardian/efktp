@@ -142,6 +142,9 @@
                     <a href="{{ url('farmasi/opname') }}" class="dropdown-item {{ Request::is('farmasi/opname') ? 'active' : '' }}">
                         Stok Opname
                     </a>
+                    <a href="{{ url('farmasi/set-harga') }}" class="dropdown-item {{ Request::is('farmasi/set-harga*') ? 'active' : '' }}">
+                        Set Harga Obat
+                    </a>
                     <a href="{{ url('farmasi/racik/template') }}"
                        class="dropdown-item {{ Request::is('template') ? 'active' : '' }}">
                         Template Racikan
