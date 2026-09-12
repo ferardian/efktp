@@ -53,8 +53,8 @@
                 </td>
                 @endif
                 <td width="90%" style="text-align: center;">
-                    <h3 style="font-size: 13px; font-weight: bold; margin: 0; text-transform: uppercase;">{{ $setting->nama_instansi }}</h3>
-                    <p style="margin: 2px 0; font-size: 9px; color: #333;">{{ $setting->alamat_instansi }}, {{ $setting->kabupaten }}</p>
+                    <h3 style="font-size: 13px; font-weight: bold; margin: 0; text-transform: uppercase;">{!! nl2br(e(str_replace('|', "\n", $setting->nama_instansi))) !!}</h3>
+                    <p style="margin: 2px 0; font-size: 9px; color: #333;">{!! nl2br(e(str_replace('|', "\n", "{$setting->alamat_instansi}, {$setting->kabupaten}"))) !!}</p>
                     <p style="margin: 0; font-size: 9px; color: #333;">Telp: {{ $setting->kontak }} | Email: {{ $setting->email }}</p>
                 </td>
             </tr>

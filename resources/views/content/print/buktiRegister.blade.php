@@ -8,8 +8,8 @@
         <div class="container" style="margin: 0px">
             <div width="100%">
                 <div style="font-size: 10px" class="text-center">
-                    <p style="font-size:14px;font-weight:bold">{{ $setting->nama_instansi }}</p>
-                    <p>{{ $setting->alamat_instansi }}</p>
+                    <p style="font-size:14px;font-weight:bold">{!! nl2br(e(str_replace('|', "\n", $setting->nama_instansi))) !!}</p>
+                    <p>{!! nl2br(e(str_replace('|', "\n", $setting->alamat_instansi))) !!}</p>
                     <p>Telp. {{ $setting->kontak }}, Email : {{ $setting->email }} </p>
                 </div>
                 <hr>

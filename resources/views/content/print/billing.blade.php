@@ -133,9 +133,9 @@
         @if($setting->logo)
             <img src="{{ 'data:image/jpeg;base64,' . base64_encode($setting->logo) }}" alt="Logo">
         @endif
-        <div class="instansi-name">{{ $setting->nama_instansi }}</div>
+        <div class="instansi-name">{!! nl2br(e(str_replace('|', "\n", $setting->nama_instansi))) !!}</div>
         <div class="instansi-address">
-            {{ $setting->alamat_instansi }}, {{ $setting->kabupaten }}<br>
+            {!! nl2br(e(str_replace('|', "\n", "{$setting->alamat_instansi}, {$setting->kabupaten}"))) !!}<br>
             Telp: {{ $setting->kontak }}
         </div>
     </div>

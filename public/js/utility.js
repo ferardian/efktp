@@ -696,10 +696,11 @@ function selectDataBarang(element, parrent) {
             if (data.loading) {
                 return data.text;
             }
-            let stokAP = '';
+            let stokAP = 0;
             if (data.detail && Array.isArray(data.detail.gudang_barang)) {
-                const ap = data.detail.gudang_barang.find(g => g.kd_bangsal === 'AP');
-                stokAP = ap ? ap.stok : 0;
+                stokAP = data.detail.gudang_barang
+                    .filter(g => g.kd_bangsal === 'AP')
+                    .reduce((acc, curr) => acc + (parseFloat(curr.stok) || 0), 0);
             }
 
             return $(`
@@ -707,7 +708,7 @@ function selectDataBarang(element, parrent) {
                 <div class="select2-result-repository__meta">
                     <div class="select2-result-repository__title fw-bold">${data.text}</div>
                     <div class="select2-result-repository__description text-muted">
-                        <small>Stok : ${stokAP} ${data.detail.satuan.satuan}</small>
+                        <small>Stok : ${stokAP} ${data.detail && data.detail.satuan ? data.detail.satuan.satuan : ''}</small>
                     </div>
                 </div>
             </div>
@@ -717,8 +718,12 @@ function selectDataBarang(element, parrent) {
         templateSelection: (data) => {
             if (!data.id) return data.text;
 
-            const ap = data.detail?.gudang_barang?.find(g => g.kd_bangsal === 'AP');
-            const stokAP = ap ? ap.stok : 0;
+            let stokAP = 0;
+            if (data.detail && Array.isArray(data.detail.gudang_barang)) {
+                stokAP = data.detail.gudang_barang
+                    .filter(g => g.kd_bangsal === 'AP')
+                    .reduce((acc, curr) => acc + (parseFloat(curr.stok) || 0), 0);
+            }
 
             return `${data.text} (${stokAP})`;
         },

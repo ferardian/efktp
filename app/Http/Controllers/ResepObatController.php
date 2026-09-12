@@ -205,6 +205,101 @@ class ResepObatController extends Controller
 		return $this->success(['no_resep' => $resep]);
 	}
 
+	/**
+	 * Hitung total stok obat di suatu bangsal/depo (mencakup seluruh batch/faktur)
+	 */
+	private function getStokObatBangsal(string $kode_brng, string $kd_bangsal): float
+	{
+		return (float) (DB::table('gudangbarang')
+			->where('kode_brng', $kode_brng)
+			->where('kd_bangsal', $kd_bangsal)
+			->sum('stok') ?? 0);
+	}
+
+	/**
+	 * Potong stok obat dari gudangbarang di bangsal tertentu secara cerdas (mendukung batch/faktur).
+	 * Mengutamakan record tanpa batch atau record yang memiliki stok > 0 (FIFO).
+	 * Mengembalikan array batch yang terpotong untuk dicatat ke detail_pemberian_obat:
+	 * [
+	 *    ['no_batch' => '...', 'no_faktur' => '...', 'jml' => ...],
+	 *    ...
+	 * ]
+	 */
+	private function deductStokObat(string $kode_brng, string $kd_bangsal, float $qtyToDeduct, string $nama_brng = ''): array
+	{
+		$totalStok = $this->getStokObatBangsal($kode_brng, $kd_bangsal);
+		if ($totalStok < $qtyToDeduct) {
+			$name = $nama_brng ?: $kode_brng;
+			throw new \Exception("Stok obat \"{$name}\" tidak cukup. Stok saat ini: {$totalStok} unit, dibutuhkan: {$qtyToDeduct}");
+		}
+
+		$gudangRows = DB::table('gudangbarang')
+			->where('kode_brng', $kode_brng)
+			->where('kd_bangsal', $kd_bangsal)
+			->where('stok', '>', 0)
+			->orderByRaw("CASE WHEN no_batch = '' OR no_batch IS NULL THEN 0 ELSE 1 END ASC")
+			->orderBy('no_batch', 'ASC')
+			->get();
+
+		$remaining = $qtyToDeduct;
+		$deductions = [];
+
+		foreach ($gudangRows as $row) {
+			if ($remaining <= 0) break;
+
+			$take = min((float) $row->stok, $remaining);
+
+			DB::table('gudangbarang')
+				->where('kode_brng', $kode_brng)
+				->where('kd_bangsal', $kd_bangsal)
+				->where('no_batch', $row->no_batch ?? '')
+				->where('no_faktur', $row->no_faktur ?? '')
+				->decrement('stok', $take);
+
+			$deductions[] = [
+				'no_batch'  => $row->no_batch ?? '',
+				'no_faktur' => $row->no_faktur ?? '',
+				'jml'       => $take,
+			];
+
+			$remaining -= $take;
+		}
+
+		if ($remaining > 0) {
+			$defaultRow = DB::table('gudangbarang')
+				->where('kode_brng', $kode_brng)
+				->where('kd_bangsal', $kd_bangsal)
+				->where('no_batch', '')
+				->where('no_faktur', '')
+				->first();
+
+			if ($defaultRow) {
+				DB::table('gudangbarang')
+					->where('kode_brng', $kode_brng)
+					->where('kd_bangsal', $kd_bangsal)
+					->where('no_batch', '')
+					->where('no_faktur', '')
+					->decrement('stok', $remaining);
+			} else {
+				DB::table('gudangbarang')->insert([
+					'kode_brng'  => $kode_brng,
+					'kd_bangsal' => $kd_bangsal,
+					'stok'       => -$remaining,
+					'no_batch'   => '',
+					'no_faktur'  => '',
+				]);
+			}
+
+			$deductions[] = [
+				'no_batch'  => '',
+				'no_faktur' => '',
+				'jml'       => $remaining,
+			];
+		}
+
+		return $deductions;
+	}
+
 	public function getUnvalidated(Request $request)
 	{
 		$no_rawat = $request->no_rawat;
@@ -241,12 +336,7 @@ class ResepObatController extends Controller
 		$resepObat->map(function ($resep) use ($bangsal) {
 			foreach ($resep->resepDokter as $rd) {
 				if ($rd->obat) {
-					$stok = DB::table('gudangbarang')
-						->where('kode_brng', $rd->kode_brng)
-						->where('kd_bangsal', $bangsal)
-						->where('no_batch', '')
-						->where('no_faktur', '')
-						->value('stok') ?? 0;
+					$stok = $this->getStokObatBangsal($rd->kode_brng, $bangsal);
 					$capacity = floatval($rd->obat->kapasitas) > 0 ? floatval($rd->obat->kapasitas) : 1.0;
 					$rd->stok = $stok * $capacity;
 				} else {
@@ -257,12 +347,7 @@ class ResepObatController extends Controller
 			foreach ($resep->resepRacikan as $rr) {
 				foreach ($rr->detail as $rrd) {
 					if ($rrd->obat) {
-						$stok = DB::table('gudangbarang')
-							->where('kode_brng', $rrd->kode_brng)
-							->where('kd_bangsal', $bangsal)
-							->where('no_batch', '')
-							->where('no_faktur', '')
-							->value('stok') ?? 0;
+						$stok = $this->getStokObatBangsal($rrd->kode_brng, $bangsal);
 						$rrd->stok = $stok;
 					} else {
 						$rrd->stok = 0;
@@ -331,48 +416,37 @@ class ResepObatController extends Controller
 					}
 
 					$qty = floatval($rd->jml);
+					if ($qty <= 0) continue;
 
-					$stok = DB::table('gudangbarang')
-						->where('kode_brng', $rd->kode_brng)
-						->where('kd_bangsal', $bangsal)
-						->where('no_batch', '')
-						->where('no_faktur', '')
-						->value('stok') ?? 0;
-
-					if ($stok < $qty) {
-						throw new \Exception('Stok obat "' . $obat->nama_brng . '" tidak cukup. Stok saat ini: ' . $stok . ' unit, dibutuhkan: ' . $qty);
-					}
-
-					DB::table('gudangbarang')
-						->where('kode_brng', $rd->kode_brng)
-						->where('kd_bangsal', $bangsal)
-						->where('no_batch', '')
-						->where('no_faktur', '')
-						->decrement('stok', $qty);
+					$deductions = $this->deductStokObat($rd->kode_brng, $bangsal, $qty, $obat->nama_brng);
 
 					$biaya_obat = floatval($obat->ralan);
 					$h_beli = floatval($obat->h_beli);
-					$total_item = $biaya_obat * $qty;
 
-					$ttljual += $total_item;
-					$ttlhpp += $h_beli * $qty;
+					foreach ($deductions as $d) {
+						$subQty = floatval($d['jml']);
+						$total_item = $biaya_obat * $subQty;
 
-					$detailPemberianObatToInsert[] = [
-						'tgl_perawatan' => $tgl_perawatan,
-						'jam' => $jam,
-						'no_rawat' => $no_rawat,
-						'kode_brng' => $rd->kode_brng,
-						'h_beli' => $h_beli,
-						'biaya_obat' => $biaya_obat,
-						'jml' => $qty,
-						'embalase' => 0,
-						'tuslah' => 0,
-						'total' => $total_item,
-						'status' => 'Ralan',
-						'kd_bangsal' => $bangsal,
-						'no_batch' => '',
-						'no_faktur' => ''
-					];
+						$ttljual += $total_item;
+						$ttlhpp += $h_beli * $subQty;
+
+						$detailPemberianObatToInsert[] = [
+							'tgl_perawatan' => $tgl_perawatan,
+							'jam' => $jam,
+							'no_rawat' => $no_rawat,
+							'kode_brng' => $rd->kode_brng,
+							'h_beli' => $h_beli,
+							'biaya_obat' => $biaya_obat,
+							'jml' => $subQty,
+							'embalase' => 0,
+							'tuslah' => 0,
+							'total' => $total_item,
+							'status' => 'Ralan',
+							'kd_bangsal' => $bangsal,
+							'no_batch' => $d['no_batch'] ?? '',
+							'no_faktur' => $d['no_faktur'] ?? ''
+						];
+					}
 
 					if ($rd->aturan_pakai && trim($rd->aturan_pakai) !== '') {
 						$aturanPakaiToInsert[] = [
@@ -404,31 +478,38 @@ class ResepObatController extends Controller
 							throw new \Exception('Barang/obat racikan dengan kode ' . $rrd->kode_brng . ' tidak ditemukan');
 						}
 
-						$stok = DB::table('gudangbarang')
-							->where('kode_brng', $rrd->kode_brng)
-							->where('kd_bangsal', $bangsal)
-							->where('no_batch', '')
-							->where('no_faktur', '')
-							->value('stok') ?? 0;
+						$qty = floatval($rrd->jml);
+						if ($qty <= 0) continue;
 
-						if ($stok < $rrd->jml) {
-							throw new \Exception('Stok obat racikan "' . $obat->nama_brng . '" tidak cukup. Stok saat ini: ' . $stok . ', dibutuhkan: ' . $rrd->jml);
-						}
-
-						DB::table('gudangbarang')
-							->where('kode_brng', $rrd->kode_brng)
-							->where('kd_bangsal', $bangsal)
-							->where('no_batch', '')
-							->where('no_faktur', '')
-							->decrement('stok', $rrd->jml);
+						$deductions = $this->deductStokObat($rrd->kode_brng, $bangsal, $qty, $obat->nama_brng);
 
 						$biaya_obat = floatval($obat->ralan);
 						$h_beli = floatval($obat->h_beli);
-						$qty = floatval($rrd->jml);
-						$total_item = $biaya_obat * $qty;
 
-						$ttljual += $total_item;
-						$ttlhpp += $h_beli * $qty;
+						foreach ($deductions as $d) {
+							$subQty = floatval($d['jml']);
+							$total_item = $biaya_obat * $subQty;
+
+							$ttljual += $total_item;
+							$ttlhpp += $h_beli * $subQty;
+
+							$detailPemberianObatToInsert[] = [
+								'tgl_perawatan' => $tgl_perawatan,
+								'jam' => $jam,
+								'no_rawat' => $no_rawat,
+								'kode_brng' => $rrd->kode_brng,
+								'h_beli' => $h_beli,
+								'biaya_obat' => $biaya_obat,
+								'jml' => $subQty,
+								'embalase' => 0,
+								'tuslah' => 0,
+								'total' => $total_item,
+								'status' => 'Ralan',
+								'kd_bangsal' => $bangsal,
+								'no_batch' => $d['no_batch'] ?? '',
+								'no_faktur' => $d['no_faktur'] ?? ''
+							];
+						}
 
 						$detailObatRacikanToInsert[] = [
 							'tgl_perawatan' => $tgl_perawatan,
@@ -436,23 +517,6 @@ class ResepObatController extends Controller
 							'no_rawat' => $no_rawat,
 							'no_racik' => $rr->no_racik,
 							'kode_brng' => $rrd->kode_brng
-						];
-
-						$detailPemberianObatToInsert[] = [
-							'tgl_perawatan' => $tgl_perawatan,
-							'jam' => $jam,
-							'no_rawat' => $no_rawat,
-							'kode_brng' => $rrd->kode_brng,
-							'h_beli' => $h_beli,
-							'biaya_obat' => $biaya_obat,
-							'jml' => $qty,
-							'embalase' => 0,
-							'tuslah' => 0,
-							'total' => $total_item,
-							'status' => 'Ralan',
-							'kd_bangsal' => $bangsal,
-							'no_batch' => '',
-							'no_faktur' => ''
 						];
 					}
 				}
@@ -712,12 +776,7 @@ class ResepObatController extends Controller
 
 		foreach ($resep->resepDokter as $rd) {
 			if ($rd->obat) {
-				$stok = DB::table('gudangbarang')
-					->where('kode_brng', $rd->kode_brng)
-					->where('kd_bangsal', $bangsal)
-					->where('no_batch', '')
-					->where('no_faktur', '')
-					->value('stok') ?? 0;
+				$stok = $this->getStokObatBangsal($rd->kode_brng, $bangsal);
 				$capacity = floatval($rd->obat->kapasitas) > 0 ? floatval($rd->obat->kapasitas) : 1.0;
 				$rd->stok = $stok * $capacity;
 			} else {
@@ -728,12 +787,7 @@ class ResepObatController extends Controller
 		foreach ($resep->resepRacikan as $rr) {
 			foreach ($rr->detail as $rrd) {
 				if ($rrd->obat) {
-					$stok = DB::table('gudangbarang')
-						->where('kode_brng', $rrd->kode_brng)
-						->where('kd_bangsal', $bangsal)
-						->where('no_batch', '')
-						->where('no_faktur', '')
-						->value('stok') ?? 0;
+					$stok = $this->getStokObatBangsal($rrd->kode_brng, $bangsal);
 					$rrd->stok = $stok;
 				} else {
 					$rrd->stok = 0;
@@ -850,52 +904,35 @@ class ResepObatController extends Controller
 					$qty = floatval($rd->jml);
 					if ($qty <= 0) continue;
 
-					$obat = DB::table('databarang')->where('kode_brng', $rd->kode_brng)->first();
-					if (!$obat) {
-						throw new \Exception('Barang/obat dengan kode ' . $rd->kode_brng . ' tidak ditemukan');
-					}
-
-					$stok = DB::table('gudangbarang')
-						->where('kode_brng', $rd->kode_brng)
-						->where('kd_bangsal', $bangsal)
-						->where('no_batch', '')
-						->where('no_faktur', '')
-						->value('stok') ?? 0;
-
-					if ($stok < $qty) {
-						throw new \Exception('Stok obat "' . $obat->nama_brng . '" tidak cukup. Stok saat ini: ' . $stok . ' unit, dibutuhkan: ' . $qty);
-					}
-
-					DB::table('gudangbarang')
-						->where('kode_brng', $rd->kode_brng)
-						->where('kd_bangsal', $bangsal)
-						->where('no_batch', '')
-						->where('no_faktur', '')
-						->decrement('stok', $qty);
+					$deductions = $this->deductStokObat($rd->kode_brng, $bangsal, $qty, $obat->nama_brng);
 
 					$biaya_obat = floatval($obat->ralan);
 					$h_beli = floatval($obat->h_beli);
-					$total_item = $biaya_obat * $qty;
 
-					$ttljual += $total_item;
-					$ttlhpp += $h_beli * $qty;
+					foreach ($deductions as $d) {
+						$subQty = floatval($d['jml']);
+						$total_item = $biaya_obat * $subQty;
 
-					$detailPemberianObatToInsert[] = [
-						'tgl_perawatan' => $tgl_perawatan,
-						'jam' => $jam,
-						'no_rawat' => $no_rawat,
-						'kode_brng' => $rd->kode_brng,
-						'h_beli' => $h_beli,
-						'biaya_obat' => $biaya_obat,
-						'jml' => $qty,
-						'embalase' => 0,
-						'tuslah' => 0,
-						'total' => $total_item,
-						'status' => 'Ralan',
-						'kd_bangsal' => $bangsal,
-						'no_batch' => '',
-						'no_faktur' => ''
-					];
+						$ttljual += $total_item;
+						$ttlhpp += $h_beli * $subQty;
+
+						$detailPemberianObatToInsert[] = [
+							'tgl_perawatan' => $tgl_perawatan,
+							'jam' => $jam,
+							'no_rawat' => $no_rawat,
+							'kode_brng' => $rd->kode_brng,
+							'h_beli' => $h_beli,
+							'biaya_obat' => $biaya_obat,
+							'jml' => $subQty,
+							'embalase' => 0,
+							'tuslah' => 0,
+							'total' => $total_item,
+							'status' => 'Ralan',
+							'kd_bangsal' => $bangsal,
+							'no_batch' => $d['no_batch'] ?? '',
+							'no_faktur' => $d['no_faktur'] ?? ''
+						];
+					}
 
 					if ($rd->aturan_pakai && trim($rd->aturan_pakai) !== '') {
 						$aturanPakaiToInsert[] = [
@@ -922,38 +959,43 @@ class ResepObatController extends Controller
 					];
 
 					foreach ($rr->detail as $rrd) {
-						$qty = floatval($rrd->jml);
-						if ($qty <= 0) continue;
-
 						$obat = DB::table('databarang')->where('kode_brng', $rrd->kode_brng)->first();
 						if (!$obat) {
 							throw new \Exception('Barang/obat racikan dengan kode ' . $rrd->kode_brng . ' tidak ditemukan');
 						}
 
-						$stok = DB::table('gudangbarang')
-							->where('kode_brng', $rrd->kode_brng)
-							->where('kd_bangsal', $bangsal)
-							->where('no_batch', '')
-							->where('no_faktur', '')
-							->value('stok') ?? 0;
+						$qty = floatval($rrd->jml);
+						if ($qty <= 0) continue;
 
-						if ($stok < $qty) {
-							throw new \Exception('Stok obat racikan "' . $obat->nama_brng . '" tidak cukup. Stok saat ini: ' . $stok . ', dibutuhkan: ' . $qty);
-						}
-
-						DB::table('gudangbarang')
-							->where('kode_brng', $rrd->kode_brng)
-							->where('kd_bangsal', $bangsal)
-							->where('no_batch', '')
-							->where('no_faktur', '')
-							->decrement('stok', $qty);
+						$deductions = $this->deductStokObat($rrd->kode_brng, $bangsal, $qty, $obat->nama_brng);
 
 						$biaya_obat = floatval($obat->ralan);
 						$h_beli = floatval($obat->h_beli);
-						$total_item = $biaya_obat * $qty;
 
-						$ttljual += $total_item;
-						$ttlhpp += $h_beli * $qty;
+						foreach ($deductions as $d) {
+							$subQty = floatval($d['jml']);
+							$total_item = $biaya_obat * $subQty;
+
+							$ttljual += $total_item;
+							$ttlhpp += $h_beli * $subQty;
+
+							$detailPemberianObatToInsert[] = [
+								'tgl_perawatan' => $tgl_perawatan,
+								'jam' => $jam,
+								'no_rawat' => $no_rawat,
+								'kode_brng' => $rrd->kode_brng,
+								'h_beli' => $h_beli,
+								'biaya_obat' => $biaya_obat,
+								'jml' => $subQty,
+								'embalase' => 0,
+								'tuslah' => 0,
+								'total' => $total_item,
+								'status' => 'Ralan',
+								'kd_bangsal' => $bangsal,
+								'no_batch' => $d['no_batch'] ?? '',
+								'no_faktur' => $d['no_faktur'] ?? ''
+							];
+						}
 
 						$detailObatRacikanToInsert[] = [
 							'tgl_perawatan' => $tgl_perawatan,
@@ -961,23 +1003,6 @@ class ResepObatController extends Controller
 							'no_rawat' => $no_rawat,
 							'no_racik' => $rr->no_racik,
 							'kode_brng' => $rrd->kode_brng
-						];
-
-						$detailPemberianObatToInsert[] = [
-							'tgl_perawatan' => $tgl_perawatan,
-							'jam' => $jam,
-							'no_rawat' => $no_rawat,
-							'kode_brng' => $rrd->kode_brng,
-							'h_beli' => $h_beli,
-							'biaya_obat' => $biaya_obat,
-							'jml' => $qty,
-							'embalase' => 0,
-							'tuslah' => 0,
-							'total' => $total_item,
-							'status' => 'Ralan',
-							'kd_bangsal' => $bangsal,
-							'no_batch' => '',
-							'no_faktur' => ''
 						];
 					}
 				}
@@ -1072,12 +1097,24 @@ class ResepObatController extends Controller
 
 				// 2. Kembalikan stok ke gudangbarang
 				foreach ($detailObat as $item) {
-					DB::table('gudangbarang')
+					$targetBangsal = $item->kd_bangsal ?: $bangsal;
+					$gbQuery = DB::table('gudangbarang')
 						->where('kode_brng', $item->kode_brng)
-						->where('kd_bangsal', $bangsal)
+						->where('kd_bangsal', $targetBangsal)
 						->where('no_batch', $item->no_batch ?? '')
-						->where('no_faktur', $item->no_faktur ?? '')
-						->increment('stok', floatval($item->jml));
+						->where('no_faktur', $item->no_faktur ?? '');
+
+					if ($gbQuery->exists()) {
+						$gbQuery->increment('stok', floatval($item->jml));
+					} else {
+						DB::table('gudangbarang')->insert([
+							'kode_brng'  => $item->kode_brng,
+							'kd_bangsal' => $targetBangsal,
+							'stok'       => floatval($item->jml),
+							'no_batch'   => $item->no_batch ?? '',
+							'no_faktur'  => $item->no_faktur ?? '',
+						]);
+					}
 				}
 
 				// 3. Hitung total untuk reverse jurnal

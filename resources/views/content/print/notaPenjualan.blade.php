@@ -95,8 +95,8 @@
         @if($setting && $setting->logo)
             <img src="data:image/png;base64,{{ base64_encode($setting->logo) }}" alt="Logo" style="max-height: 38px; margin-bottom: 3px;"><br>
         @endif
-        <div class="nama-instansi">{{ $setting->nama_instansi ?? 'KLINIK / APOTEK' }}</div>
-        <div class="alamat-instansi">{{ $setting->alamat_instansi ?? '' }}</div>
+        <div class="nama-instansi">{!! nl2br(e(str_replace('|', "\n", $setting->nama_instansi ?? 'KLINIK / APOTEK'))) !!}</div>
+        <div class="alamat-instansi">{!! nl2br(e(str_replace('|', "\n", $setting->alamat_instansi ?? ''))) !!}</div>
         <div class="alamat-instansi">{{ $setting->kabupaten ?? '' }} {{ $setting->kontak ? '| Telp: ' . $setting->kontak : '' }}</div>
     </div>
 
