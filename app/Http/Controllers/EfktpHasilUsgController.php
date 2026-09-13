@@ -64,8 +64,10 @@ class EfktpHasilUsgController extends Controller
 		$result = $this->model->with(['pasien', 'regPeriksa.poliklinik', 'dokter'])
 			->whereHas('regPeriksa', function ($query) use ($no_rkm_medis) {
 				return $query->where('no_rkm_medis', $no_rkm_medis);
-			})->get();
-
+			})
+			->orderBy('tgl_periksa', 'desc')
+			->orderBy('jam_periksa', 'desc')
+			->get();
 
 		return $this->success($result);
 	}

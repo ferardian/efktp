@@ -409,6 +409,21 @@
         <div id="collapse-2-tabs" class="accordion-collapse collapse"
              data-bs-parent="#riwayatUsgContainer" style="">
             <div class="accordion-body">
+                <div class="card card-sm mb-3 bg-blue-lt border border-blue-subtle action-salin-wrapper">
+                    <div class="card-body p-2 d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="fw-bold text-primary">
+                                <i class="ti ti-calendar-event me-1"></i> Data Kehamilan Kunjungan Ini
+                            </div>
+                            <div class="text-muted small">
+                                HPHT: <span class="fw-bold text-dark HPHT-badge">-</span> | HPL: <span class="fw-bold text-dark HPL-badge">-</span> | Janin: <span class="fw-bold text-dark janin-badge">-</span>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-primary btn-salin-usg shadow-sm text-nowrap">
+                            <i class="ti ti-copy me-1"></i> Terapkan ke Form
+                        </button>
+                    </div>
+                </div>
                 <h5 class="">OBSTETRI</h5>
                 <div class="datagrid grid-3" id="">
                     <div class="datagrid-item">
@@ -744,10 +759,50 @@
 
                         // update id collapse agar unik
                         const collapseId = `collapse-${index + 1}-tabs`;
-                        html.find('.accordion-button')
-                            .attr('data-bs-target', `#${collapseId}`)
-                            .attr('aria-controls', collapseId)
-                            .text(`${formatTanggal(item.tgl_periksa)} — ${item.dokter.nm_dokter ?? 'Tanpa Dokter'}`);
+                        const currentNoRawat = formHasilUsg.find('input[name=no_rawat]').val();
+                        const isCurrentRawat = (item.no_rawat === currentNoRawat);
+                        const dokterName = item.dokter?.nm_dokter ?? 'Tanpa Dokter';
+                        const tglPeriksaFormatted = formatTanggal(item.tgl_periksa);
+
+                        if (isCurrentRawat) {
+                            html.find('.accordion-button')
+                                .attr('data-bs-target', `#${collapseId}`)
+                                .attr('aria-controls', collapseId)
+                                .html(`<span class="me-2">${tglPeriksaFormatted} — ${dokterName}</span> <span class="badge bg-green text-green-fg ms-auto me-2">Pemeriksaan Ini</span>`);
+
+                            html.find('.action-salin-wrapper').html(`
+                                <div class="card-body p-2 d-flex justify-content-between align-items-center">
+                                    <div class="text-success fw-bold">
+                                        <i class="ti ti-check me-1"></i> Data Hasil USG Kunjungan Saat Ini
+                                    </div>
+                                    <span class="badge bg-green-lt">Aktif di Form</span>
+                                </div>
+                            `);
+                        } else {
+                            html.find('.accordion-button')
+                                .attr('data-bs-target', `#${collapseId}`)
+                                .attr('aria-controls', collapseId)
+                                .text(`${tglPeriksaFormatted} — ${dokterName}`);
+
+                            if (!item.HPHT && !item.HPL) {
+                                html.find('.action-salin-wrapper').html(`
+                                    <div class="card-body p-2 text-muted small">
+                                        <i class="ti ti-info-circle me-1"></i> Tidak ada data HPHT/HPL pada kunjungan ini untuk disalin.
+                                    </div>
+                                `);
+                            } else {
+                                html.find('.HPHT-badge').text(item.HPHT ? formatTanggal(item.HPHT) : '-');
+                                html.find('.HPL-badge').text(item.HPL ? formatTanggal(item.HPL) : '-');
+                                html.find('.janin-badge').text(item.janin || '-');
+
+                                html.find('.btn-salin-usg').on('click', (e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    salinDataKehamilan(item);
+                                });
+                            }
+                        }
+
                         html.find('.accordion-collapse').attr('id', collapseId);
 
                         // isi setiap field dari data
@@ -804,6 +859,59 @@
                 });
         }
 
+        function salinDataKehamilan(item) {
+            if (!item.HPHT && !item.HPL) {
+                showToast('Pemeriksaan ini tidak memiliki data HPHT atau HPL.', 'warning');
+                return;
+            }
+
+            // 1. Salin HPHT & HPL
+            if (item.HPHT) {
+                formHasilUsg.find('input[name=HPHT]').val(item.HPHT);
+            }
+            if (item.HPL) {
+                formHasilUsg.find('input[name=HPL]').val(item.HPL);
+            }
+
+            // 2. Salin Janin dan sesuaikan form kembar
+            if (item.janin) {
+                formHasilUsg.find('select[name=janin]').val(item.janin).trigger('change');
+                const isKembar = item.janin.includes('Kembar');
+                const formUsgKembar = $('#formUsgKembar');
+                if (isKembar) {
+                    formUsgKembar.removeClass('d-none');
+                    if (item.HPL2) {
+                        formHasilUsg.find('input[name=HPL2]').val(item.HPL2);
+                    } else if (item.HPL) {
+                        formHasilUsg.find('input[name=HPL2]').val(item.HPL);
+                    }
+                } else {
+                    formUsgKembar.addClass('d-none');
+                }
+            }
+
+            // 3. Hitung ulang usia kehamilan saat ini dari HPHT
+            if (item.HPHT) {
+                const umurKehamilanBaru = hitungUsiaKehamilan(item.HPHT);
+                formHasilUsg.find('input[name=umur_kehamilan]').val(umurKehamilanBaru);
+                formHasilUsg.find('input[name=umur_kehamilan_gs]').val(umurKehamilanBaru);
+
+                if (item.janin && item.janin.includes('Kembar')) {
+                    formHasilUsg.find('input[name=umur_kehamilan2]').val(umurKehamilanBaru);
+                }
+            }
+
+            // 4. Berikan highlight visual pada input yang terisi
+            const targetInputs = formHasilUsg.find('input[name=HPHT], input[name=HPL], input[name=umur_kehamilan], select[name=janin]');
+            targetInputs.addClass('border-primary bg-primary-lt');
+            setTimeout(() => {
+                targetInputs.removeClass('border-primary bg-primary-lt');
+            }, 2000);
+
+            // 5. Toast notifikasi konfirmasi
+            showToast(`Data kehamilan (${item.HPHT ? 'HPHT: ' + formatTanggal(item.HPHT) : ''}) berhasil diterapkan. Usia kehamilan telah dihitung ulang untuk pemeriksaan hari ini.`, 'success');
+        }
+
         function deleteHasilUsg(no_rawat) {
 
             Swal.fire({
@@ -849,8 +957,8 @@
             const janin = formHasilUsg.find('select[name=janin]').val();
 
             if (janin && janin.includes('Kembar')) {
-                formHasilUsg.find('input[name=umur_kehamilan2]').val(umurKehamilan)
-                formHasilUsg.find('input[name=HPL2]').val(hpht)
+                formHasilUsg.find('input[name=umur_kehamilan2]').val(umurHamil)
+                formHasilUsg.find('input[name=HPL2]').val(HPL)
             } else {
                 formHasilUsg.find('input[name=HPL2]').val(null)
                 formHasilUsg.find('input[name=umur_kehamilan2]').val(null)
