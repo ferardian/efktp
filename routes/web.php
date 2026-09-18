@@ -62,6 +62,12 @@ use App\Http\Controllers\UploadController;
 use App\Http\Controllers\PetugasController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\JadwalController;
+use App\Http\Controllers\TtvLookupController;
+use App\Http\Controllers\PersetujuanPenolakanTindakanController;
+use App\Http\Controllers\PenilaianPreOperasiController;
+use App\Http\Controllers\PenilaianPreAnestesiController;
+use App\Http\Controllers\LaporanAnestesiController;
+use App\Http\Controllers\PerencanaanPemulanganController;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -274,6 +280,47 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::get('/pemeriksaan/mcu/penunjang', [PenilaianMcuController::class, 'getPenunjang']);
 	Route::post('/pemeriksaan/mcu/delete', [PenilaianMcuController::class, 'delete']);
 	Route::get('/pemeriksaan/mcu/print', [PenilaianMcuController::class, 'print']);
+
+	// ==================== REKAM MEDIS ELEKTRONIK (ERM) & TTV LOOKUP ====================
+	// SMART TTV & CLINICAL LOOKUP
+	Route::get('/pemeriksaan/ttv/latest/{no_rawat}', [TtvLookupController::class, 'getLatest']);
+	Route::get('/pemeriksaan/ttv/history/{no_rawat}', [TtvLookupController::class, 'getHistory']);
+
+	// INFORMED CONSENT (PERSETUJUAN / PENOLAKAN TINDAKAN MEDIS)
+	Route::get('/erm/persetujuan-tindakan/list/{no_rawat}', [PersetujuanPenolakanTindakanController::class, 'getByNoRawat']);
+	Route::get('/erm/persetujuan-tindakan/show/{no_pernyataan}', [PersetujuanPenolakanTindakanController::class, 'show']);
+	Route::post('/erm/persetujuan-tindakan', [PersetujuanPenolakanTindakanController::class, 'store']);
+	Route::post('/erm/persetujuan-tindakan/delete', [PersetujuanPenolakanTindakanController::class, 'delete']);
+	Route::get('/erm/persetujuan-tindakan/print/{no_pernyataan}', [PersetujuanPenolakanTindakanController::class, 'print']);
+
+	// KAJIAN PRA BEDAH
+	Route::get('/erm/pra-bedah/list/{no_rawat}', [PenilaianPreOperasiController::class, 'getByNoRawat']);
+	Route::get('/erm/pra-bedah/first', [PenilaianPreOperasiController::class, 'first']);
+	Route::post('/erm/pra-bedah', [PenilaianPreOperasiController::class, 'store']);
+	Route::post('/erm/pra-bedah/delete', [PenilaianPreOperasiController::class, 'delete']);
+	Route::get('/erm/pra-bedah/print', [PenilaianPreOperasiController::class, 'print']);
+
+	// KAJIAN PRA ANESTESI
+	Route::get('/erm/pra-anestesi/list/{no_rawat}', [PenilaianPreAnestesiController::class, 'getByNoRawat']);
+	Route::get('/erm/pra-anestesi/first', [PenilaianPreAnestesiController::class, 'first']);
+	Route::post('/erm/pra-anestesi', [PenilaianPreAnestesiController::class, 'store']);
+	Route::post('/erm/pra-anestesi/delete', [PenilaianPreAnestesiController::class, 'delete']);
+	Route::get('/erm/pra-anestesi/print', [PenilaianPreAnestesiController::class, 'print']);
+
+	// MONITORING ANESTESI SELAMA PEMBIUSAN (LAPORAN ANESTESI)
+	Route::get('/erm/monitoring-anestesi/list/{no_rawat}', [LaporanAnestesiController::class, 'getByNoRawat']);
+	Route::get('/erm/monitoring-anestesi/first', [LaporanAnestesiController::class, 'first']);
+	Route::post('/erm/monitoring-anestesi', [LaporanAnestesiController::class, 'store']);
+	Route::post('/erm/monitoring-anestesi/delete', [LaporanAnestesiController::class, 'delete']);
+	Route::get('/erm/monitoring-anestesi/print', [LaporanAnestesiController::class, 'print']);
+
+	// PERENCANAAN PEMULANGAN (DISCHARGE PLANNING)
+	Route::get('/erm/perencanaan-pemulangan/show/{no_rawat}', [PerencanaanPemulanganController::class, 'show']);
+	Route::get('/erm/perencanaan-pemulangan/get/{no_rawat}', [PerencanaanPemulanganController::class, 'show']);
+	Route::post('/erm/perencanaan-pemulangan', [PerencanaanPemulanganController::class, 'store']);
+	Route::post('/erm/perencanaan-pemulangan/store', [PerencanaanPemulanganController::class, 'store']);
+	Route::post('/erm/perencanaan-pemulangan/delete', [PerencanaanPemulanganController::class, 'delete']);
+	Route::get('/erm/perencanaan-pemulangan/print/{no_rawat}', [PerencanaanPemulanganController::class, 'print']);
 
 	// PEMERIKSAAN GIGI
 	Route::get('/pemeriksaan/gigi', [PemeriksaanGigiController::class, 'get']);

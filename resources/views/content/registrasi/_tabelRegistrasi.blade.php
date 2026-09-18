@@ -204,7 +204,23 @@
                             if (row.pemeriksaan_ralan) {
                                 classBtnPemerisksaan = 'btn-success'
                             }
-                            return `<button type="button" class="btn btn-sm ${classBtnPemerisksaan}" onclick="showCpptRalan('${row.no_rawat}')"><i class="ti ti-file-pencil"></i> CPPT</button>`;
+                            return `<div class="d-flex align-items-center gap-1">
+                                <button type="button" class="btn btn-sm ${classBtnPemerisksaan}" onclick="showCpptRalan('${row.no_rawat}')" title="Buka CPPT"><i class="ti ti-file-pencil"></i> CPPT</button>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle px-2" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Menu ERM">
+                                        <i class="ti ti-clipboard-text"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="z-index: 1055;">
+                                        <li><h6 class="dropdown-header text-uppercase py-1"><i class="ti ti-heart-rate-monitor me-1"></i> Form Medis & ERM</h6></li>
+                                        <li><a class="dropdown-item py-1" href="javascript:void(0)" onclick="bukaInformedConsent('${row.no_rawat}')"><i class="ti ti-file-certificate text-primary me-2"></i> Informed Consent</a></li>
+                                        <li><a class="dropdown-item py-1" href="javascript:void(0)" onclick="bukaKajianPraBedah('${row.no_rawat}')"><i class="ti ti-cut text-danger me-2"></i> Kajian Pra Bedah</a></li>
+                                        <li><a class="dropdown-item py-1" href="javascript:void(0)" onclick="bukaKajianPraAnestesi('${row.no_rawat}')"><i class="ti ti-needle text-info me-2"></i> Kajian Pra Anestesi</a></li>
+                                        <li><a class="dropdown-item py-1" href="javascript:void(0)" onclick="bukaMonitoringAnestesi('${row.no_rawat}')"><i class="ti ti-activity-heartbeat text-warning me-2"></i> Monitoring Anestesi</a></li>
+                                        <li><hr class="dropdown-divider my-1"></li>
+                                        <li><a class="dropdown-item py-1" href="javascript:void(0)" onclick="bukaPerencanaanPemulangan('${row.no_rawat}')"><i class="ti ti-door-exit text-teal me-2"></i> Perencanaan Pemulangan</a></li>
+                                    </ul>
+                                </div>
+                            </div>`;
                         },
                     },
 

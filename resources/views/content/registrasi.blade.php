@@ -65,6 +65,11 @@
     @include('content.registrasi._modalKamarInap')
     @include('content.pemeriksaan.modal.rmIgd._modalRmIgd')
     @include('content.pemeriksaan.modal.triaseUgd._modalTriaseUgd')
+    @include('content.erm._modalInformedConsent')
+    @include('content.erm._modalKajianPraBedah')
+    @include('content.erm._modalKajianPraAnestesi')
+    @include('content.erm._modalMonitoringAnestesi')
+    @include('content.erm._modalPerencanaanPemulangan')
 @endsection
 @push('script')
     <script>

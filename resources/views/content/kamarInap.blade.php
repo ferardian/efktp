@@ -62,6 +62,11 @@
     @include('content.registrasi._modalRiwayat')
     @include('content.laboratorium.modal._modalPermintaanLab')
     @include('content.kamarInap.penilaianAwal._modalPenilaianAwalKeperawatanRanap')
+    @include('content.erm._modalInformedConsent')
+    @include('content.erm._modalKajianPraBedah')
+    @include('content.erm._modalKajianPraAnestesi')
+    @include('content.erm._modalMonitoringAnestesi')
+    @include('content.erm._modalPerencanaanPemulangan')
 @endsection
 @push('script')
     <script>
@@ -161,8 +166,25 @@
                     title: '',
                     data: 'no_rawat',
                     render: (data, type, row, meta) => {
-                        let btn = `<button class="btn btn-success btn-sm" type="button" onclick="cpptRanap('${data}')" title="CPPT"><i class="ti ti-pencil"></i></button>
-                                   <button class="btn btn-primary btn-sm" type="button" onclick="riwayat('${row.reg_periksa.no_rkm_medis}')" title="Riwayat Perawatan"><i class="ti ti-folder-open"></i></button>`;
+                        let btn = `<div class="d-flex align-items-center gap-1">
+                                    <button class="btn btn-success btn-sm" type="button" onclick="cpptRanap('${data}')" title="CPPT"><i class="ti ti-pencil"></i></button>
+                                    <button class="btn btn-primary btn-sm" type="button" onclick="riwayat('${row.reg_periksa.no_rkm_medis}')" title="Riwayat Perawatan"><i class="ti ti-folder-open"></i></button>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle px-2" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Menu ERM & Dokumen Klinis">
+                                            <i class="ti ti-notes"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="z-index: 1055;">
+                                            <li><h6 class="dropdown-header text-uppercase py-1"><i class="ti ti-heart-rate-monitor me-1"></i> Form Medis & ERM</h6></li>
+                                            <li><a class="dropdown-item py-1" href="javascript:void(0)" onclick="bukaInformedConsent('${row.no_rawat}')"><i class="ti ti-file-certificate text-primary me-2"></i> Informed Consent</a></li>
+                                            <li><a class="dropdown-item py-1" href="javascript:void(0)" onclick="bukaKajianPraBedah('${row.no_rawat}')"><i class="ti ti-cut text-danger me-2"></i> Kajian Pra Bedah</a></li>
+                                            <li><a class="dropdown-item py-1" href="javascript:void(0)" onclick="bukaKajianPraAnestesi('${row.no_rawat}')"><i class="ti ti-needle text-info me-2"></i> Kajian Pra Anestesi</a></li>
+                                            <li><a class="dropdown-item py-1" href="javascript:void(0)" onclick="bukaMonitoringAnestesi('${row.no_rawat}')"><i class="ti ti-activity-heartbeat text-warning me-2"></i> Monitoring Anestesi</a></li>
+                                            <li><hr class="dropdown-divider my-1"></li>
+                                            <li><a class="dropdown-item py-1" href="javascript:void(0)" onclick="bukaPerencanaanPemulangan('${row.no_rawat}')"><i class="ti ti-door-exit text-teal me-2"></i> Perencanaan Pemulangan</a></li>
+                                            <li><a class="dropdown-item py-1" href="javascript:void(0)" onclick="penilaianAwalKeperawatanRanap('${row.no_rawat}')"><i class="ti ti-clipboard-check text-success me-2"></i> Kajian Awal Keperawatan</a></li>
+                                        </ul>
+                                    </div>
+                                </div>`;
                         
                         return btn;
                     }
