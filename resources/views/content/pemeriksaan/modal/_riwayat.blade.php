@@ -465,14 +465,20 @@
                                          </div>
      
                                      </div>
-                                     <button class="btn btn-sm btn-primary mt-3" type="button" onclick="salinCppt('${result.no_rawat}', '${result.nip}')">
-                                         <i class="ti ti-copy me-1"></i> Copy CPPT
-                                     </button>
-                                     <button class="btn btn-sm btn-success mt-3" type="button" onclick="modalUploadPenunjang('${result.no_rawat}')">
-                                         <i class="ti ti-eye me-1"></i> Berkas Upload
-                                     </button>
-                                     ${narkoDrugs.length ? '<span class="badge bg-danger text-white mt-3 ms-2 py-1 px-2"><i class="ti ti-alert-triangle me-1"></i> Resep Narkotika</span>' : ''}
-                                     ${psikoDrugs.length ? '<span class="badge text-white mt-3 ms-2 py-1 px-2" style="background-color: #6f42c1;"><i class="ti ti-alert-circle me-1"></i> Resep Psikotropika</span>' : ''}
+                                     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-3 pt-2 border-top">
+                                         <div class="d-flex gap-2 align-items-center">
+                                             <button class="btn btn-sm btn-primary" type="button" onclick="salinCppt('${result.no_rawat}', '${result.nip}')">
+                                                 <i class="ti ti-copy me-1"></i> Copy CPPT
+                                             </button>
+                                             <button class="btn btn-sm btn-success" type="button" onclick="modalUploadPenunjang('${result.no_rawat}')">
+                                                 <i class="ti ti-eye me-1"></i> Berkas Upload
+                                             </button>
+                                         </div>
+                                         <div class="d-flex gap-1 align-items-center">
+                                             ${narkoDrugs.length ? '<span class="badge bg-danger-lt border border-danger px-2 py-1"><i class="ti ti-alert-triangle me-1"></i> Resep Narkotika</span>' : ''}
+                                             ${psikoDrugs.length ? '<span class="badge bg-purple-lt border border-purple px-2 py-1"><i class="ti ti-alert-circle me-1"></i> Resep Psikotropika</span>' : ''}
+                                         </div>
+                                     </div>
  
                                  </div>
                              </div>`
