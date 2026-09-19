@@ -279,8 +279,9 @@
                 let textPlan = `RESEP : \n`
                 if (response.resep_dokter.length) {
                     response.resep_dokter.map((rd) => {
-
-                        textPlan += `${rd.obat.nama_brng} : ${rd.jml} ${rd.obat.satuan?.satuan} aturan ${rd.aturan_pakai};\n`
+                        const gol = typeof getGolonganObatBadge === 'function' ? getGolonganObatBadge(rd.obat?.golongan, rd.obat?.kode_golongan) : null;
+                        const prefix = gol ? `[${gol.label}] ` : '';
+                        textPlan += `${prefix}${rd.obat.nama_brng} : ${rd.jml} ${rd.obat.satuan?.satuan} aturan ${rd.aturan_pakai};\n`
                     })
                 }
                 if (response.resep_racikan.length) {
@@ -288,7 +289,9 @@
                         textPlan += `${rr.no_racik}. ${rr.nama_racik} : ${rr.jml_dr} ${rr.metode.nm_racik} aturan ${rr.aturan_pakai} \n`
                         if (rr.detail.length) {
                             rr.detail.map((detail) => {
-                                textPlan += `---${detail.obat.nama_brng} : dosis ${detail.kandungan} mg ;\n`
+                                const gol = typeof getGolonganObatBadge === 'function' ? getGolonganObatBadge(detail.obat?.golongan, detail.obat?.kode_golongan) : null;
+                                const prefix = gol ? `[${gol.label}] ` : '';
+                                textPlan += `---${prefix}${detail.obat.nama_brng} : dosis ${detail.kandungan} mg ;\n`
                             })
                         }
                     })

@@ -260,15 +260,26 @@ function getDataForm(form, element, except = []) {
     return data;
 }
 
-function stringPemeriksaan(value) {
+function stringPemeriksaan(value, narkoDrugs = [], psikoDrugs = []) {
     if (value) {
         const arrValue = value.split('\n');
         let string = '';
         for (let index = 0; index < arrValue.length; index++) {
-            string += `${arrValue[index]}<br/>`;
-        }
-        return string
+            let line = arrValue[index];
 
+            if (line.includes('[NARKO]')) {
+                line = line.replace(/\[NARKO\]\s*/g, '<span class="badge bg-danger text-white me-1" style="font-size: 0.70rem; padding: 2px 5px; vertical-align: middle;">NARKO</span><span class="text-danger fw-bold">') + '</span>';
+            } else if (line.includes('[PSIKO]')) {
+                line = line.replace(/\[PSIKO\]\s*/g, '<span class="badge text-white me-1" style="background-color: #6f42c1; font-size: 0.70rem; padding: 2px 5px; vertical-align: middle;">PSIKO</span><span class="fw-bold" style="color: #6f42c1 !important;">') + '</span>';
+            } else if (Array.isArray(narkoDrugs) && narkoDrugs.length && narkoDrugs.some(name => name && line.toLowerCase().includes(name.toLowerCase()))) {
+                line = `<span class="badge bg-danger text-white me-1" style="font-size: 0.70rem; padding: 2px 5px; vertical-align: middle;">NARKO</span><span class="text-danger fw-bold">${line}</span>`;
+            } else if (Array.isArray(psikoDrugs) && psikoDrugs.length && psikoDrugs.some(name => name && line.toLowerCase().includes(name.toLowerCase()))) {
+                line = `<span class="badge text-white me-1" style="background-color: #6f42c1; font-size: 0.70rem; padding: 2px 5px; vertical-align: middle;">PSIKO</span><span class="fw-bold" style="color: #6f42c1 !important;">${line}</span>`;
+            }
+
+            string += `${line}<br/>`;
+        }
+        return string;
     }
     return '';
 }

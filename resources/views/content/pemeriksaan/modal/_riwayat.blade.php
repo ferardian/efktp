@@ -400,52 +400,82 @@
                                     </div>
                                 </div>
                             </div>`
+                        const narkoDrugs = [];
+                        const psikoDrugs = [];
+                        if (result.resep && Array.isArray(result.resep)) {
+                            result.resep.forEach(r => {
+                                if (r.resep_dokter && Array.isArray(r.resep_dokter)) {
+                                    r.resep_dokter.forEach(rd => {
+                                        if (rd.obat) {
+                                            const gol = typeof getGolonganObatBadge === 'function' ? getGolonganObatBadge(rd.obat.golongan, rd.obat.kode_golongan) : null;
+                                            if (gol && gol.type === 'narko') narkoDrugs.push(rd.obat.nama_brng);
+                                            if (gol && gol.type === 'psiko') psikoDrugs.push(rd.obat.nama_brng);
+                                        }
+                                    });
+                                }
+                                if (r.resep_racikan && Array.isArray(r.resep_racikan)) {
+                                    r.resep_racikan.forEach(rr => {
+                                        if (rr.detail && Array.isArray(rr.detail)) {
+                                            rr.detail.forEach(rrd => {
+                                                if (rrd.obat) {
+                                                    const gol = typeof getGolonganObatBadge === 'function' ? getGolonganObatBadge(rrd.obat.golongan, rrd.obat.kode_golongan) : null;
+                                                    if (gol && gol.type === 'narko') narkoDrugs.push(rrd.obat.nama_brng);
+                                                    if (gol && gol.type === 'psiko') psikoDrugs.push(rrd.obat.nama_brng);
+                                                }
+                                            });
+                                        }
+                                    });
+                                }
+                            });
+                        }
+
                         const pemeriksaan = `<div class="card mb-1">
                                 <div class="ribbon bg-red">SOAP</div>
                                 <div class="card-body card-text">
-                                    <div class="row gy-2">
-                                        <div class="col-sm-12 col-md-12 col-lg-3 col-xl-3">
-                                            <strong>Subjek </strong>
-                                        </div>
-                                        <div class="col-sm-12 col-md-12 col-lg-9 col-xl-9">
-                                             : ${stringPemeriksaan(result.keluhan)}
-                                        </div>
-                                        <div class="col-sm-12 col-md-12 col-lg-3 col-xl-3">
-                                            <strong>Objek </strong>
-                                        </div>
-                                        <div class="col-sm-12 col-md-12 col-lg-9 col-xl-9">
-                                             : ${stringPemeriksaan(result.pemeriksaan)}
-                                        </div>
-                                        <div class="col-sm-12 col-md-12 col-lg-3 col-xl-3">
-                                           <strong> Asesmen </strong>
-                                        </div>
-                                        <div class="col-sm-12 col-md-12 col-lg-9 col-xl-9">
-                                             : ${stringPemeriksaan(result.penilaian)}
-                                        </div>
-                                        <div class="col-sm-12 col-md-12 col-lg-3 col-xl-3">
-                                            <strong>Plan </strong>
-                                        </div>
-                                        <div class="col-sm-12 col-md-12 col-lg-9 col-xl-9">
-                                             : ${stringPemeriksaan(result.rtl)}
-                                        </div>
-                                        <div class="col-sm-12 col-md-12 col-lg-3 col-xl-3">
-                                            <strong>Instruksi </strong>
-                                        </div>
-                                        <div class="col-sm-12 col-md-12 col-lg-9 col-xl-9">
-                                             : ${stringPemeriksaan(result.instruksi)}
-                                        </div>
-    
-                                    </div>
-                                    <button class="btn btn-sm btn-primary mt-3" type="button" onclick="salinCppt('${result.no_rawat}', '${result.nip}')">
-                                        <i class="ti ti-copy me-1"></i> Copy CPPT
-                                    </button>
-                                    <button class="btn btn-sm btn-success mt-3" type="button" onclick="modalUploadPenunjang('${result.no_rawat}')">
-                                        <i class="ti ti-eye me-1"></i> Berkas Upload
-                                    </button>
-                                    ${result.resep.length ? 'zzzz' : 'xxxxx'}
-
-                                </div>
-                            </div>`
+                                     <div class="row gy-2">
+                                         <div class="col-sm-12 col-md-12 col-lg-3 col-xl-3">
+                                             <strong>Subjek </strong>
+                                         </div>
+                                         <div class="col-sm-12 col-md-12 col-lg-9 col-xl-9">
+                                              : ${stringPemeriksaan(result.keluhan)}
+                                         </div>
+                                         <div class="col-sm-12 col-md-12 col-lg-3 col-xl-3">
+                                             <strong>Objek </strong>
+                                         </div>
+                                         <div class="col-sm-12 col-md-12 col-lg-9 col-xl-9">
+                                              : ${stringPemeriksaan(result.pemeriksaan)}
+                                         </div>
+                                         <div class="col-sm-12 col-md-12 col-lg-3 col-xl-3">
+                                            <strong> Asesmen </strong>
+                                         </div>
+                                         <div class="col-sm-12 col-md-12 col-lg-9 col-xl-9">
+                                              : ${stringPemeriksaan(result.penilaian)}
+                                         </div>
+                                         <div class="col-sm-12 col-md-12 col-lg-3 col-xl-3">
+                                             <strong>Plan </strong>
+                                         </div>
+                                         <div class="col-sm-12 col-md-12 col-lg-9 col-xl-9">
+                                              : ${stringPemeriksaan(result.rtl, narkoDrugs, psikoDrugs)}
+                                         </div>
+                                         <div class="col-sm-12 col-md-12 col-lg-3 col-xl-3">
+                                             <strong>Instruksi </strong>
+                                         </div>
+                                         <div class="col-sm-12 col-md-12 col-lg-9 col-xl-9">
+                                              : ${stringPemeriksaan(result.instruksi)}
+                                         </div>
+     
+                                     </div>
+                                     <button class="btn btn-sm btn-primary mt-3" type="button" onclick="salinCppt('${result.no_rawat}', '${result.nip}')">
+                                         <i class="ti ti-copy me-1"></i> Copy CPPT
+                                     </button>
+                                     <button class="btn btn-sm btn-success mt-3" type="button" onclick="modalUploadPenunjang('${result.no_rawat}')">
+                                         <i class="ti ti-eye me-1"></i> Berkas Upload
+                                     </button>
+                                     ${narkoDrugs.length ? '<span class="badge bg-danger text-white mt-3 ms-2 py-1 px-2"><i class="ti ti-alert-triangle me-1"></i> Resep Narkotika</span>' : ''}
+                                     ${psikoDrugs.length ? '<span class="badge text-white mt-3 ms-2 py-1 px-2" style="background-color: #6f42c1;"><i class="ti ti-alert-circle me-1"></i> Resep Psikotropika</span>' : ''}
+ 
+                                 </div>
+                             </div>`
                         let htmlInfoMasuk = '';
                         if (result.reg_periksa && (result.reg_periksa.triase_igd || result.reg_periksa.penilaian_medis_igd)) {
                             htmlInfoMasuk = '<div class="card mb-1 shadow-none border-info"><div class="card-body p-2"><h4 class="card-title text-info mb-2"><i class="ti ti-info-circle"></i> INFORMASI MASUK (IGD)</h4>';
