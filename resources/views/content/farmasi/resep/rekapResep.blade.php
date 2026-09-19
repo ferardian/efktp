@@ -256,7 +256,10 @@
                         title: 'Nama Obat',
                         width: '50%',
                         className: 'text-start',
-                        render: function(data) {
+                        render: function(data, type, row) {
+                            if (typeof formatNamaObatWithGolongan === 'function') {
+                                return formatNamaObatWithGolongan(data, row.nama_golongan, row.kode_golongan);
+                            }
                             return `<span class="font-weight-bold text-dark" style="font-size: 11.5px;">${data}</span>`;
                         }
                     },

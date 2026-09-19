@@ -692,7 +692,8 @@ class ResepObatController extends Controller
 			->mergeBindings($unionQuery)
 			->join('databarang as db', 'detail.kode_brng', '=', 'db.kode_brng')
 			->leftJoin('kodesatuan as ks', 'db.kode_sat', '=', 'ks.kode_sat')
-			->select('db.kode_brng', 'db.nama_brng', 'ks.satuan', DB::raw('SUM(detail.jml) as total_qty'))
+			->leftJoin('golongan_barang as gb', 'db.kode_golongan', '=', 'gb.kode')
+			->select('db.kode_brng', 'db.nama_brng', 'db.kode_golongan', 'gb.nama as nama_golongan', 'ks.satuan', DB::raw('SUM(detail.jml) as total_qty'))
 			->whereBetween('detail.tgl_peresepan', [$tgl_awal, $tgl_akhir]);
 
 		if ($kd_poli) {
@@ -711,7 +712,7 @@ class ResepObatController extends Controller
 				->whereNotNull('detail.tgl_perawatan');
 		}
 
-		return $query->groupBy('db.kode_brng', 'db.nama_brng', 'ks.satuan')
+		return $query->groupBy('db.kode_brng', 'db.nama_brng', 'db.kode_golongan', 'gb.nama', 'ks.satuan')
 			->orderBy('db.nama_brng', 'asc')
 			->get();
 	}
