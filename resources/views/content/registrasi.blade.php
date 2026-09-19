@@ -70,6 +70,7 @@
     @include('content.erm._modalKajianPraAnestesi')
     @include('content.erm._modalMonitoringAnestesi')
     @include('content.erm._modalPerencanaanPemulangan')
+    @include('content.erm._modalPemantauanAnestesiBedah')
 @endsection
 @push('script')
     <script>

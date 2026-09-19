@@ -216,6 +216,7 @@
                                         <li><a class="dropdown-item py-1" href="javascript:void(0)" onclick="bukaKajianPraBedah('${row.no_rawat}')"><i class="ti ti-cut text-danger me-2"></i> Kajian Pra Bedah</a></li>
                                         <li><a class="dropdown-item py-1" href="javascript:void(0)" onclick="bukaKajianPraAnestesi('${row.no_rawat}')"><i class="ti ti-needle text-info me-2"></i> Kajian Pra Anestesi</a></li>
                                         <li><a class="dropdown-item py-1" href="javascript:void(0)" onclick="bukaMonitoringAnestesi('${row.no_rawat}')"><i class="ti ti-activity-heartbeat text-warning me-2"></i> Monitoring Anestesi</a></li>
+                                        <li><a class="dropdown-item py-1" href="javascript:void(0)" onclick="bukaPemantauanAnestesiBedah('${row.no_rawat}')"><i class="ti ti-report-medical text-indigo me-2"></i> Sign In & Pemantauan Fisiologi</a></li>
                                         <li><hr class="dropdown-divider my-1"></li>
                                         <li><a class="dropdown-item py-1" href="javascript:void(0)" onclick="bukaPerencanaanPemulangan('${row.no_rawat}')"><i class="ti ti-door-exit text-teal me-2"></i> Perencanaan Pemulangan</a></li>
                                     </ul>

@@ -68,6 +68,7 @@ use App\Http\Controllers\PenilaianPreOperasiController;
 use App\Http\Controllers\PenilaianPreAnestesiController;
 use App\Http\Controllers\LaporanAnestesiController;
 use App\Http\Controllers\PerencanaanPemulanganController;
+use App\Http\Controllers\PemantauanAnestesiBedahController;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -321,6 +322,13 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::post('/erm/perencanaan-pemulangan/store', [PerencanaanPemulanganController::class, 'store']);
 	Route::post('/erm/perencanaan-pemulangan/delete', [PerencanaanPemulanganController::class, 'delete']);
 	Route::get('/erm/perencanaan-pemulangan/print/{no_rawat}', [PerencanaanPemulanganController::class, 'print']);
+
+	// BUKTI SIGN IN ANESTESI & PEMANTAUAN FISIOLOGI BEDAH
+	Route::get('/erm/pemantauan-anestesi-bedah/get/{no_rawat}', [PemantauanAnestesiBedahController::class, 'get']);
+	Route::post('/erm/pemantauan-anestesi-bedah/store-signin', [PemantauanAnestesiBedahController::class, 'storeSignin']);
+	Route::post('/erm/pemantauan-anestesi-bedah/store-pemantauan', [PemantauanAnestesiBedahController::class, 'storePemantauan']);
+	Route::post('/erm/pemantauan-anestesi-bedah/delete', [PemantauanAnestesiBedahController::class, 'delete']);
+	Route::get('/erm/pemantauan-anestesi-bedah/print/{no_rawat}', [PemantauanAnestesiBedahController::class, 'print']);
 
 	// PEMERIKSAAN GIGI
 	Route::get('/pemeriksaan/gigi', [PemeriksaanGigiController::class, 'get']);
