@@ -475,8 +475,8 @@
                                              </button>
                                          </div>
                                          <div class="d-flex gap-1 align-items-center">
-                                             ${narkoDrugs.length ? '<span class="badge bg-danger-lt border border-danger px-2 py-1"><i class="ti ti-alert-triangle me-1"></i> Resep Narkotika</span>' : ''}
-                                             ${psikoDrugs.length ? '<span class="badge bg-purple-lt border border-purple px-2 py-1"><i class="ti ti-alert-circle me-1"></i> Resep Psikotropika</span>' : ''}
+                                             ${narkoDrugs.length ? '<span class="badge bg-danger-lt border border-danger px-2 py-1 d-inline-flex align-items-center" style="gap: 5px; line-height: 1;"><i class="ti ti-alert-triangle" style="font-size: 1.15em; line-height: 1; display: inline-flex; align-items: center;"></i><span style="line-height: 1;">Resep Narkotika</span></span>' : ''}
+                                             ${psikoDrugs.length ? '<span class="badge bg-purple-lt border border-purple px-2 py-1 d-inline-flex align-items-center" style="gap: 5px; line-height: 1;"><i class="ti ti-alert-circle" style="font-size: 1.15em; line-height: 1; display: inline-flex; align-items: center;"></i><span style="line-height: 1;">Resep Psikotropika</span></span>' : ''}
                                          </div>
                                      </div>
  
