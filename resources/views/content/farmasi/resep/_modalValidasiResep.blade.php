@@ -133,12 +133,15 @@
                 const qtyDr = parseFloat(item.jml || 0);
                 const isStokCukup = stok >= qtyDr;
                 const badgeStokClass = isStokCukup ? 'bg-success-subtle text-success border border-success' : 'bg-danger-subtle text-danger border border-danger';
+                const gol = typeof getGolonganObatBadge === 'function' ? getGolonganObatBadge(obat.golongan, obat.kode_golongan) : null;
+                const namaDisplay = typeof formatNamaObatWithGolongan === 'function' ? formatNamaObatWithGolongan(obat.nama_brng || item.kode_brng, obat.golongan, obat.kode_golongan) : (obat.nama_brng || item.kode_brng);
+                const trStyle = gol ? (gol.type === 'narko' ? 'style="background-color: #fff5f5;"' : 'style="background-color: #fbf7fe;"') : '';
 
                 const tr = `
-                    <tr data-kode-brng="${item.kode_brng}">
+                    <tr data-kode-brng="${item.kode_brng}" ${trStyle}>
                         <td><span class="badge bg-secondary-subtle text-dark border">${item.kode_brng}</span></td>
                         <td>
-                            <div class="fw-bold text-dark">${obat.nama_brng || item.kode_brng}</div>
+                            <div class="fw-bold">${namaDisplay}</div>
                             <small class="text-muted">Satuan: ${satuan}</small>
                         </td>
                         <td class="text-center">
@@ -181,12 +184,15 @@
                         const qtyDr = parseFloat(d.jml || 0);
                         const isStokCukup = stok >= qtyDr;
                         const badgeStokClass = isStokCukup ? 'bg-success-subtle text-success border border-success' : 'bg-danger-subtle text-danger border border-danger';
+                        const dGol = typeof getGolonganObatBadge === 'function' ? getGolonganObatBadge(obat.golongan, obat.kode_golongan) : null;
+                        const dNamaDisplay = typeof formatNamaObatWithGolongan === 'function' ? formatNamaObatWithGolongan(obat.nama_brng || d.kode_brng, obat.golongan, obat.kode_golongan) : (obat.nama_brng || d.kode_brng);
+                        const dTrStyle = dGol ? (dGol.type === 'narko' ? 'style="background-color: #fff5f5;"' : 'style="background-color: #fbf7fe;"') : '';
 
                         detailRows += `
-                            <tr data-no-racik="${racik.no_racik}" data-kode-brng="${d.kode_brng}">
+                            <tr data-no-racik="${racik.no_racik}" data-kode-brng="${d.kode_brng}" ${dTrStyle}>
                                 <td><span class="badge bg-secondary-subtle text-dark border">${d.kode_brng}</span></td>
                                 <td>
-                                    <div class="fw-bold text-dark">${obat.nama_brng || d.kode_brng}</div>
+                                    <div class="fw-bold">${dNamaDisplay}</div>
                                     <small class="text-muted">Satuan: ${satuan}</small>
                                 </td>
                                 <td class="text-center">

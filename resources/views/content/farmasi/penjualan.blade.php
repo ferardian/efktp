@@ -914,7 +914,7 @@
                     <td class="text-center">${index + 1}</td>
                     <td class="font-monospace small text-muted">${item.kode_brng}</td>
                     <td>
-                        <div class="fw-bold text-dark">${item.nama_brng}</div>
+                        <div class="fw-bold">${typeof formatNamaObatWithGolongan === 'function' ? formatNamaObatWithGolongan(item.nama_brng, item.golongan, item.kode_golongan) : item.nama_brng}</div>
                         ${mult > 1 ? `<small class="text-muted"><i class="ti ti-box me-1"></i>1 ${item.current_satuan_name} = ${mult} ${item.satuan}</small>` : ''}
                     </td>
                     <td class="text-center" style="min-width: 100px;">${satuanSelect}</td>

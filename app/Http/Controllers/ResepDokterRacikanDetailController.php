@@ -28,7 +28,7 @@ class ResepDokterRacikanDetailController extends Controller
 			'no_racik' => $request->no_racik,
 		];
 
-		$resepDetail = ResepDokterRacikanDetail::where($keys)->with('obat.satuan', 'obat.jenis')->get();
+		$resepDetail = ResepDokterRacikanDetail::where($keys)->with('obat.satuan', 'obat.jenis', 'obat.golongan')->get();
 		return response()->json($resepDetail);
 	}
 

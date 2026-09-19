@@ -15,7 +15,7 @@ class ResepDokterController extends Controller
     public function get(Request $request)
     {
         $resep = ResepDokter::where('no_resep', $request->no_resep)
-            ->with('obat.satuan')->get();
+            ->with(['obat.satuan', 'obat.golongan'])->get();
         return response()->json($resep);
     }
 

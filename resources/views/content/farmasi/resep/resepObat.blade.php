@@ -199,12 +199,18 @@
             }).done((response) => {
                 if (response.resep_dokter.length || response.resep_racikan.length) {
                     const resepDokter = response.resep_dokter.map((item, index) => {
-                        return `<li>${item.obat.nama_brng} @${item.jml} ${item.obat.satuan.satuan} S.${item.aturan_pakai}</li>`;
+                        const namaHtml = typeof formatNamaObatWithGolongan === 'function'
+                            ? formatNamaObatWithGolongan(item.obat.nama_brng, item.obat.golongan, item.obat.kode_golongan)
+                            : item.obat.nama_brng;
+                        return `<li>${namaHtml} @${item.jml} ${item.obat.satuan.satuan} S.${item.aturan_pakai}</li>`;
                     }).join('')
 
                     const resepRacikan = response.resep_racikan.map((item, index) => {
                         const detail = item.detail.map((subItem) => {
-                            return `<li>${subItem.obat.nama_brng} @${subItem.jml} ${subItem.obat.satuan.satuan}</li>`;
+                            const subNamaHtml = typeof formatNamaObatWithGolongan === 'function'
+                                ? formatNamaObatWithGolongan(subItem.obat.nama_brng, subItem.obat.golongan, subItem.obat.kode_golongan)
+                                : subItem.obat.nama_brng;
+                            return `<li>${subNamaHtml} @${subItem.jml} ${subItem.obat.satuan.satuan}</li>`;
                         }).join('');
                         return `<li>${item.metode.nm_racik} ${item.nama_racik} @${item.jml_dr} S.${item.aturan_pakai}<ul>${detail}</ul></li>`;
                     }).join('')

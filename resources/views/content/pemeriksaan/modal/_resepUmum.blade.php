@@ -49,8 +49,11 @@
                     const rowObat = reseps.map((resepDokter, index) => {
                         const numb = parseInt(index) + 1
                         const subTotal = resepDokter.jml * resepDokter.obat.ralan
+                        const namaObatDisplay = typeof formatNamaObatWithGolongan === 'function'
+                            ? formatNamaObatWithGolongan(resepDokter.obat.nama_brng, resepDokter.obat.golongan, resepDokter.obat.kode_golongan)
+                            : resepDokter.obat.nama_brng;
                         return `<tr id="row${numb}">
-                            <td id="obatUmum${numb}">${resepDokter.obat.nama_brng}</td>
+                            <td id="obatUmum${numb}">${namaObatDisplay}</td>
                             <td id="harga${numb}" class="text-end">${formatCurrency(resepDokter.obat.ralan)}</td>
                             <td id="jmlUmum${numb}">${resepDokter.jml} ${resepDokter.obat.satuan?.satuan}</td>
                             <td id="aturanUmum${numb}">${resepDokter.aturan_pakai}</td>

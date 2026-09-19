@@ -756,7 +756,9 @@ class ResepObatController extends Controller
 				'regPeriksa.poliklinik',
 				'regPeriksa.penjab',
 				'resepDokter.obat.satuan',
+				'resepDokter.obat.golongan',
 				'resepRacikan.detail.obat.satuan',
+				'resepRacikan.detail.obat.golongan',
 				'resepRacikan.metode'
 			])
 			->first();

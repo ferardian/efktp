@@ -120,7 +120,7 @@ class PenjualanController extends Controller
         $term = trim($request->term ?? $request->q ?? '');
         $kdBangsal = $request->kd_bangsal ?? 'AP';
 
-        $query = DataBarang::with(['satuan', 'satuanBesar', 'jenis', 'kategori'])
+        $query = DataBarang::with(['satuan', 'satuanBesar', 'jenis', 'kategori', 'golongan'])
             ->where('status', '1');
 
         if (!empty($term)) {

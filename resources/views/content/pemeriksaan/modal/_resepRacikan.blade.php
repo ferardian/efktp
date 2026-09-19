@@ -40,7 +40,21 @@
                         let detailObat = '';
                         if (racikan.detail.length) {
                             obat = racikan.detail.map((isian) => {
-                                return `<span class="badge badge-outline text-purple m-1" style="font-size:10px">${isian.obat.nama_brng} (${isian.kandungan} mg)</span>`
+                                const gol = typeof getGolonganObatBadge === 'function' ? getGolonganObatBadge(isian.obat.golongan, isian.obat.kode_golongan) : null;
+                                let badgeClass = 'badge badge-outline text-purple m-1';
+                                let badgeStyle = 'font-size:10px;';
+                                let prefix = '';
+                                if (gol) {
+                                    if (gol.type === 'narko') {
+                                        badgeClass = 'badge bg-danger text-white m-1';
+                                        prefix = '[NARKO] ';
+                                    } else {
+                                        badgeClass = 'badge text-white m-1';
+                                        badgeStyle += ' background-color: #6f42c1;';
+                                        prefix = '[PSIKO] ';
+                                    }
+                                }
+                                return `<span class="${badgeClass}" style="${badgeStyle}">${prefix}${isian.obat.nama_brng} (${isian.kandungan} mg)</span>`;
                             }).join('')
                             detailObat = `<tr>
                                     <td></td>

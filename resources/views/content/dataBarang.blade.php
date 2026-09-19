@@ -394,7 +394,12 @@
                         data: 'nama_brng',
                         name: 'nama_brng',
                         defaultContent: '-',
-                        render: (data) => data ?? '-'
+                        render: (data, type, row) => {
+                            if (typeof formatNamaObatWithGolongan === 'function') {
+                                return formatNamaObatWithGolongan(data ?? '-', row.golongan, row.kode_golongan);
+                            }
+                            return data ?? '-';
+                        }
                     },
                     {
                         data: 'kapasitas',

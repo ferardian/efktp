@@ -669,6 +669,58 @@ function selectPenjab(element, parrent) {
     return select2;
 }
 
+function getGolonganObatBadge(golongan, kode_golongan = '') {
+    let namaGol = '';
+    let kdGol = '';
+
+    if (golongan && typeof golongan === 'object') {
+        namaGol = golongan.nama || '';
+        kdGol = golongan.kode || '';
+    } else if (typeof golongan === 'string') {
+        namaGol = golongan;
+    }
+
+    if (!kdGol && typeof kode_golongan === 'string') {
+        kdGol = kode_golongan;
+    }
+
+    // Narkotika: G07 or name contains narko
+    if (/narko/i.test(namaGol) || kdGol === 'G07') {
+        return {
+            type: 'narko',
+            label: 'NARKO',
+            color: '#d63939',
+            badgeClass: 'badge bg-danger text-white',
+            textClass: 'text-danger fw-bold'
+        };
+    }
+
+    // Psikotropika: G01 or name contains psiko
+    if (/psiko/i.test(namaGol) || kdGol === 'G01') {
+        return {
+            type: 'psiko',
+            label: 'PSIKO',
+            color: '#6f42c1',
+            badgeClass: 'badge text-white',
+            badgeStyle: 'background-color: #6f42c1;',
+            textClass: 'fw-bold',
+            textStyle: 'color: #6f42c1 !important;'
+        };
+    }
+
+    return null;
+}
+
+function formatNamaObatWithGolongan(nama_brng, golongan, kode_golongan = '') {
+    const info = getGolonganObatBadge(golongan, kode_golongan);
+    if (info) {
+        const styleAttr = info.textStyle ? `style="${info.textStyle}"` : '';
+        const badgeStyle = info.badgeStyle ? `style="${info.badgeStyle} font-size: 0.70rem; padding: 2px 5px; vertical-align: middle;"` : 'style="font-size: 0.70rem; padding: 2px 5px; vertical-align: middle;"';
+        return `<span class="${info.textClass}" ${styleAttr}><span class="${info.badgeClass} me-1" ${badgeStyle}>${info.label}</span>${nama_brng}</span>`;
+    }
+    return `<span class="text-dark">${nama_brng}</span>`;
+}
+
 function selectDataBarang(element, parrent) {
     return element.select2({
         dropdownParent: parrent,
@@ -703,12 +755,24 @@ function selectDataBarang(element, parrent) {
                     .reduce((acc, curr) => acc + (parseFloat(curr.stok) || 0), 0);
             }
 
+            const golInfo = data.detail ? getGolonganObatBadge(data.detail.golongan, data.detail.kode_golongan) : null;
+            let titleHtml = `<div class="select2-result-repository__title fw-bold">${data.text}</div>`;
+            if (golInfo) {
+                const badgeStyle = golInfo.badgeStyle ? `style="${golInfo.badgeStyle} font-size: 0.70rem; padding: 2px 5px;"` : 'style="font-size: 0.70rem; padding: 2px 5px;"';
+                const styleAttr = golInfo.textStyle ? `style="${golInfo.textStyle}"` : '';
+                titleHtml = `<div class="select2-result-repository__title ${golInfo.textClass}" ${styleAttr}>
+                    <span class="${golInfo.badgeClass} me-1" ${badgeStyle}>${golInfo.label}</span>${data.text}
+                </div>`;
+            }
+
+            const golDesc = data.detail && data.detail.golongan && data.detail.golongan.nama ? ` | Gol: ${data.detail.golongan.nama}` : '';
+
             return $(`
             <div class="select2-result-repository clearfix">
                 <div class="select2-result-repository__meta">
-                    <div class="select2-result-repository__title fw-bold">${data.text}</div>
+                    ${titleHtml}
                     <div class="select2-result-repository__description text-muted">
-                        <small>Stok : ${stokAP} ${data.detail && data.detail.satuan ? data.detail.satuan.satuan : ''}</small>
+                        <small>Stok : ${stokAP} ${data.detail && data.detail.satuan ? data.detail.satuan.satuan : ''}${golDesc}</small>
                     </div>
                 </div>
             </div>
@@ -725,7 +789,10 @@ function selectDataBarang(element, parrent) {
                     .reduce((acc, curr) => acc + (parseFloat(curr.stok) || 0), 0);
             }
 
-            return `${data.text} (${stokAP})`;
+            const golInfo = data.detail ? getGolonganObatBadge(data.detail.golongan, data.detail.kode_golongan) : null;
+            const prefix = golInfo ? `[${golInfo.label}] ` : '';
+
+            return `${prefix}${data.text} (${stokAP})`;
         },
     })
 }

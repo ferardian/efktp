@@ -19,7 +19,9 @@ class ResepObat extends Model
         'regPeriksa.dokter',
         'dokter',
         'resepDokter.obat.satuan',
+        'resepDokter.obat.golongan',
         'resepRacikan.detail.obat.satuan',
+        'resepRacikan.detail.obat.golongan',
         'resepRacikan.metode',
     ];
 
