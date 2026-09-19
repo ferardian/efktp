@@ -346,18 +346,56 @@
             }
         });
 
-        function populateDokterList(selectedBedah = '', selectedAnestesi = '', selectedVerif = '') {
-            $.get(`{{ url('/dokter') }}`).done((res) => {
-                if (res && res.data) {
-                    let opts = '<option value="">-- Pilih Dokter --</option>';
-                    res.data.forEach(d => {
-                        opts += `<option value="${d.kd_dokter}">${d.nm_dokter}</option>`;
-                    });
+        let dokterOptionsCache = null;
 
-                    $('#signin_kd_dokter_bedah').html(opts).val(selectedBedah);
-                    $('#signin_kd_dokter_anestesi').html(opts).val(selectedAnestesi);
-                    $('#verif_kd_dokter').html(opts).val(selectedVerif || selectedBedah);
+        function populateDokterList(selectedBedah = '', selectedAnestesi = '', selectedVerif = '') {
+            function applySelection() {
+                if (selectedBedah) $('#signin_kd_dokter_bedah').val(selectedBedah);
+                if (selectedAnestesi) $('#signin_kd_dokter_anestesi').val(selectedAnestesi);
+                if (selectedVerif) {
+                    $('#verif_kd_dokter').val(selectedVerif);
+                } else if (selectedBedah && !$('#verif_kd_dokter').val()) {
+                    $('#verif_kd_dokter').val(selectedBedah);
                 }
+            }
+
+            if (dokterOptionsCache) {
+                $('#signin_kd_dokter_bedah').html(dokterOptionsCache.bedah);
+                $('#signin_kd_dokter_anestesi').html(dokterOptionsCache.anestesi);
+                $('#verif_kd_dokter').html(dokterOptionsCache.verif);
+                applySelection();
+                return;
+            }
+
+            $.get(`{{ url('/dokter/get') }}`).done((res) => {
+                const list = Array.isArray(res) ? res : (res && res.data ? res.data : []);
+                let optsBedah = '<option value="">-- Pilih Dokter Bedah / Operator --</option>';
+                let optsAnestesi = '<option value="">-- Pilih Dokter Anestesi --</option>';
+                let optsVerif = '<option value="">-- Pilih Dokter Verifikator --</option>';
+
+                if (list && list.length) {
+                    list.forEach(d => {
+                        if (d.kd_dokter && d.kd_dokter !== '-') {
+                            optsBedah += `<option value="${d.kd_dokter}">${d.nm_dokter}</option>`;
+                            optsAnestesi += `<option value="${d.kd_dokter}">${d.nm_dokter}</option>`;
+                            optsVerif += `<option value="${d.kd_dokter}">${d.nm_dokter}</option>`;
+                        }
+                    });
+                }
+
+                dokterOptionsCache = {
+                    bedah: optsBedah,
+                    anestesi: optsAnestesi,
+                    verif: optsVerif
+                };
+
+                $('#signin_kd_dokter_bedah').html(optsBedah);
+                $('#signin_kd_dokter_anestesi').html(optsAnestesi);
+                $('#verif_kd_dokter').html(optsVerif);
+
+                applySelection();
+            }).fail((err) => {
+                console.error("Gagal mengambil data dokter:", err);
             });
         }
 
@@ -498,6 +536,7 @@
             $('#btnCetakPab').addClass('d-none');
             $('#btnHapusPab').addClass('d-none');
 
+            populateDokterList();
             renderDefaultIntervalRows();
 
             // Open Modal
