@@ -298,40 +298,40 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::get('/erm/persetujuan-tindakan/print/{no_pernyataan}', [PersetujuanPenolakanTindakanController::class, 'print']);
 
 	// KAJIAN PRA BEDAH
-	Route::get('/erm/pra-bedah/list/{no_rawat}', [PenilaianPreOperasiController::class, 'getByNoRawat']);
+	Route::get('/erm/pra-bedah/list/{no_rawat?}', [PenilaianPreOperasiController::class, 'getByNoRawat'])->where('no_rawat', '.*');
 	Route::get('/erm/pra-bedah/first', [PenilaianPreOperasiController::class, 'first']);
 	Route::post('/erm/pra-bedah', [PenilaianPreOperasiController::class, 'store']);
 	Route::post('/erm/pra-bedah/delete', [PenilaianPreOperasiController::class, 'delete']);
 	Route::get('/erm/pra-bedah/print', [PenilaianPreOperasiController::class, 'print']);
 
 	// KAJIAN PRA ANESTESI
-	Route::get('/erm/pra-anestesi/list/{no_rawat}', [PenilaianPreAnestesiController::class, 'getByNoRawat']);
+	Route::get('/erm/pra-anestesi/list/{no_rawat?}', [PenilaianPreAnestesiController::class, 'getByNoRawat'])->where('no_rawat', '.*');
 	Route::get('/erm/pra-anestesi/first', [PenilaianPreAnestesiController::class, 'first']);
 	Route::post('/erm/pra-anestesi', [PenilaianPreAnestesiController::class, 'store']);
 	Route::post('/erm/pra-anestesi/delete', [PenilaianPreAnestesiController::class, 'delete']);
 	Route::get('/erm/pra-anestesi/print', [PenilaianPreAnestesiController::class, 'print']);
 
 	// MONITORING ANESTESI SELAMA PEMBIUSAN (LAPORAN ANESTESI)
-	Route::get('/erm/monitoring-anestesi/list/{no_rawat}', [LaporanAnestesiController::class, 'getByNoRawat']);
+	Route::get('/erm/monitoring-anestesi/list/{no_rawat?}', [LaporanAnestesiController::class, 'getByNoRawat'])->where('no_rawat', '.*');
 	Route::get('/erm/monitoring-anestesi/first', [LaporanAnestesiController::class, 'first']);
 	Route::post('/erm/monitoring-anestesi', [LaporanAnestesiController::class, 'store']);
 	Route::post('/erm/monitoring-anestesi/delete', [LaporanAnestesiController::class, 'delete']);
 	Route::get('/erm/monitoring-anestesi/print', [LaporanAnestesiController::class, 'print']);
 
 	// PERENCANAAN PEMULANGAN (DISCHARGE PLANNING)
-	Route::get('/erm/perencanaan-pemulangan/show/{no_rawat}', [PerencanaanPemulanganController::class, 'show']);
-	Route::get('/erm/perencanaan-pemulangan/get/{no_rawat}', [PerencanaanPemulanganController::class, 'show']);
+	Route::get('/erm/perencanaan-pemulangan/show/{no_rawat?}', [PerencanaanPemulanganController::class, 'show'])->where('no_rawat', '.*');
+	Route::get('/erm/perencanaan-pemulangan/get/{no_rawat?}', [PerencanaanPemulanganController::class, 'show'])->where('no_rawat', '.*');
 	Route::post('/erm/perencanaan-pemulangan', [PerencanaanPemulanganController::class, 'store']);
 	Route::post('/erm/perencanaan-pemulangan/store', [PerencanaanPemulanganController::class, 'store']);
 	Route::post('/erm/perencanaan-pemulangan/delete', [PerencanaanPemulanganController::class, 'delete']);
-	Route::get('/erm/perencanaan-pemulangan/print/{no_rawat}', [PerencanaanPemulanganController::class, 'print']);
+	Route::get('/erm/perencanaan-pemulangan/print/{no_rawat?}', [PerencanaanPemulanganController::class, 'print'])->where('no_rawat', '.*');
 
 	// BUKTI SIGN IN ANESTESI & PEMANTAUAN FISIOLOGI BEDAH
-	Route::get('/erm/pemantauan-anestesi-bedah/get/{no_rawat}', [PemantauanAnestesiBedahController::class, 'get']);
+	Route::get('/erm/pemantauan-anestesi-bedah/get/{no_rawat?}', [PemantauanAnestesiBedahController::class, 'get'])->where('no_rawat', '.*');
 	Route::post('/erm/pemantauan-anestesi-bedah/store-signin', [PemantauanAnestesiBedahController::class, 'storeSignin']);
 	Route::post('/erm/pemantauan-anestesi-bedah/store-pemantauan', [PemantauanAnestesiBedahController::class, 'storePemantauan']);
 	Route::post('/erm/pemantauan-anestesi-bedah/delete', [PemantauanAnestesiBedahController::class, 'delete']);
-	Route::get('/erm/pemantauan-anestesi-bedah/print/{no_rawat}', [PemantauanAnestesiBedahController::class, 'print']);
+	Route::get('/erm/pemantauan-anestesi-bedah/print/{no_rawat?}', [PemantauanAnestesiBedahController::class, 'print'])->where('no_rawat', '.*');
 
 	// PEMERIKSAAN GIGI
 	Route::get('/pemeriksaan/gigi', [PemeriksaanGigiController::class, 'get']);

@@ -49,17 +49,17 @@
                                     <div class="row g-2 mb-2">
                                         <div class="col-md-4">
                                             <label class="form-label required small">Tanggal & Jam Asesmen</label>
-                                            <input type="datetime-local" class="form-control form-control-sm" name="tanggal" id="pa_tanggal" required>
+                                            <input type="datetime-local" class="form-control" name="tanggal" id="pa_tanggal" style="height: 38px;" required>
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label small">Jadwal Tanggal & Jam Operasi</label>
-                                            <input type="datetime-local" class="form-control form-control-sm" name="tanggal_operasi" id="pa_tanggal_operasi">
+                                            <input type="datetime-local" class="form-control" name="tanggal_operasi" id="pa_tanggal_operasi" style="height: 38px;">
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label required small">Dokter Spesialis Anestesi</label>
-                                            <div class="input-group input-group-sm">
-                                                <input type="text" class="form-control form-control-sm w-25" name="kd_dokter" id="pa_kd_dokter" readonly required>
-                                                <input type="text" class="form-control form-control-sm w-75" name="nm_dokter" id="pa_nm_dokter" readonly placeholder="Nama Dokter">
+                                            <div class="input-group" style="height: 38px;">
+                                                <input type="text" class="form-control" style="max-width: 85px; height: 38px;" name="kd_dokter" id="pa_kd_dokter" readonly required placeholder="Kode">
+                                                <input type="text" class="form-control" style="height: 38px;" name="nm_dokter" id="pa_nm_dokter" readonly placeholder="Nama Dokter">
                                             </div>
                                         </div>
                                     </div>
@@ -308,6 +308,19 @@
     </div>
 </div>
 
+@push('style')
+<style>
+    #pa_tanggal,
+    #pa_tanggal_operasi,
+    #pa_kd_dokter,
+    #pa_nm_dokter {
+        height: 38px !important;
+        min-height: 38px !important;
+        line-height: 1.5 !important;
+    }
+</style>
+@endpush
+
 @push('script')
 <script>
     $(document).ready(function () {
@@ -394,7 +407,7 @@
             const container = $('#containerRiwayatPraAnestesi');
             container.html('<div class="text-center text-muted p-3"><div class="spinner-border spinner-border-sm me-1"></div> Memuat riwayat...</div>');
 
-            $.get(`{{ url('/erm/pra-anestesi/list') }}/${encodeURIComponent(no_rawat)}`)
+            $.get(`{{ url('/erm/pra-anestesi/list') }}/${encodeURIComponent(no_rawat)}`, { no_rawat: no_rawat })
                 .done((res) => {
                     if (!res.success || !res.data || res.data.length === 0) {
                         container.html('<div class="text-muted text-center p-3 small"><i class="ti ti-notes-off me-1"></i> Belum ada kajian pra anestesi untuk kunjungan ini.</div>');

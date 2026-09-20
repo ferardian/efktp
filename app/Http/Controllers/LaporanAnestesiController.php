@@ -14,8 +14,16 @@ class LaporanAnestesiController extends Controller
 {
 	use Track;
 
-	public function getByNoRawat(string $no_rawat): JsonResponse
+	public function getByNoRawat(Request $request, ?string $no_rawat = null): JsonResponse
 	{
+		$no_rawat = $request->no_rawat ?? $no_rawat;
+		if ($no_rawat) {
+			$no_rawat = urldecode($no_rawat);
+		}
+		if (!$no_rawat) {
+			return response()->json(['success' => false, 'message' => 'No rawat diperlukan'], 400);
+		}
+
 		$data = LaporanAnestesi::with(['dokterAnestesi', 'dokterOperator1', 'regPeriksa.pasien'])
 			->where('no_rawat', $no_rawat)
 			->orderBy('mulai', 'desc')
