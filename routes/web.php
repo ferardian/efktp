@@ -314,6 +314,8 @@ Route::middleware('auth:web,admin')->group(function () {
 	// MONITORING ANESTESI SELAMA PEMBIUSAN (LAPORAN ANESTESI)
 	Route::get('/erm/monitoring-anestesi/list/{no_rawat?}', [LaporanAnestesiController::class, 'getByNoRawat'])->where('no_rawat', '.*');
 	Route::get('/erm/monitoring-anestesi/first', [LaporanAnestesiController::class, 'first']);
+	Route::get('/erm/monitoring-anestesi/search-dokter', [LaporanAnestesiController::class, 'searchDokter']);
+	Route::get('/erm/monitoring-anestesi/search-petugas', [LaporanAnestesiController::class, 'searchPetugas']);
 	Route::post('/erm/monitoring-anestesi', [LaporanAnestesiController::class, 'store']);
 	Route::post('/erm/monitoring-anestesi/delete', [LaporanAnestesiController::class, 'delete']);
 	Route::get('/erm/monitoring-anestesi/print', [LaporanAnestesiController::class, 'print']);

@@ -28,6 +28,11 @@ class LaporanAnestesi extends Model
 		return $this->belongsTo(Dokter::class, 'dokter_anestesi', 'kd_dokter');
 	}
 
+	public function dokterAnestesiRel()
+	{
+		return $this->belongsTo(Dokter::class, 'dokter_anestesi', 'kd_dokter');
+	}
+
 	public function dokterOperator1()
 	{
 		return $this->belongsTo(Dokter::class, 'operator1', 'kd_dokter');
@@ -43,9 +48,29 @@ class LaporanAnestesi extends Model
 		return $this->belongsTo(Petugas::class, 'asisten_operator', 'nip');
 	}
 
+	public function asistenPegawai()
+	{
+		return $this->belongsTo(Pegawai::class, 'asisten_operator', 'nik');
+	}
+
 	public function penata()
 	{
 		return $this->belongsTo(Petugas::class, 'penata_anestesi', 'nip');
+	}
+
+	public function penataPegawai()
+	{
+		return $this->belongsTo(Pegawai::class, 'penata_anestesi', 'nik');
+	}
+
+	public function perawatOnloop()
+	{
+		return $this->belongsTo(Petugas::class, 'onloop', 'nip');
+	}
+
+	public function onloopPegawai()
+	{
+		return $this->belongsTo(Pegawai::class, 'onloop', 'nik');
 	}
 
 	public function petugasRecovery()

@@ -76,35 +76,35 @@
                                     <div class="row g-2 mb-2">
                                         <div class="col-md-4">
                                             <label class="form-label required small">Dokter Spesialis Anestesi</label>
-                                            <div class="input-group" style="height: 38px;">
-                                                <input type="text" class="form-control" style="max-width: 85px; height: 38px;" name="dokter_anestesi" id="ma_dokter_anestesi" readonly required placeholder="Kode">
-                                                <input type="text" class="form-control" style="height: 38px;" id="ma_nm_dokter_anestesi" readonly placeholder="Nama dr. Anestesi">
-                                            </div>
+                                            <select class="form-select select2-ma-dokter" name="dokter_anestesi" id="ma_dokter_anestesi" style="width: 100%;" required>
+                                            </select>
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label small">Penata / Asisten Anestesi</label>
-                                            <input type="text" class="form-control" style="height: 38px;" name="penata_anestesi" id="ma_penata_anestesi" placeholder="Nama / NIP Penata">
+                                            <select class="form-select select2-ma-pegawai" name="penata_anestesi" id="ma_penata_anestesi" style="width: 100%;">
+                                            </select>
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label required small">Dokter Operator 1</label>
-                                            <div class="input-group" style="height: 38px;">
-                                                <input type="text" class="form-control" style="max-width: 85px; height: 38px;" name="operator1" id="ma_operator1" readonly required placeholder="Kode">
-                                                <input type="text" class="form-control" style="height: 38px;" id="ma_nm_operator1" readonly placeholder="Nama Operator 1">
-                                            </div>
+                                            <select class="form-select select2-ma-dokter" name="operator1" id="ma_operator1" style="width: 100%;" required>
+                                            </select>
                                         </div>
                                     </div>
                                     <div class="row g-2">
                                         <div class="col-md-4">
                                             <label class="form-label small">Dokter Operator 2</label>
-                                            <input type="text" class="form-control" style="height: 38px;" name="operator2" id="ma_operator2" value="-">
+                                            <select class="form-select select2-ma-dokter" name="operator2" id="ma_operator2" style="width: 100%;">
+                                            </select>
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label small">Asisten Operator</label>
-                                            <input type="text" class="form-control" style="height: 38px;" name="asisten_operator" id="ma_asisten_operator" value="-">
+                                            <select class="form-select select2-ma-pegawai" name="asisten_operator" id="ma_asisten_operator" style="width: 100%;">
+                                            </select>
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label small">Perawat Onloop / Sirkuler</label>
-                                            <input type="text" class="form-control" style="height: 38px;" name="onloop" id="ma_onloop" value="-">
+                                            <select class="form-select select2-ma-pegawai" name="onloop" id="ma_onloop" style="width: 100%;">
+                                            </select>
                                         </div>
                                     </div>
                                 </div>
@@ -119,21 +119,21 @@
                                     <div class="row g-2 mb-2">
                                         <div class="col-md-5">
                                             <label class="form-label required small">Tindakan Operasi</label>
-                                            <input type="text" class="form-control form-control-sm" name="tindakan_operasi" id="ma_tindakan_operasi" placeholder="Nama tindakan..." required>
+                                            <input type="text" class="form-control" name="tindakan_operasi" id="ma_tindakan_operasi" placeholder="Nama tindakan..." required>
                                         </div>
                                         <div class="col-md-3">
                                             <label class="form-label small">Diagnosa Pre-Op</label>
-                                            <input type="text" class="form-control form-control-sm" name="diagnosa_preop" id="ma_diagnosa_preop">
+                                            <input type="text" class="form-control" name="diagnosa_preop" id="ma_diagnosa_preop">
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label small">Diagnosa Post-Op</label>
-                                            <input type="text" class="form-control form-control-sm" name="diagnosa_postop" id="ma_diagnosa_postop">
+                                            <input type="text" class="form-control" name="diagnosa_postop" id="ma_diagnosa_postop">
                                         </div>
                                     </div>
                                     <div class="row g-2 mb-2">
                                         <div class="col-md-3">
                                             <label class="form-label small">Status ASA</label>
-                                            <select class="form-select form-select-sm" name="status_asa" id="ma_status_asa">
+                                            <select class="form-select" name="status_asa" id="ma_status_asa">
                                                 <option value="1">ASA 1</option>
                                                 <option value="2" selected>ASA 2</option>
                                                 <option value="3">ASA 3</option>
@@ -144,34 +144,34 @@
                                         </div>
                                         <div class="col-md-9">
                                             <label class="form-label small">Obat Premedikasi Diberikan</label>
-                                            <input type="text" class="form-control form-control-sm" name="premedikasi" id="ma_premedikasi" placeholder="Nama obat, dosis, cara pemberian...">
+                                            <input type="text" class="form-control" name="premedikasi" id="ma_premedikasi" placeholder="Nama obat, dosis, cara pemberian...">
                                         </div>
                                     </div>
                                     <!-- TTV Premedikasi -->
                                     <div class="row g-2">
                                         <div class="col-md-2 col-sm-4">
                                             <label class="form-label small">TD (mmHg)</label>
-                                            <input type="text" class="form-control form-control-sm" name="ttv_premedikasi_td" id="ma_ttv_premedikasi_td" placeholder="120/80">
+                                            <input type="text" class="form-control" name="ttv_premedikasi_td" id="ma_ttv_premedikasi_td" placeholder="120/80">
                                         </div>
                                         <div class="col-md-2 col-sm-4">
                                             <label class="form-label small">Nadi (x/m)</label>
-                                            <input type="text" class="form-control form-control-sm" name="ttv_premedikasi_hr" id="ma_ttv_premedikasi_hr" placeholder="80">
+                                            <input type="text" class="form-control" name="ttv_premedikasi_hr" id="ma_ttv_premedikasi_hr" placeholder="80">
                                         </div>
                                         <div class="col-md-2 col-sm-4">
                                             <label class="form-label small">RR (x/m)</label>
-                                            <input type="text" class="form-control form-control-sm" name="ttv_premedikasi_rr" id="ma_ttv_premedikasi_rr" placeholder="20">
+                                            <input type="text" class="form-control" name="ttv_premedikasi_rr" id="ma_ttv_premedikasi_rr" placeholder="20">
                                         </div>
                                         <div class="col-md-2 col-sm-4">
                                             <label class="form-label small">SpO2 (%)</label>
-                                            <input type="text" class="form-control form-control-sm" name="ttv_premedikasi_spo2" id="ma_ttv_premedikasi_spo2" placeholder="98">
+                                            <input type="text" class="form-control" name="ttv_premedikasi_spo2" id="ma_ttv_premedikasi_spo2" placeholder="98">
                                         </div>
                                         <div class="col-md-2 col-sm-4">
                                             <label class="form-label small">Suhu (°C)</label>
-                                            <input type="text" class="form-control form-control-sm" name="ttv_premedikasi_suhu" id="ma_ttv_premedikasi_suhu" placeholder="36.5">
+                                            <input type="text" class="form-control" name="ttv_premedikasi_suhu" id="ma_ttv_premedikasi_suhu" placeholder="36.5">
                                         </div>
                                         <div class="col-md-2 col-sm-4">
                                             <label class="form-label small">EKG</label>
-                                            <input type="text" class="form-control form-control-sm" name="ttv_premedikasi_ekg" id="ma_ttv_premedikasi_ekg" value="Sinus">
+                                            <input type="text" class="form-control" name="ttv_premedikasi_ekg" id="ma_ttv_premedikasi_ekg" value="Sinus">
                                         </div>
                                     </div>
                                 </div>
@@ -186,30 +186,30 @@
                                     <div class="row g-2 mb-2">
                                         <div class="col-md-3">
                                             <label class="form-label small">Sedasi</label>
-                                            <select class="form-select form-select-sm" name="jenis_anestesi_sedasi" id="ma_jenis_anestesi_sedasi">
+                                            <select class="form-select" name="jenis_anestesi_sedasi" id="ma_jenis_anestesi_sedasi">
                                                 <option value="Sedang" selected>Sedasi Sedang</option>
                                                 <option value="Ringan">Sedasi Ringan</option>
                                                 <option value="Berat">Sedasi Berat</option>
                                             </select>
                                         </div>
-                                        <div class="col-md-3">
+                                        <div class="col-md-2">
                                             <label class="form-label small">Regional</label>
-                                            <select class="form-select form-select-sm" name="jenis_anestesi_regional" id="ma_jenis_anestesi_regional">
+                                            <select class="form-select" name="jenis_anestesi_regional" id="ma_jenis_anestesi_regional">
                                                 <option value="Spinal" selected>Spinal</option>
                                                 <option value="Epidural">Epidural</option>
                                                 <option value="Combined">Combined</option>
                                             </select>
                                         </div>
-                                        <div class="col-md-3">
-                                            <label class="form-label small">GA ETT / LMA</label>
-                                            <div class="input-group input-group-sm">
-                                                <span class="input-group-text">ETT</span>
-                                                <select class="form-select form-select-sm" name="jenis_anestesi_ga_ett" id="ma_jenis_anestesi_ga_ett">
+                                        <div class="col-md-4">
+                                            <label class="form-label small">GA (ETT / LMA)</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text px-2">ETT</span>
+                                                <select class="form-select px-2" name="jenis_anestesi_ga_ett" id="ma_jenis_anestesi_ga_ett">
                                                     <option value="Tidak" selected>Tidak</option>
                                                     <option value="Ya">Ya</option>
                                                 </select>
-                                                <span class="input-group-text">LMA</span>
-                                                <select class="form-select form-select-sm" name="jenis_anestesi_ga_ema" id="ma_jenis_anestesi_ga_ema">
+                                                <span class="input-group-text px-2">LMA</span>
+                                                <select class="form-select px-2" name="jenis_anestesi_ga_ema" id="ma_jenis_anestesi_ga_ema">
                                                     <option value="Tidak" selected>Tidak</option>
                                                     <option value="Ya">Ya</option>
                                                 </select>
@@ -217,32 +217,36 @@
                                         </div>
                                         <div class="col-md-3">
                                             <label class="form-label small">Posisi Pasien</label>
-                                            <input type="text" class="form-control form-control-sm" name="posisi" id="ma_posisi" value="Supine">
+                                            <input type="text" class="form-control" name="posisi" id="ma_posisi" value="Supine">
                                         </div>
                                     </div>
                                     <div class="row g-2">
                                         <div class="col-md-2">
                                             <label class="form-label small">TB / BB</label>
-                                            <div class="input-group input-group-sm">
-                                                <input type="text" class="form-control form-control-sm" name="keadaan_umum_tb" id="ma_keadaan_umum_tb" placeholder="TB">
-                                                <input type="text" class="form-control form-control-sm" name="keadaan_umum_bb" id="ma_keadaan_umum_bb" placeholder="BB">
+                                            <div class="input-group">
+                                                <input type="text" class="form-control text-center px-1" name="keadaan_umum_tb" id="ma_keadaan_umum_tb" placeholder="TB">
+                                                <span class="input-group-text px-1 text-muted">/</span>
+                                                <input type="text" class="form-control text-center px-1" name="keadaan_umum_bb" id="ma_keadaan_umum_bb" placeholder="BB">
                                             </div>
                                         </div>
-                                        <div class="col-md-3">
-                                            <label class="form-label small">Mallampati</label>
-                                            <input type="text" class="form-control form-control-sm" name="keadaan_umum_malampathy" id="ma_keadaan_umum_malampathy" value="Class 1">
-                                        </div>
                                         <div class="col-md-2">
+                                            <label class="form-label small">Mallampati</label>
+                                            <input type="text" class="form-control" name="keadaan_umum_malampathy" id="ma_keadaan_umum_malampathy" value="Class 1">
+                                        </div>
+                                        <div class="col-md-3">
                                             <label class="form-label small">GCS (E / V / M)</label>
-                                            <div class="input-group input-group-sm">
-                                                <input type="text" class="form-control form-control-sm" name="keadaan_umum_e" id="ma_keadaan_umum_e" value="4">
-                                                <input type="text" class="form-control form-control-sm" name="keadaan_umum_v" id="ma_keadaan_umum_v" value="5">
-                                                <input type="text" class="form-control form-control-sm" name="keadaan_umum_m" id="ma_keadaan_umum_m" value="6">
+                                            <div class="input-group">
+                                                <span class="input-group-text px-2">E</span>
+                                                <input type="text" class="form-control text-center px-1" name="keadaan_umum_e" id="ma_keadaan_umum_e" value="4">
+                                                <span class="input-group-text px-2">V</span>
+                                                <input type="text" class="form-control text-center px-1" name="keadaan_umum_v" id="ma_keadaan_umum_v" value="5">
+                                                <span class="input-group-text px-2">M</span>
+                                                <input type="text" class="form-control text-center px-1" name="keadaan_umum_m" id="ma_keadaan_umum_m" value="6">
                                             </div>
                                         </div>
                                         <div class="col-md-5">
                                             <label class="form-label small">Riwayat Alergi</label>
-                                            <input type="text" class="form-control form-control-sm" name="keadaan_umum_alergi" id="ma_keadaan_umum_alergi" value="Tidak Ada">
+                                            <input type="text" class="form-control" name="keadaan_umum_alergi" id="ma_keadaan_umum_alergi" value="Tidak Ada">
                                         </div>
                                     </div>
                                 </div>
@@ -257,25 +261,25 @@
                                     <div class="row g-2 mb-2">
                                         <div class="col-md-3">
                                             <label class="form-label small">Perdarahan</label>
-                                            <input type="text" class="form-control form-control-sm" name="perdarahan" id="ma_perdarahan" value="± 50 cc">
+                                            <input type="text" class="form-control" name="perdarahan" id="ma_perdarahan" value="± 50 cc">
                                         </div>
                                         <div class="col-md-3">
                                             <label class="form-label small">Produksi Urine</label>
-                                            <input type="text" class="form-control form-control-sm" name="urine" id="ma_urine" value="± 100 cc">
+                                            <input type="text" class="form-control" name="urine" id="ma_urine" value="± 100 cc">
                                         </div>
                                         <div class="col-md-3">
                                             <label class="form-label small">Ekstubasi</label>
-                                            <input type="text" class="form-control form-control-sm" name="ekstubasi" id="ma_ekstubasi" value="Di Kamar Operasi (OK)">
+                                            <input type="text" class="form-control" name="ekstubasi" id="ma_ekstubasi" value="Di Kamar Operasi (OK)">
                                         </div>
                                         <div class="col-md-3">
                                             <label class="form-label small">Komplikasi</label>
-                                            <input type="text" class="form-control form-control-sm" name="komplikasi" id="ma_komplikasi" value="Tidak Ada">
+                                            <input type="text" class="form-control" name="komplikasi" id="ma_komplikasi" value="Tidak Ada">
                                         </div>
                                     </div>
                                     <div class="row g-2">
                                         <div class="col-md-4">
                                             <label class="form-label small">Serah Terima Pasien Ke</label>
-                                            <select class="form-select form-select-sm" name="serah_terima_pasien" id="ma_serah_terima_pasien">
+                                            <select class="form-select" name="serah_terima_pasien" id="ma_serah_terima_pasien">
                                                 <option value="RR" selected>Ruang Pemulihan (RR)</option>
                                                 <option value="ICU/ICCU">ICU / ICCU</option>
                                                 <option value="NICU/PICU">NICU / PICU</option>
@@ -284,11 +288,11 @@
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label small">Tujuan Ruang Perawatan</label>
-                                            <input type="text" class="form-control form-control-sm" name="dipindahkan_ke" id="ma_dipindahkan_ke" value="Ruang Rawat Inap">
+                                            <input type="text" class="form-control" name="dipindahkan_ke" id="ma_dipindahkan_ke" value="Ruang Rawat Inap">
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label small">Catatan Pasca Anestesi</label>
-                                            <input type="text" class="form-control form-control-sm" name="catatan" id="ma_catatan" placeholder="Instruksi pengawasan pasca bedah...">
+                                            <input type="text" class="form-control" name="catatan" id="ma_catatan" placeholder="Instruksi pengawasan pasca bedah...">
                                         </div>
                                     </div>
                                 </div>
@@ -335,22 +339,37 @@
 
 @push('style')
 <style>
-    #ma_mulai,
-    #ma_selesai,
-    #ma_lama_operasi,
-    #ma_lama_anastesi,
-    #ma_tempat_pemantauan,
-    #ma_dokter_anestesi,
-    #ma_nm_dokter_anestesi,
-    #ma_penata_anestesi,
-    #ma_operator1,
-    #ma_nm_operator1,
-    #ma_operator2,
-    #ma_asisten_operator,
-    #ma_onloop {
+    #modalMonitoringAnestesi .form-control,
+    #modalMonitoringAnestesi .form-select,
+    #modalMonitoringAnestesi .input-group-text {
         height: 38px !important;
         min-height: 38px !important;
         line-height: 1.5 !important;
+        font-size: 0.875rem !important;
+    }
+    #modalMonitoringAnestesi .input-group {
+        height: 38px !important;
+        min-height: 38px !important;
+    }
+    #modalMonitoringAnestesi .select2-container {
+        width: 100% !important;
+    }
+    #modalMonitoringAnestesi .select2-container .select2-selection--single {
+        height: 38px !important;
+        min-height: 38px !important;
+        border: 1px solid #d9dbde !important;
+        border-radius: 4px !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+    #modalMonitoringAnestesi .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 36px !important;
+        padding-left: 8px !important;
+        color: #1e293b !important;
+    }
+    #modalMonitoringAnestesi .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 36px !important;
+        right: 6px !important;
     }
 </style>
 @endpush
@@ -360,6 +379,61 @@
     $(document).ready(function () {
         const modalMonitoringAnestesi = $('#modalMonitoringAnestesi');
         const formMonitoringAnestesi = $('#formMonitoringAnestesi');
+
+        function initSelect2MonitoringAnestesi() {
+            $('.select2-ma-dokter').select2({
+                dropdownParent: modalMonitoringAnestesi,
+                width: '100%',
+                placeholder: '-- Pilih Dokter --',
+                allowClear: false,
+                ajax: {
+                    url: `{{ url('/erm/monitoring-anestesi/search-dokter') }}`,
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return { keyword: params.term || '' };
+                    },
+                    processResults: function (data) {
+                        return { results: data.results || [] };
+                    },
+                    cache: true
+                }
+            });
+
+            $('.select2-ma-pegawai').select2({
+                dropdownParent: modalMonitoringAnestesi,
+                width: '100%',
+                placeholder: '-- Pilih Petugas / Pegawai --',
+                allowClear: false,
+                ajax: {
+                    url: `{{ url('/erm/monitoring-anestesi/search-petugas') }}`,
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return { keyword: params.term || '' };
+                    },
+                    processResults: function (data) {
+                        return { results: data.results || [] };
+                    },
+                    cache: true
+                }
+            });
+        }
+
+        initSelect2MonitoringAnestesi();
+
+        function setSelect2Val(selectId, val, text) {
+            const el = $(selectId);
+            const value = (val !== null && val !== undefined && val !== '') ? val : '-';
+            const label = (text !== null && text !== undefined && text !== '') ? text : value;
+
+            if (el.find("option[value='" + value + "']").length) {
+                el.val(value).trigger('change');
+            } else {
+                const newOption = new Option(label, value, true, true);
+                el.append(newOption).trigger('change');
+            }
+        }
 
         function setNowDateTimeMonitoringAnestesi() {
             const now = new Date();
@@ -376,6 +450,12 @@
             $('#ma_mulai_lama').val('');
             $('#btnCetakMonitoringAnestesi').addClass('d-none');
             $('#btnHapusMonitoringAnestesi').addClass('d-none');
+            setSelect2Val('#ma_dokter_anestesi', '-', '- (Tidak Ada)');
+            setSelect2Val('#ma_operator1', '-', '- (Tidak Ada)');
+            setSelect2Val('#ma_operator2', '-', '- (Tidak Ada)');
+            setSelect2Val('#ma_penata_anestesi', '-', '- (Tidak Ada)');
+            setSelect2Val('#ma_asisten_operator', '-', '- (Tidak Ada)');
+            setSelect2Val('#ma_onloop', '-', '- (Tidak Ada)');
         }
 
         window.bukaMonitoringAnestesi = function (no_rawat) {
@@ -390,10 +470,13 @@
                 $('#ma_display_nm_pasien').text(pasien?.nm_pasien || '-');
                 $('#ma_display_umur_jk').text(`${formatTanggal(pasien?.tgl_lahir)} / ${pasien?.jk === 'L' ? 'Laki-laki' : 'Perempuan'}`);
 
-                $('#ma_operator1').val(res.kd_dokter);
-                $('#ma_nm_operator1').val(dokter?.nm_dokter || '-');
-                $('#ma_dokter_anestesi').val(res.kd_dokter);
-                $('#ma_nm_dokter_anestesi').val(dokter?.nm_dokter || '-');
+                const dpjpText = res.kd_dokter ? `${res.kd_dokter} - ${dokter?.nm_dokter || ''}` : '- (Tidak Ada)';
+                setSelect2Val('#ma_operator1', res.kd_dokter, dpjpText);
+                setSelect2Val('#ma_dokter_anestesi', res.kd_dokter, dpjpText);
+                setSelect2Val('#ma_operator2', '-', '- (Tidak Ada)');
+                setSelect2Val('#ma_penata_anestesi', '-', '- (Tidak Ada)');
+                setSelect2Val('#ma_asisten_operator', '-', '- (Tidak Ada)');
+                setSelect2Val('#ma_onloop', '-', '- (Tidak Ada)');
             });
 
             syncTtvMonitoringAnestesi(no_rawat, false);
@@ -449,48 +532,40 @@
             $.get(`{{ url('/erm/monitoring-anestesi/list') }}/${encodeURIComponent(no_rawat)}`, { no_rawat: no_rawat })
                 .done((res) => {
                     if (!res.success || !res.data || res.data.length === 0) {
-                        container.html('<div class="text-muted text-center p-3 small"><i class="ti ti-notes-off me-1"></i> Belum ada laporan anestesi untuk kunjungan ini.</div>');
+                        container.html('<div class="text-center text-muted p-3 small">Belum ada riwayat laporan anestesi untuk pasien ini</div>');
                         return;
                     }
 
                     let html = '<div class="list-group list-group-flush">';
-                    res.data.forEach((item) => {
+                    res.data.forEach((item, idx) => {
+                        const tglMulai = item.mulai ? item.mulai.slice(0, 16) : '-';
+                        const opNama = item.dokter_operator1?.nm_dokter || item.operator1 || '-';
+                        const anesNama = item.dokter_anestesi?.nm_dokter || item.dokter_anestesi || '-';
+
                         html += `
-                            <div class="list-group-item list-group-item-action p-2 cursor-pointer border rounded mb-2 shadow-2xs item-riwayat-ma" data-mulai="${item.mulai}">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <div class="fw-bold text-primary">${item.tindakan_operasi || 'Tindakan Operasi'}</div>
-                                        <div class="small text-muted"><i class="ti ti-clock me-1"></i> ${item.mulai} s.d ${item.selesai?.split(' ')[1] || '-'}</div>
-                                        <div class="small text-muted"><i class="ti ti-user me-1"></i> Anestesi: <strong>${item.dokter_anestesi?.nm_dokter || '-'}</strong></div>
-                                    </div>
-                                    <span class="badge bg-teal text-teal-fg text-nowrap">${item.jenis_anestesi_regional || 'Anestesi'}</span>
+                            <a href="javascript:void(0)" class="list-group-item list-group-item-action p-2 item-riwayat-ma ${idx === 0 ? 'active' : ''}" data-mulai="${item.mulai}">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <strong class="small">${item.tindakan_operasi || 'Operasi'}</strong>
+                                    <span class="badge ${idx === 0 ? 'bg-white text-primary' : 'bg-primary-lt'} small">${tglMulai}</span>
                                 </div>
-                                <div class="mt-2 d-flex justify-content-end gap-1">
-                                    <button type="button" class="btn btn-xs btn-outline-secondary btn-cetak-ma-item" data-mulai="${item.mulai}">
-                                        <i class="ti ti-printer me-1"></i> Cetak
-                                    </button>
-                                    <button type="button" class="btn btn-xs btn-primary btn-pilih-ma" data-mulai="${item.mulai}">
-                                        <i class="ti ti-eye me-1"></i> Buka
-                                    </button>
+                                <div class="text-muted small" style="font-size: 0.75rem;">
+                                    <div><i class="ti ti-user me-1"></i> Op: ${opNama}</div>
+                                    <div><i class="ti ti-activity me-1"></i> Anes: ${anesNama}</div>
                                 </div>
-                            </div>
+                            </a>
                         `;
                     });
                     html += '</div>';
                     container.html(html);
 
-                    container.find('.item-riwayat-ma, .btn-pilih-ma').on('click', function (e) {
-                        e.stopPropagation();
-                        const mulai = $(this).data('mulai');
-                        bukaDetailMonitoringAnestesi(mulai);
+                    $('.item-riwayat-ma').on('click', function () {
+                        $('.item-riwayat-ma').removeClass('active');
+                        $(this).addClass('active');
+                        bukaDetailMonitoringAnestesi($(this).data('mulai'));
                     });
 
-                    container.find('.btn-cetak-ma-item').on('click', function (e) {
-                        e.stopPropagation();
-                        const mulai = $(this).data('mulai');
-                        const noRawat = $('#ma_no_rawat').val();
-                        window.open(`{{ url('/erm/monitoring-anestesi/print') }}?no_rawat=${encodeURIComponent(noRawat)}&mulai=${encodeURIComponent(mulai)}`, '_blank');
-                    });
+                    // Buka data pertama kali
+                    bukaDetailMonitoringAnestesi(res.data[0].mulai);
                 })
                 .fail(() => {
                     container.html('<div class="text-danger text-center p-3 small">Gagal memuat riwayat</div>');
@@ -513,14 +588,23 @@
                     $('#ma_lama_anastesi').val(d.lama_anastesi);
                     $('#ma_tempat_pemantauan').val(d.tempat_pemantauan);
 
-                    $('#ma_dokter_anestesi').val(d.dokter_anestesi);
-                    $('#ma_nm_dokter_anestesi').val(d.dokter_anestesi?.nm_dokter || '-');
-                    $('#ma_penata_anestesi').val(d.penata_anestesi);
-                    $('#ma_operator1').val(d.operator1);
-                    $('#ma_nm_operator1').val(d.dokter_operator1?.nm_dokter || '-');
-                    $('#ma_operator2').val(d.operator2);
-                    $('#ma_asisten_operator').val(d.asisten_operator);
-                    $('#ma_onloop').val(d.onloop);
+                    const docAnestesiNama = d.dokter_anestesi_rel?.nm_dokter || d.dokter_anestesi;
+                    setSelect2Val('#ma_dokter_anestesi', d.dokter_anestesi, (d.dokter_anestesi && d.dokter_anestesi !== '-') ? `${d.dokter_anestesi} - ${docAnestesiNama}` : '- (Tidak Ada)');
+
+                    const op1Nama = d.dokter_operator1?.nm_dokter || d.operator1;
+                    setSelect2Val('#ma_operator1', d.operator1, (d.operator1 && d.operator1 !== '-') ? `${d.operator1} - ${op1Nama}` : '- (Tidak Ada)');
+
+                    const op2Nama = d.dokter_operator2?.nm_dokter || d.operator2;
+                    setSelect2Val('#ma_operator2', d.operator2, (d.operator2 && d.operator2 !== '-') ? `${d.operator2} - ${op2Nama}` : '- (Tidak Ada)');
+
+                    const penataNama = d.penata?.nama || d.penata_pegawai?.nama || d.penata_anestesi;
+                    setSelect2Val('#ma_penata_anestesi', d.penata_anestesi, (d.penata_anestesi && d.penata_anestesi !== '-') ? `${d.penata_anestesi} - ${penataNama}` : '- (Tidak Ada)');
+
+                    const asistenNama = d.asisten?.nama || d.asisten_pegawai?.nama || d.asisten_operator;
+                    setSelect2Val('#ma_asisten_operator', d.asisten_operator, (d.asisten_operator && d.asisten_operator !== '-') ? `${d.asisten_operator} - ${asistenNama}` : '- (Tidak Ada)');
+
+                    const onloopNama = d.perawat_onloop?.nama || d.onloop_pegawai?.nama || d.onloop;
+                    setSelect2Val('#ma_onloop', d.onloop, (d.onloop && d.onloop !== '-') ? `${d.onloop} - ${onloopNama}` : '- (Tidak Ada)');
 
                     $('#ma_tindakan_operasi').val(d.tindakan_operasi);
                     $('#ma_diagnosa_preop').val(d.diagnosa_preop);
@@ -567,10 +651,13 @@
             resetFormMonitoringAnestesi();
             $('#ma_no_rawat').val(no_rawat);
             getRegDetail(no_rawat).done((res) => {
-                $('#ma_operator1').val(res.kd_dokter);
-                $('#ma_nm_operator1').val(res.dokter?.nm_dokter || '-');
-                $('#ma_dokter_anestesi').val(res.kd_dokter);
-                $('#ma_nm_dokter_anestesi').val(res.dokter?.nm_dokter || '-');
+                const dpjpText = res.kd_dokter ? `${res.kd_dokter} - ${res.dokter?.nm_dokter || ''}` : '- (Tidak Ada)';
+                setSelect2Val('#ma_operator1', res.kd_dokter, dpjpText);
+                setSelect2Val('#ma_dokter_anestesi', res.kd_dokter, dpjpText);
+                setSelect2Val('#ma_operator2', '-', '- (Tidak Ada)');
+                setSelect2Val('#ma_penata_anestesi', '-', '- (Tidak Ada)');
+                setSelect2Val('#ma_asisten_operator', '-', '- (Tidak Ada)');
+                setSelect2Val('#ma_onloop', '-', '- (Tidak Ada)');
             });
             showToast('Form Laporan Anestesi baru siap diisi', 'info');
         });
