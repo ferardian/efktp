@@ -16,7 +16,7 @@
                         <div class="card card-sm mb-3 border-primary-subtle shadow-sm">
                             <div class="card-body p-2 bg-light-subtle">
                                 <div class="row g-2 align-items-center">
-                                    <div class="col-md-3">
+                                    <div class="col-md-4">
                                         <label class="form-label text-muted small mb-0">No. Rawat / No. RM</label>
                                         <div class="fw-bold fs-4 text-primary" id="ic_display_no_rawat">-</div>
                                         <div class="text-muted small" id="ic_display_no_rkm_medis">-</div>
@@ -26,12 +26,17 @@
                                         <div class="fw-bold fs-4 text-dark" id="ic_display_nm_pasien">-</div>
                                         <div class="text-muted small" id="ic_display_umur_jk">-</div>
                                     </div>
-                                    <div class="col-md-5 text-md-end">
+                                    <div class="col-md-4 text-md-end">
                                         <button type="button" class="btn btn-sm btn-outline-primary" id="btnSyncTtvInformedConsent" title="Tarik data TTV & Diagnosa terakhir pasien">
-                                            <i class="ti ti-bolt me-1 text-warning"></i> ⚡ Tarik TTV & Diagnosa Terkini
+                                            <i class="ti ti-bolt me-1 text-warning"></i> Tarik TTV & Diagnosa Terkini
                                         </button>
-                                        <div class="small text-muted mt-1" id="ic_ttv_preview_badge">TTV: -</div>
                                     </div>
+                                </div>
+                                <div class="mt-2 pt-2 border-top d-flex flex-wrap align-items-center justify-content-between gap-2" id="ic_ttv_preview_container">
+                                    <div class="d-flex flex-wrap align-items-center gap-1" id="ic_ttv_preview_badge">
+                                        <span class="badge bg-secondary-lt text-muted small"><i class="ti ti-heart-rate-monitor me-1"></i> TTV: Belum ada data</span>
+                                    </div>
+                                    <div class="text-muted small" id="ic_ttv_preview_petugas" style="font-size: 0.75rem;"></div>
                                 </div>
                             </div>
                         </div>
@@ -572,6 +577,8 @@
             $('#btnCetakInformedConsent').addClass('d-none');
             $('#btnHapusInformedConsent').addClass('d-none');
             $('#radioPersetujuan').prop('checked', true);
+            $('#ic_ttv_preview_badge').html('<span class="badge bg-secondary-lt text-muted small"><i class="ti ti-heart-rate-monitor me-1"></i> TTV: -</span>');
+            $('#ic_ttv_preview_petugas').html('');
         }
 
         // Buka modal Informed Consent
@@ -613,8 +620,24 @@
                 .done((res) => {
                     if (res.success && res.data) {
                         const ttv = res.data;
-                        const badgeText = `TD: ${ttv.td} | HR: ${ttv.nadi}x/m | RR: ${ttv.rr}x/m | SpO2: ${ttv.spo2}% | T: ${ttv.suhu}°C (${ttv.waktu_formatted} - ${ttv.petugas})`;
-                        $('#ic_ttv_preview_badge').html(`<span class="badge bg-green-lt text-dark border">${badgeText}</span>`);
+                        const items = [
+                            ttv.td ? `<span class="badge bg-blue-lt text-dark border"><i class="ti ti-activity me-1 text-primary"></i><strong>TD:</strong> ${ttv.td}</span>` : '',
+                            ttv.nadi ? `<span class="badge bg-green-lt text-dark border"><i class="ti ti-heart me-1 text-danger"></i><strong>HR:</strong> ${ttv.nadi}x/m</span>` : '',
+                            ttv.rr ? `<span class="badge bg-teal-lt text-dark border"><i class="ti ti-wind me-1 text-info"></i><strong>RR:</strong> ${ttv.rr}x/m</span>` : '',
+                            ttv.spo2 ? `<span class="badge bg-azure-lt text-dark border"><i class="ti ti-droplet me-1 text-azure"></i><strong>SpO2:</strong> ${ttv.spo2}%</span>` : '',
+                            ttv.suhu ? `<span class="badge bg-orange-lt text-dark border"><i class="ti ti-temperature me-1 text-warning"></i><strong>T:</strong> ${ttv.suhu}°C</span>` : '',
+                        ].filter(Boolean).join(' ');
+
+                        $('#ic_ttv_preview_badge').html(`
+                            <span class="badge bg-success-lt text-success border"><i class="ti ti-check me-1"></i> TTV Terkini:</span>
+                            ${items}
+                        `);
+
+                        let meta = '';
+                        if (ttv.waktu_formatted || ttv.petugas) {
+                            meta = `<i class="ti ti-clock me-1"></i>${ttv.waktu_formatted || ''} ${ttv.petugas ? `&bull; ${ttv.petugas}` : ''}`;
+                        }
+                        $('#ic_ttv_preview_petugas').html(meta);
 
                         // Jika diminta sync (klik tombol), salin diagnosa atau info
                         if (showNotification) {
@@ -630,14 +653,16 @@
                             showToast('TTV & Diagnosa Terkini Berhasil Diterapkan ke Form!', 'success');
                         }
                     } else {
-                        $('#ic_ttv_preview_badge').html('<span class="text-muted small">Belum ada catatan TTV sebelumnya</span>');
+                        $('#ic_ttv_preview_badge').html('<span class="badge bg-secondary-lt text-muted small"><i class="ti ti-info-circle me-1"></i> Belum ada catatan TTV sebelumnya</span>');
+                        $('#ic_ttv_preview_petugas').html('');
                         if (showNotification) {
                             showToast('Belum ada data TTV sebelumnya untuk nomor rawat ini.', 'info');
                         }
                     }
                 })
                 .fail(() => {
-                    $('#ic_ttv_preview_badge').html('<span class="text-danger small">Gagal memuat TTV</span>');
+                    $('#ic_ttv_preview_badge').html('<span class="badge bg-danger-lt text-danger small"><i class="ti ti-alert-triangle me-1"></i> Gagal memuat TTV</span>');
+                    $('#ic_ttv_preview_petugas').html('');
                 });
         }
 
