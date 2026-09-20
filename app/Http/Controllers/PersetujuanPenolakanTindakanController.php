@@ -111,6 +111,26 @@ class PersetujuanPenolakanTindakanController extends Controller
 				? $this->generateNoPernyataan($request->tanggal)
 				: $request->no_pernyataan;
 
+			// Validasi & fallback kd_dokter (FK ke tabel dokter)
+			$kdDokter = $request->kd_dokter;
+			if (empty($kdDokter) || !DB::table('dokter')->where('kd_dokter', $kdDokter)->exists()) {
+				$kdDokter = DB::table('dokter')->where('kd_dokter', '!=', '-')->value('kd_dokter')
+					?? DB::table('dokter')->value('kd_dokter')
+					?? '-';
+			}
+
+			// Validasi & fallback nip (FK ke tabel petugas)
+			$nip = $request->nip ?: (session()->get('pegawai')->nik ?? session()->get('nik') ?? '-');
+			if (!DB::table('petugas')->where('nip', $nip)->exists()) {
+				// Jika NIK/user login (misal 'spv') tidak terdaftar di tabel petugas:
+				// Gunakan '-' jika ada di petugas, atau NIP petugas pertama yang tersedia
+				if (DB::table('petugas')->where('nip', '-')->exists()) {
+					$nip = '-';
+				} else {
+					$nip = DB::table('petugas')->value('nip') ?? '-';
+				}
+			}
+
 			$data = [
 				'no_pernyataan' => $noPernyataan,
 				'no_rawat' => $request->no_rawat,
@@ -137,8 +157,8 @@ class PersetujuanPenolakanTindakanController extends Controller
 				'biaya_konfirmasi' => $request->biaya_konfirmasi ? 'true' : 'false',
 				'lain_lain' => $request->lain_lain ?? '-',
 				'lain_lain_konfirmasi' => $request->lain_lain_konfirmasi ? 'true' : 'false',
-				'kd_dokter' => $request->kd_dokter,
-				'nip' => $request->nip ?: (session()->get('pegawai')->nik ?? '-'),
+				'kd_dokter' => $kdDokter,
+				'nip' => $nip,
 				'penerima_informasi' => $request->penerima_informasi,
 				'alasan_diwakilkan_penerima_informasi' => $request->alasan_diwakilkan_penerima_informasi ?? '-',
 				'jk_penerima_informasi' => in_array($request->jk_penerima_informasi, ['L', 'P']) ? $request->jk_penerima_informasi : 'L',
