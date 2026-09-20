@@ -230,7 +230,7 @@
                                 </div>
                                 <div class="card-body p-3">
                                     <div class="row g-2 mb-2">
-                                        <div class="col-md-5">
+                                        <div class="col-md-4">
                                             <label class="form-label required small">Nama Lengkap</label>
                                             <input type="text" class="form-control form-control-sm" name="penerima_informasi" id="ic_penerima_informasi" required>
                                         </div>
@@ -252,9 +252,9 @@
                                                 <option value="P">Perempuan</option>
                                             </select>
                                         </div>
-                                        <div class="col-md-2">
-                                            <label class="form-label small">Umur (Th)</label>
-                                            <input type="text" class="form-control form-control-sm" name="umur_penerima_informasi" id="ic_umur_penerima_informasi">
+                                        <div class="col-md-3">
+                                            <label class="form-label small">Umur (Th, Bl, Hr)</label>
+                                            <input type="text" class="form-control form-control-sm" name="umur_penerima_informasi" id="ic_umur_penerima_informasi" placeholder="Cth: 25 Th 4 Bl 10 Hr">
                                         </div>
                                     </div>
                                     <div class="row g-2 mb-2">
@@ -499,25 +499,33 @@
         let hasSignaturePenerima = false;
         let hasSignatureSaksi = false;
 
-        // Fungsi hitung umur tahun dari tanggal lahir
-        function hitungUmurTahun(tglLahir) {
+        // Fungsi hitung umur lengkap (Tahun, Bulan, Hari) dari tanggal lahir
+        function hitungUmurLengkap(tglLahir) {
             if (!tglLahir) return '';
             try {
                 if (typeof hitungUmur === 'function') {
                     const res = hitungUmur(tglLahir);
                     if (res && res.includes(';')) {
-                        return res.split(';')[0];
+                        const parts = res.split(';');
+                        return `${parts[0]} Th ${parts[1]} Bl ${parts[2]} Hr`;
                     }
                 }
                 const birth = new Date(tglLahir);
                 if (isNaN(birth.getTime())) return '';
-                const today = new Date();
-                let age = today.getFullYear() - birth.getFullYear();
-                const m = today.getMonth() - birth.getMonth();
-                if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
-                    age--;
+                const now = new Date();
+                let y = now.getFullYear() - birth.getFullYear();
+                let m = now.getMonth() - birth.getMonth();
+                let d = now.getDate() - birth.getDate();
+                if (d < 0) {
+                    m--;
+                    const prevMonthDays = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
+                    d += prevMonthDays;
                 }
-                return age >= 0 ? age : '';
+                if (m < 0) {
+                    y--;
+                    m += 12;
+                }
+                return `${y} Th ${m} Bl ${d} Hr`;
             } catch (e) {
                 return '';
             }
@@ -527,8 +535,8 @@
         $('#ic_tanggal_lahir_penerima_informasi').on('change input', function () {
             const tgl = $(this).val();
             if (tgl) {
-                const u = hitungUmurTahun(tgl);
-                if (u !== '') {
+                const u = hitungUmurLengkap(tgl);
+                if (u) {
                     $('#ic_umur_penerima_informasi').val(u);
                 }
             }
@@ -627,8 +635,9 @@
                 const { pasien, dokter } = response;
                 $('#ic_display_no_rawat').text(no_rawat);
                 $('#ic_display_no_rkm_medis').text(response.no_rkm_medis);
+                const umurLengkap = hitungUmurLengkap(pasien?.tgl_lahir);
                 $('#ic_display_nm_pasien').text(pasien?.nm_pasien || '-');
-                $('#ic_display_umur_jk').text(`${formatTanggal(pasien?.tgl_lahir)} / ${pasien?.jk === 'L' ? 'Laki-laki' : 'Perempuan'}`);
+                $('#ic_display_umur_jk').text(`${formatTanggal(pasien?.tgl_lahir)} (${umurLengkap}) / ${pasien?.jk === 'L' ? 'Laki-laki' : 'Perempuan'}`);
 
                 $('#ic_kd_dokter').val(response.kd_dokter);
                 $('#ic_nm_dokter').val(dokter?.nm_dokter || '-');
@@ -637,7 +646,7 @@
                 $('#ic_penerima_informasi').val(pasien?.nm_pasien || '');
                 $('#ic_jk_penerima_informasi').val(pasien?.jk || 'L');
                 $('#ic_tanggal_lahir_penerima_informasi').val(pasien?.tgl_lahir || '');
-                $('#ic_umur_penerima_informasi').val(hitungUmurTahun(pasien?.tgl_lahir));
+                $('#ic_umur_penerima_informasi').val(umurLengkap);
                 $('#ic_alamat_penerima_informasi').val(pasien?.alamat || '');
                 $('#ic_no_hp').val(pasien?.no_tlp || '');
                 $('#ic_hubungan_penerima_informasi').val('Diri Sendiri');
@@ -717,7 +726,7 @@
                     $('#ic_penerima_informasi').val(p.nm_pasien);
                     $('#ic_jk_penerima_informasi').val(p.jk);
                     $('#ic_tanggal_lahir_penerima_informasi').val(p.tgl_lahir);
-                    $('#ic_umur_penerima_informasi').val(hitungUmurTahun(p.tgl_lahir));
+                    $('#ic_umur_penerima_informasi').val(hitungUmurLengkap(p.tgl_lahir));
                     $('#ic_alamat_penerima_informasi').val(p.alamat);
                     $('#ic_no_hp').val(p.no_tlp || '-');
                     $('#ic_hubungan_penerima_informasi').val('Diri Sendiri');
