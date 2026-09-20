@@ -51,13 +51,13 @@
                                     <div class="row g-3">
                                         <div class="col-md-6">
                                             <label class="form-label required small">Tanggal Edukasi / Tindakan</label>
-                                            <input type="date" class="form-control form-control-sm" name="tanggal" id="ic_tanggal" value="{{ date('Y-m-d') }}" required>
+                                            <input type="date" class="form-control" name="tanggal" id="ic_tanggal" value="{{ date('Y-m-d') }}" style="height: 38px;" required>
                                         </div>
                                         <div class="col-md-6">
                                             <label class="form-label required small">Dokter Pelaksana / DPJP</label>
-                                            <div class="input-group input-group-sm">
-                                                <input type="text" class="form-control form-control-sm" style="max-width: 80px;" name="kd_dokter" id="ic_kd_dokter" readonly required placeholder="Kode">
-                                                <input type="text" class="form-control form-control-sm" name="nm_dokter" id="ic_nm_dokter" readonly placeholder="Nama Dokter Pelaksana">
+                                            <div class="input-group" style="height: 38px;">
+                                                <input type="text" class="form-control" style="max-width: 85px; height: 38px;" name="kd_dokter" id="ic_kd_dokter" readonly required placeholder="Kode">
+                                                <input type="text" class="form-control" style="height: 38px;" name="nm_dokter" id="ic_nm_dokter" readonly placeholder="Nama Dokter Pelaksana">
                                             </div>
                                         </div>
                                     </div>
@@ -467,6 +467,18 @@
         </div>
     </div>
 </div>
+
+@push('style')
+<style>
+    #ic_tanggal,
+    #ic_kd_dokter,
+    #ic_nm_dokter {
+        height: 38px !important;
+        min-height: 38px !important;
+        line-height: 1.5 !important;
+    }
+</style>
+@endpush
 
 @push('script')
 <script>
