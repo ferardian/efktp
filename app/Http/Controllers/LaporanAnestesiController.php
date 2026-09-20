@@ -327,7 +327,19 @@ class LaporanAnestesiController extends Controller
 
 	public function print(Request $request)
 	{
-		$data = LaporanAnestesi::with(['dokterAnestesi', 'dokterOperator1', 'regPeriksa.pasien', 'regPeriksa.poliklinik'])
+		$data = LaporanAnestesi::with([
+			'dokterAnestesi',
+			'dokterOperator1',
+			'dokterOperator2',
+			'penata',
+			'penataPegawai',
+			'asisten',
+			'asistenPegawai',
+			'perawatOnloop',
+			'onloopPegawai',
+			'regPeriksa.pasien',
+			'regPeriksa.poliklinik'
+		])
 			->where('no_rawat', $request->no_rawat)
 			->where('mulai', $request->mulai)
 			->firstOrFail();

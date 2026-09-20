@@ -543,16 +543,21 @@
                         const anesNama = item.dokter_anestesi?.nm_dokter || item.dokter_anestesi || '-';
 
                         html += `
-                            <a href="javascript:void(0)" class="list-group-item list-group-item-action p-2 item-riwayat-ma ${idx === 0 ? 'active' : ''}" data-mulai="${item.mulai}">
+                            <div class="list-group-item list-group-item-action p-2 cursor-pointer item-riwayat-ma ${idx === 0 ? 'active' : ''}" data-mulai="${item.mulai}">
                                 <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <strong class="small">${item.tindakan_operasi || 'Operasi'}</strong>
-                                    <span class="badge ${idx === 0 ? 'bg-white text-primary' : 'bg-primary-lt'} small">${tglMulai}</span>
+                                    <strong class="small text-truncate" style="max-width: 130px;">${item.tindakan_operasi || 'Operasi'}</strong>
+                                    <div class="d-flex align-items-center gap-1">
+                                        <span class="badge ${idx === 0 ? 'bg-white text-primary' : 'bg-primary-lt'} small">${tglMulai}</span>
+                                        <button type="button" class="btn btn-xs ${idx === 0 ? 'btn-light text-primary' : 'btn-outline-secondary'} btn-cetak-ma-item px-1 py-0" data-mulai="${item.mulai}" title="Cetak Laporan Anestesi">
+                                            <i class="ti ti-printer"></i>
+                                        </button>
+                                    </div>
                                 </div>
                                 <div class="text-muted small" style="font-size: 0.75rem;">
                                     <div><i class="ti ti-user me-1"></i> Op: ${opNama}</div>
                                     <div><i class="ti ti-activity me-1"></i> Anes: ${anesNama}</div>
                                 </div>
-                            </a>
+                            </div>
                         `;
                     });
                     html += '</div>';
@@ -562,6 +567,13 @@
                         $('.item-riwayat-ma').removeClass('active');
                         $(this).addClass('active');
                         bukaDetailMonitoringAnestesi($(this).data('mulai'));
+                    });
+
+                    $('.btn-cetak-ma-item').on('click', function (e) {
+                        e.stopPropagation();
+                        const mulai = $(this).data('mulai');
+                        const noRawat = $('#ma_no_rawat').val();
+                        window.open(`{{ url('/erm/monitoring-anestesi/print') }}?no_rawat=${encodeURIComponent(noRawat)}&mulai=${encodeURIComponent(mulai)}`, '_blank');
                     });
 
                     // Buka data pertama kali

@@ -42,23 +42,31 @@
         <tr>
             <td style="font-weight: bold;">Dokter Anestesi</td>
             <td>:</td>
-            <td><strong>{{ $data->dokterAnestesi->nm_dokter ?? '-' }}</strong></td>
-            <td style="font-weight: bold;">Dokter Operator / Bedah</td>
+            <td><strong>{{ $data->dokterAnestesi->nm_dokter ?? $data->dokter_anestesi ?? '-' }}</strong></td>
+            <td style="font-weight: bold;">Dokter Operator 1</td>
             <td>:</td>
-            <td><strong>{{ $data->dokterOperator1->nm_dokter ?? '-' }}</strong></td>
+            <td><strong>{{ $data->dokterOperator1->nm_dokter ?? $data->operator1 ?? '-' }}</strong></td>
         </tr>
         <tr>
-            <td style="font-weight: bold;">Diagnosa Pra Bedah</td>
+            <td style="font-weight: bold;">Penata Anestesi</td>
             <td>:</td>
-            <td>{{ $data->diagnosa_pra_bedah }}</td>
-            <td style="font-weight: bold;">Diagnosa Pasca Bedah</td>
+            <td>{{ $data->penata->nama ?? $data->penataPegawai->nama ?? $data->penata_anestesi ?? '-' }}</td>
+            <td style="font-weight: bold;">Asisten Operator</td>
             <td>:</td>
-            <td>{{ $data->diagnosa_pasca_bedah }}</td>
+            <td>{{ $data->asisten->nama ?? $data->asistenPegawai->nama ?? $data->asisten_operator ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td style="font-weight: bold;">Diagnosa Pre-Op</td>
+            <td>:</td>
+            <td>{{ $data->diagnosa_preop ?? '-' }}</td>
+            <td style="font-weight: bold;">Diagnosa Post-Op</td>
+            <td>:</td>
+            <td>{{ $data->diagnosa_postop ?? '-' }}</td>
         </tr>
         <tr>
             <td style="font-weight: bold;">Tindakan Operasi</td>
             <td>:</td>
-            <td colspan="4">{{ $data->tindakan }}</td>
+            <td colspan="4"><strong>{{ $data->tindakan_operasi ?? '-' }}</strong></td>
         </tr>
     </table>
 
@@ -73,7 +81,7 @@
         </tr>
         <tr>
             <td style="font-weight: bold;">Obat Premedikasi</td>
-            <td>{{ $data->obat_premedikasi ?? '-' }}</td>
+            <td>{{ $data->premedikasi ?? '-' }}</td>
         </tr>
         <tr>
             <td style="font-weight: bold;">Sedasi & Regional</td>
