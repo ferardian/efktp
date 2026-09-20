@@ -341,6 +341,12 @@
                         $('#btnCetakPraBedah').removeClass('d-none').attr('onclick', `window.open('{{ url('/erm/pra-bedah/print') }}?no_rawat=${encodeURIComponent(res.data.no_rawat)}&tanggal=${encodeURIComponent(res.data.tanggal)}', '_blank')`);
                         $('#btnHapusPraBedah').removeClass('d-none');
                         muatRiwayatPraBedah(no_rawat);
+                        if ($.fn.DataTable && $.fn.DataTable.isDataTable('#tabelRegistrasi')) {
+                            $('#tabelRegistrasi').DataTable().ajax.reload(null, false);
+                        }
+                        if ($.fn.DataTable && $.fn.DataTable.isDataTable('#tabelKamarInap')) {
+                            $('#tabelKamarInap').DataTable().ajax.reload(null, false);
+                        }
                     }
                 })
                 .fail((err) => {
@@ -371,6 +377,12 @@
                                 resetFormPraBedah();
                                 $('#pb_no_rawat').val(no_rawat);
                                 muatRiwayatPraBedah(no_rawat);
+                                if ($.fn.DataTable && $.fn.DataTable.isDataTable('#tabelRegistrasi')) {
+                                    $('#tabelRegistrasi').DataTable().ajax.reload(null, false);
+                                }
+                                if ($.fn.DataTable && $.fn.DataTable.isDataTable('#tabelKamarInap')) {
+                                    $('#tabelKamarInap').DataTable().ajax.reload(null, false);
+                                }
                             }
                         });
                 }

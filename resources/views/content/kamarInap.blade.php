@@ -168,20 +168,34 @@
                     data: 'no_rawat',
                     render: (data, type, row, meta) => {
                         const icCount = Number(row.reg_periksa?.persetujuan_penolakan_tindakan_count || (row.reg_periksa?.persetujuan_penolakan_tindakan ? row.reg_periksa.persetujuan_penolakan_tindakan.length : 0));
+                        const pbCount = Number(row.reg_periksa?.penilaian_pre_operasi_count || (row.reg_periksa?.penilaian_pre_operasi ? row.reg_periksa.penilaian_pre_operasi.length : 0));
+                        const paCount = Number(row.reg_periksa?.penilaian_pre_anestesi_count || (row.reg_periksa?.penilaian_pre_anestesi ? row.reg_periksa.penilaian_pre_anestesi.length : 0));
+                        const maCount = Number(row.reg_periksa?.laporan_anestesi_count || (row.reg_periksa?.laporan_anestesi ? row.reg_periksa.laporan_anestesi.length : 0));
+                        const signinCount = Number(row.reg_periksa?.bukti_anestesi_signin_count || (row.reg_periksa?.bukti_anestesi_signin ? row.reg_periksa.bukti_anestesi_signin.length : 0));
+                        const ppCount = Number(row.reg_periksa?.perencanaan_pemulangan_count || (row.reg_periksa?.perencanaan_pemulangan ? row.reg_periksa.perencanaan_pemulangan.length : 0));
+
                         const hasIc = icCount > 0;
+                        const hasPb = pbCount > 0;
+                        const hasPa = paCount > 0;
+                        const hasMa = maCount > 0;
+                        const hasSignin = signinCount > 0;
+                        const hasPp = ppCount > 0;
+
+                        const totalErmCount = icCount + pbCount + paCount + maCount + signinCount + ppCount;
+                        const hasErm = totalErmCount > 0;
 
                         let btnErmClass = 'btn-outline-secondary';
                         let badgeBtn = '';
-                        if (hasIc) {
+                        if (hasErm) {
                             btnErmClass = 'btn-outline-success border-success';
-                            badgeBtn = `<span class="badge bg-success text-white rounded-pill px-1 py-0 ms-1" style="font-size: 0.65rem;" title="${icCount} Informed Consent">${icCount}</span>`;
+                            badgeBtn = `<span class="badge bg-success text-white rounded-pill px-1 py-0 ms-1" style="font-size: 0.65rem;" title="${totalErmCount} Dokumen ERM Terisi">${totalErmCount}</span>`;
                         }
 
                         let btn = `<div class="d-flex align-items-center gap-1">
                                     <button class="btn btn-success btn-sm" type="button" onclick="cpptRanap('${data}')" title="CPPT"><i class="ti ti-pencil"></i></button>
                                     <button class="btn btn-primary btn-sm" type="button" onclick="riwayat('${row.reg_periksa.no_rkm_medis}')" title="Riwayat Perawatan"><i class="ti ti-folder-open"></i></button>
                                     <div class="dropdown">
-                                        <button class="btn btn-sm ${btnErmClass} dropdown-toggle px-2 d-inline-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Menu ERM & Dokumen Klinis ${hasIc ? '(' + icCount + ' Informed Consent)' : ''}">
+                                        <button class="btn btn-sm ${btnErmClass} dropdown-toggle px-2 d-inline-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Menu ERM & Dokumen Klinis ${hasErm ? '(' + totalErmCount + ' Dokumen)' : ''}">
                                             <i class="ti ti-notes"></i>${badgeBtn}
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="z-index: 1055;">
@@ -192,12 +206,37 @@
                                                     ${hasIc ? `<span class="badge bg-success text-white rounded-pill ms-2 px-1 py-0" style="font-size: 0.7rem;"><i class="ti ti-check me-1" style="font-size: 0.65rem;"></i>${icCount}</span>` : ''}
                                                 </a>
                                             </li>
-                                            <li><a class="dropdown-item py-1" href="javascript:void(0)" onclick="bukaKajianPraBedah('${row.no_rawat}')"><i class="ti ti-cut text-danger me-2"></i> Kajian Pra Bedah</a></li>
-                                            <li><a class="dropdown-item py-1" href="javascript:void(0)" onclick="bukaKajianPraAnestesi('${row.no_rawat}')"><i class="ti ti-needle text-info me-2"></i> Kajian Pra Anestesi</a></li>
-                                            <li><a class="dropdown-item py-1" href="javascript:void(0)" onclick="bukaMonitoringAnestesi('${row.no_rawat}')"><i class="ti ti-activity-heartbeat text-warning me-2"></i> Monitoring Anestesi</a></li>
-                                            <li><a class="dropdown-item py-1" href="javascript:void(0)" onclick="bukaPemantauanAnestesiBedah('${row.no_rawat}')"><i class="ti ti-report-medical text-indigo me-2"></i> Sign In & Pemantauan Fisiologi</a></li>
+                                            <li>
+                                                <a class="dropdown-item py-1 d-flex justify-content-between align-items-center ${hasPb ? 'fw-bold text-success' : ''}" href="javascript:void(0)" onclick="bukaKajianPraBedah('${row.no_rawat}')">
+                                                    <span><i class="ti ti-cut ${hasPb ? 'text-success' : 'text-danger'} me-2"></i> Kajian Pra Bedah</span>
+                                                    ${hasPb ? `<span class="badge bg-success text-white rounded-pill ms-2 px-1 py-0" style="font-size: 0.7rem;"><i class="ti ti-check me-1" style="font-size: 0.65rem;"></i>${pbCount}</span>` : ''}
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item py-1 d-flex justify-content-between align-items-center ${hasPa ? 'fw-bold text-success' : ''}" href="javascript:void(0)" onclick="bukaKajianPraAnestesi('${row.no_rawat}')">
+                                                    <span><i class="ti ti-needle ${hasPa ? 'text-success' : 'text-info'} me-2"></i> Kajian Pra Anestesi</span>
+                                                    ${hasPa ? `<span class="badge bg-success text-white rounded-pill ms-2 px-1 py-0" style="font-size: 0.7rem;"><i class="ti ti-check me-1" style="font-size: 0.65rem;"></i>${paCount}</span>` : ''}
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item py-1 d-flex justify-content-between align-items-center ${hasMa ? 'fw-bold text-success' : ''}" href="javascript:void(0)" onclick="bukaMonitoringAnestesi('${row.no_rawat}')">
+                                                    <span><i class="ti ti-activity-heartbeat ${hasMa ? 'text-success' : 'text-warning'} me-2"></i> Monitoring Anestesi</span>
+                                                    ${hasMa ? `<span class="badge bg-success text-white rounded-pill ms-2 px-1 py-0" style="font-size: 0.7rem;"><i class="ti ti-check me-1" style="font-size: 0.65rem;"></i>${maCount}</span>` : ''}
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item py-1 d-flex justify-content-between align-items-center ${hasSignin ? 'fw-bold text-success' : ''}" href="javascript:void(0)" onclick="bukaPemantauanAnestesiBedah('${row.no_rawat}')">
+                                                    <span><i class="ti ti-report-medical ${hasSignin ? 'text-success' : 'text-indigo'} me-2"></i> Sign In & Pemantauan Fisiologi</span>
+                                                    ${hasSignin ? `<span class="badge bg-success text-white rounded-pill ms-2 px-1 py-0" style="font-size: 0.7rem;"><i class="ti ti-check me-1" style="font-size: 0.65rem;"></i>${signinCount}</span>` : ''}
+                                                </a>
+                                            </li>
                                             <li><hr class="dropdown-divider my-1"></li>
-                                            <li><a class="dropdown-item py-1" href="javascript:void(0)" onclick="bukaPerencanaanPemulangan('${row.no_rawat}')"><i class="ti ti-door-exit text-teal me-2"></i> Perencanaan Pemulangan</a></li>
+                                            <li>
+                                                <a class="dropdown-item py-1 d-flex justify-content-between align-items-center ${hasPp ? 'fw-bold text-success' : ''}" href="javascript:void(0)" onclick="bukaPerencanaanPemulangan('${row.no_rawat}')">
+                                                    <span><i class="ti ti-door-exit ${hasPp ? 'text-success' : 'text-teal'} me-2"></i> Perencanaan Pemulangan</span>
+                                                    ${hasPp ? `<span class="badge bg-success text-white rounded-pill ms-2 px-1 py-0" style="font-size: 0.7rem;"><i class="ti ti-check me-1" style="font-size: 0.65rem;"></i>${ppCount}</span>` : ''}
+                                                </a>
+                                            </li>
                                             <li><a class="dropdown-item py-1" href="javascript:void(0)" onclick="penilaianAwalKeperawatanRanap('${row.no_rawat}')"><i class="ti ti-clipboard-check text-success me-2"></i> Kajian Awal Keperawatan</a></li>
                                         </ul>
                                     </div>

@@ -126,6 +126,31 @@ class RegPeriksa extends Model
 		return $this->hasMany(\App\Models\PersetujuanPenolakanTindakan::class, 'no_rawat', 'no_rawat');
 	}
 
+	public function penilaianPreOperasi()
+	{
+		return $this->hasMany(\App\Models\PenilaianPreOperasi::class, 'no_rawat', 'no_rawat');
+	}
+
+	public function penilaianPreAnestesi()
+	{
+		return $this->hasMany(\App\Models\PenilaianPreAnestesi::class, 'no_rawat', 'no_rawat');
+	}
+
+	public function laporanAnestesi()
+	{
+		return $this->hasMany(\App\Models\LaporanAnestesi::class, 'no_rawat', 'no_rawat');
+	}
+
+	public function buktiAnestesiSignin()
+	{
+		return $this->hasMany(\App\Models\BuktiAnestesiSignin::class, 'no_rawat', 'no_rawat');
+	}
+
+	public function perencanaanPemulangan()
+	{
+		return $this->hasMany(\App\Models\PerencanaanPemulangan::class, 'no_rawat', 'no_rawat');
+	}
+
 	public function scopeMaxByTanggal($query, string|null $tanggal)
 	{
 		$tanggal = $tanggal ? $tanggal : now()->format('Y-m-d');

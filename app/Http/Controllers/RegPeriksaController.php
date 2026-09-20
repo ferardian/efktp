@@ -161,7 +161,14 @@ class RegPeriksaController extends Controller
 		}
 
 		if ($req->dataTable) {
-			$regPeriksa = $regPeriksa->withCount('persetujuanPenolakanTindakan');
+			$regPeriksa = $regPeriksa->withCount([
+				'persetujuanPenolakanTindakan',
+				'penilaianPreOperasi',
+				'penilaianPreAnestesi',
+				'laporanAnestesi',
+				'buktiAnestesiSignin',
+				'perencanaanPemulangan',
+			]);
 			return DataTables::of($regPeriksa)
 				->filter(function ($query) use ($req) {
 					if ($req->has('search') && $req->get('search')['value']) {
