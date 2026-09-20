@@ -55,6 +55,9 @@ class RegPeriksaController extends Controller
 			'triaseUgd' => function ($q) {
 				return $q->with('petugas');
 			},
+			'persetujuanPenolakanTindakan' => function ($q) {
+				return $q->select('no_rawat', 'no_pernyataan', 'pernyataan');
+			},
 		];
 	}
 
@@ -158,6 +161,7 @@ class RegPeriksaController extends Controller
 		}
 
 		if ($req->dataTable) {
+			$regPeriksa = $regPeriksa->withCount('persetujuanPenolakanTindakan');
 			return DataTables::of($regPeriksa)
 				->filter(function ($query) use ($req) {
 					if ($req->has('search') && $req->get('search')['value']) {

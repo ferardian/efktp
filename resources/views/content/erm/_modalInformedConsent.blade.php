@@ -907,6 +907,12 @@
                         $('#btnCetakInformedConsent').removeClass('d-none').attr('onclick', `window.open('{{ url('/erm/persetujuan-tindakan/print') }}/${res.no_pernyataan}', '_blank')`);
                         $('#btnHapusInformedConsent').removeClass('d-none');
                         muatRiwayatInformedConsent(no_rawat);
+                        if ($.fn.DataTable && $.fn.DataTable.isDataTable('#tabelRegistrasi')) {
+                            $('#tabelRegistrasi').DataTable().ajax.reload(null, false);
+                        }
+                        if ($.fn.DataTable && $.fn.DataTable.isDataTable('#tabelKamarInap')) {
+                            $('#tabelKamarInap').DataTable().ajax.reload(null, false);
+                        }
                     } else {
                         showToast(res.message || 'Gagal menyimpan data', 'error');
                     }
@@ -941,6 +947,12 @@
                                 resetFormInformedConsent();
                                 $('#ic_no_rawat').val(no_rawat);
                                 muatRiwayatInformedConsent(no_rawat);
+                                if ($.fn.DataTable && $.fn.DataTable.isDataTable('#tabelRegistrasi')) {
+                                    $('#tabelRegistrasi').DataTable().ajax.reload(null, false);
+                                }
+                                if ($.fn.DataTable && $.fn.DataTable.isDataTable('#tabelKamarInap')) {
+                                    $('#tabelKamarInap').DataTable().ajax.reload(null, false);
+                                }
                             }
                         })
                         .fail((err) => {

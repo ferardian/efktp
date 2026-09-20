@@ -14,7 +14,7 @@ class KamarInapController extends Controller
         $kamarInap = KamarInap::with(['regPeriksa' => function ($q) {
             return $q->with(['pasien' => function ($q) {
                 return $q->with(['kel', 'kec', 'kab']);
-            }, 'dokter', 'penjab']);
+            }, 'dokter', 'penjab'])->withCount('persetujuanPenolakanTindakan');
         }, 'kamar.bangsal'])->where('stts_pulang', '!=', 'Pindah Kamar');
 
         // Filter by status first

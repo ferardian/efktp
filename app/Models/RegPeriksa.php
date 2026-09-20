@@ -116,9 +116,14 @@ class RegPeriksa extends Model
 		return $this->hasOne(TriaseUgd::class, 'no_rawat', 'no_rawat');
 	}
 
-	function periksaLab()
+	public function periksaLab()
 	{
 		return $this->hasMany(\App\Models\Lab\PeriksaLab::class, 'no_rawat', 'no_rawat');
+	}
+
+	public function persetujuanPenolakanTindakan()
+	{
+		return $this->hasMany(\App\Models\PersetujuanPenolakanTindakan::class, 'no_rawat', 'no_rawat');
 	}
 
 	public function scopeMaxByTanggal($query, string|null $tanggal)
