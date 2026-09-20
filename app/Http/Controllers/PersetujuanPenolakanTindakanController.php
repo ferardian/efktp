@@ -20,8 +20,13 @@ class PersetujuanPenolakanTindakanController extends Controller
 	/**
 	 * Mengambil daftar informed consent untuk nomor rawat tertentu.
 	 */
-	public function getByNoRawat(string $no_rawat): JsonResponse
+	public function getByNoRawat(Request $request, ?string $no_rawat = null): JsonResponse
 	{
+		$no_rawat = $request->no_rawat ?? $no_rawat;
+		if (!$no_rawat) {
+			return response()->json(['success' => false, 'message' => 'No rawat diperlukan'], 400);
+		}
+
 		$data = PersetujuanPenolakanTindakan::with([
 			'dokter',
 			'petugas',
@@ -270,8 +275,13 @@ class PersetujuanPenolakanTindakanController extends Controller
 	/**
 	 * Mengambil diagnosa pasien saat ini dari diagnosa_pasien dan SOAP pemeriksaan.
 	 */
-	public function getDiagnosaPasien(string $no_rawat): JsonResponse
+	public function getDiagnosaPasien(Request $request, ?string $no_rawat = null): JsonResponse
 	{
+		$no_rawat = $request->no_rawat ?? $no_rawat;
+		if (!$no_rawat) {
+			return response()->json(['success' => false, 'message' => 'No rawat diperlukan'], 400);
+		}
+
 		// 1. Diagnosa ICD-10
 		$diagnosaIcd = DB::table('diagnosa_pasien')
 			->join('penyakit', 'diagnosa_pasien.kd_penyakit', '=', 'penyakit.kd_penyakit')

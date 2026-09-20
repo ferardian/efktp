@@ -15,8 +15,13 @@ class TtvLookupController extends Controller
 	/**
 	 * Mengambil data TTV dan pemeriksaan fisik paling mutakhir untuk suatu nomor rawat.
 	 */
-	public function getLatest(string $no_rawat): JsonResponse
+	public function getLatest(Request $request, ?string $no_rawat = null): JsonResponse
 	{
+		$no_rawat = $request->no_rawat ?? $no_rawat;
+		if (!$no_rawat) {
+			return response()->json(['success' => false, 'message' => 'No rawat diperlukan'], 400);
+		}
+
 		$history = $this->collectTtvHistory($no_rawat);
 		$latest = $history->first();
 
@@ -43,8 +48,13 @@ class TtvLookupController extends Controller
 	/**
 	 * Mengambil seluruh riwayat catatan TTV pada pasien (baik ralan maupun ranap).
 	 */
-	public function getHistory(string $no_rawat): JsonResponse
+	public function getHistory(Request $request, ?string $no_rawat = null): JsonResponse
 	{
+		$no_rawat = $request->no_rawat ?? $no_rawat;
+		if (!$no_rawat) {
+			return response()->json(['success' => false, 'message' => 'No rawat diperlukan'], 400);
+		}
+
 		$history = $this->collectTtvHistory($no_rawat);
 
 		return response()->json([

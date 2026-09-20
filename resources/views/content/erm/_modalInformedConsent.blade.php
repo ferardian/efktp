@@ -609,7 +609,7 @@
 
         // Fungsi Smart TTV Lookup
         function syncTtvInformedConsent(no_rawat, showNotification = true) {
-            $.get(`{{ url('/pemeriksaan/ttv/latest') }}/${encodeURIComponent(no_rawat)}`)
+            $.get(`{{ url('/pemeriksaan/ttv/latest') }}`, { no_rawat: no_rawat })
                 .done((res) => {
                     if (res.success && res.data) {
                         const ttv = res.data;
@@ -669,7 +669,7 @@
             const container = $('#containerRiwayatInformedConsent');
             container.html('<div class="text-center text-muted p-3"><div class="spinner-border spinner-border-sm me-1"></div> Memuat riwayat...</div>');
 
-            $.get(`{{ url('/erm/persetujuan-tindakan/list') }}/${encodeURIComponent(no_rawat)}`)
+            $.get(`{{ url('/erm/persetujuan-tindakan/list') }}`, { no_rawat: no_rawat })
                 .done((res) => {
                     if (!res.success || !res.data || res.data.length === 0) {
                         container.html('<div class="text-muted text-center p-3 small"><i class="ti ti-notes-off me-1"></i> Belum ada informed consent untuk kunjungan ini.</div>');
@@ -1019,7 +1019,7 @@
             const btn = $(this);
             btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Menarik...');
 
-            $.get(`{{ url('/erm/persetujuan-tindakan/diagnosa') }}/${encodeURIComponent(no_rawat)}`)
+            $.get(`{{ url('/erm/persetujuan-tindakan/diagnosa') }}`, { no_rawat: no_rawat })
                 .done((res) => {
                     btn.prop('disabled', false).html('<i class="ti ti-activity me-1"></i> Tarik Diagnosa Pasien');
                     if (res.success && res.diagnosa) {
