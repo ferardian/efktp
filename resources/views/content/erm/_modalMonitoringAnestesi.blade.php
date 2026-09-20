@@ -49,22 +49,22 @@
                                     <div class="row g-2 mb-2">
                                         <div class="col-md-3">
                                             <label class="form-label required small">Waktu Mulai</label>
-                                            <input type="datetime-local" class="form-control form-control-sm" name="mulai" id="ma_mulai" required>
+                                            <input type="datetime-local" class="form-control" name="mulai" id="ma_mulai" style="height: 38px;" required>
                                         </div>
                                         <div class="col-md-3">
                                             <label class="form-label required small">Waktu Selesai</label>
-                                            <input type="datetime-local" class="form-control form-control-sm" name="selesai" id="ma_selesai" required>
+                                            <input type="datetime-local" class="form-control" name="selesai" id="ma_selesai" style="height: 38px;" required>
                                         </div>
                                         <div class="col-md-3">
                                             <label class="form-label small">Lama Operasi / Anestesi</label>
-                                            <div class="input-group input-group-sm">
-                                                <input type="text" class="form-control form-control-sm" name="lama_operasi" id="ma_lama_operasi" placeholder="Operasi">
-                                                <input type="text" class="form-control form-control-sm" name="lama_anastesi" id="ma_lama_anastesi" placeholder="Anestesi">
+                                            <div class="input-group" style="height: 38px;">
+                                                <input type="text" class="form-control" style="height: 38px;" name="lama_operasi" id="ma_lama_operasi" placeholder="Operasi">
+                                                <input type="text" class="form-control" style="height: 38px;" name="lama_anastesi" id="ma_lama_anastesi" placeholder="Anestesi">
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <label class="form-label small">Tempat Pemantauan</label>
-                                            <select class="form-select form-select-sm" name="tempat_pemantauan" id="ma_tempat_pemantauan">
+                                            <select class="form-select" style="height: 38px;" name="tempat_pemantauan" id="ma_tempat_pemantauan">
                                                 <option value="OK" selected>Kamar Operasi (OK)</option>
                                                 <option value="Cathlab">Cathlab</option>
                                                 <option value="ICU/ICCU">ICU / ICCU</option>
@@ -76,35 +76,35 @@
                                     <div class="row g-2 mb-2">
                                         <div class="col-md-4">
                                             <label class="form-label required small">Dokter Spesialis Anestesi</label>
-                                            <div class="input-group input-group-sm">
-                                                <input type="text" class="form-control form-control-sm w-25" name="dokter_anestesi" id="ma_dokter_anestesi" readonly required>
-                                                <input type="text" class="form-control form-control-sm w-75" id="ma_nm_dokter_anestesi" readonly placeholder="Nama dr. Anestesi">
+                                            <div class="input-group" style="height: 38px;">
+                                                <input type="text" class="form-control" style="max-width: 85px; height: 38px;" name="dokter_anestesi" id="ma_dokter_anestesi" readonly required placeholder="Kode">
+                                                <input type="text" class="form-control" style="height: 38px;" id="ma_nm_dokter_anestesi" readonly placeholder="Nama dr. Anestesi">
                                             </div>
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label small">Penata / Asisten Anestesi</label>
-                                            <input type="text" class="form-control form-control-sm" name="penata_anestesi" id="ma_penata_anestesi" placeholder="Nama / NIP Penata">
+                                            <input type="text" class="form-control" style="height: 38px;" name="penata_anestesi" id="ma_penata_anestesi" placeholder="Nama / NIP Penata">
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label required small">Dokter Operator 1</label>
-                                            <div class="input-group input-group-sm">
-                                                <input type="text" class="form-control form-control-sm w-25" name="operator1" id="ma_operator1" readonly required>
-                                                <input type="text" class="form-control form-control-sm w-75" id="ma_nm_operator1" readonly placeholder="Nama Operator 1">
+                                            <div class="input-group" style="height: 38px;">
+                                                <input type="text" class="form-control" style="max-width: 85px; height: 38px;" name="operator1" id="ma_operator1" readonly required placeholder="Kode">
+                                                <input type="text" class="form-control" style="height: 38px;" id="ma_nm_operator1" readonly placeholder="Nama Operator 1">
                                             </div>
                                         </div>
                                     </div>
                                     <div class="row g-2">
                                         <div class="col-md-4">
                                             <label class="form-label small">Dokter Operator 2</label>
-                                            <input type="text" class="form-control form-control-sm" name="operator2" id="ma_operator2" value="-">
+                                            <input type="text" class="form-control" style="height: 38px;" name="operator2" id="ma_operator2" value="-">
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label small">Asisten Operator</label>
-                                            <input type="text" class="form-control form-control-sm" name="asisten_operator" id="ma_asisten_operator" value="-">
+                                            <input type="text" class="form-control" style="height: 38px;" name="asisten_operator" id="ma_asisten_operator" value="-">
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label small">Perawat Onloop / Sirkuler</label>
-                                            <input type="text" class="form-control form-control-sm" name="onloop" id="ma_onloop" value="-">
+                                            <input type="text" class="form-control" style="height: 38px;" name="onloop" id="ma_onloop" value="-">
                                         </div>
                                     </div>
                                 </div>
@@ -333,6 +333,28 @@
     </div>
 </div>
 
+@push('style')
+<style>
+    #ma_mulai,
+    #ma_selesai,
+    #ma_lama_operasi,
+    #ma_lama_anastesi,
+    #ma_tempat_pemantauan,
+    #ma_dokter_anestesi,
+    #ma_nm_dokter_anestesi,
+    #ma_penata_anestesi,
+    #ma_operator1,
+    #ma_nm_operator1,
+    #ma_operator2,
+    #ma_asisten_operator,
+    #ma_onloop {
+        height: 38px !important;
+        min-height: 38px !important;
+        line-height: 1.5 !important;
+    }
+</style>
+@endpush
+
 @push('script')
 <script>
     $(document).ready(function () {
@@ -424,7 +446,7 @@
             const container = $('#containerRiwayatMonitoringAnestesi');
             container.html('<div class="text-center text-muted p-3"><div class="spinner-border spinner-border-sm me-1"></div> Memuat riwayat...</div>');
 
-            $.get(`{{ url('/erm/monitoring-anestesi/list') }}/${encodeURIComponent(no_rawat)}`)
+            $.get(`{{ url('/erm/monitoring-anestesi/list') }}/${encodeURIComponent(no_rawat)}`, { no_rawat: no_rawat })
                 .done((res) => {
                     if (!res.success || !res.data || res.data.length === 0) {
                         container.html('<div class="text-muted text-center p-3 small"><i class="ti ti-notes-off me-1"></i> Belum ada laporan anestesi untuk kunjungan ini.</div>');
@@ -578,6 +600,12 @@
                         $('#btnCetakMonitoringAnestesi').removeClass('d-none').attr('onclick', `window.open('{{ url('/erm/monitoring-anestesi/print') }}?no_rawat=${encodeURIComponent(res.data.no_rawat)}&mulai=${encodeURIComponent(res.data.mulai)}', '_blank')`);
                         $('#btnHapusMonitoringAnestesi').removeClass('d-none');
                         muatRiwayatMonitoringAnestesi(no_rawat);
+                        if ($.fn.DataTable && $.fn.DataTable.isDataTable('#tabelRegistrasi')) {
+                            $('#tabelRegistrasi').DataTable().ajax.reload(null, false);
+                        }
+                        if ($.fn.DataTable && $.fn.DataTable.isDataTable('#tabelKamarInap')) {
+                            $('#tabelKamarInap').DataTable().ajax.reload(null, false);
+                        }
                     }
                 })
                 .fail((err) => {
@@ -608,6 +636,12 @@
                                 resetFormMonitoringAnestesi();
                                 $('#ma_no_rawat').val(no_rawat);
                                 muatRiwayatMonitoringAnestesi(no_rawat);
+                                if ($.fn.DataTable && $.fn.DataTable.isDataTable('#tabelRegistrasi')) {
+                                    $('#tabelRegistrasi').DataTable().ajax.reload(null, false);
+                                }
+                                if ($.fn.DataTable && $.fn.DataTable.isDataTable('#tabelKamarInap')) {
+                                    $('#tabelKamarInap').DataTable().ajax.reload(null, false);
+                                }
                             }
                         });
                 }
