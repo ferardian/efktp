@@ -499,6 +499,41 @@
         let hasSignaturePenerima = false;
         let hasSignatureSaksi = false;
 
+        // Fungsi hitung umur tahun dari tanggal lahir
+        function hitungUmurTahun(tglLahir) {
+            if (!tglLahir) return '';
+            try {
+                if (typeof hitungUmur === 'function') {
+                    const res = hitungUmur(tglLahir);
+                    if (res && res.includes(';')) {
+                        return res.split(';')[0];
+                    }
+                }
+                const birth = new Date(tglLahir);
+                if (isNaN(birth.getTime())) return '';
+                const today = new Date();
+                let age = today.getFullYear() - birth.getFullYear();
+                const m = today.getMonth() - birth.getMonth();
+                if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+                    age--;
+                }
+                return age >= 0 ? age : '';
+            } catch (e) {
+                return '';
+            }
+        }
+
+        // Event listener perubahan tanggal lahir penerima informasi
+        $('#ic_tanggal_lahir_penerima_informasi').on('change input', function () {
+            const tgl = $(this).val();
+            if (tgl) {
+                const u = hitungUmurTahun(tgl);
+                if (u !== '') {
+                    $('#ic_umur_penerima_informasi').val(u);
+                }
+            }
+        });
+
         // Inisialisasi Canvas TTD Pad
         function initSignaturePad(canvas, ctx, isDrawingFlagSetter, hasSigSetter) {
             if (!canvas || !ctx) return;
@@ -602,6 +637,7 @@
                 $('#ic_penerima_informasi').val(pasien?.nm_pasien || '');
                 $('#ic_jk_penerima_informasi').val(pasien?.jk || 'L');
                 $('#ic_tanggal_lahir_penerima_informasi').val(pasien?.tgl_lahir || '');
+                $('#ic_umur_penerima_informasi').val(hitungUmurTahun(pasien?.tgl_lahir));
                 $('#ic_alamat_penerima_informasi').val(pasien?.alamat || '');
                 $('#ic_no_hp').val(pasien?.no_tlp || '');
                 $('#ic_hubungan_penerima_informasi').val('Diri Sendiri');
@@ -681,6 +717,7 @@
                     $('#ic_penerima_informasi').val(p.nm_pasien);
                     $('#ic_jk_penerima_informasi').val(p.jk);
                     $('#ic_tanggal_lahir_penerima_informasi').val(p.tgl_lahir);
+                    $('#ic_umur_penerima_informasi').val(hitungUmurTahun(p.tgl_lahir));
                     $('#ic_alamat_penerima_informasi').val(p.alamat);
                     $('#ic_no_hp').val(p.no_tlp || '-');
                     $('#ic_hubungan_penerima_informasi').val('Diri Sendiri');
