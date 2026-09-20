@@ -39,10 +39,7 @@ class PerencanaanPemulanganController extends Controller
 		DB::beginTransaction();
 		try {
 			$nip = $request->nip ?: (session()->get('pegawai')->nik ?? '-');
-			if (empty($nip) || trim($nip) === '') {
-				$nip = '-';
-			}
-			$this->ensurePetugasExists($nip);
+			$nip = $this->ensurePetugasExists((string) $nip);
 
 			$data = [
 				'no_rawat' => $request->no_rawat,
@@ -162,48 +159,98 @@ class PerencanaanPemulanganController extends Controller
 	 * Otomatis sinkronisasi data petugas dari pegawai atau buat default
 	 * agar tidak terjadi Integrity Constraint Violation (Foreign Key) pada perencanaan_pemulangan.
 	 */
-	private function ensurePetugasExists(string $nip): void
+	private function ensurePetugasExists(string $nip): string
 	{
-		if (empty($nip)) {
+		if (empty($nip) || trim($nip) === '') {
 			$nip = '-';
 		}
 
-		$exists = DB::table('petugas')->where('nip', $nip)->exists();
-		if (!$exists) {
-			$pegawai = DB::table('pegawai')->where('nik', $nip)->first();
-			$kdJbtn = DB::table('jabatan')->value('kd_jbtn') ?: 'J001';
+		// 1. Sudah ada di tabel petugas
+		if (DB::table('petugas')->where('nip', $nip)->exists()) {
+			return $nip;
+		}
 
-			if ($pegawai) {
-				DB::table('petugas')->insert([
-					'nip' => $pegawai->nik,
-					'nama' => $pegawai->nama,
-					'jk' => in_array($pegawai->jk ?? '', ['L', 'P']) ? $pegawai->jk : 'L',
-					'tmp_lahir' => $pegawai->tmp_lahir ?: '-',
-					'tgl_lahir' => $pegawai->tgl_lahir ?: date('Y-m-d'),
-					'gol_darah' => '-',
-					'agama' => '-',
-					'stts_nikah' => '-',
-					'alamat' => $pegawai->alamat ?: '-',
-					'kd_jbtn' => $kdJbtn,
-					'no_telp' => '-',
-					'status' => '1'
-				]);
-			} else {
-				DB::table('petugas')->insert([
-					'nip' => $nip,
-					'nama' => $nip === '-' ? '-' : 'Petugas ' . $nip,
-					'jk' => 'L',
+		try {
+			// 2. Jika belum ada di tabel pegawai, pastikan data pegawai dibuat terlebih dahulu
+			// karena tabel petugas memiliki FK: FOREIGN KEY (nip) REFERENCES pegawai(nik)
+			$pegawai = DB::table('pegawai')->where('nik', $nip)->first();
+			if (!$pegawai) {
+				// Pastikan tabel master referensi pegawai memiliki data default
+				DB::table('jnj_jabatan')->insertOrIgnore(['kode' => '-', 'nama' => '-', 'tnj' => 0, 'indek' => 0]);
+				DB::table('departemen')->insertOrIgnore(['dep_id' => '-', 'nama' => '-']);
+				DB::table('bidang')->insertOrIgnore(['nama' => '-']);
+				DB::table('stts_wp')->insertOrIgnore(['stts' => '-', 'ktg' => '-']);
+				DB::table('stts_kerja')->insertOrIgnore(['stts' => '-', 'ktg' => '-', 'indek' => 0]);
+				DB::table('pendidikan')->insertOrIgnore(['tingkat' => '-', 'indek' => 0, 'gapok1' => 0, 'kenaikan' => 0, 'maksimal' => 0]);
+				DB::table('bank')->insertOrIgnore(['namabank' => 'T']);
+				DB::table('kelompok_jabatan')->insertOrIgnore(['kode_kelompok' => '-', 'nama_kelompok' => '-', 'indek' => 0]);
+				DB::table('resiko_kerja')->insertOrIgnore(['kode_resiko' => '-', 'nama_resiko' => '-', 'indek' => 0]);
+				DB::table('emergency_index')->insertOrIgnore(['kode_emergency' => '-', 'nama_emergency' => '-', 'indek' => 0]);
+
+				$namaPegawai = session()->get('pegawai')->nama ?? ($nip === '-' ? '-' : 'Petugas ' . $nip);
+				DB::table('pegawai')->insert([
+					'nik' => $nip,
+					'nama' => $namaPegawai,
+					'jk' => 'Pria',
+					'jbtn' => '-',
+					'jnj_jabatan' => '-',
+					'kode_kelompok' => '-',
+					'kode_resiko' => '-',
+					'kode_emergency' => '-',
+					'departemen' => '-',
+					'bidang' => '-',
+					'stts_wp' => '-',
+					'stts_kerja' => '-',
+					'npwp' => '-',
+					'pendidikan' => '-',
+					'gapok' => 0,
 					'tmp_lahir' => '-',
 					'tgl_lahir' => date('Y-m-d'),
-					'gol_darah' => '-',
-					'agama' => '-',
-					'stts_nikah' => '-',
 					'alamat' => '-',
-					'kd_jbtn' => $kdJbtn,
-					'no_telp' => '-',
-					'status' => '1'
+					'kota' => '-',
+					'mulai_kerja' => date('Y-m-d'),
+					'ms_kerja' => '<1',
+					'indexins' => '-',
+					'bpd' => 'T',
+					'rekening' => '-',
+					'stts_aktif' => 'AKTIF',
+					'wajibmasuk' => 0,
+					'pengurang' => 0,
+					'indek' => 0,
+					'mulai_kontrak' => date('Y-m-d'),
+					'cuti_diambil' => 0,
+					'dankes' => 0,
+					'no_ktp' => '-'
 				]);
+				$pegawai = DB::table('pegawai')->where('nik', $nip)->first();
 			}
+
+			// 3. Pastikan jabatan ada untuk foreign key kd_jbtn di petugas
+			$kdJbtn = DB::table('jabatan')->value('kd_jbtn') ?: 'J001';
+
+			DB::table('petugas')->insert([
+				'nip' => $pegawai->nik,
+				'nama' => $pegawai->nama,
+				'jk' => ($pegawai->jk === 'Wanita' || $pegawai->jk === 'P') ? 'P' : 'L',
+				'tmp_lahir' => $pegawai->tmp_lahir ?: '-',
+				'tgl_lahir' => $pegawai->tgl_lahir ?: date('Y-m-d'),
+				'gol_darah' => '-',
+				'agama' => '-',
+				'stts_nikah' => '-',
+				'alamat' => $pegawai->alamat ?: '-',
+				'kd_jbtn' => $kdJbtn,
+				'no_telp' => '-',
+				'status' => '1'
+			]);
+
+			return $nip;
+		} catch (\Exception $e) {
+			// Fallback aman: jika ada masalah, gunakan NIP yang sudah pasti valid di tabel petugas
+			if (DB::table('petugas')->where('nip', '-')->exists()) {
+				return '-';
+			}
+			$existingNip = DB::table('petugas')->value('nip');
+			return $existingNip ?: '-';
 		}
 	}
 }
