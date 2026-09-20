@@ -171,11 +171,9 @@
                         const hasIc = icCount > 0;
 
                         let btnErmClass = 'btn-outline-secondary';
-                        let iconErmClass = '';
                         let badgeBtn = '';
                         if (hasIc) {
                             btnErmClass = 'btn-outline-success border-success';
-                            iconErmClass = 'text-success';
                             badgeBtn = `<span class="badge bg-success text-white rounded-pill px-1 py-0 ms-1" style="font-size: 0.65rem;" title="${icCount} Informed Consent">${icCount}</span>`;
                         }
 
@@ -184,7 +182,7 @@
                                     <button class="btn btn-primary btn-sm" type="button" onclick="riwayat('${row.reg_periksa.no_rkm_medis}')" title="Riwayat Perawatan"><i class="ti ti-folder-open"></i></button>
                                     <div class="dropdown">
                                         <button class="btn btn-sm ${btnErmClass} dropdown-toggle px-2 d-inline-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Menu ERM & Dokumen Klinis ${hasIc ? '(' + icCount + ' Informed Consent)' : ''}">
-                                            <i class="ti ti-notes ${iconErmClass}"></i>${badgeBtn}
+                                            <i class="ti ti-notes"></i>${badgeBtn}
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="z-index: 1055;">
                                             <li><h6 class="dropdown-header text-uppercase py-1"><i class="ti ti-heart-rate-monitor me-1"></i> Form Medis & ERM</h6></li>

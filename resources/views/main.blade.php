@@ -58,6 +58,28 @@
             border-radius: var(--tblr-border-radius-lg);
         }
 
+        .btn-outline-success:hover,
+        .btn-outline-success:focus,
+        .btn-outline-success:active,
+        .btn-outline-success.show {
+            color: #ffffff !important;
+        }
+
+        .btn-outline-success:hover .ti,
+        .btn-outline-success:focus .ti,
+        .btn-outline-success:active .ti,
+        .btn-outline-success.show .ti {
+            color: #ffffff !important;
+        }
+
+        .btn-outline-success:hover .badge,
+        .btn-outline-success:focus .badge,
+        .btn-outline-success:active .badge,
+        .btn-outline-success.show .badge {
+            background-color: #ffffff !important;
+            color: var(--tblr-success, #2fb344) !important;
+        }
+
 
         .form-label {
             font-size: 10px;
