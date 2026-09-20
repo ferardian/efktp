@@ -36,7 +36,7 @@
                 <!-- Form Discharge Planning -->
                 <form id="formPerencanaanPemulangan">
                     <input type="hidden" name="no_rawat" id="dp_no_rawat">
-                    <input type="hidden" name="nip" id="dp_nip">
+                    <input type="hidden" name="nip" id="dp_nip" value="{{ session()->get('pegawai')->nik ?? '-' }}">
 
                     <!-- Section 1: Rencana & Diagnosa -->
                     <div class="card mb-3 shadow-sm border-0 bg-light">
@@ -595,6 +595,8 @@
         window.bukaPerencanaanPemulangan = function (no_rawat) {
             $('#formPerencanaanPemulangan')[0].reset();
             $('#dp_no_rawat').val(no_rawat);
+            $('#dp_nip').val('{{ session()->get('pegawai')->nik ?? '-' }}');
+            $('#dp_petugas_display').val('{{ session()->get('pegawai')->nama ?? '-' }}');
             $('#dp_display_no_rawat').text(no_rawat);
             $('#dp_display_nm_pasien').text('-');
             $('#dp_display_no_rkm_medis').text('-');
@@ -682,6 +684,9 @@
                         $('#dp_keterangan_memerlukan_keterampilkan_khusus').val(d.keterangan_memerlukan_keterampilkan_khusus);
 
                         $('#dp_nama_pasien_keluarga').val(d.nama_pasien_keluarga);
+                        if (d.nip) {
+                            $('#dp_nip').val(d.nip);
+                        }
                         if (d.petugas && d.petugas.nama) {
                             $('#dp_petugas_display').val(d.petugas.nama);
                         }

@@ -38,6 +38,12 @@ class PerencanaanPemulanganController extends Controller
 
 		DB::beginTransaction();
 		try {
+			$nip = $request->nip ?: (session()->get('pegawai')->nik ?? '-');
+			if (empty($nip) || trim($nip) === '') {
+				$nip = '-';
+			}
+			$this->ensurePetugasExists($nip);
+
 			$data = [
 				'no_rawat' => $request->no_rawat,
 				'rencana_pulang' => $request->rencana_pulang,
@@ -72,7 +78,7 @@ class PerencanaanPemulanganController extends Controller
 				'memerlukan_keterampilkan_khusus' => in_array($request->memerlukan_keterampilkan_khusus, ['Tidak', 'Ya']) ? $request->memerlukan_keterampilkan_khusus : 'Tidak',
 				'keterangan_memerlukan_keterampilkan_khusus' => $request->keterangan_memerlukan_keterampilkan_khusus ?? '-',
 				'nama_pasien_keluarga' => $request->nama_pasien_keluarga,
-				'nip' => $request->nip ?: (session()->get('pegawai')->nik ?? '-'),
+				'nip' => $nip,
 			];
 
 			$record = PerencanaanPemulangan::updateOrCreate(
@@ -150,5 +156,54 @@ class PerencanaanPemulanganController extends Controller
 		file_put_contents(public_path($filePath), $image_base64);
 
 		return $filePath;
+	}
+
+	/**
+	 * Otomatis sinkronisasi data petugas dari pegawai atau buat default
+	 * agar tidak terjadi Integrity Constraint Violation (Foreign Key) pada perencanaan_pemulangan.
+	 */
+	private function ensurePetugasExists(string $nip): void
+	{
+		if (empty($nip)) {
+			$nip = '-';
+		}
+
+		$exists = DB::table('petugas')->where('nip', $nip)->exists();
+		if (!$exists) {
+			$pegawai = DB::table('pegawai')->where('nik', $nip)->first();
+			$kdJbtn = DB::table('jabatan')->value('kd_jbtn') ?: 'J001';
+
+			if ($pegawai) {
+				DB::table('petugas')->insert([
+					'nip' => $pegawai->nik,
+					'nama' => $pegawai->nama,
+					'jk' => in_array($pegawai->jk ?? '', ['L', 'P']) ? $pegawai->jk : 'L',
+					'tmp_lahir' => $pegawai->tmp_lahir ?: '-',
+					'tgl_lahir' => $pegawai->tgl_lahir ?: date('Y-m-d'),
+					'gol_darah' => '-',
+					'agama' => '-',
+					'stts_nikah' => '-',
+					'alamat' => $pegawai->alamat ?: '-',
+					'kd_jbtn' => $kdJbtn,
+					'no_telp' => '-',
+					'status' => '1'
+				]);
+			} else {
+				DB::table('petugas')->insert([
+					'nip' => $nip,
+					'nama' => $nip === '-' ? '-' : 'Petugas ' . $nip,
+					'jk' => 'L',
+					'tmp_lahir' => '-',
+					'tgl_lahir' => date('Y-m-d'),
+					'gol_darah' => '-',
+					'agama' => '-',
+					'stts_nikah' => '-',
+					'alamat' => '-',
+					'kd_jbtn' => $kdJbtn,
+					'no_telp' => '-',
+					'status' => '1'
+				]);
+			}
+		}
 	}
 }
