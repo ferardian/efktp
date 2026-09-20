@@ -216,9 +216,14 @@
                                         <div class="col-md-6">
                                             <label class="form-label small fw-bold d-flex justify-content-between align-items-center">
                                                 <span>Tanda Tangan Verifikasi Dokter</span>
-                                                <button type="button" class="btn btn-outline-danger btn-xs py-0 px-2" id="btnClearSignVerif">
-                                                    <i class="ti ti-eraser me-1"></i> Hapus TTD
-                                                </button>
+                                                <div class="d-flex gap-1">
+                                                    <button type="button" class="btn btn-outline-primary btn-xs py-0 px-2" id="btnBukaModalTtdVerif" title="Buka TTD di Layar Penuh / HP">
+                                                        <i class="ti ti-device-mobile me-1"></i> TTD di Layar / HP
+                                                    </button>
+                                                    <button type="button" class="btn btn-outline-danger btn-xs py-0 px-2" id="btnClearSignVerif">
+                                                        <i class="ti ti-eraser me-1"></i> Hapus TTD
+                                                    </button>
+                                                </div>
                                             </label>
                                             <div class="border rounded bg-white text-center position-relative shadow-sm" style="height: 130px;">
                                                 <canvas id="canvasSignVerif" class="w-100 h-100" style="cursor: crosshair; touch-action: none;"></canvas>
@@ -253,6 +258,47 @@
                 <div>
                     <button type="button" class="btn btn-sm btn-outline-indigo d-none" id="btnCetakPab">
                         <i class="ti ti-printer me-1"></i> Cetak Bukti Anestesi & Pemantauan (PDF)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Popup Canvas TTD Verifikasi Dokter (Khusus Layar Sentuh / HP / Tablet) -->
+<div class="modal fade" id="modalTtdPemantauanFullscreen" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1065;">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content shadow-lg border-0">
+            <div class="modal-header bg-primary text-white py-2">
+                <h5 class="modal-title">
+                    <i class="ti ti-writing me-1"></i> Tanda Tangan Digital - <span id="modalTtdVerifDokterNama">Dokter Verifikator</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-3 text-center bg-light">
+                <div class="alert alert-info py-2 px-3 small mb-2 text-start d-flex align-items-center">
+                    <i class="ti ti-device-mobile fs-2 me-2"></i>
+                    <div>
+                        <strong>Mode Layar Sentuh / HP / Tablet:</strong> Tanda tangani pada kanvas putih di bawah dengan jari atau stylus pen. Sentuh <em>Terapkan Tanda Tangan</em> setelah selesai.
+                    </div>
+                </div>
+                <div class="signature-modal-wrapper mx-auto" style="width: 100%; max-width: 680px; position: relative;">
+                    <canvas id="canvasTtdModalPemantauan" width="680" height="320" style="touch-action: none; background: #ffffff; border: 2px dashed #0d6efd; border-radius: 8px; width: 100%; height: 280px; cursor: crosshair; display: block; box-shadow: inset 0 0 10px rgba(0,0,0,0.03);"></canvas>
+                    <div class="position-absolute bottom-0 start-0 w-100 pb-2 text-muted small" style="pointer-events: none; opacity: 0.5;">
+                        --- Area Tanda Tangan Digital Dokter ---
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer py-2 d-flex justify-content-between bg-white">
+                <button type="button" class="btn btn-outline-danger" id="btnClearModalTtdPemantauan">
+                    <i class="ti ti-eraser me-1"></i> Hapus Goresan
+                </button>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Batal
+                    </button>
+                    <button type="button" class="btn btn-success" id="btnSimpanModalTtdPemantauan">
+                        <i class="ti ti-check me-1"></i> Terapkan Tanda Tangan
                     </button>
                 </div>
             </div>
@@ -343,6 +389,133 @@
                 hasSignatureVerif = false;
                 $('#hintSignVerif').removeClass('d-none');
                 $('#verif_tanda_tangan').val('');
+            }
+        });
+
+        // =========================================================================
+        // HANDLER MODAL TTD DIGITAL KHUSUS HP / LAYAR PENUH
+        // =========================================================================
+        var canvasModalPem = document.getElementById('canvasTtdModalPemantauan');
+        var ctxModalPem = canvasModalPem ? canvasModalPem.getContext('2d') : null;
+        var isDrawingModalPem = false;
+        var hasModalSignaturePem = false;
+
+        if (canvasModalPem && ctxModalPem) {
+            ctxModalPem.lineWidth = 3;
+            ctxModalPem.lineCap = 'round';
+            ctxModalPem.lineJoin = 'round';
+            ctxModalPem.strokeStyle = '#0f172a';
+
+            function getModalPemPos(e) {
+                const rect = canvasModalPem.getBoundingClientRect();
+                const scaleX = canvasModalPem.width / rect.width;
+                const scaleY = canvasModalPem.height / rect.height;
+
+                let clientX = e.clientX;
+                let clientY = e.clientY;
+                if (e.touches && e.touches.length > 0) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                } else if (e.changedTouches && e.changedTouches.length > 0) {
+                    clientX = e.changedTouches[0].clientX;
+                    clientY = e.changedTouches[0].clientY;
+                }
+
+                return {
+                    x: (clientX - rect.left) * scaleX,
+                    y: (clientY - rect.top) * scaleY
+                };
+            }
+
+            function startDrawModalPem(e) {
+                e.preventDefault();
+                isDrawingModalPem = true;
+                hasModalSignaturePem = true;
+                const pos = getModalPemPos(e);
+                ctxModalPem.beginPath();
+                ctxModalPem.moveTo(pos.x, pos.y);
+            }
+
+            function moveDrawModalPem(e) {
+                if (!isDrawingModalPem) return;
+                e.preventDefault();
+                const pos = getModalPemPos(e);
+                ctxModalPem.lineTo(pos.x, pos.y);
+                ctxModalPem.stroke();
+            }
+
+            function stopDrawModalPem(e) {
+                isDrawingModalPem = false;
+            }
+
+            canvasModalPem.addEventListener('mousedown', startDrawModalPem);
+            canvasModalPem.addEventListener('mousemove', (e) => { if (e.buttons === 1) moveDrawModalPem(e); });
+            window.addEventListener('mouseup', stopDrawModalPem);
+
+            canvasModalPem.addEventListener('touchstart', startDrawModalPem, { passive: false });
+            canvasModalPem.addEventListener('touchmove', moveDrawModalPem, { passive: false });
+            window.addEventListener('touchend', stopDrawModalPem);
+        }
+
+        // Buka modal TTD HP / Layar Penuh
+        $(document).on('click', '#btnBukaModalTtdVerif', function () {
+            const namaDokter = $('#verif_kd_dokter option:selected').text();
+            if (namaDokter && !namaDokter.includes('--')) {
+                $('#modalTtdVerifDokterNama').text(namaDokter);
+            } else {
+                $('#modalTtdVerifDokterNama').text('Dokter Verifikator');
+            }
+
+            if (canvasModalPem && ctxModalPem) {
+                ctxModalPem.clearRect(0, 0, canvasModalPem.width, canvasModalPem.height);
+                hasModalSignaturePem = false;
+
+                // Jika canvas utama sudah ada ttd, salin ke modal canvas
+                if (hasSignatureVerif && canvasVerif) {
+                    ctxModalPem.drawImage(canvasVerif, 0, 0, canvasModalPem.width, canvasModalPem.height);
+                    hasModalSignaturePem = true;
+                }
+            }
+
+            $('#modalTtdPemantauanFullscreen').modal('show');
+        });
+
+        // Hapus goresan di modal
+        $('#btnClearModalTtdPemantauan').on('click', function () {
+            if (canvasModalPem && ctxModalPem) {
+                ctxModalPem.clearRect(0, 0, canvasModalPem.width, canvasModalPem.height);
+                hasModalSignaturePem = false;
+            }
+        });
+
+        // Terapkan tanda tangan dari modal ke canvas utama
+        $('#btnSimpanModalTtdPemantauan').on('click', function () {
+            if (!hasModalSignaturePem) {
+                if (typeof showToast === 'function') {
+                    showToast('Tanda tangan masih kosong! Silakan tanda tangani terlebih dahulu.', 'warning');
+                } else {
+                    alert('Tanda tangan masih kosong! Silakan tanda tangani terlebih dahulu.');
+                }
+                return;
+            }
+
+            if (canvasVerif && ctxVerif && canvasModalPem) {
+                ctxVerif.clearRect(0, 0, canvasVerif.width, canvasVerif.height);
+                ctxVerif.drawImage(canvasModalPem, 0, 0, canvasVerif.width, canvasVerif.height);
+                hasSignatureVerif = true;
+                $('#hintSignVerif').addClass('d-none');
+                $('#verif_tanda_tangan').val(canvasVerif.toDataURL('image/png'));
+
+                $('#modalTtdPemantauanFullscreen').modal('hide');
+                if (typeof showToast === 'function') {
+                    showToast('Tanda tangan berhasil diterapkan!', 'success');
+                }
+            }
+        });
+
+        $('#modalTtdPemantauanFullscreen').on('hidden.bs.modal', function () {
+            if ($('#modalPemantauanAnestesiBedah').hasClass('show')) {
+                $('body').addClass('modal-open');
             }
         });
 
