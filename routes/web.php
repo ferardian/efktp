@@ -290,6 +290,9 @@ Route::middleware('auth:web,admin')->group(function () {
 	// INFORMED CONSENT (PERSETUJUAN / PENOLAKAN TINDAKAN MEDIS)
 	Route::get('/erm/persetujuan-tindakan/list/{no_rawat}', [PersetujuanPenolakanTindakanController::class, 'getByNoRawat']);
 	Route::get('/erm/persetujuan-tindakan/show/{no_pernyataan}', [PersetujuanPenolakanTindakanController::class, 'show']);
+	Route::get('/erm/persetujuan-tindakan/template/list', [PersetujuanPenolakanTindakanController::class, 'getTemplates']);
+	Route::get('/erm/persetujuan-tindakan/diagnosa/{no_rawat}', [PersetujuanPenolakanTindakanController::class, 'getDiagnosaPasien']);
+	Route::post('/erm/persetujuan-tindakan/template/save', [PersetujuanPenolakanTindakanController::class, 'saveTemplate']);
 	Route::post('/erm/persetujuan-tindakan', [PersetujuanPenolakanTindakanController::class, 'store']);
 	Route::post('/erm/persetujuan-tindakan/delete', [PersetujuanPenolakanTindakanController::class, 'delete']);
 	Route::get('/erm/persetujuan-tindakan/print/{no_pernyataan}', [PersetujuanPenolakanTindakanController::class, 'print']);

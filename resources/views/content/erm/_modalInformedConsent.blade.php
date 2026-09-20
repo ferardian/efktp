@@ -48,16 +48,16 @@
                                     <strong class="text-secondary"><i class="ti ti-user-check me-1"></i> 1. Informasi Pemberi Edukasi & Dokter Pelaksana</strong>
                                 </div>
                                 <div class="card-body p-3">
-                                    <div class="row g-2">
-                                        <div class="col-md-4">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
                                             <label class="form-label required small">Tanggal Edukasi / Tindakan</label>
                                             <input type="date" class="form-control form-control-sm" name="tanggal" id="ic_tanggal" value="{{ date('Y-m-d') }}" required>
                                         </div>
-                                        <div class="col-md-8">
+                                        <div class="col-md-6">
                                             <label class="form-label required small">Dokter Pelaksana / DPJP</label>
                                             <div class="input-group input-group-sm">
-                                                <input type="text" class="form-control form-control-sm w-25" name="kd_dokter" id="ic_kd_dokter" readonly required>
-                                                <input type="text" class="form-control form-control-sm w-75" name="nm_dokter" id="ic_nm_dokter" readonly placeholder="Nama Dokter">
+                                                <input type="text" class="form-control form-control-sm" style="max-width: 80px;" name="kd_dokter" id="ic_kd_dokter" readonly required placeholder="Kode">
+                                                <input type="text" class="form-control form-control-sm" name="nm_dokter" id="ic_nm_dokter" readonly placeholder="Nama Dokter Pelaksana">
                                             </div>
                                         </div>
                                     </div>
@@ -66,9 +66,22 @@
 
                             <!-- Section 2: Informasi & Edukasi Tindakan (10 Elemen Edukasi) -->
                             <div class="card mb-3 shadow-sm">
-                                <div class="card-header py-2 bg-light d-flex justify-content-between align-items-center">
-                                    <strong class="text-secondary"><i class="ti ti-list-details me-1"></i> 2. Materi Edukasi Tindakan Medis</strong>
-                                    <span class="badge bg-blue-lt small">Beri checklist jika pasien/keluarga telah paham</span>
+                                <div class="card-header py-2 bg-light d-flex flex-wrap justify-content-between align-items-center gap-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <strong class="text-secondary"><i class="ti ti-list-details me-1"></i> 2. Materi Edukasi Tindakan Medis</strong>
+                                        <span class="badge bg-blue-lt small d-none d-md-inline">Beri checklist jika pasien/keluarga telah paham</span>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-1">
+                                        <button type="button" class="btn btn-xs btn-outline-info" id="btnTarikDiagnosaIc" title="Tarik diagnosa ICD-10 / SOAP pasien saat ini">
+                                            <i class="ti ti-activity me-1"></i> Tarik Diagnosa Pasien
+                                        </button>
+                                        <button type="button" class="btn btn-xs btn-primary" id="btnBukaModalTemplateIc" title="Pilih template materi edukasi tindakan">
+                                            <i class="ti ti-template me-1"></i> Gunakan Template Tindakan
+                                        </button>
+                                        <button type="button" class="btn btn-xs btn-outline-secondary" id="btnSimpanSebagaiTemplateIc" title="Simpan isi edukasi saat ini menjadi template baru">
+                                            <i class="ti ti-device-floppy me-1"></i> Simpan Jadi Template
+                                        </button>
+                                    </div>
                                 </div>
                                 <div class="card-body p-3">
                                     <div class="table-responsive">
@@ -301,9 +314,12 @@
                                                     <canvas id="canvasTtdPenerima" width="320" height="150" style="touch-action: none; cursor: crosshair; display: block;"></canvas>
                                                 </div>
                                                 <input type="hidden" name="ttd_penerima" id="ic_ttd_penerima">
-                                                <div class="mt-2">
+                                                <div class="mt-2 d-flex justify-content-center gap-1">
                                                     <button type="button" class="btn btn-xs btn-outline-danger" id="btnClearTtdPenerima">
                                                         <i class="ti ti-eraser me-1"></i> Hapus TTD
+                                                    </button>
+                                                    <button type="button" class="btn btn-xs btn-outline-primary btn-buka-ttd-modal" data-target="penerima" data-title="Pasien / Penerima Informasi">
+                                                        <i class="ti ti-maximize me-1"></i> Tanda Tangan di HP / Modal
                                                     </button>
                                                 </div>
                                             </div>
@@ -317,9 +333,12 @@
                                                     <canvas id="canvasTtdSaksi" width="320" height="150" style="touch-action: none; cursor: crosshair; display: block;"></canvas>
                                                 </div>
                                                 <input type="hidden" name="ttd_saksi" id="ic_ttd_saksi">
-                                                <div class="mt-2">
+                                                <div class="mt-2 d-flex justify-content-center gap-1">
                                                     <button type="button" class="btn btn-xs btn-outline-danger" id="btnClearTtdSaksi">
                                                         <i class="ti ti-eraser me-1"></i> Hapus TTD
+                                                    </button>
+                                                    <button type="button" class="btn btn-xs btn-outline-primary btn-buka-ttd-modal" data-target="saksi" data-title="Saksi Keluarga / Pihak Pasien">
+                                                        <i class="ti ti-maximize me-1"></i> Tanda Tangan di HP / Modal
                                                     </button>
                                                 </div>
                                             </div>
@@ -362,6 +381,87 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Pilih Template Tindakan -->
+<div class="modal fade" id="modalPilihTemplateIc" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1060;">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable" role="document">
+        <div class="modal-content shadow-lg border-0">
+            <div class="modal-header bg-primary text-white py-2">
+                <h5 class="modal-title">
+                    <i class="ti ti-template me-1"></i> Pilih Template Materi Edukasi Tindakan
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-3">
+                <div class="input-icon mb-3">
+                    <span class="input-icon-addon"><i class="ti ti-search"></i></span>
+                    <input type="text" class="form-control" id="searchTemplateIc" placeholder="Cari nama tindakan atau diagnosa...">
+                </div>
+                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-sm table-hover table-bordered align-middle">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th style="width: 25%;">Tindakan</th>
+                                <th style="width: 25%;">Diagnosis Terkait</th>
+                                <th style="width: 35%;">Indikasi Tindakan</th>
+                                <th style="width: 15%;" class="text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyTemplateIc">
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-3">Memuat template...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer py-2 bg-light">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Canvas TTD Khusus Mobile / Layar Penuh -->
+<div class="modal fade" id="modalTtdDigitalFullscreen" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1065;">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content shadow-lg border-0">
+            <div class="modal-header bg-primary text-white py-2">
+                <h5 class="modal-title">
+                    <i class="ti ti-writing me-1"></i> Tanda Tangan Digital - <span id="modalTtdTargetName">Pasien / Penerima Informasi</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-3 text-center bg-light">
+                <div class="alert alert-info py-2 px-3 small mb-2 text-start d-flex align-items-center">
+                    <i class="ti ti-device-mobile fs-2 me-2"></i>
+                    <div>
+                        <strong>Mode Layar Sentuh / Tablet:</strong> Tanda tangani pada kanvas putih di bawah dengan jari atau stylus pen. Sentuh <em>Terapkan Tanda Tangan</em> setelah selesai.
+                    </div>
+                </div>
+                <div class="signature-modal-wrapper mx-auto" style="width: 100%; max-width: 680px; position: relative;">
+                    <canvas id="canvasTtdModal" width="680" height="320" style="touch-action: none; background: #ffffff; border: 2px dashed #0d6efd; border-radius: 8px; width: 100%; height: 280px; cursor: crosshair; display: block; box-shadow: inset 0 0 10px rgba(0,0,0,0.03);"></canvas>
+                    <div class="position-absolute bottom-0 start-0 w-100 pb-2 text-muted small" style="pointer-events: none; opacity: 0.5;">
+                        --- Area Tanda Tangan Digital ---
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer py-2 d-flex justify-content-between bg-white">
+                <button type="button" class="btn btn-outline-danger" id="btnClearModalTtd">
+                    <i class="ti ti-eraser me-1"></i> Hapus Goresan
+                </button>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Batal
+                    </button>
+                    <button type="button" class="btn btn-success" id="btnSimpanModalTtd">
+                        <i class="ti ti-check me-1"></i> Terapkan Tanda Tangan
+                    </button>
                 </div>
             </div>
         </div>
@@ -762,6 +862,298 @@
                         })
                         .fail((err) => {
                             showToast(err.responseJSON?.message || 'Gagal menghapus', 'error');
+                        });
+                }
+            });
+        });
+
+        // =========================================================================
+        // FITUR MODAL TANDA TANGAN DIGITAL (HP / TABLET / FULLSCREEN CANVAS)
+        // =========================================================================
+        const canvasModal = document.getElementById('canvasTtdModal');
+        const ctxModal = canvasModal ? canvasModal.getContext('2d') : null;
+        let isDrawingModal = false;
+        let hasModalSignature = false;
+        let currentTtdTarget = 'penerima';
+
+        if (canvasModal && ctxModal) {
+            ctxModal.strokeStyle = "#002060";
+            ctxModal.lineWidth = 3.5;
+            ctxModal.lineCap = "round";
+            ctxModal.lineJoin = "round";
+
+            function getModalPos(e) {
+                const rect = canvasModal.getBoundingClientRect();
+                const scaleX = canvasModal.width / rect.width;
+                const scaleY = canvasModal.height / rect.height;
+
+                let clientX = e.clientX;
+                let clientY = e.clientY;
+                if (e.touches && e.touches.length > 0) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                } else if (e.changedTouches && e.changedTouches.length > 0) {
+                    clientX = e.changedTouches[0].clientX;
+                    clientY = e.changedTouches[0].clientY;
+                }
+
+                return {
+                    x: (clientX - rect.left) * scaleX,
+                    y: (clientY - rect.top) * scaleY
+                };
+            }
+
+            function startDrawModal(e) {
+                e.preventDefault();
+                isDrawingModal = true;
+                hasModalSignature = true;
+                const pos = getModalPos(e);
+                ctxModal.beginPath();
+                ctxModal.moveTo(pos.x, pos.y);
+            }
+
+            function drawModal(e) {
+                if (!isDrawingModal) return;
+                e.preventDefault();
+                const pos = getModalPos(e);
+                ctxModal.lineTo(pos.x, pos.y);
+                ctxModal.stroke();
+            }
+
+            function stopDrawModal(e) {
+                isDrawingModal = false;
+            }
+
+            canvasModal.addEventListener('mousedown', startDrawModal);
+            canvasModal.addEventListener('mousemove', (e) => { if (e.buttons === 1) drawModal(e); });
+            window.addEventListener('mouseup', stopDrawModal);
+
+            canvasModal.addEventListener('touchstart', startDrawModal, { passive: false });
+            canvasModal.addEventListener('touchmove', drawModal, { passive: false });
+            window.addEventListener('touchend', stopDrawModal);
+        }
+
+        // Buka modal TTD HP
+        $(document).on('click', '.btn-buka-ttd-modal', function () {
+            currentTtdTarget = $(this).data('target');
+            const targetTitle = $(this).data('title') || 'Pasien / Wali';
+            $('#modalTtdTargetName').text(targetTitle);
+
+            // Bersihkan modal canvas
+            if (canvasModal && ctxModal) {
+                ctxModal.clearRect(0, 0, canvasModal.width, canvasModal.height);
+                hasModalSignature = false;
+
+                // Jika target canvas sudah ada goresan, salin ke modal canvas
+                const sourceCanvas = currentTtdTarget === 'penerima' ? canvasPenerima : canvasSaksi;
+                const hasSourceSig = currentTtdTarget === 'penerima' ? hasSignaturePenerima : hasSignatureSaksi;
+                if (hasSourceSig && sourceCanvas) {
+                    ctxModal.drawImage(sourceCanvas, 0, 0, canvasModal.width, canvasModal.height);
+                    hasModalSignature = true;
+                }
+            }
+
+            $('#modalTtdDigitalFullscreen').modal('show');
+        });
+
+        // Reset canvas di modal TTD
+        $('#btnClearModalTtd').on('click', function () {
+            if (canvasModal && ctxModal) {
+                ctxModal.clearRect(0, 0, canvasModal.width, canvasModal.height);
+                hasModalSignature = false;
+            }
+        });
+
+        // Simpan / terapkan dari modal TTD ke canvas utama
+        $('#btnSimpanModalTtd').on('click', function () {
+            if (!hasModalSignature) {
+                showToast('Tanda tangan masih kosong! Silakan tanda tangan terlebih dahulu.', 'warning');
+                return;
+            }
+
+            const targetCanvas = currentTtdTarget === 'penerima' ? canvasPenerima : canvasSaksi;
+            const targetCtx = currentTtdTarget === 'penerima' ? ctxPenerima : ctxSaksi;
+
+            if (targetCanvas && targetCtx && canvasModal) {
+                targetCtx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
+                targetCtx.drawImage(canvasModal, 0, 0, targetCanvas.width, targetCanvas.height);
+
+                if (currentTtdTarget === 'penerima') {
+                    hasSignaturePenerima = true;
+                    $('#ic_ttd_penerima').val(targetCanvas.toDataURL('image/png'));
+                } else {
+                    hasSignatureSaksi = true;
+                    $('#ic_ttd_saksi').val(targetCanvas.toDataURL('image/png'));
+                }
+
+                $('#modalTtdDigitalFullscreen').modal('hide');
+                showToast('Tanda tangan berhasil diterapkan!', 'success');
+            }
+        });
+
+        // =========================================================================
+        // FITUR TEMPLATE MATERI EDUKASI TINDAKAN & TARIK DIAGNOSA
+        // =========================================================================
+        let listTemplatesIc = [];
+
+        // 1. Tarik diagnosa pasien (ICD-10 / SOAP)
+        $('#btnTarikDiagnosaIc').on('click', function () {
+            const no_rawat = $('#ic_no_rawat').val();
+            if (!no_rawat) {
+                showToast('Nomor rawat belum dipilih', 'warning');
+                return;
+            }
+
+            const btn = $(this);
+            btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Menarik...');
+
+            $.get(`{{ url('/erm/persetujuan-tindakan/diagnosa') }}/${encodeURIComponent(no_rawat)}`)
+                .done((res) => {
+                    btn.prop('disabled', false).html('<i class="ti ti-activity me-1"></i> Tarik Diagnosa Pasien');
+                    if (res.success && res.diagnosa) {
+                        $('#ic_diagnosa').val(res.diagnosa).addClass('border-primary bg-primary-lt');
+                        setTimeout(() => {
+                            $('#ic_diagnosa').removeClass('border-primary bg-primary-lt');
+                        }, 2000);
+                        showToast(`Diagnosa ditarik: ${res.diagnosa}`, 'success');
+                    } else {
+                        showToast('Belum ada diagnosa ICD-10 maupun asesmen SOAP untuk pasien ini.', 'info');
+                    }
+                })
+                .fail(() => {
+                    btn.prop('disabled', false).html('<i class="ti ti-activity me-1"></i> Tarik Diagnosa Pasien');
+                    showToast('Gagal menarik diagnosa pasien', 'error');
+                });
+        });
+
+        // 2. Buka modal template
+        $('#btnBukaModalTemplateIc').on('click', function () {
+            const tbody = $('#tbodyTemplateIc');
+            tbody.html('<tr><td colspan="4" class="text-center text-muted py-3"><div class="spinner-border spinner-border-sm me-1"></div> Memuat daftar template...</td></tr>');
+            $('#searchTemplateIc').val('');
+            $('#modalPilihTemplateIc').modal('show');
+
+            $.get(`{{ url('/erm/persetujuan-tindakan/template/list') }}`)
+                .done((res) => {
+                    if (res.success && res.data && res.data.length > 0) {
+                        listTemplatesIc = res.data;
+                        renderTemplateList(listTemplatesIc);
+                    } else {
+                        tbody.html('<tr><td colspan="4" class="text-center text-muted py-3">Belum ada data template. Anda dapat membuat dan menyimpannya melalui tombol "Simpan Jadi Template".</td></tr>');
+                    }
+                })
+                .fail(() => {
+                    tbody.html('<tr><td colspan="4" class="text-center text-danger py-3">Gagal mengambil daftar template</td></tr>');
+                });
+        });
+
+        function renderTemplateList(templates) {
+            const tbody = $('#tbodyTemplateIc');
+            if (!templates || templates.length === 0) {
+                tbody.html('<tr><td colspan="4" class="text-center text-muted py-3">Tidak ada template yang cocok dengan pencarian</td></tr>');
+                return;
+            }
+
+            let html = '';
+            templates.forEach((t, index) => {
+                html += `
+                    <tr>
+                        <td>
+                            <strong class="text-primary">${t.tindakan || '-'}</strong>
+                            <div class="text-muted small">Kode: ${t.kode_template}</div>
+                        </td>
+                        <td><span class="small">${t.diagnosa || '-'}</span></td>
+                        <td><span class="small text-muted">${t.indikasi_tindakan || '-'}</span></td>
+                        <td class="text-center">
+                            <button type="button" class="btn btn-xs btn-primary btn-pilih-template-row" data-index="${index}">
+                                <i class="ti ti-check me-1"></i> Pilih
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.html(html);
+        }
+
+        // Pencarian template
+        $('#searchTemplateIc').on('input', function () {
+            const q = $(this).val().toLowerCase();
+            const filtered = listTemplatesIc.filter((t) => {
+                return (t.tindakan && t.tindakan.toLowerCase().includes(q)) ||
+                       (t.diagnosa && t.diagnosa.toLowerCase().includes(q)) ||
+                       (t.indikasi_tindakan && t.indikasi_tindakan.toLowerCase().includes(q));
+            });
+            renderTemplateList(filtered);
+        });
+
+        // Terapkan template ke form
+        $(document).on('click', '.btn-pilih-template-row', function () {
+            const idx = $(this).data('index');
+            const t = listTemplatesIc[idx];
+            if (!t) return;
+
+            // Isi semua elemen edukasi
+            if (t.diagnosa && t.diagnosa !== '-') $('#ic_diagnosa').val(t.diagnosa);
+            if (t.tindakan && t.tindakan !== '-') $('#ic_tindakan').val(t.tindakan);
+            if (t.indikasi_tindakan && t.indikasi_tindakan !== '-') $('#ic_indikasi_tindakan').val(t.indikasi_tindakan);
+            if (t.tata_cara && t.tata_cara !== '-') $('#ic_tata_cara').val(t.tata_cara);
+            if (t.tujuan && t.tujuan !== '-') $('#ic_tujuan').val(t.tujuan);
+            if (t.risiko && t.risiko !== '-') $('#ic_risiko').val(t.risiko);
+            if (t.komplikasi && t.komplikasi !== '-') $('#ic_komplikasi').val(t.komplikasi);
+            if (t.prognosis && t.prognosis !== '-') $('#ic_prognosis').val(t.prognosis);
+            if (t.alternatif_dan_risikonya && t.alternatif_dan_risikonya !== '-') $('#ic_alternatif_dan_risikonya').val(t.alternatif_dan_risikonya);
+            if (t.lain_lain && t.lain_lain !== '-') $('#ic_lain_lain').val(t.lain_lain);
+            if (t.biaya !== undefined && t.biaya !== null) $('#ic_biaya').val(Math.round(t.biaya));
+
+            // Checklist otomatis semua konfirmasi ke checked
+            $('#ic_diagnosa_konfirmasi, #ic_indikasi_tindakan_konfirmasi, #ic_tindakan_konfirmasi, #ic_tata_cara_konfirmasi, #ic_tujuan_konfirmasi, #ic_risiko_konfirmasi, #ic_komplikasi_konfirmasi, #ic_prognosis_konfirmasi, #ic_alternatif_konfirmasi, #ic_biaya_konfirmasi, #ic_lain_lain_konfirmasi').prop('checked', true);
+
+            $('#modalPilihTemplateIc').modal('hide');
+            showToast(`Template "${t.tindakan}" berhasil diterapkan ke form!`, 'success');
+        });
+
+        // 3. Simpan isi edukasi saat ini menjadi template
+        $('#btnSimpanSebagaiTemplateIc').on('click', function () {
+            const tindakan = $('#ic_tindakan').val().trim();
+            if (!tindakan) {
+                showToast('Isi kolom Nama Tindakan terlebih dahulu sebelum menyimpan sebagai template!', 'warning');
+                $('#ic_tindakan').focus();
+                return;
+            }
+
+            Swal.fire({
+                title: 'Simpan Jadi Template?',
+                text: `Simpan materi edukasi ini sebagai template untuk tindakan "${tindakan}"?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: '<i class="ti ti-device-floppy me-1"></i> Ya, Simpan Template',
+                cancelButtonText: 'Batal'
+            }).then((res) => {
+                if (res.isConfirmed) {
+                    const payload = {
+                        tindakan: tindakan,
+                        diagnosa: $('#ic_diagnosa').val(),
+                        indikasi_tindakan: $('#ic_indikasi_tindakan').val(),
+                        tata_cara: $('#ic_tata_cara').val(),
+                        tujuan: $('#ic_tujuan').val(),
+                        risiko: $('#ic_risiko').val(),
+                        komplikasi: $('#ic_komplikasi').val(),
+                        prognosis: $('#ic_prognosis').val(),
+                        alternatif_dan_risikonya: $('#ic_alternatif_dan_risikonya').val(),
+                        lain_lain: $('#ic_lain_lain').val(),
+                        biaya: $('#ic_biaya').val() || 0
+                    };
+
+                    $.post(`{{ url('/erm/persetujuan-tindakan/template/save') }}`, payload)
+                        .done((result) => {
+                            if (result.success) {
+                                showToast('Template tindakan medis berhasil disimpan!', 'success');
+                            } else {
+                                showToast('Gagal menyimpan template: ' + (result.message || ''), 'error');
+                            }
+                        })
+                        .fail((err) => {
+                            showToast(err.responseJSON?.message || 'Gagal menyimpan template', 'error');
                         });
                 }
             });

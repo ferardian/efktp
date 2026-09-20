@@ -251,4 +251,94 @@ class PersetujuanPenolakanTindakanController extends Controller
 
 		return $filePath;
 	}
+
+	/**
+	 * Mengambil daftar template tindakan medis dari database.
+	 */
+	public function getTemplates(): JsonResponse
+	{
+		$templates = DB::table('template_persetujuan_penolakan_tindakan')
+			->orderBy('tindakan', 'asc')
+			->get();
+
+		return response()->json([
+			'success' => true,
+			'data' => $templates,
+		]);
+	}
+
+	/**
+	 * Mengambil diagnosa pasien saat ini dari diagnosa_pasien dan SOAP pemeriksaan.
+	 */
+	public function getDiagnosaPasien(string $no_rawat): JsonResponse
+	{
+		// 1. Diagnosa ICD-10
+		$diagnosaIcd = DB::table('diagnosa_pasien')
+			->join('penyakit', 'diagnosa_pasien.kd_penyakit', '=', 'penyakit.kd_penyakit')
+			->where('diagnosa_pasien.no_rawat', $no_rawat)
+			->orderBy('diagnosa_pasien.prioritas', 'asc')
+			->select('diagnosa_pasien.kd_penyakit', 'penyakit.nm_penyakit', 'diagnosa_pasien.status', 'diagnosa_pasien.prioritas')
+			->get();
+
+		// 2. Diagnosa/Asesmen SOAP
+		$pemeriksaan = DB::table('pemeriksaan_ralan')->where('no_rawat', $no_rawat)->orderBy('tgl_perawatan', 'desc')->orderBy('jam_rawat', 'desc')->first();
+		$penilaian = $pemeriksaan->penilaian ?? '';
+
+		$diagnosaStr = '';
+		if ($diagnosaIcd->isNotEmpty()) {
+			$diagnosaStr = $diagnosaIcd->map(function ($d) {
+				return "{$d->nm_penyakit} ({$d->kd_penyakit})";
+			})->implode(', ');
+		} elseif (!empty($penilaian)) {
+			$diagnosaStr = trim($penilaian);
+		}
+
+		return response()->json([
+			'success' => true,
+			'diagnosa' => $diagnosaStr,
+			'list_icd' => $diagnosaIcd,
+			'penilaian' => $penilaian,
+		]);
+	}
+
+	/**
+	 * Menyimpan / memperbarui template persetujuan tindakan medis.
+	 */
+	public function saveTemplate(Request $request): JsonResponse
+	{
+		$request->validate([
+			'tindakan' => 'required',
+		]);
+
+		$kode = $request->kode_template;
+		if (empty($kode)) {
+			$last = DB::table('template_persetujuan_penolakan_tindakan')->max('kode_template');
+			$num = intval($last) + 1;
+			$kode = sprintf('%02d', $num);
+		}
+
+		$data = [
+			'kode_template' => $kode,
+			'diagnosa' => $request->diagnosa ?? '-',
+			'tindakan' => $request->tindakan ?? '-',
+			'indikasi_tindakan' => $request->indikasi_tindakan ?? '-',
+			'tata_cara' => $request->tata_cara ?? '-',
+			'tujuan' => $request->tujuan ?? '-',
+			'risiko' => $request->risiko ?? '-',
+			'komplikasi' => $request->komplikasi ?? '-',
+			'prognosis' => $request->prognosis ?? '-',
+			'alternatif_dan_risikonya' => $request->alternatif_dan_risikonya ?? '-',
+			'lain_lain' => $request->lain_lain ?? '-',
+			'biaya' => floatval(str_replace(['.', ','], ['', '.'], $request->biaya ?? '0')),
+		];
+
+		DB::table('template_persetujuan_penolakan_tindakan')
+			->updateOrInsert(['kode_template' => $kode], $data);
+
+		return response()->json([
+			'success' => true,
+			'message' => 'Template tindakan medis berhasil disimpan',
+			'data' => $data,
+		]);
+	}
 }
