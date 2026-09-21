@@ -248,7 +248,7 @@
                                         <li><h6 class="dropdown-header text-uppercase py-1"><i class="ti ti-heart-rate-monitor me-1"></i> Form Medis & ERM</h6></li>
                                         <li>
                                             <a class="dropdown-item py-1 d-flex justify-content-between align-items-center" href="javascript:void(0)" onclick="penilaianMedisRalan('${row.no_rawat}')">
-                                                <span><i class="ti ti-stethoscope text-teal me-2"></i> Penilaian Awal Medis Dewasa</span>
+                                                <span><i class="ti ti-stethoscope text-teal me-2"></i> Penilaian Awal Medis Umum</span>
                                             </a>
                                         </li>
                                         <li>

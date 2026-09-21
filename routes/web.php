@@ -259,7 +259,7 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::post('/penilaian/awal/keperawatan/ranap', [PenilaianAwalKeperawatanRanapController::class, 'createPenilaian']);
 	Route::get('/penilaian/awal/keperawatan/ranap/print', [PenilaianAwalKeperawatanRanapController::class, 'print']);
 
-	// PENILAIAN AWAL MEDIS RALAN DEWASA
+	// PENILAIAN AWAL MEDIS RALAN UMUM
 	Route::get('/penilaian/medis/ralan', [PenilaianMedisRalanController::class, 'get']);
 	Route::post('/penilaian/medis/ralan', [PenilaianMedisRalanController::class, 'createPenilaian']);
 	Route::delete('/penilaian/medis/ralan', [PenilaianMedisRalanController::class, 'deletePenilaian']);

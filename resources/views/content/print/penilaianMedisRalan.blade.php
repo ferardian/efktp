@@ -61,7 +61,7 @@
             <tr>
                 <td style="width: 50%; text-align: center; vertical-align: middle; background-color: #fafafa;">
                     <h4 style="margin: 0; padding: 4px; text-transform: uppercase;">
-                        PENILAIAN AWAL MEDIS<br>RAWAT JALAN DEWASA
+                        PENILAIAN AWAL MEDIS<br>RAWAT JALAN UMUM
                     </h4>
                     <div style="font-size: 10px; color: #444; margin-top: 3px;">
                         Tgl Asuhan: <b>{{ $data && $data->tanggal ? Carbon\Carbon::parse($data->tanggal)->translatedFormat('d F Y H:i:s') : '-' }}</b>

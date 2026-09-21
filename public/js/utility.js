@@ -1413,8 +1413,8 @@ $.contextMenu({
                 "PenilaianAwal": {
                     name: "Penilaian Awal",
                     items: {
-                        "MedisDewasa": {
-                            name: "Medis Dewasa",
+                        "MedisUmum": {
+                            name: "Medis Umum",
                             icon: "fas fa-stethoscope",
                             callback: (item, opt) => {
                                 penilaianMedisRalan(`${no_rawat}`);

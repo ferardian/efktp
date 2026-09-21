@@ -3,7 +3,7 @@
         <div class="modal-content rounded-3 shadow-lg border-0">
             <div class="modal-header bg-teal text-white py-3">
                 <h5 class="modal-title m-0 text-white font-weight-bold">
-                    <i class="ti ti-stethoscope me-2"></i>Penilaian Awal Medis Rawat Jalan Dewasa
+                    <i class="ti ti-stethoscope me-2"></i>Penilaian Awal Medis Rawat Jalan Umum
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -382,7 +382,7 @@
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl" role="document">
         <div class="modal-content rounded-3">
             <div class="modal-header bg-teal text-white py-2">
-                <h5 class="modal-title m-0 text-white"><i class="ti ti-printer me-2"></i>Cetak Penilaian Awal Medis Rawat Jalan Dewasa</h5>
+                <h5 class="modal-title m-0 text-white"><i class="ti ti-printer me-2"></i>Cetak Penilaian Awal Medis Rawat Jalan Umum</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-0">
