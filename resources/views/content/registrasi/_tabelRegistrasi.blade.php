@@ -244,61 +244,82 @@
                                     <button class="btn btn-sm ${btnErmClass} dropdown-toggle px-2 d-inline-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Menu ERM ${hasErm ? '(' + totalErmCount + ' Dokumen)' : ''}">
                                         <i class="ti ti-clipboard-text"></i>${badgeBtn}
                                     </button>
-                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="z-index: 1055;">
-                                        <li><h6 class="dropdown-header text-uppercase py-1"><i class="ti ti-heart-rate-monitor me-1"></i> Form Medis & ERM</h6></li>
-                                        <li>
-                                            <a class="dropdown-item py-1 d-flex justify-content-between align-items-center" href="javascript:void(0)" onclick="penilaianMedisRalan('${row.no_rawat}')">
-                                                <span><i class="ti ti-stethoscope text-teal me-2"></i> Penilaian Awal Medis Umum</span>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a class="dropdown-item py-1 d-flex justify-content-between align-items-center" href="javascript:void(0)" onclick="penilaianAwalKeperawatan('${row.no_rawat}')">
-                                                <span><i class="ti ti-clipboard-check text-primary me-2"></i> Penilaian Awal Keperawatan</span>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a class="dropdown-item py-1 d-flex justify-content-between align-items-center" href="javascript:void(0)" onclick="openPengkajianPrimer('${row.no_rawat}')">
-                                                <span><i class="ti ti-ambulance text-danger me-2"></i> Pengkajian Primer A-B-C-D-E</span>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a class="dropdown-item py-1 d-flex justify-content-between align-items-center ${hasIc ? 'fw-bold text-success' : ''}" href="javascript:void(0)" onclick="bukaInformedConsent('${row.no_rawat}')">
-                                                <span><i class="ti ti-file-certificate ${hasIc ? 'text-success' : 'text-primary'} me-2"></i> Informed Consent</span>
-                                                ${hasIc ? `<span class="badge bg-success text-white rounded-pill ms-2 px-1 py-0" style="font-size: 0.7rem;"><i class="ti ti-check me-1" style="font-size: 0.65rem;"></i>${icCount}</span>` : ''}
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a class="dropdown-item py-1 d-flex justify-content-between align-items-center ${hasPb ? 'fw-bold text-success' : ''}" href="javascript:void(0)" onclick="bukaKajianPraBedah('${row.no_rawat}')">
-                                                <span><i class="ti ti-cut ${hasPb ? 'text-success' : 'text-danger'} me-2"></i> Kajian Pra Bedah</span>
-                                                ${hasPb ? `<span class="badge bg-success text-white rounded-pill ms-2 px-1 py-0" style="font-size: 0.7rem;"><i class="ti ti-check me-1" style="font-size: 0.65rem;"></i>${pbCount}</span>` : ''}
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a class="dropdown-item py-1 d-flex justify-content-between align-items-center ${hasPa ? 'fw-bold text-success' : ''}" href="javascript:void(0)" onclick="bukaKajianPraAnestesi('${row.no_rawat}')">
-                                                <span><i class="ti ti-needle ${hasPa ? 'text-success' : 'text-info'} me-2"></i> Kajian Pra Anestesi</span>
-                                                ${hasPa ? `<span class="badge bg-success text-white rounded-pill ms-2 px-1 py-0" style="font-size: 0.7rem;"><i class="ti ti-check me-1" style="font-size: 0.65rem;"></i>${paCount}</span>` : ''}
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a class="dropdown-item py-1 d-flex justify-content-between align-items-center ${hasMa ? 'fw-bold text-success' : ''}" href="javascript:void(0)" onclick="bukaMonitoringAnestesi('${row.no_rawat}')">
-                                                <span><i class="ti ti-activity-heartbeat ${hasMa ? 'text-success' : 'text-warning'} me-2"></i> Monitoring Anestesi</span>
-                                                ${hasMa ? `<span class="badge bg-success text-white rounded-pill ms-2 px-1 py-0" style="font-size: 0.7rem;"><i class="ti ti-check me-1" style="font-size: 0.65rem;"></i>${maCount}</span>` : ''}
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a class="dropdown-item py-1 d-flex justify-content-between align-items-center ${hasSignin ? 'fw-bold text-success' : ''}" href="javascript:void(0)" onclick="bukaPemantauanAnestesiBedah('${row.no_rawat}')">
-                                                <span><i class="ti ti-report-medical ${hasSignin ? 'text-success' : 'text-indigo'} me-2"></i> Sign In & Pemantauan Fisiologi</span>
-                                                ${hasSignin ? `<span class="badge bg-success text-white rounded-pill ms-2 px-1 py-0" style="font-size: 0.7rem;"><i class="ti ti-check me-1" style="font-size: 0.65rem;"></i>${signinCount}</span>` : ''}
-                                            </a>
-                                        </li>
-                                        <li><hr class="dropdown-divider my-1"></li>
-                                        <li>
-                                            <a class="dropdown-item py-1 d-flex justify-content-between align-items-center ${hasPp ? 'fw-bold text-success' : ''}" href="javascript:void(0)" onclick="bukaPerencanaanPemulangan('${row.no_rawat}')">
-                                                <span><i class="ti ti-door-exit ${hasPp ? 'text-success' : 'text-teal'} me-2"></i> Perencanaan Pemulangan</span>
-                                                ${hasPp ? `<span class="badge bg-success text-white rounded-pill ms-2 px-1 py-0" style="font-size: 0.7rem;"><i class="ti ti-check me-1" style="font-size: 0.65rem;"></i>${ppCount}</span>` : ''}
-                                            </a>
-                                        </li>
-                                    </ul>
+                                     <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="z-index: 1055; min-width: 260px;">
+                                         <!-- GAWAT DARURAT -->
+                                         <li><h6 class="dropdown-header text-uppercase py-1 text-danger fw-bold"><i class="ti ti-ambulance me-1"></i> Gawat Darurat (UGD / IGD)</h6></li>
+                                         <li>
+                                             <a class="dropdown-item py-1 d-flex justify-content-between align-items-center" href="javascript:void(0)" onclick="openTriaseUgd('${row.no_rawat}')">
+                                                 <span><i class="ti ti-heartbeat text-danger me-2"></i> Triase Pasien UGD (Klinik)</span>
+                                             </a>
+                                         </li>
+                                         <li>
+                                             <a class="dropdown-item py-1 d-flex justify-content-between align-items-center" href="javascript:void(0)" onclick="openPengkajianPrimer('${row.no_rawat}')">
+                                                 <span><i class="ti ti-emergency-bed text-danger me-2"></i> Pengkajian Primer A-B-C-D-E</span>
+                                             </a>
+                                         </li>
+                                         <li>
+                                             <a class="dropdown-item py-1 d-flex justify-content-between align-items-center" href="javascript:void(0)" onclick="openRmIgd('${row.no_rawat}')">
+                                                 <span><i class="ti ti-report-medical text-danger me-2"></i> Triase & Asesmen Medis IGD</span>
+                                             </a>
+                                         </li>
+
+                                         <li><hr class="dropdown-divider my-1"></li>
+
+                                         <!-- RAWAT JALAN / UMUM -->
+                                         <li><h6 class="dropdown-header text-uppercase py-1 text-primary fw-bold"><i class="ti ti-stethoscope me-1"></i> Asesmen Rawat Jalan (Umum)</h6></li>
+                                         <li>
+                                             <a class="dropdown-item py-1 d-flex justify-content-between align-items-center" href="javascript:void(0)" onclick="penilaianMedisRalan('${row.no_rawat}')">
+                                                 <span><i class="ti ti-stethoscope text-teal me-2"></i> Penilaian Awal Medis Umum</span>
+                                             </a>
+                                         </li>
+                                         <li>
+                                             <a class="dropdown-item py-1 d-flex justify-content-between align-items-center" href="javascript:void(0)" onclick="penilaianAwalKeperawatan('${row.no_rawat}')">
+                                                 <span><i class="ti ti-clipboard-check text-primary me-2"></i> Penilaian Awal Keperawatan</span>
+                                             </a>
+                                         </li>
+
+                                         <li><hr class="dropdown-divider my-1"></li>
+
+                                         <!-- TINDAKAN BEDAH & ANESTESI -->
+                                         <li><h6 class="dropdown-header text-uppercase py-1 text-muted fw-bold"><i class="ti ti-cut me-1"></i> Tindakan & Prosedur Medis</h6></li>
+                                         <li>
+                                             <a class="dropdown-item py-1 d-flex justify-content-between align-items-center ${hasIc ? 'fw-bold text-success' : ''}" href="javascript:void(0)" onclick="bukaInformedConsent('${row.no_rawat}')">
+                                                 <span><i class="ti ti-file-certificate ${hasIc ? 'text-success' : 'text-primary'} me-2"></i> Informed Consent</span>
+                                                 ${hasIc ? `<span class="badge bg-success text-white rounded-pill ms-2 px-1 py-0" style="font-size: 0.7rem;"><i class="ti ti-check me-1" style="font-size: 0.65rem;"></i>${icCount}</span>` : ''}
+                                             </a>
+                                         </li>
+                                         <li>
+                                             <a class="dropdown-item py-1 d-flex justify-content-between align-items-center ${hasPb ? 'fw-bold text-success' : ''}" href="javascript:void(0)" onclick="bukaKajianPraBedah('${row.no_rawat}')">
+                                                 <span><i class="ti ti-cut ${hasPb ? 'text-success' : 'text-danger'} me-2"></i> Kajian Pra Bedah</span>
+                                                 ${hasPb ? `<span class="badge bg-success text-white rounded-pill ms-2 px-1 py-0" style="font-size: 0.7rem;"><i class="ti ti-check me-1" style="font-size: 0.65rem;"></i>${pbCount}</span>` : ''}
+                                             </a>
+                                         </li>
+                                         <li>
+                                             <a class="dropdown-item py-1 d-flex justify-content-between align-items-center ${hasPa ? 'fw-bold text-success' : ''}" href="javascript:void(0)" onclick="bukaKajianPraAnestesi('${row.no_rawat}')">
+                                                 <span><i class="ti ti-needle ${hasPa ? 'text-success' : 'text-info'} me-2"></i> Kajian Pra Anestesi</span>
+                                                 ${hasPa ? `<span class="badge bg-success text-white rounded-pill ms-2 px-1 py-0" style="font-size: 0.7rem;"><i class="ti ti-check me-1" style="font-size: 0.65rem;"></i>${paCount}</span>` : ''}
+                                             </a>
+                                         </li>
+                                         <li>
+                                             <a class="dropdown-item py-1 d-flex justify-content-between align-items-center ${hasMa ? 'fw-bold text-success' : ''}" href="javascript:void(0)" onclick="bukaMonitoringAnestesi('${row.no_rawat}')">
+                                                 <span><i class="ti ti-activity-heartbeat ${hasMa ? 'text-success' : 'text-warning'} me-2"></i> Monitoring Anestesi</span>
+                                                 ${hasMa ? `<span class="badge bg-success text-white rounded-pill ms-2 px-1 py-0" style="font-size: 0.7rem;"><i class="ti ti-check me-1" style="font-size: 0.65rem;"></i>${maCount}</span>` : ''}
+                                             </a>
+                                         </li>
+                                         <li>
+                                             <a class="dropdown-item py-1 d-flex justify-content-between align-items-center ${hasSignin ? 'fw-bold text-success' : ''}" href="javascript:void(0)" onclick="bukaPemantauanAnestesiBedah('${row.no_rawat}')">
+                                                 <span><i class="ti ti-report-medical ${hasSignin ? 'text-success' : 'text-indigo'} me-2"></i> Sign In & Pemantauan Fisiologi</span>
+                                                 ${hasSignin ? `<span class="badge bg-success text-white rounded-pill ms-2 px-1 py-0" style="font-size: 0.7rem;"><i class="ti ti-check me-1" style="font-size: 0.65rem;"></i>${signinCount}</span>` : ''}
+                                             </a>
+                                         </li>
+                                         <li><hr class="dropdown-divider my-1"></li>
+                                         <li>
+                                             <a class="dropdown-item py-1 d-flex justify-content-between align-items-center ${hasPp ? 'fw-bold text-success' : ''}" href="javascript:void(0)" onclick="bukaPerencanaanPemulangan('${row.no_rawat}')">
+                                                 <span><i class="ti ti-door-exit ${hasPp ? 'text-success' : 'text-teal'} me-2"></i> Perencanaan Pemulangan</span>
+                                                 ${hasPp ? `<span class="badge bg-success text-white rounded-pill ms-2 px-1 py-0" style="font-size: 0.7rem;"><i class="ti ti-check me-1" style="font-size: 0.65rem;"></i>${ppCount}</span>` : ''}
+                                             </a>
+                                         </li>
+                                     </ul>
                                 </div>
                             </div>`;
                         },
