@@ -83,9 +83,9 @@
                     </div>
 
                     <form action="" id="formPenilaianAwalKeperawatan" class="tab-content card-body p-4">
-                        <input type="hidden" id="no_rawat" name="no_rawat">
-                        <input type="hidden" id="tanggal" name="tanggal">
-                        <input type="hidden" id="nip" name="nip" value="{{ session()->get('pegawai')->nik ?? '' }}">
+                        <input type="hidden" id="kep_ralan_no_rawat" name="no_rawat">
+                        <input type="hidden" id="kep_ralan_tanggal" name="tanggal">
+                        <input type="hidden" id="kep_ralan_nip" name="nip" value="{{ session()->get('pegawai')->nik ?? '' }}">
 
                         <!-- ==================== TAB 1: KEADAAN UMUM & RIWAYAT ==================== -->
                         <div class="tab-pane fade show active" id="tab-ralan-umum" role="tabpanel">
@@ -812,9 +812,11 @@
             }
         }
 
+        var currentNoRawatKepRalan = '';
+
         // Salin data TTV dari pemeriksaan ralan bila perlu
         function salinTtvPemeriksaan() {
-            const no_rawat = $('#no_rawat').val();
+            const no_rawat = $('#kep_ralan_no_rawat').val() || currentNoRawatKepRalan;
             if (!no_rawat) return;
 
             getPemeriksaanRalan(no_rawat).done((response) => {
@@ -849,6 +851,8 @@
 
         // Open Modal Penilaian Awal Keperawatan
         function penilaianAwalKeperawatan(no_rawat) {
+            currentNoRawatKepRalan = no_rawat;
+
             // Reset tab to first tab
             $('#tabsPenilaianRalan a[href="#tab-ralan-umum"]').tab('show');
             $('#formPenilaianAwalKeperawatan').trigger('reset');
@@ -858,10 +862,13 @@
             $('#cari_masalah').val('');
             $('#cari_rencana').val('');
 
+            $('#kep_ralan_no_rawat').val(no_rawat);
+
             loadMasterMasalahRencana(() => {
                 // Fetch Patient Registration Details
                 getRegDetail(no_rawat).done((reg) => {
-                    $('#no_rawat').val(reg.no_rawat);
+                    currentNoRawatKepRalan = reg.no_rawat;
+                    $('#kep_ralan_no_rawat').val(reg.no_rawat);
                     $('#ralan_lbl_no_rawat').text(reg.no_rawat);
                     $('#ralan_lbl_no_rm').text(reg.no_rkm_medis);
                     $('#ralan_lbl_nm_pasien').text(`${reg.pasien.nm_pasien} (${reg.pasien.jk === 'L' ? 'Laki-Laki' : 'Perempuan'})`);
@@ -899,6 +906,9 @@
                                 }
                             });
 
+                            // Re-enforce no_rawat
+                            $('#kep_ralan_no_rawat').val(res.no_rawat || no_rawat);
+
                             // Set checked for Masalah & Rencana
                             const selMasalah = (res.masalah || []).map(m => m.kode_masalah);
                             const selRencana = (res.rencana_keperawatan || []).map(r => r.kode_rencana);
@@ -912,6 +922,7 @@
                             $('#btnCetak').addClass('d-none');
                             $('#btnHapusPenilaian').addClass('d-none');
                             $('#alertPenilaian').addClass('d-none');
+                            $('#kep_ralan_no_rawat').val(no_rawat);
                             renderMasterCheckboxes([], []);
 
                             getPemeriksaanRalan(no_rawat).done((pem) => {
@@ -953,8 +964,14 @@
             });
             data['kode_rencana'] = selectedRencana;
 
-            // Enforce mandatory nip
-            data['nip'] = $('#nip').val() || '{{ session()->get("pegawai")->nik ?? "" }}';
+            // Enforce mandatory no_rawat and nip
+            data['no_rawat'] = $('#kep_ralan_no_rawat').val() || currentNoRawatKepRalan;
+            data['nip'] = $('#kep_ralan_nip').val() || '{{ session()->get("pegawai")->nik ?? "" }}';
+
+            if (!data['no_rawat']) {
+                Swal.fire('Perhatian', 'No. Rawat tidak ditemukan. Silakan buka kembali form.', 'warning');
+                return;
+            }
 
             loadingAjax('Menyimpan penilaian awal keperawatan...');
             $.post(`{{ url('/penilaian/awal/keperawatan/ralan') }}`, data).done((response) => {
@@ -973,7 +990,7 @@
 
         // Hapus Asesmen
         function hapusPenilaianAwalKeperawatan() {
-            const no_rawat = $('#no_rawat').val();
+            const no_rawat = $('#kep_ralan_no_rawat').val() || currentNoRawatKepRalan;
             if (!no_rawat) return;
 
             Swal.fire({
@@ -1013,7 +1030,7 @@
         }
 
         function printPenilaianAwalKeperawatan() {
-            const no_rawat = $('#no_rawat').val();
+            const no_rawat = $('#kep_ralan_no_rawat').val() || currentNoRawatKepRalan;
             if (!no_rawat) return;
             modalCetakPenilaian.modal('show');
             modalCetakPenilaian.find('#print').attr('src', `{{ url('/penilaian/awal/keperawatan/ralan/print') }}?no_rawat=${no_rawat}`);

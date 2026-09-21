@@ -32,6 +32,12 @@ class PenilaianMedisRalanController extends Controller
         $columns = Schema::getColumnListing('penilaian_medis_ralan');
         $data = array_intersect_key($request->all(), array_flip($columns));
 
+        if (empty($data['no_rawat'])) {
+            return response()->json([
+                'message' => 'Gagal menyimpan: No. Rawat tidak ditemukan atau tidak boleh kosong.'
+            ], 422);
+        }
+
         if (empty($data['tanggal'])) {
             $data['tanggal'] = date('Y-m-d H:i:s');
         }

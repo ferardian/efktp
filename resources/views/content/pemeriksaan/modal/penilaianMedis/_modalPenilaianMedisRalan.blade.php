@@ -418,8 +418,10 @@
             $('#medis_kulit').val('Normal');
         }
 
+        var currentNoRawatMedisRalan = '';
+
         function salinTtvKeMedis() {
-            const no_rawat = $('#medis_no_rawat').val();
+            const no_rawat = $('#medis_no_rawat').val() || currentNoRawatMedisRalan;
             if (!no_rawat) return;
 
             getPemeriksaanRalan(no_rawat).done((response) => {
@@ -458,13 +460,16 @@
 
         // Buka Modal Penilaian Medis Ralan
         function penilaianMedisRalan(no_rawat) {
+            currentNoRawatMedisRalan = no_rawat;
             $('#tabsPenilaianMedisRalan a[href="#tab-medis-riwayat"]').tab('show');
             $('#formPenilaianMedisRalan').trigger('reset');
+            $('#medis_no_rawat').val(no_rawat);
             $('#btnHapusPenilaianMedis').addClass('d-none');
             $('#btnCetakMedis').addClass('d-none');
             $('#alertPenilaianMedis').addClass('d-none');
 
             getRegDetail(no_rawat).done((reg) => {
+                currentNoRawatMedisRalan = reg.no_rawat;
                 $('#medis_no_rawat').val(reg.no_rawat);
                 $('#medis_lbl_no_rawat').text(reg.no_rawat);
                 $('#medis_lbl_no_rm').text(reg.no_rkm_medis);
@@ -494,11 +499,13 @@
                                 el.val(val);
                             }
                         });
+                        $('#medis_no_rawat').val(res.no_rawat || no_rawat);
                         toggleAnamnesisMedis();
                     } else {
                         $('#btnCetakMedis').addClass('d-none');
                         $('#btnHapusPenilaianMedis').addClass('d-none');
                         $('#alertPenilaianMedis').addClass('d-none');
+                        $('#medis_no_rawat').val(no_rawat);
                         toggleAnamnesisMedis();
 
                         // Auto-fill from pemeriksaan_ralan if exists
@@ -529,6 +536,14 @@
         function simpanPenilaianMedisRalan() {
             const data = getDataForm('formPenilaianMedisRalan', ['input', 'select', 'textarea']);
 
+            data['no_rawat'] = $('#medis_no_rawat').val() || currentNoRawatMedisRalan;
+            data['kd_dokter'] = $('#medis_kd_dokter').val() || '{{ session()->get("pegawai")->nik ?? "" }}';
+
+            if (!data['no_rawat']) {
+                Swal.fire('Perhatian', 'No. Rawat tidak ditemukan. Silakan buka kembali form.', 'warning');
+                return;
+            }
+
             loadingAjax('Menyimpan penilaian awal medis rawat jalan...');
             $.post(`{{ url('/penilaian/medis/ralan') }}`, data).done((response) => {
                 swal.close();
@@ -546,7 +561,7 @@
 
         // Hapus Asesmen Medis
         function hapusPenilaianMedisRalan() {
-            const no_rawat = $('#medis_no_rawat').val();
+            const no_rawat = $('#medis_no_rawat').val() || currentNoRawatMedisRalan;
             if (!no_rawat) return;
 
             Swal.fire({
@@ -582,7 +597,7 @@
         }
 
         function printPenilaianMedisRalan() {
-            const no_rawat = $('#medis_no_rawat').val();
+            const no_rawat = $('#medis_no_rawat').val() || currentNoRawatMedisRalan;
             if (!no_rawat) return;
             modalCetakPenilaianMedis.modal('show');
             modalCetakPenilaianMedis.find('#print_medis').attr('src', `{{ url('/penilaian/medis/ralan/print') }}?no_rawat=${no_rawat}`);
