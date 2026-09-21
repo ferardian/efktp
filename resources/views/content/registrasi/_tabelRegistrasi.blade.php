@@ -257,6 +257,11 @@
                                             </a>
                                         </li>
                                         <li>
+                                            <a class="dropdown-item py-1 d-flex justify-content-between align-items-center" href="javascript:void(0)" onclick="openPengkajianPrimer('${row.no_rawat}')">
+                                                <span><i class="ti ti-ambulance text-danger me-2"></i> Pengkajian Primer A-B-C-D-E</span>
+                                            </a>
+                                        </li>
+                                        <li>
                                             <a class="dropdown-item py-1 d-flex justify-content-between align-items-center ${hasIc ? 'fw-bold text-success' : ''}" href="javascript:void(0)" onclick="bukaInformedConsent('${row.no_rawat}')">
                                                 <span><i class="ti ti-file-certificate ${hasIc ? 'text-success' : 'text-primary'} me-2"></i> Informed Consent</span>
                                                 ${hasIc ? `<span class="badge bg-success text-white rounded-pill ms-2 px-1 py-0" style="font-size: 0.7rem;"><i class="ti ti-check me-1" style="font-size: 0.65rem;"></i>${icCount}</span>` : ''}
