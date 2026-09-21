@@ -200,10 +200,19 @@
                     {
                         title: '',
                         render: (data, type, row, meta) => {
-                            let classBtnPemerisksaan = 'btn-outline-primary'
-                            if (row.pemeriksaan_ralan) {
-                                classBtnPemerisksaan = 'btn-success'
-                            }
+                            const p = row.pemeriksaan_ralan;
+                            const hasPemeriksaan = p && (
+                                (p.keluhan && p.keluhan !== '-' && p.keluhan.trim() !== '') ||
+                                (p.pemeriksaan && p.pemeriksaan !== '-' && p.pemeriksaan.trim() !== '') ||
+                                (p.penilaian && p.penilaian !== '-' && p.penilaian.trim() !== '') ||
+                                (parseFloat(p.suhu_tubuh) > 0) ||
+                                (p.tensi && p.tensi !== '0/0' && p.tensi !== '0' && p.tensi !== '-' && p.tensi.trim() !== '') ||
+                                (parseFloat(p.nadi) > 0) ||
+                                (parseFloat(p.berat) > 0) ||
+                                (parseFloat(p.tinggi) > 0) ||
+                                (parseFloat(p.respirasi) > 0)
+                            );
+                            let classBtnPemerisksaan = hasPemeriksaan ? 'btn-success' : 'btn-outline-primary';
 
                             const icCount = Number(row.persetujuan_penolakan_tindakan_count || (row.persetujuan_penolakan_tindakan ? row.persetujuan_penolakan_tindakan.length : 0));
                             const pbCount = Number(row.penilaian_pre_operasi_count || (row.penilaian_pre_operasi ? row.penilaian_pre_operasi.length : 0));
