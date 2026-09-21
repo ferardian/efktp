@@ -248,8 +248,10 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::get('/registrasi/gelang', [RegPeriksaController::class, 'printGelang']);
 
 	// PENILIAIAN AWAL/SKRINING
+	Route::get('/penilaian/awal/keperawatan/ralan/master', [PenilaianAwalKeperawatanRalanController::class, 'getMasterMasalahRencana']);
 	Route::get('/penilaian/awal/keperawatan/ralan', [PenilaianAwalKeperawatanRalanController::class, 'get']);
 	Route::post('/penilaian/awal/keperawatan/ralan', [PenilaianAwalKeperawatanRalanController::class, 'createPenilaian']);
+	Route::delete('/penilaian/awal/keperawatan/ralan', [PenilaianAwalKeperawatanRalanController::class, 'deletePenilaian']);
 	Route::get('/penilaian/awal/keperawatan/ralan/print', [PenilaianAwalKeperawatanRalanController::class, 'print']);
 
 	Route::get('/penilaian/awal/keperawatan/ranap', [PenilaianAwalKeperawatanRanapController::class, 'get']);
