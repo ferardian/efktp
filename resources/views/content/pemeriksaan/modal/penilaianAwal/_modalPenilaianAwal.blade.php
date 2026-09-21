@@ -356,14 +356,14 @@
                                             <div class="row g-3">
                                                 <div class="col-md-6">
                                                     <label class="form-label">1. Tidak seimbang / sempoyongan / limbung :</label>
-                                                    <select class="form-select" name="berjalan_a" id="berjalan_a" onchange="hitungResikoJatuhRalan()">
+                                                    <select class="form-select" name="berjalan_a" id="kep_ralan_berjalan_a" onchange="hitungResikoJatuhRalan()">
                                                         <option value="Tidak" selected>Tidak</option>
                                                         <option value="Ya">Ya</option>
                                                     </select>
                                                 </div>
                                                 <div class="col-md-6">
                                                     <label class="form-label">2. Jalan dengan menggunakan alat bantu (kruk, tripot, kursi roda, orang lain) :</label>
-                                                    <select class="form-select" name="berjalan_b" id="berjalan_b" onchange="hitungResikoJatuhRalan()">
+                                                    <select class="form-select" name="berjalan_b" id="kep_ralan_berjalan_b" onchange="hitungResikoJatuhRalan()">
                                                         <option value="Tidak" selected>Tidak</option>
                                                         <option value="Ya">Ya</option>
                                                     </select>
@@ -374,7 +374,7 @@
                                             <div class="row g-3">
                                                 <div class="col-md-12">
                                                     <label class="form-label">Menopang saat akan duduk, tampak memegang pinggiran kursi atau meja / benda lain sebagai penopang :</label>
-                                                    <select class="form-select" name="berjalan_c" id="berjalan_c" onchange="hitungResikoJatuhRalan()">
+                                                    <select class="form-select" name="berjalan_c" id="kep_ralan_berjalan_c" onchange="hitungResikoJatuhRalan()">
                                                         <option value="Tidak" selected>Tidak</option>
                                                         <option value="Ya">Ya</option>
                                                     </select>
@@ -384,23 +384,23 @@
                                     </div>
 
                                     <div class="col-md-6">
-                                        <label for="hasil" class="form-label font-weight-bold text-primary">Hasil Penilaian Resiko Jatuh</label>
-                                        <select class="form-select font-weight-bold" name="hasil" id="hasil">
+                                        <label for="kep_ralan_hasil" class="form-label font-weight-bold text-primary">Hasil Penilaian Resiko Jatuh</label>
+                                        <select class="form-select font-weight-bold" name="hasil" id="kep_ralan_hasil">
                                             <option value="Tidak beresiko (tidak ditemukan a dan b)" selected>Tidak beresiko (tidak ditemukan a dan b)</option>
                                             <option value="Resiko rendah (ditemukan a/b)">Resiko rendah (ditemukan a/b)</option>
                                             <option value="Resiko tinggi (ditemukan a dan b)">Resiko tinggi (ditemukan a dan b)</option>
                                         </select>
                                     </div>
                                     <div class="col-md-3">
-                                        <label for="lapor" class="form-label font-weight-bold">Dilaporkan Kepada Dokter?</label>
-                                        <select class="form-select" name="lapor" id="lapor">
+                                        <label for="kep_ralan_lapor" class="form-label font-weight-bold">Dilaporkan Kepada Dokter?</label>
+                                        <select class="form-select" name="lapor" id="kep_ralan_lapor">
                                             <option value="Tidak" selected>Tidak</option>
                                             <option value="Ya">Ya</option>
                                         </select>
                                     </div>
                                     <div class="col-md-3">
-                                        <label for="ket_lapor" class="form-label font-weight-bold">Jam Dilaporkan</label>
-                                        <input type="text" class="form-control" name="ket_lapor" id="ket_lapor" placeholder="Misal: 10:30 WIB" value="-">
+                                        <label for="kep_ralan_ket_lapor" class="form-label font-weight-bold">Jam Dilaporkan</label>
+                                        <input type="text" class="form-control" name="ket_lapor" id="kep_ralan_ket_lapor" placeholder="Misal: 10:30 WIB" value="-">
                                     </div>
                                 </div>
                             </div>
@@ -764,16 +764,24 @@
 
         // Kalkulasi Resiko Jatuh Otomatis (Get Up & Go)
         function hitungResikoJatuhRalan() {
-            const a = $('#berjalan_a').val();
-            const b = $('#berjalan_b').val();
+            const form = $('#formPenilaianAwalKeperawatan');
+            const a1 = form.find('[name="berjalan_a"]').val();
+            const a2 = form.find('[name="berjalan_b"]').val();
+            const b = form.find('[name="berjalan_c"]').val();
 
-            if (a === 'Ya' && b === 'Ya') {
-                $('#hasil').val('Resiko tinggi (ditemukan a dan b)');
-            } else if (a === 'Ya' || b === 'Ya') {
-                $('#hasil').val('Resiko rendah (ditemukan a/b)');
+            const isA = (a1 === 'Ya' || a2 === 'Ya');
+            const isB = (b === 'Ya');
+
+            let hasil = 'Tidak beresiko (tidak ditemukan a dan b)';
+            if (isA && isB) {
+                hasil = 'Resiko tinggi (ditemukan a dan b)';
+            } else if (isA || isB) {
+                hasil = 'Resiko rendah (ditemukan a/b)';
             } else {
-                $('#hasil').val('Tidak beresiko (tidak ditemukan a dan b)');
+                hasil = 'Tidak beresiko (tidak ditemukan a dan b)';
             }
+
+            form.find('[name="hasil"]').val(hasil);
         }
 
         // Toggle Asesmen Nyeri Form
