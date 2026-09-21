@@ -39,6 +39,7 @@ use App\Http\Controllers\PemeriksaanRalanController;
 use App\Http\Controllers\PemeriksaanRanapController;
 use App\Http\Controllers\PenilaianAwalKeperawatanRalanController;
 use App\Http\Controllers\PenilaianAwalKeperawatanRanapController;
+use App\Http\Controllers\PenilaianMedisRalanController;
 use App\Http\Controllers\PenjabController;
 use App\Http\Controllers\PenyakitController;
 use App\Http\Controllers\PerusahaanPasienController;
@@ -257,6 +258,12 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::get('/penilaian/awal/keperawatan/ranap', [PenilaianAwalKeperawatanRanapController::class, 'get']);
 	Route::post('/penilaian/awal/keperawatan/ranap', [PenilaianAwalKeperawatanRanapController::class, 'createPenilaian']);
 	Route::get('/penilaian/awal/keperawatan/ranap/print', [PenilaianAwalKeperawatanRanapController::class, 'print']);
+
+	// PENILAIAN AWAL MEDIS RALAN DEWASA
+	Route::get('/penilaian/medis/ralan', [PenilaianMedisRalanController::class, 'get']);
+	Route::post('/penilaian/medis/ralan', [PenilaianMedisRalanController::class, 'createPenilaian']);
+	Route::delete('/penilaian/medis/ralan', [PenilaianMedisRalanController::class, 'deletePenilaian']);
+	Route::get('/penilaian/medis/ralan/print', [PenilaianMedisRalanController::class, 'print']);
 
 	// TINDAKAN SKRINING RESIKO JATUH
 	Route::post('/skrining/jatuh', [EfktpTindakanResikoJatuhController::class, 'create']);
