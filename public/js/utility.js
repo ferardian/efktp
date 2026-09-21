@@ -1456,6 +1456,13 @@ $.contextMenu({
                             callback: (item, opt) => {
                                 openTriaseUgd(`${no_rawat}`);
                             }
+                        },
+                        "PengkajianPrimer": {
+                            name: "Pengkajian Primer A-B-C-D-E",
+                            icon: "fas fa-ambulance",
+                            callback: (item, opt) => {
+                                openPengkajianPrimer(`${no_rawat}`);
+                            }
                         }
                     }
                 },

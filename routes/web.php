@@ -278,6 +278,12 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::post('/rm/triase/ugd/delete', [\App\Http\Controllers\RmIgdController::class, 'deleteUgdTriage']);
 	Route::get('/rm/triase/ugd/print', [\App\Http\Controllers\RmIgdController::class, 'printUgdTriage']);
 
+	// Pengkajian Primer ABCDE
+	Route::get('/rm/pengkajian/primer', [\App\Http\Controllers\PengkajianPrimerAbcdeController::class, 'get']);
+	Route::post('/rm/pengkajian/primer', [\App\Http\Controllers\PengkajianPrimerAbcdeController::class, 'save']);
+	Route::delete('/rm/pengkajian/primer', [\App\Http\Controllers\PengkajianPrimerAbcdeController::class, 'delete']);
+	Route::get('/rm/pengkajian/primer/print', [\App\Http\Controllers\PengkajianPrimerAbcdeController::class, 'print']);
+
 	// Pemeriksaan
 	Route::get('/pemeriksaan/ralan', [PemeriksaanRalanController::class, 'get']);
 	Route::get('/pemeriksaan/ralan/get', [PemeriksaanRalanController::class, 'get']);
