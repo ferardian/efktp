@@ -825,11 +825,17 @@ class PermintaanStokObatPasienController extends Controller
             ->orderBy('s.jam', 'DESC')
             ->get();
 
-        // Ambil riwayat pemberian obat pasien yang berstatus Ranap
+        // Ambil riwayat pemberian obat pasien yang berstatus Ranap beserta tag aturan pakai jadwal UDD
         $pemberianList = DB::table('detail_pemberian_obat as d')
+            ->leftJoin('aturan_pakai as a', function ($join) {
+                $join->on('d.no_rawat', '=', 'a.no_rawat')
+                    ->on('d.kode_brng', '=', 'a.kode_brng')
+                    ->on('d.tgl_perawatan', '=', 'a.tgl_perawatan')
+                    ->on('d.jam', '=', 'a.jam');
+            })
             ->where('d.no_rawat', $no_rawat)
             ->where('d.status', 'Ranap')
-            ->select('d.tgl_perawatan', 'd.jam', 'd.kode_brng', 'd.jml', 'd.biaya_obat', 'd.total')
+            ->select('d.tgl_perawatan', 'd.jam', 'd.kode_brng', 'd.jml', 'd.biaya_obat', 'd.total', 'a.aturan')
             ->get();
 
         // Ambil kelas kamar inap pasien
@@ -851,6 +857,7 @@ class PermintaanStokObatPasienController extends Controller
             // Ambil semua pemberian obat untuk barang ini
             $diberikanForThis = $pemberianList->where('kode_brng', $s->kode_brng);
             $totalDiberikan = floatval($diberikanForThis->sum('jml'));
+            $claimedJam = [];
 
             // Evaluasi setiap jam 00-23
             $jadwal = [];
@@ -860,19 +867,31 @@ class PermintaanStokObatPasienController extends Controller
                     $jamStr = str_pad($h, 2, '0', STR_PAD_LEFT) . ':00:00';
                     $jamDisplay = str_pad($h, 2, '0', STR_PAD_LEFT) . ':00';
 
-                    // Cek rentang toleransi waktu pemberian (misal 2 jam sekitar jam jadwal)
-                    $hMin = max(0, $h - 2);
-                    $hMax = min(23, $h + 2);
-                    $timeMin = str_pad($hMin, 2, '0', STR_PAD_LEFT) . ':00:00';
-                    $timeMax = str_pad($hMax, 2, '0', STR_PAD_LEFT) . ':59:59';
-
-                    $given = $diberikanForThis->first(function ($p) use ($timeMin, $timeMax) {
-                        return $p->jam >= $timeMin && $p->jam <= $timeMax;
+                    // 1. Prioritas Utama: Cocokkan berdasarkan tag jadwal spesifik yang dipilih perawat ("Jadwal XX:00")
+                    $given = $diberikanForThis->first(function ($p) use ($jamDisplay, $claimedJam) {
+                        if (in_array($p->jam, $claimedJam)) return false;
+                        return !empty($p->aturan) && str_contains($p->aturan, "Jadwal {$jamDisplay}");
                     });
+
+                    // 2. Fallback: jika pemberian tidak memiliki tag ("Jadwal XX:00"), gunakan estimasi rentang jam riil
+                    if (!$given) {
+                        $hMin = max(0, $h - 2);
+                        $hMax = min(23, $h + 2);
+                        $timeMin = str_pad($hMin, 2, '0', STR_PAD_LEFT) . ':00:00';
+                        $timeMax = str_pad($hMax, 2, '0', STR_PAD_LEFT) . ':59:59';
+
+                        $given = $diberikanForThis->first(function ($p) use ($timeMin, $timeMax, $claimedJam) {
+                            if (in_array($p->jam, $claimedJam)) return false;
+                            // Jangan ambil jika pemberian tersebut sudah ditujukan untuk slot jadwal lain
+                            if (!empty($p->aturan) && preg_match('/Jadwal \d{2}:\d{2}/', $p->aturan)) return false;
+                            return $p->jam >= $timeMin && $p->jam <= $timeMax;
+                        });
+                    }
 
                     $statusWaktu = '-';
                     $statusClass = 'secondary';
                     if ($given) {
+                        $claimedJam[] = $given->jam;
                         $jamJadwalSec = $h * 3600;
                         $timeParts = explode(':', $given->jam);
                         $gH = intval($timeParts[0] ?? 0);
@@ -900,6 +919,7 @@ class PermintaanStokObatPasienController extends Controller
                         'sudah_diberikan'  => $given ? true : false,
                         'jam_riil'         => $given ? $given->jam : null,
                         'tgl_riil'         => $given ? $given->tgl_perawatan : null,
+                        'jml_diberikan'    => $given ? floatval($given->jml) : 0,
                         'status_waktu'     => $statusWaktu,
                         'status_class'     => $statusClass,
                         'dosis'            => 1,

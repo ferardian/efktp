@@ -1242,9 +1242,9 @@
                                 if (j.sudah_diberikan) {
                                     jadwalHtml.push(`
                                         <div class="btn-group btn-group-sm me-2 mb-1">
-                                            <button type="button" class="btn btn-sm btn-${j.status_class} py-1 px-2" title="Diberikan pada ${j.tgl_riil} jam ${j.jam_riil}">
+                                            <button type="button" class="btn btn-sm btn-${j.status_class} py-1 px-2" title="Diberikan pada ${j.tgl_riil} jam ${j.jam_riil} (${j.jml_diberikan || 1} ${item.satuan || ''})">
                                                 <i class="ti ti-check me-1"></i><strong>Jam ${j.jam_jadwal}</strong>
-                                                <span class="badge bg-white text-${j.status_class} ms-1" style="font-size:0.65rem;">${j.status_waktu} (${j.jam_riil})</span>
+                                                <span class="badge bg-white text-${j.status_class} ms-1" style="font-size:0.65rem;">${j.jml_diberikan ? j.jml_diberikan + ' ' + (item.satuan || '') + ' • ' : ''}${j.status_waktu} (${j.jam_riil})</span>
                                             </button>
                                             <button type="button" class="btn btn-sm btn-outline-${j.status_class} py-1 px-2" title="Batalkan pemberian jam ini" onclick="batalPemberianUddPasien('${item.kode_brng}', '${j.tgl_riil}', '${j.jam_riil}')">
                                                 <i class="ti ti-x"></i>
