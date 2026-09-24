@@ -343,20 +343,26 @@
                 if (res.requires_confirm) {
                     Swal.close();
                     Swal.fire({
-                        title: "Antrian Gagal",
-                        html: `<span class="text-danger">${res.antrian_error}</span><br><br>Gagal mengirim data ke Antrol BPJS. Tetap lanjut daftar PCare tanpa Antrol?`,
+                        title: "Antrian BPJS Gagal Dikirim",
+                        html: `<div class="text-start p-2 bg-light rounded mb-2 small"><strong class="text-danger"><i class="ti ti-alert-triangle me-1"></i>Pesan Antrol BPJS:</strong><br>${res.antrian_error}</div><p class="small text-muted mb-0">Apakah Anda ingin tetap lanjut mendaftarkan kunjungan ke PCare tanpa Antrol, atau simpan registrasi lokal saja?</p>`,
                         icon: 'warning',
                         showCancelButton: true,
-                        confirmButtonColor: "#3085d6",
-                        cancelButtonColor: "#d33",
-                        confirmButtonText: "Ya, Lanjut Daftar PCare",
-                        cancelButtonText: "Tidak, Perbaiki Data"
+                        confirmButtonColor: "#206bc4",
+                        cancelButtonColor: "#6c757d",
+                        confirmButtonText: '<i class="ti ti-arrow-right me-1"></i> Lanjut Daftar PCare (Tanpa Antrol)',
+                        cancelButtonText: '<i class="ti ti-device-floppy me-1"></i> Simpan Lokal Saja',
+                        allowOutsideClick: false
                     }).then((result) => {
                         if (result.isConfirmed) {
                             // Kirim ulang dengan flag skip_antrian
                             data['skip_antrian'] = true;
                             loadingAjax('Mendaftarkan ke PCare...');
                             createPendaftaranPcare(data);
+                        } else {
+                            showToast('Registrasi lokal tersimpan tanpa Antrol BPJS.');
+                            if (modalRegistrasi.length) modalRegistrasi.modal('hide');
+                            if (modalPasien.length) modalPasien.modal('hide');
+                            if (typeof loadTabelRegistrasi === "function") loadTabelRegistrasi();
                         }
                     });
                     return;
@@ -376,19 +382,59 @@
                     });
                 } else {
                     Swal.close();
-                    alertErrorBpjs(resPendaftaran || res).then((result) => {
-                        // Hapus registrasi lokal jika pendaftaran pcare gagal total
-                        $.post(`{{ url('/registrasi/delete') }}`, {
-                            no_rawat: data.no_rawat
-                        }).done(() => {
-                            showToast('Registrasi dibatalkan karena gagal daftar PCare');
+                    const bpjsData = resPendaftaran || res;
+                    const antrianError = bpjsData?.antrian_error || bpjsData?.antrian_response?.metadata?.message || bpjsData?.antrian_response?.metaData?.message;
+                    const metaData = bpjsData?.metaData || bpjsData?.metadata || {};
+                    const response = bpjsData?.response || '';
+                    const message = antrianError || metaData.message || bpjsData?.message || 'Terjadi kendala saat pendaftaran PCare BPJS';
+                    const code = metaData.code || (antrianError ? '201' : (bpjsData?.code || ''));
+                    const errors = Array.isArray(response) ? response.map(({ field, message }) => `${field} : ${message}`).join('<br>') : (response || '');
+
+                    Swal.fire({
+                        title: "Pendaftaran PCare BPJS Gagal",
+                        html: `<div class="text-start p-2 bg-light rounded mb-3 small">
+                                    <strong class="text-danger"><i class="ti ti-alert-triangle me-1"></i>Pesan BPJS:</strong><br>
+                                    ${code ? `<span class="badge bg-danger-lt mb-1">Code: ${code}</span> ` : ''}${message}<br>
+                                    ${errors ? `<div class="mt-1 text-danger fw-bold">${errors}</div>` : ''}
+                               </div>
+                               <p class="mb-0 small text-muted">Data pasien <strong>sudah tersimpan di registrasi lokal</strong> klinik. Apakah Anda ingin tetap menyimpan registrasi lokal (bisa di-bridging susulan nanti), atau membatalkan registrasi pasien?</p>`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: "#206bc4",
+                        cancelButtonColor: "#d63939",
+                        confirmButtonText: '<i class="ti ti-device-floppy me-1"></i> Tetap Simpan di Sistem',
+                        cancelButtonText: '<i class="ti ti-trash me-1"></i> Batalkan & Hapus Registrasi',
+                        allowOutsideClick: false
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            showToast('Registrasi lokal tersimpan. Silakan bridging PCare susulan nanti.');
+                            if (modalRegistrasi.length) modalRegistrasi.modal('hide');
+                            if (modalPasien.length) modalPasien.modal('hide');
                             if (typeof loadTabelRegistrasi === "function") loadTabelRegistrasi();
-                        });
+                        } else {
+                            loadingAjax('Membatalkan registrasi...');
+                            $.post(`{{ url('/registrasi/delete') }}`, {
+                                no_rawat: data.no_rawat
+                            }).done(() => {
+                                Swal.close();
+                                showToast('Registrasi telah dibatalkan.');
+                                if (modalRegistrasi.length) modalRegistrasi.modal('hide');
+                                if (modalPasien.length) modalPasien.modal('hide');
+                                if (typeof loadTabelRegistrasi === "function") loadTabelRegistrasi();
+                            }).fail((err) => {
+                                Swal.close();
+                                alertErrorAjax(err);
+                            });
+                        }
                     });
                 }
             }).fail((error) => {
                 Swal.close();
-                alertErrorAjax(error)
+                alertErrorAjax(error).then(() => {
+                    if (modalRegistrasi.length) modalRegistrasi.modal('hide');
+                    if (modalPasien.length) modalPasien.modal('hide');
+                    if (typeof loadTabelRegistrasi === "function") loadTabelRegistrasi();
+                });
             })
         }
 
@@ -453,13 +499,16 @@
                                 confirmButtonColor: "#3085d6",
                                 cancelButtonColor: "#d33",
                                 confirmButtonText: "Iya, Lanjutkan",
-                                cancelButtonText: "Tidak, Batalkan"
+                                cancelButtonText: "Tidak, Batalkan PCare"
                             }).then((res) => {
                                 if (res.isConfirmed) {
                                     loadingAjax('Mendaftarkan ke PCare...')
                                     createPendaftaranPcare(data)
                                 } else {
-                                    resetFormRegistrasi();
+                                    showToast('Registrasi lokal tetap tersimpan');
+                                    if (modalRegistrasi.length) modalRegistrasi.modal('hide');
+                                    if (modalPasien.length) modalPasien.modal('hide');
+                                    if (typeof loadTabelRegistrasi === "function") loadTabelRegistrasi();
                                 }
                             });
                         } else {
@@ -468,11 +517,20 @@
                     })
                 } else {
                     Swal.close();
-                    alertErrorBpjs(result);
+                    alertErrorBpjs(result).then(() => {
+                        showToast('Registrasi lokal tersimpan. Cek kembali kepesertaan BPJS pasien.');
+                        if (modalRegistrasi.length) modalRegistrasi.modal('hide');
+                        if (modalPasien.length) modalPasien.modal('hide');
+                        if (typeof loadTabelRegistrasi === "function") loadTabelRegistrasi();
+                    });
                 }
             }).fail((error) => {
                 Swal.close();
-                alertErrorAjax(error);
+                alertErrorAjax(error).then(() => {
+                    if (modalRegistrasi.length) modalRegistrasi.modal('hide');
+                    if (modalPasien.length) modalPasien.modal('hide');
+                    if (typeof loadTabelRegistrasi === "function") loadTabelRegistrasi();
+                });
             });
         }
 
