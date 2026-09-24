@@ -680,7 +680,12 @@
                 }
             });
 
-            formKunjunganPcare.find('input[name=anamnesa]').val(data.pemeriksaan)
+            const anamnesaText = (data.keluhan && data.keluhan !== '-') ? data.keluhan : (data.pemeriksaan || '-');
+            const inputAnamnesa = formKunjunganPcare.find('input[name=anamnesa]');
+            inputAnamnesa.val(anamnesaText);
+            if (inputAnamnesa.length && typeof updateCounter === 'function') {
+                updateCounter(inputAnamnesa[0], 'anamnesa-counter', 500);
+            }
 
             getRegDetail(data.no_rawat).done((response) => {
                 const {
