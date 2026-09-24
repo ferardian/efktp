@@ -113,25 +113,29 @@
             });
         }
 
+        let counterBarisObat = 0;
+
         function tambahBarisObat(tabel) {
-            let rowCount = tabel.find('tr').length
-            const addRow = `<tr id="row${rowCount}">
-                <td><select class="form-control" name="nm_obat[]" id="kdObat${rowCount}" data-id="${rowCount}" style="width:100%"></select></td>
-                <td class="text-end harga${rowCount}"></td>
+            counterBarisObat++;
+            const uid = 'new_' + Date.now() + '_' + counterBarisObat;
+            const addRow = `<tr id="row_${uid}" class="row-input-obat" data-uid="${uid}">
+                <td><select class="form-control select-nm-obat" name="nm_obat[]" id="kdObat_${uid}" style="width:100%"></select></td>
+                <td class="text-end col-harga"></td>
                 <td>
-                    <input type="hidden" name="rowNext" id="rowNext" value="${rowCount + 1}"/>
-                    <input type="hidden" name="kode_brng[]" id="kdObat${rowCount}Val"/>
-                    <input type="text" class="form-control" name="jumlah[]" id="jmlObat${rowCount}"/>
+                    <input type="hidden" class="input-kd-obat" name="kode_brng[]" id="kdObatVal_${uid}"/>
+                    <input type="number" step="any" min="0.01" class="form-control input-jml-obat text-end" name="jumlah[]" id="jmlObat_${uid}" value="1"/>
                 </td>
-                <td><select class="form-control form-control-sm" name="aturan_pakai[]" id="aturan${rowCount}" style="width:100%"></select></td>
-                <td class="text-end subTotal${rowCount}"></td>
+                <td><select class="form-control form-control-sm select-aturan-pakai" name="aturan_pakai[]" id="aturan_${uid}" style="width:100%"></select></td>
+                <td class="text-end col-subtotal"></td>
                 <td>
-                    <i class="ti ti-device-floppy text-success" style="font-size:20px" data-id="row${rowCount}" onclick="createResepDokter()"></i>
-                    <i class="ti ti-square-rounded-x text-danger" style="font-size:20px" data-id="row${rowCount}" onclick="hapusBarisObat('${rowCount}')"></i>
+                    <div class="d-flex gap-1 justify-content-center">
+                        <i class="ti ti-device-floppy text-success btn-simpan-baris" style="font-size:20px; cursor:pointer;" title="Simpan baris ini"></i>
+                        <i class="ti ti-square-rounded-x text-danger btn-hapus-baris" style="font-size:20px; cursor:pointer;" title="Hapus baris ini"></i>
+                    </div>
                 </td>
             </tr>`;
             const newRow = $(addRow);
-            const rowTotalObatUmum = bodyResepUmum.find('#rowTotalObatUmum')
+            const rowTotalObatUmum = bodyResepUmum.find('#rowTotalObatUmum');
             if (rowTotalObatUmum.length) {
                 rowTotalObatUmum.before(newRow);
             } else {
@@ -139,19 +143,28 @@
             }
 
             const modalActive = $('#modalCpptRanap').hasClass('show') ? $('#modalCpptRanap') : ($('#modalCppt').hasClass('show') ? $('#modalCppt') : $('body'));
-            const idElement = newRow.find(`#kdObat${rowCount}`);
-            selectDataBarang(idElement, modalActive).on('select2:select', (e) => {
-                const kodeBarang = e.params.data.id;
-                const targetId = e.currentTarget.id;
-                const elementTargetId = $(`#${targetId}Val`)
-                const subTotalObat = e.params.data.detail.ralan * 1
-                $(`.harga${rowCount}`).text(formatCurrency(e.params.data.detail.ralan))
-                $(`.subTotal${rowCount}`).text(formatCurrency(subTotalObat))
-                $(`#jmlObat${rowCount}`).val(1);
-                elementTargetId.val(kodeBarang)
-            })
+            const selectObat = newRow.find('.select-nm-obat');
+            const inputKdObat = newRow.find('.input-kd-obat');
+            const colHarga = newRow.find('.col-harga');
+            const inputJml = newRow.find('.input-jml-obat');
+            const colSubtotal = newRow.find('.col-subtotal');
+            const selectAturan = newRow.find('.select-aturan-pakai');
 
-            $(`#aturan${rowCount}`).select2({
+            // Inisialisasi Select2 pencarian obat
+            selectDataBarang(selectObat, modalActive).on('select2:select', (e) => {
+                const kodeBarang = e.params.data.id;
+                const harga = e.params.data.detail ? (parseFloat(e.params.data.detail.ralan) || 0) : 0;
+                inputKdObat.val(kodeBarang);
+                colHarga.text(formatCurrency(harga));
+                if (!inputJml.val() || parseFloat(inputJml.val()) <= 0) {
+                    inputJml.val(1);
+                }
+                const qty = parseFloat(inputJml.val()) || 1;
+                colSubtotal.text(formatCurrency(harga * qty));
+            });
+
+            // Inisialisasi Select2 aturan pakai
+            selectAturan.select2({
                 dropdownParent: modalActive,
                 tags: true,
                 ajax: {
@@ -182,11 +195,22 @@
                 }
             });
 
-            $(`#jmlObat${rowCount}`).on('input', (e) => {
-                const subTotal = $(`.harga${rowCount}`).text().replace(/[^\d]/g, '') * e.target.value
-                $(`.subTotal${rowCount}`).text(formatCurrency(subTotal))
-            })
+            // Update subtotal saat jumlah diubah
+            inputJml.on('input', function() {
+                const harga = parseFloat(colHarga.text().replace(/[^\d]/g, '')) || 0;
+                const qty = parseFloat($(this).val()) || 0;
+                colSubtotal.text(formatCurrency(harga * qty));
+            });
 
+            // Tombol hapus baris
+            newRow.find('.btn-hapus-baris').on('click', function() {
+                newRow.remove();
+            });
+
+            // Tombol simpan satu baris
+            newRow.find('.btn-simpan-baris').on('click', function() {
+                simpanSatuBarisObat(newRow);
+            });
         }
 
         function editObatDokter(id, kd_obat) {
@@ -302,103 +326,141 @@
             })
         }
 
-        function createResepDokter() {
-            const rowCount = $('#tabelResepUmum').find('tr').length
-            const noResep = $(`#no_resep`).val();
-            let dataObat = [];
-            for (let index = 1; index < rowCount; index++) {
-                const findInput = $(`#row${index}`).find('input');
-                if (findInput.length) {
-                    const kodeBrng = $(`#kdObat${index}Val`).val();
-                    const jml = $(`#jmlObat${index}`).val();
-                    const aturanPakai = $(`#aturan${index}`).val();
-                    const obat = {
-                        'no_resep': noResep,
-                        'kode_brng': $(`#kdObat${index}Val`).val(),
-                        'jml': $(`#jmlObat${index}`).val(),
-                        'aturan_pakai': $(`#aturan${index}`).val(),
-                    }
-
-                    const isEmpty = Object.values(obat).filter((item) => {
-                        return item == null || item == '';
-                    }).length
-
-                    if (isEmpty) {
-                        const errorMsg = {
-                            status: 422,
-                            statusText: 'Pastikan tidak ada kolom yang kosong'
-                        }
-                        alertErrorAjax(errorMsg)
-                        return false;
-                    }
-                    dataObat.push(obat)
-                }
+        function simpanSatuBarisObat(row) {
+            const noResep = $('input[name="no_resep"]').filter(function() { return $(this).val(); }).val() || $('#no_resep').val();
+            if (!noResep) {
+                return Swal.fire('Peringatan', 'Nomor resep belum dibuat. Silakan klik tombol "Buat Resep" terlebih dahulu.', 'warning');
             }
+
+            const kodeBrng = row.find('.input-kd-obat').val();
+            const namaObat = row.find('.select-nm-obat option:selected').text() || 'Obat';
+            const jml = row.find('.input-jml-obat').val();
+            const aturanPakai = row.find('.select-aturan-pakai').val();
+
+            if (!kodeBrng || kodeBrng.trim() === '') {
+                return Swal.fire('Data Belum Lengkap', 'Pilih obat dari daftar dropdown terlebih dahulu.', 'warning');
+            }
+            if (!jml || parseFloat(jml) <= 0) {
+                return Swal.fire('Data Belum Lengkap', `Masukkan jumlah yang valid untuk obat ${namaObat}.`, 'warning');
+            }
+            if (!aturanPakai || aturanPakai.trim() === '') {
+                return Swal.fire('Data Belum Lengkap', `Pilih atau ketik aturan pakai untuk obat ${namaObat}.`, 'warning');
+            }
+
+            const dataObat = [{
+                no_resep: noResep,
+                kode_brng: kodeBrng.trim(),
+                jml: jml,
+                aturan_pakai: aturanPakai.trim()
+            }];
+
+            const iconFloppy = row.find('.btn-simpan-baris');
+            iconFloppy.removeClass('ti-device-floppy text-success').addClass('spinner-border spinner-border-sm text-primary');
 
             $.post(`{{ url('/resep/dokter/create') }}`, {
                 dataObat
             }).done((response) => {
+                showToast(`Berhasil menyimpan ${namaObat}`);
                 const formActive = $('#modalCpptRanap').length && $('#modalCpptRanap').hasClass('show') ? $('#formCpptRanap') : $('#formCpptRajal');
-                const no_rawat = formActive.find('input[name=no_rawat]').val()
-                $('#btnCetakResep').attr('onclick', `cetakResep('${no_rawat}')`)
-                tulisPlan(noResep)
-                setResepDokter(noResep)
-            })
+                const no_rawat = formActive.find('input[name=no_rawat]').val();
+                $('#btnCetakResep').attr('onclick', `cetakResep('${no_rawat}')`);
+                tulisPlan(noResep);
+                setResepDokter(noResep);
+            }).fail((request) => {
+                alertErrorAjax(request);
+                iconFloppy.removeClass('spinner-border spinner-border-sm text-primary').addClass('ti-device-floppy text-success');
+            });
+        }
+
+        function createResepDokter() {
+            simpanSemuaResepDokter();
+        }
+
+        function simpanSemuaResepDokter() {
+            const noResep = $('input[name="no_resep"]').filter(function() { return $(this).val(); }).val() || $('#no_resep').val();
+            if (!noResep) {
+                return Swal.fire('Peringatan', 'Nomor resep belum dibuat. Silakan klik tombol "Buat Resep" terlebih dahulu.', 'warning');
+            }
+
+            const inputRows = bodyResepUmum.find('tr.row-input-obat');
+            if (inputRows.length === 0) {
+                return Swal.fire('Informasi', 'Tidak ada baris obat baru yang perlu disimpan.', 'info');
+            }
+
+            let dataObat = [];
+            let validasiError = null;
+
+            inputRows.each(function(index) {
+                const row = $(this);
+                const barisKe = index + 1;
+                const kodeBrng = row.find('.input-kd-obat').val();
+                const namaObat = row.find('.select-nm-obat option:selected').text() || `Baris ke-${barisKe}`;
+                const jml = row.find('.input-jml-obat').val();
+                const aturanPakai = row.find('.select-aturan-pakai').val();
+
+                if (!kodeBrng || kodeBrng.trim() === '') {
+                    validasiError = `Obat pada baris ke-${barisKe} belum dipilih dari daftar obat. Pastikan Anda mengklik nama obat dari daftar dropdown.`;
+                    return false;
+                }
+
+                if (!jml || parseFloat(jml) <= 0) {
+                    validasiError = `Jumlah obat pada baris ke-${barisKe} (${namaObat}) belum diisi dengan benar.`;
+                    return false;
+                }
+
+                if (!aturanPakai || aturanPakai.trim() === '') {
+                    validasiError = `Aturan pakai pada baris ke-${barisKe} (${namaObat}) belum dipilih atau belum diisi.`;
+                    return false;
+                }
+
+                dataObat.push({
+                    no_resep: noResep,
+                    kode_brng: kodeBrng.trim(),
+                    jml: jml,
+                    aturan_pakai: aturanPakai.trim()
+                });
+            });
+
+            if (validasiError) {
+                return Swal.fire({
+                    title: 'Data Belum Lengkap',
+                    html: `<div class="text-danger fw-semibold text-start p-2 bg-danger-lt rounded">${validasiError}</div>`,
+                    icon: 'warning'
+                });
+            }
+
+            const btnSimpan = $('#btnSimpanResep');
+            btnSimpan.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Menyimpan...');
+
+            $.post(`{{ url('/resep/dokter/create') }}`, {
+                dataObat
+            }).done((response) => {
+                showToast('Berhasil menyimpan resep obat');
+                const formActive = $('#modalCpptRanap').length && $('#modalCpptRanap').hasClass('show') ? $('#formCpptRanap') : $('#formCpptRajal');
+                const no_rawat = formActive.find('input[name=no_rawat]').val();
+                $('#btnCetakResep').attr('onclick', `cetakResep('${no_rawat}')`);
+                tulisPlan(noResep);
+                setResepDokter(noResep);
+            }).fail((request) => {
+                alertErrorAjax(request);
+            }).always(() => {
+                btnSimpan.prop('disabled', false).html('Simpan');
+            });
         }
 
         $('#btnSimpanResep').on('click', (e) => {
             e.preventDefault();
-            const rowCount = $('#tabelResepUmum').find('tr').length
-            const noResep = $(`#no_resep`).val();
-            let dataObat = [];
-            for (let index = 1; index < rowCount; index++) {
-                const findInput = $(`#row${index}`).find('input');
-                if (findInput.length) {
-                    const kodeBrng = $(`#kdObat${index}Val`).val();
-                    const jml = $(`#jmlObat${index}`).val();
-                    const aturanPakai = $(`#aturan${index}`).val();
-                    const obat = {
-                        'no_resep': noResep,
-                        'kode_brng': $(`#kdObat${index}Val`).val(),
-                        'jml': $(`#jmlObat${index}`).val(),
-                        'aturan_pakai': $(`#aturan${index}`).val(),
-                    }
-
-                    const isEmpty = Object.values(obat).filter((item) => {
-                        return item == null || item == '';
-                    }).length
-
-                    if (isEmpty) {
-                        const errorMsg = {
-                            status: 422,
-                            statusText: 'Pastikan tidak ada kolom yang kosong'
-                        }
-                        alertErrorAjax(errorMsg)
-                        return false;
-                    }
-                    dataObat.push(obat)
-                }
-            }
-
-            $.post(`{{ url('/resep/dokter/create') }}`, {
-                dataObat
-            }).done((response) => {
-                const formActive = $('#modalCpptRanap').length && $('#modalCpptRanap').hasClass('show') ? $('#formCpptRanap') : $('#formCpptRajal');
-                const no_rawat = formActive.find('input[name=no_rawat]').val()
-                $('#btnCetakResep').attr('onclick', `cetakResep('${no_rawat}')`)
-                tulisPlan(noResep)
-                setResepDokter(noResep)
-            })
-        })
+            simpanSemuaResepDokter();
+        });
 
         function hapusBarisObat(id) {
-            const nextId = parseInt(id) + parseInt(1);
-            $('#row' + nextId).attr('id', `row${id}`).find('i').attr('onclick', `hapusBarisObat(${id})`);
-            $('#row' + id).remove();
+            $(`#row_${id}`).remove();
+            $(`#row${id}`).remove();
+            $(`#${id}`).remove();
         }
 
         $('#btnTambahObat').on('click', () => {
             tambahBarisObat(tabelResepUmum);
-        })
+        });
     </script>
 @endpush
