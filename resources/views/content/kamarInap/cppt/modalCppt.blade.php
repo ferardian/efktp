@@ -1085,7 +1085,8 @@
                             const isSelected = b.kd_bangsal === res.default_bangsal ? 'selected' : '';
                             selectBangsal.append(`<option value="${b.kd_bangsal}" ${isSelected}>${b.nm_bangsal} (${b.kd_bangsal})</option>`);
                         });
-                    } else if (res.default_bangsal) {
+                    }
+                    if (res.default_bangsal) {
                         selectBangsal.val(res.default_bangsal);
                     }
 

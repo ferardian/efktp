@@ -31,9 +31,12 @@ class PemberianObatRanapController extends Controller
             ->select('kamar.kd_kamar', 'kamar.kelas', 'kamar.kd_bangsal', 'bangsal.nm_bangsal')
             ->first();
 
-        // Ambil default lokasi bangsal obat/BHP jika belum ada
-        $defaultBangsal = DB::table('set_lokasi')->first();
-        $defaultKdBangsal = $kamarPasien->kd_bangsal ?? ($defaultBangsal->kd_bangsal ?? 'AP');
+        // Ambil default lokasi depo farmasi / apotek untuk pemberian obat / BHP ranap
+        $defaultApotek = DB::table('set_lokasi')->value('kd_bangsal') ?: (\App\Models\Setting::first()?->kd_bangsal_apotek ?: 'AP');
+        if (!DB::table('bangsal')->where('kd_bangsal', $defaultApotek)->exists()) {
+            $defaultApotek = DB::table('bangsal')->where('nm_bangsal', 'LIKE', '%apotek%')->value('kd_bangsal') ?: 'AP';
+        }
+        $defaultKdBangsal = $defaultApotek;
 
         // Daftar pemberian obat & alkes ranap
         $pemberian = DB::table('detail_pemberian_obat')
