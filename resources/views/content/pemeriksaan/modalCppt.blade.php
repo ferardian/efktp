@@ -26,7 +26,7 @@
                         <a href="#tabs-mcu" class="nav-link" data-bs-toggle="tab">MCU</a>
                     </li>
                     <li class="nav-item">
-                        <a href="#tabs-billing" class="nav-link" data-bs-toggle="tab">Billing</a>
+                        <a href="#tabs-billing" class="nav-link" data-bs-toggle="tab">Estimasi Biaya</a>
                     </li>
                 </ul>
                 <div class="tab-content mt-3">

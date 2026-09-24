@@ -227,6 +227,139 @@ class MenuController extends Controller
                     MenuRole::firstOrCreate(['menu_id' => $newKunjunganRalan->id, 'role' => $r]);
                 }
             }
+
+            // Ensure Keuangan parent next to Farmasi (order_num = 5)
+            $keuanganParent = Menu::where('name', 'Keuangan')->whereNull('parent_id')->first();
+            if (!$keuanganParent) {
+                $keuanganParent = Menu::create([
+                    'name'      => 'Keuangan',
+                    'url'       => 'keuangan',
+                    'icon'      => '<i class="ti ti-report-money fs-2"></i>',
+                    'parent_id' => null,
+                    'order_num' => 5,
+                    'target'    => '_self',
+                    'position'  => 'navbar',
+                ]);
+                $roles = ['admin', 'petugas', 'owner'];
+                foreach ($roles as $r) {
+                    MenuRole::firstOrCreate(['menu_id' => $keuanganParent->id, 'role' => $r]);
+                }
+            } else {
+                $keuanganParent->update(['order_num' => 5]);
+            }
+
+            // Adjust menus after Farmasi (4): Keuangan (5), Pcare (6), KYC (7), Antrean (8), Laporan (9)
+            Menu::where('name', 'Pcare')->whereNull('parent_id')->update(['order_num' => 6]);
+            Menu::where('name', 'KYC')->whereNull('parent_id')->update(['order_num' => 7]);
+            Menu::where('name', 'Antrean')->whereNull('parent_id')->update(['order_num' => 8]);
+            Menu::where('name', 'Laporan')->whereNull('parent_id')->update(['order_num' => 9]);
+
+            $existingKasirRalan = Menu::where('url', 'kasir/ralan')->first();
+            if (!$existingKasirRalan && $keuanganParent) {
+                $newKasirRalan = Menu::create([
+                    'name'      => 'Kasir Rawat Jalan',
+                    'url'       => 'kasir/ralan',
+                    'icon'      => '<i class="ti ti-cash me-1"></i>',
+                    'parent_id' => $keuanganParent->id,
+                    'order_num' => 1,
+                    'target'    => '_self',
+                    'position'  => 'navbar',
+                ]);
+
+                $roles = ['admin', 'petugas', 'owner', 'dokter', 'kasir'];
+                foreach ($roles as $r) {
+                    MenuRole::firstOrCreate(['menu_id' => $newKasirRalan->id, 'role' => $r]);
+                }
+            } else if ($existingKasirRalan) {
+                $existingKasirRalan->update(['order_num' => 1]);
+                $roles = ['admin', 'petugas', 'owner', 'dokter', 'kasir'];
+                foreach ($roles as $r) {
+                    MenuRole::firstOrCreate(['menu_id' => $existingKasirRalan->id, 'role' => $r]);
+                }
+            }
+
+            $existingKasirRanap = Menu::where('url', 'kasir/ranap')->first();
+            if (!$existingKasirRanap && $keuanganParent) {
+                $newKasirRanap = Menu::create([
+                    'name'      => 'Kasir Rawat Inap',
+                    'url'       => 'kasir/ranap',
+                    'icon'      => '<i class="ti ti-bed me-1"></i>',
+                    'parent_id' => $keuanganParent->id,
+                    'order_num' => 2,
+                    'target'    => '_self',
+                    'position'  => 'navbar',
+                ]);
+
+                $roles = ['admin', 'petugas', 'owner', 'dokter', 'kasir'];
+                foreach ($roles as $r) {
+                    MenuRole::firstOrCreate(['menu_id' => $newKasirRanap->id, 'role' => $r]);
+                }
+            } else if ($existingKasirRanap) {
+                $existingKasirRanap->update(['order_num' => 2]);
+                $roles = ['admin', 'petugas', 'owner', 'dokter', 'kasir'];
+                foreach ($roles as $r) {
+                    MenuRole::firstOrCreate(['menu_id' => $existingKasirRanap->id, 'role' => $r]);
+                }
+            }
+
+            $pembayaranRalan = Menu::where('url', 'keuangan/pembayaran-ralan')->first();
+            if ($pembayaranRalan) {
+                $pembayaranRalan->update([
+                    'order_num' => 3,
+                    'name'      => 'Rekap Pembayaran Rawat Jalan',
+                ]);
+            }
+
+            // Seed default menu mappings for new roles if not yet initialized
+            $newRolesDefaults = [
+                'perawat' => [
+                    Menu::where('url', '/')->value('id'),
+                    Menu::where('url', '/registrasi')->value('id'),
+                    Menu::where('url', '/ranap')->value('id'),
+                    Menu::where('name', 'Antrean')->whereNull('parent_id')->value('id'),
+                    Menu::where('url', 'antrean/poliklinik')->value('id'),
+                    Menu::where('url', 'antrean/poliklinik/v2')->value('id'),
+                ],
+                'laborat' => [
+                    Menu::where('url', '/')->value('id'),
+                    Menu::where('url', '/registrasi')->value('id'),
+                    Menu::where('name', 'Penunjang Medis')->whereNull('parent_id')->value('id'),
+                    Menu::where('name', 'Laboratorium')->value('id'),
+                    Menu::where('url', '/lab/permintaan')->value('id'),
+                    Menu::where('name', 'Pemeriksaan PK')->value('id'),
+                ],
+                'kasir' => [
+                    Menu::where('url', '/')->value('id'),
+                    Menu::where('url', '/registrasi')->value('id'),
+                    Menu::where('name', 'Keuangan')->whereNull('parent_id')->value('id'),
+                    Menu::where('url', 'kasir/ralan')->value('id'),
+                    Menu::where('url', 'kasir/ranap')->value('id'),
+                    Menu::where('url', 'keuangan/pembayaran-ralan')->value('id'),
+                ],
+                'rekam_medis' => [
+                    Menu::where('url', '/')->value('id'),
+                    Menu::where('url', '/registrasi')->value('id'),
+                    Menu::where('url', '/ranap')->value('id'),
+                    Menu::where('name', 'Laporan')->whereNull('parent_id')->value('id'),
+                    Menu::where('url', 'laporan/kunjungan-ralan')->value('id'),
+                ],
+            ];
+
+            foreach ($newRolesDefaults as $roleName => $menuIds) {
+                $exists = MenuRole::where('role', $roleName)->exists();
+                if (!$exists) {
+                    $insertData = [];
+                    foreach (array_filter($menuIds) as $mId) {
+                        $insertData[] = [
+                            'menu_id' => $mId,
+                            'role'    => $roleName,
+                        ];
+                    }
+                    if (!empty($insertData)) {
+                        MenuRole::insert($insertData);
+                    }
+                }
+            }
         } catch (\Throwable $e) {
             // ignore
         }

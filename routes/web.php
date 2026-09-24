@@ -43,6 +43,7 @@ use App\Http\Controllers\PenilaianMedisRalanController;
 use App\Http\Controllers\PenjabController;
 use App\Http\Controllers\PenyakitController;
 use App\Http\Controllers\PerusahaanPasienController;
+use App\Http\Controllers\PermintaanStokObatPasienController;
 use App\Http\Controllers\PoliklinikController;
 use App\Http\Controllers\PropinsiController;
 use App\Http\Controllers\ProsedurPasienController;
@@ -210,7 +211,13 @@ Route::middleware('auth:web,admin')->group(function () {
     Route::get('/billing/accounts', [\App\Http\Controllers\BillingController::class, 'getBillingAccounts']);
     Route::post('/billing/close', [\App\Http\Controllers\BillingController::class, 'closeBilling']);
 
-    // KEUANGAN
+    // KEUANGAN & KASIR
+    Route::get('/kasir/ralan', [\App\Http\Controllers\Keuangan\KasirRalanController::class, 'index']);
+    Route::get('/kasir/ralan/antrean', [\App\Http\Controllers\Keuangan\KasirRalanController::class, 'getAntrean']);
+    Route::get('/kasir/ranap', [\App\Http\Controllers\Keuangan\KasirRanapController::class, 'index']);
+    Route::get('/kasir/ranap/antrean', [\App\Http\Controllers\Keuangan\KasirRanapController::class, 'getAntrean']);
+    Route::post('/billing/ranap/close', [\App\Http\Controllers\Keuangan\KasirRanapController::class, 'closeBillingRanap']);
+    Route::post('/billing/ranap/batal', [\App\Http\Controllers\Keuangan\KasirRanapController::class, 'batalBillingRanap']);
     Route::get('/keuangan/pembayaran-ralan', [\App\Http\Controllers\Keuangan\PembayaranRalanController::class, 'index']);
     Route::get('/keuangan/pembayaran-ralan/data', [\App\Http\Controllers\Keuangan\PembayaranRalanController::class, 'getData']);
     Route::get('/keuangan/pembayaran-ralan/export-pdf', [\App\Http\Controllers\Keuangan\PembayaranRalanController::class, 'exportPdf']);
@@ -390,6 +397,7 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::get('/farmasi/obat/export-excel', [DataBarangController::class, 'exportExcel']);
 	Route::get('/farmasi/obat/export-pdf', [DataBarangController::class, 'exportPdf']);
 	Route::get('/barang/get', [DataBarangController::class, 'get']);
+	Route::get('/barang/cari', [\App\Http\Controllers\PemberianObatRanapController::class, 'cariBarang']);
 	Route::get('/barang/get-next-kode', [DataBarangController::class, 'getNextKode']);
 	Route::post('/barang/store', [DataBarangController::class, 'store']);
 	Route::put('/barang/update/{kode_brng}', [DataBarangController::class, 'update']);
@@ -500,6 +508,17 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::post('farmasi/resep/set/penyerahan', [ResepObatController::class, 'setPenyerahan']);
 	Route::post('farmasi/resep/batal-validasi', [ResepObatController::class, 'batalValidasi']);
 
+	// PERMINTAAN STOK OBAT PASIEN (UDD)
+	Route::get('/permintaan-stok-obat/get', [PermintaanStokObatPasienController::class, 'get']);
+	Route::get('/permintaan-stok-obat/detail', [PermintaanStokObatPasienController::class, 'getDetail']);
+	Route::post('/permintaan-stok-obat/simpan', [PermintaanStokObatPasienController::class, 'simpan']);
+	Route::delete('/permintaan-stok-obat/hapus', [PermintaanStokObatPasienController::class, 'hapus']);
+	Route::post('/permintaan-stok-obat/validasi', [PermintaanStokObatPasienController::class, 'validasi']);
+	Route::post('/permintaan-stok-obat/batal-validasi', [PermintaanStokObatPasienController::class, 'batalValidasi']);
+	Route::get('/permintaan-stok-obat/stok-pasien', [PermintaanStokObatPasienController::class, 'getStokPasien']);
+	Route::post('/permintaan-stok-obat/berikan-obat', [PermintaanStokObatPasienController::class, 'berikanObatPasien']);
+	Route::post('/permintaan-stok-obat/batal-beri-obat', [PermintaanStokObatPasienController::class, 'batalBeriObatPasien']);
+
 	// Template Racikan
 	Route::get('farmasi/racik/template', [EfktpTemplateRacikanController::class, 'index']);
 	Route::get('resep/racikan/template/get', [EfktpTemplateRacikanController::class, 'get']);
@@ -580,6 +599,12 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::get('pemeriksaan/tindakan-ranap/get', [\App\Http\Controllers\TindakanRanapController::class, 'get']);
 	Route::post('pemeriksaan/tindakan-ranap/create', [\App\Http\Controllers\TindakanRanapController::class, 'create']);
 	Route::post('pemeriksaan/tindakan-ranap/delete', [\App\Http\Controllers\TindakanRanapController::class, 'delete']);
+
+	// PEMBERIAN OBAT & BHP RANAP (DlgPemberianObat Khanza)
+	Route::get('kamar-inap/pemberian-obat/data', [\App\Http\Controllers\PemberianObatRanapController::class, 'getData']);
+	Route::get('kamar-inap/pemberian-obat/cari-barang', [\App\Http\Controllers\PemberianObatRanapController::class, 'cariBarang']);
+	Route::post('kamar-inap/pemberian-obat/simpan', [\App\Http\Controllers\PemberianObatRanapController::class, 'simpan']);
+	Route::delete('kamar-inap/pemberian-obat/hapus', [\App\Http\Controllers\PemberianObatRanapController::class, 'hapus']);
 
 	//RESUME MEDIS
 	Route::get('resume/medis', [\App\Http\Controllers\ResumeMedisController::class, 'get']);

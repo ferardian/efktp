@@ -18,24 +18,47 @@
 
     <ul class="navbar-nav">
         @foreach($menus as $menu)
-            @if($menu->submenus->isEmpty())
-                <li class="nav-item {{ Request::is(ltrim($menu->url, '/')) || (Request::is('/') && $menu->url == '/') ? 'active' : '' }}">
-                    <a class="nav-link" href="{{ url($menu->url) }}" target="{{ $menu->target }}">
-                        <span class="nav-link-icon d-md-none d-lg-inline-block">
-                            {!! $menu->icon !!}
-                        </span>
+            @php
+                $hasSubmenus = $menu->submenus->isNotEmpty();
+                // Jika menu parent tidak memiliki URL dan tidak memiliki submenu untuk role ini, jangan tampilkan
+                if (!$hasSubmenus && empty($menu->url)) {
+                    continue;
+                }
+            @endphp
+
+            @if(!$hasSubmenus)
+                @php
+                    $menuUrl = !empty($menu->url) ? ($menu->url === '#' ? '#' : url($menu->url)) : 'javascript:void(0);';
+                    $cleanUrl = ltrim($menu->url ?? '', '/');
+                    $isActive = (!empty($cleanUrl) && (Request::is($cleanUrl) || Request::is($cleanUrl . '/*'))) || (Request::is('/') && $menu->url == '/');
+                @endphp
+                <li class="nav-item {{ $isActive ? 'active' : '' }}">
+                    <a class="nav-link" href="{{ $menuUrl }}" target="{{ $menu->target ?? '_self' }}">
+                        @if($menu->icon)
+                            <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                {!! $menu->icon !!}
+                            </span>
+                        @endif
                         <span class="nav-link-title">
                             {{ $menu->name }}
                         </span>
                     </a>
                 </li>
             @else
-                <li class="nav-item dropdown {{ Request::segment(1) == $menu->url ? 'active' : '' }}">
+                @php
+                    $isDropdownActive = $menu->submenus->contains(function($sub) {
+                        $subClean = ltrim($sub->url ?? '', '/');
+                        return !empty($subClean) && (Request::is($subClean) || Request::is($subClean . '/*'));
+                    });
+                @endphp
+                <li class="nav-item dropdown {{ $isDropdownActive ? 'active' : '' }}">
                     <a class="nav-link dropdown-toggle" href="javascript:void(0)" data-bs-toggle="dropdown"
-                       data-bs-auto-close="outside" role="button" aria-expanded="true">
-                        <span class="nav-link-icon d-md-none d-lg-inline-block">
-                            {!! $menu->icon !!}
-                        </span>
+                       data-bs-auto-close="outside" role="button" aria-expanded="false">
+                        @if($menu->icon)
+                            <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                {!! $menu->icon !!}
+                            </span>
+                        @endif
                         <span class="nav-link-title">
                             {{ $menu->name }}
                         </span>
@@ -44,7 +67,12 @@
                         <div class="dropdown-menu-columns">
                             <div class="dropdown-menu-column">
                                 @foreach($menu->submenus as $submenu)
-                                    <a href="{{ url($submenu->url) }}" target="{{ $submenu->target }}" class="dropdown-item {{ Request::is($submenu->url) ? 'active' : '' }}">
+                                    @php
+                                        $subUrl = !empty($submenu->url) ? ($submenu->url === '#' ? '#' : url($submenu->url)) : 'javascript:void(0);';
+                                        $subClean = ltrim($submenu->url ?? '', '/');
+                                        $isSubActive = !empty($subClean) && (Request::is($subClean) || Request::is($subClean . '/*'));
+                                    @endphp
+                                    <a href="{{ $subUrl }}" target="{{ $submenu->target ?? '_self' }}" class="dropdown-item {{ $isSubActive ? 'active' : '' }}">
                                         {{ $submenu->name }}
                                     </a>
                                 @endforeach
@@ -165,6 +193,32 @@
             </div>
         </div>
     </li>
+    <li class="nav-item {{ Request::segment(1) == 'keuangan' || Request::segment(1) == 'kasir' ? 'active' : '' }} dropdown">
+        <a class="nav-link dropdown-toggle" href="javascript:void(0)" data-bs-toggle="dropdown"
+           data-bs-auto-close="outside" role="button" aria-expanded="true">
+             <span class="nav-link-icon d-md-none d-lg-inline-block mt-1">
+                 <i class="ti ti-report-money fs-2"></i>
+             </span>
+            <span class="nav-link-title">
+                 Keuangan
+             </span>
+        </a>
+        <div class="dropdown-menu" data-bs-popper="static">
+            <div class="dropdown-menu-columns">
+                <div class="dropdown-menu-column">
+                    <a href="{{ url('kasir/ralan') }}" class="dropdown-item {{ Request::is('kasir/ralan*') ? 'active' : '' }}">
+                        <i class="ti ti-cash me-1 text-primary"></i> Kasir Rawat Jalan
+                    </a>
+                    <a href="{{ url('kasir/ranap') }}" class="dropdown-item {{ Request::is('kasir/ranap*') ? 'active' : '' }}">
+                        <i class="ti ti-bed me-1 text-success"></i> Kasir Rawat Inap
+                    </a>
+                    <a href="{{ url('keuangan/pembayaran-ralan') }}" class="dropdown-item {{ Request::is('keuangan/pembayaran-ralan') ? 'active' : '' }}">
+                        Rekap Pembayaran Rawat Jalan
+                    </a>
+                </div>
+            </div>
+        </div>
+    </li>
     <li class="nav-item  {{ Request::segment(1) == 'pcare' ? 'active' : '' }} dropdown">
         <a class="nav-link dropdown-toggle" href="javascript:void(0)" data-bs-toggle="dropdown"
            data-bs-auto-close="outside" role="button" aria-expanded="true">
@@ -224,26 +278,6 @@
                  KYC
              </span>
         </a>
-    </li>
-    <li class="nav-item {{ Request::segment(1) == 'keuangan' ? 'active' : '' }} dropdown">
-        <a class="nav-link dropdown-toggle" href="javascript:void(0)" data-bs-toggle="dropdown"
-           data-bs-auto-close="outside" role="button" aria-expanded="true">
-             <span class="nav-link-icon d-md-none d-lg-inline-block mt-1">
-                 <i class="ti ti-report-money fs-2"></i>
-             </span>
-            <span class="nav-link-title">
-                 Keuangan
-             </span>
-        </a>
-        <div class="dropdown-menu" data-bs-popper="static">
-            <div class="dropdown-menu-columns">
-                <div class="dropdown-menu-column">
-                    <a href="{{ url('keuangan/pembayaran-ralan') }}" class="dropdown-item {{ Request::is('keuangan/pembayaran-ralan') ? 'active' : '' }}">
-                        Pembayaran Rawat Jalan
-                    </a>
-                </div>
-            </div>
-        </div>
     </li>
     <li class="nav-item {{ Request::segment(1) == 'laporan' ? 'active' : '' }} dropdown">
         <a class="nav-link dropdown-toggle" href="javascript:void(0)" data-bs-toggle="dropdown"

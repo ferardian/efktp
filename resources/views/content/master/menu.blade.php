@@ -26,6 +26,13 @@
                                     <span class="text-muted small">Praktisi Medis / Pelayanan</span>
                                 </div>
                             </a>
+                            <a href="javascript:void(0)" class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-3" data-role="perawat">
+                                <span class="avatar avatar-sm bg-teal-lt"><i class="ti ti-heart-handshake"></i></span>
+                                <div>
+                                    <div class="font-weight-medium">Perawat / Bidan</div>
+                                    <span class="text-muted small">Asuhan keperawatan, triase IGD & tindakan</span>
+                                </div>
+                            </a>
                             <a href="javascript:void(0)" class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-3" data-role="apoteker">
                                 <span class="avatar avatar-sm bg-warning-lt"><i class="ti ti-pill"></i></span>
                                 <div>
@@ -38,6 +45,27 @@
                                 <div>
                                     <div class="font-weight-medium">Petugas / Umum</div>
                                     <span class="text-muted small">Pendaftaran & Administrasi</span>
+                                </div>
+                            </a>
+                            <a href="javascript:void(0)" class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-3" data-role="laborat">
+                                <span class="avatar avatar-sm bg-azure-lt"><i class="ti ti-test-pipe"></i></span>
+                                <div>
+                                    <div class="font-weight-medium">Laborat / Analis</div>
+                                    <span class="text-muted small">Pemeriksaan & input hasil lab</span>
+                                </div>
+                            </a>
+                            <a href="javascript:void(0)" class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-3" data-role="kasir">
+                                <span class="avatar avatar-sm bg-blue-lt"><i class="ti ti-cash"></i></span>
+                                <div>
+                                    <div class="font-weight-medium">Kasir</div>
+                                    <span class="text-muted small">Kasir rawat jalan, ranap & keuangan</span>
+                                </div>
+                            </a>
+                            <a href="javascript:void(0)" class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-3" data-role="rekam_medis">
+                                <span class="avatar avatar-sm bg-purple-lt"><i class="ti ti-archive"></i></span>
+                                <div>
+                                    <div class="font-weight-medium">Perekam Medis</div>
+                                    <span class="text-muted small">Berkas rekam medis & laporan</span>
                                 </div>
                             </a>
                             <a href="javascript:void(0)" class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-3" data-role="owner">

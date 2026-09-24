@@ -31,12 +31,23 @@
 
                 <ul class="navbar-nav pt-lg-3">
                     @foreach($menus as $menu)
-                        @if($menu->submenus->isEmpty())
+                        @php
+                            $hasSubmenus = $menu->submenus->isNotEmpty();
+                            if (!$hasSubmenus && empty($menu->url)) {
+                                continue;
+                            }
+                        @endphp
+                        @if(!$hasSubmenus)
+                            @php
+                                $menuUrl = !empty($menu->url) ? ($menu->url === '#' ? '#' : url($menu->url)) : 'javascript:void(0);';
+                            @endphp
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ url($menu->url) }}" target="{{ $menu->target }}">
-                                    <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                        {!! $menu->icon !!}
-                                    </span>
+                                <a class="nav-link" href="{{ $menuUrl }}" target="{{ $menu->target ?? '_self' }}">
+                                    @if($menu->icon)
+                                        <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                            {!! $menu->icon !!}
+                                        </span>
+                                    @endif
                                     <span class="nav-link-title">
                                         {{ $menu->name }}
                                     </span>
@@ -46,9 +57,11 @@
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="javascript:void(0)" data-bs-toggle="dropdown"
                                    data-bs-auto-close="false" role="button" aria-expanded="false">
-                                    <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                        {!! $menu->icon !!}
-                                    </span>
+                                    @if($menu->icon)
+                                        <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                            {!! $menu->icon !!}
+                                        </span>
+                                    @endif
                                     <span class="nav-link-title">
                                         {{ $menu->name }}
                                     </span>
@@ -57,7 +70,10 @@
                                     <div class="dropdown-menu-columns">
                                         <div class="dropdown-menu-column">
                                             @foreach($menu->submenus as $submenu)
-                                                @if($submenu->submenus && $submenu->submenus->isNotEmpty())
+                                                @php
+                                                    $hasSubchildren = $submenu->submenus && $submenu->submenus->isNotEmpty();
+                                                @endphp
+                                                @if($hasSubchildren)
                                                     <div class="dropend">
                                                         <a class="dropdown-item dropdown-toggle" href="javascript:void(0)"
                                                            data-bs-toggle="dropdown" data-bs-auto-close="false" role="button"
@@ -66,14 +82,20 @@
                                                         </a>
                                                         <div class="dropdown-menu">
                                                             @foreach($submenu->submenus as $subchild)
-                                                                <a href="{{ url($subchild->url) }}" target="{{ $subchild->target }}" class="dropdown-item">
+                                                                @php
+                                                                    $childUrl = !empty($subchild->url) ? ($subchild->url === '#' ? '#' : url($subchild->url)) : 'javascript:void(0);';
+                                                                @endphp
+                                                                <a href="{{ $childUrl }}" target="{{ $subchild->target ?? '_self' }}" class="dropdown-item">
                                                                     {{ $subchild->name }}
                                                                 </a>
                                                             @endforeach
                                                         </div>
                                                     </div>
                                                 @else
-                                                    <a class="dropdown-item" href="{{ url($submenu->url) }}" target="{{ $submenu->target }}">
+                                                    @php
+                                                        $subUrl = !empty($submenu->url) ? ($submenu->url === '#' ? '#' : url($submenu->url)) : 'javascript:void(0);';
+                                                    @endphp
+                                                    <a class="dropdown-item" href="{{ $subUrl }}" target="{{ $submenu->target ?? '_self' }}">
                                                         {{ $submenu->name }}
                                                     </a>
                                                 @endif

@@ -2,10 +2,13 @@
     <div class="card-body p-0">
         <div class="alert alert-info border-start border-4 border-info mb-3 d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center">
-                <i class="ti ti-info-circle fs-2 me-2"></i>
+                <i class="ti ti-calculator fs-2 me-2"></i>
                 <div>
-                    <h4 class="mb-0">Rincian Billing Berjalan</h4>
-                    <p class="mb-0 small">Estimasi total biaya selama perawatan berlangsung</p>
+                    <h4 class="mb-0 d-flex align-items-center gap-2">
+                        Estimasi Biaya Pasien (Sementara)
+                        <span class="badge bg-secondary-lt text-secondary fw-normal">Monitoring Ruangan / CPPT</span>
+                    </h4>
+                    <p class="mb-0 small text-muted">Perkiraan total biaya berjalan selama perawatan. Pelunasan & nota resmi dilakukan di Kasir Ranap.</p>
                 </div>
             </div>
             <div class="d-flex align-items-center">
@@ -14,12 +17,12 @@
                     <label class="form-check-label small fw-bold text-dark mb-0" for="printShowObatDetailRanap">Detail Obat</label>
                 </div>
                 <div class="btn-group">
-                    <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="ti ti-printer me-1"></i> Cetak Billing
+                    <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="ti ti-printer me-1"></i> Cetak Estimasi
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="cetakBilling('80')">Ukuran 80mm</a></li>
-                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="cetakBilling('58')">Ukuran 58mm</a></li>
+                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="cetakBilling('80')"><i class="ti ti-receipt me-1"></i> Ukuran 80mm</a></li>
+                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="cetakBilling('58')"><i class="ti ti-receipt me-1"></i> Ukuran 58mm</a></li>
                     </ul>
                 </div>
             </div>
@@ -79,8 +82,10 @@
         <div class="mt-3">
             <div class="card bg-orange-lt border-0">
                 <div class="card-body p-2 d-flex align-items-center">
-                    <i class="ti ti-alert-triangle text-orange me-2 fs-3"></i>
-                    <span class="small text-orange fw-500">Catatan: Nilai ini adalah estimasi sementara dan dapat berubah sesuai dengan penambahan tindakan atau obat selama perawatan.</span>
+                    <i class="ti ti-alert-triangle text-orange me-2 fs-3 flex-shrink-0"></i>
+                    <span class="small text-orange fw-500">
+                        <strong>Catatan:</strong> Nilai ini merupakan perkiraan estimasi berjalan selama masa rawat inap. Seluruh transaksi pembayaran tunai/non-tunai, perhitungan deposit uang muka, potongan diskon, dan penutupan nota resmi diproses melalui <strong>Menu Kasir Rawat Inap</strong>.
+                    </span>
                 </div>
             </div>
         </div>
@@ -146,7 +151,7 @@
         const no_rawat = $('#formCpptRanap input[name="no_rawat"]').val() || $('#billing_no_nota').text().replace(': ', '').trim();
         if (no_rawat && no_rawat !== '-') {
             const show_obat = $('#printShowObatDetailRanap').is(':checked') ? 1 : 0;
-            window.open(`{{ url('/billing/print') }}?no_rawat=${no_rawat}&size=${size}&show_obat=${show_obat}`, '_blank');
+            window.open(`{{ url('/billing/print') }}?no_rawat=${no_rawat}&size=${size}&show_obat=${show_obat}&mode=estimasi`, '_blank');
         } else {
             Swal.fire({
                 icon: 'warning',

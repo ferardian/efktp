@@ -59,8 +59,25 @@ class JenisPerawatanController extends Controller
     public function get(Request $request)
     {
         $data = $this->model->where('status', '1');
-        if ($request->nm_perawatan) {
+        if ($request->keyword) {
+            $data = $data->where(function($q) use ($request) {
+                $q->where('nm_perawatan', 'like', '%' . $request->keyword . '%')
+                  ->orWhere('kd_jenis_prw', 'like', '%' . $request->keyword . '%');
+            });
+        } elseif ($request->nm_perawatan) {
             $data = $data->where('nm_perawatan', 'like', '%' . $request->nm_perawatan . '%');
+        }
+
+        if ($request->kd_pj) {
+            $data = $data->where(function($q) use ($request) {
+                $q->where('kd_pj', $request->kd_pj)->orWhere('kd_pj', '-');
+            });
+        }
+
+        if ($request->kd_poli) {
+            $data = $data->where(function($q) use ($request) {
+                $q->where('kd_poli', $request->kd_poli)->orWhere('kd_poli', '-');
+            });
         }
 
         if ($request->pelaksana) {
@@ -71,6 +88,10 @@ class JenisPerawatanController extends Controller
             } elseif ($request->pelaksana == 'drpr') {
                 $data = $data->where('total_byrdrpr', '>', 0);
             }
+        }
+
+        if ($request->limit) {
+            $data = $data->limit((int)$request->limit);
         }
 
         return response()->json($data->get());

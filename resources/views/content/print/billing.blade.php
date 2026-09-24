@@ -141,16 +141,21 @@
     </div>
 
     <div class="divider"></div>
-    <div style="text-align: center; font-weight: bold; text-transform: uppercase; margin-bottom: 4px;">
-        Rincian Billing ({{ $data['type'] }})
+    <div style="text-align: center; font-weight: bold; text-transform: uppercase; margin-bottom: 2px;">
+        @if(isset($is_estimasi) && $is_estimasi)
+            ESTIMASI BIAYA SEMENTARA ({{ $data['type'] }})
+            <div style="font-size: 8px; font-weight: normal; text-transform: none; color: #555;">[ BUKAN BUKTI PEMBAYARAN RESMI ]</div>
+        @else
+            NOTA BILLING {{ $data['type'] == 'RANAP' ? 'RAWAT INAP' : 'RAWAT JALAN' }}
+        @endif
     </div>
     <div class="divider"></div>
 
     <table class="info-table">
         <tr>
-            <td style="width: 28%; white-space: nowrap;">No. Nota</td>
+            <td style="width: 28%; white-space: nowrap;">{{ (!empty($data['no_nota']) && (!isset($is_estimasi) || !$is_estimasi)) ? 'No. Nota' : 'No. Rawat' }}</td>
             <td style="width: 3%;">:</td>
-            <td>{{ $data['no_rawat'] }}</td>
+            <td>{{ (!empty($data['no_nota']) && (!isset($is_estimasi) || !$is_estimasi)) ? $data['no_nota'] : $data['no_rawat'] }}</td>
         </tr>
         <tr>
             <td style="white-space: nowrap;">No. R.M.</td>
@@ -217,17 +222,36 @@
 
     <table class="info-table grand-total-row">
         <tr>
-            <td style="white-space: nowrap;">TOTAL BIAYA</td>
+            <td style="white-space: nowrap;">TOTAL TAGIHAN</td>
             <td class="text-right">Rp. {{ number_format($data['grand_total'], 0, ',', '.') }}</td>
         </tr>
+        @if(!empty($data['deposit']) && $data['deposit'] > 0)
+            <tr style="font-size: {{ ($size == '58') ? '8px' : '10px' }}; font-weight: normal; color: #333;">
+                <td style="white-space: nowrap;">Titipan Uang Muka / Deposit</td>
+                <td class="text-right">- Rp. {{ number_format($data['deposit'], 0, ',', '.') }}</td>
+            </tr>
+            <tr style="font-size: {{ ($size == '58') ? '9px' : '11px' }}; font-weight: bold;">
+                <td style="white-space: nowrap;">SISA TAGIHAN</td>
+                <td class="text-right">Rp. {{ number_format($data['net_total'] ?? max(0, $data['grand_total'] - $data['deposit']), 0, ',', '.') }}</td>
+            </tr>
+        @endif
+        @if(!empty($data['saved_payments']) && count($data['saved_payments']) > 0)
+            @foreach($data['saved_payments'] as $sp)
+                <tr style="font-size: {{ ($size == '58') ? '8px' : '10px' }}; font-weight: normal; color: #444;">
+                    <td style="white-space: nowrap;">Bayar ({{ $sp->nama_bayar }})</td>
+                    <td class="text-right">Rp. {{ number_format($sp->besar_bayar, 0, ',', '.') }}</td>
+                </tr>
+            @endforeach
+        @endif
     </table>
 
     <div class="divider"></div>
     <div style="text-align: left; font-size: 8px; font-style: italic; margin-top: 5px;">
-        @if(($data['status_bayar'] ?? '') === 'Sudah Bayar')
-            * Pembayaran Lunas.<br>
-        @else
-            * Nilai di atas merupakan estimasi biaya berjalan.<br>
+        @if(isset($is_estimasi) && $is_estimasi)
+            * Nilai di atas merupakan estimasi sementara selama masa perawatan.<br>
+            * Bukan bukti pelunasan atau kwitansi pembayaran resmi.<br>
+        @elseif(($data['status_bayar'] ?? '') === 'Sudah Bayar')
+            * Pembayaran Lunas / Selesai diproses di Kasir.<br>
         @endif
         @if(config('app.billing_note'))
             * {{ config('app.billing_note') }}<br>

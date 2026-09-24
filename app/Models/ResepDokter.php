@@ -10,7 +10,7 @@ class ResepDokter extends Model
     use HasFactory;
     protected $table = 'resep_dokter';
     protected $guarded = [];
-    public $timestamps;
+    public $timestamps = false;
 
     function obat()
     {

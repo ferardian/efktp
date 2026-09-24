@@ -29,6 +29,7 @@ class BillingController extends Controller
         $no_rawat = $request->no_rawat;
         $size = $request->input('size', '80'); // '80' or '58'
         $show_obat = $request->input('show_obat', '1') !== '0';
+        $mode = $request->input('mode', '');
 
         // Check if Ralan or Ranap
         $reg = DB::table('reg_periksa')
@@ -39,14 +40,18 @@ class BillingController extends Controller
             return abort(404, 'Data tidak ditemukan');
         }
 
+        $isRanap = ($reg->status_lanjut == 'Ranap') || DB::table('kamar_inap')->where('no_rawat', $no_rawat)->exists();
+
         // Get matching data
-        if ($reg->status_lanjut == 'Ranap') {
+        if ($isRanap) {
             $billingData = $this->getBillingRanapData($no_rawat);
             $billingData['type'] = 'RANAP';
         } else {
             $billingData = $this->getBillingRalanData($no_rawat);
             $billingData['type'] = 'RALAN';
         }
+
+        $isEstimasi = ($mode === 'estimasi') || ($billingData['status_bayar'] !== 'Sudah Bayar');
 
         $setting = Setting::first();
 
@@ -65,7 +70,7 @@ class BillingController extends Controller
             }
         }
         
-        $baseHeight = ($size == '58') ? 350 : 400;
+        $baseHeight = ($size == '58') ? 370 : 420;
         $itemHeight = ($size == '58') ? 18 : 22;
         $height = $baseHeight + ($itemCount * $itemHeight);
 
@@ -75,7 +80,8 @@ class BillingController extends Controller
             'data' => $billingData,
             'setting' => $setting,
             'size' => $size,
-            'show_obat' => $show_obat
+            'show_obat' => $show_obat,
+            'is_estimasi' => $isEstimasi
         ])
         ->setPaper(array(0, 0, $width, $height))
         ->setOptions(['defaultFont' => 'Arial', 'isRemoteEnabled' => true]);
@@ -88,10 +94,12 @@ class BillingController extends Controller
         // 1. Biaya Registrasi
         $reg = DB::table('reg_periksa')
             ->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
+            ->leftJoin('dokter', 'reg_periksa.kd_dokter', '=', 'dokter.kd_dokter')
+            ->leftJoin('penjab', 'reg_periksa.kd_pj', '=', 'penjab.kd_pj')
             ->where('no_rawat', $no_rawat)
-            ->select('reg_periksa.biaya_reg', 'pasien.nm_pasien', 'reg_periksa.tgl_registrasi', 'reg_periksa.no_rkm_medis', 'reg_periksa.status_bayar')
+            ->select('reg_periksa.biaya_reg', 'pasien.nm_pasien', 'reg_periksa.tgl_registrasi', 'reg_periksa.no_rkm_medis', 'reg_periksa.status_bayar', 'dokter.nm_dokter', 'penjab.png_jawab', 'reg_periksa.kd_pj')
             ->first();
-        $biaya_reg = $reg ? $reg->biaya_reg : 0;
+        $biaya_reg = $reg ? floatval($reg->biaya_reg) : 0;
 
         // 2. Biaya Kamar
         $kamar_inap = DB::table('kamar_inap')
@@ -99,12 +107,15 @@ class BillingController extends Controller
             ->join('bangsal', 'kamar.kd_bangsal', '=', 'bangsal.kd_bangsal')
             ->where('no_rawat', $no_rawat)
             ->select('kamar_inap.*', 'kamar.trf_kamar', 'bangsal.nm_bangsal')
+            ->orderBy('kamar_inap.tgl_masuk', 'asc')
+            ->orderBy('kamar_inap.jam_masuk', 'asc')
             ->get();
 
         $detail_kamar = [];
         $total_kamar = 0;
         foreach ($kamar_inap as $ki) {
             $tgl_masuk = Carbon::parse($ki->tgl_masuk);
+            $is_current_room_pulang = ($ki->stts_pulang != '-' && $ki->stts_pulang != 'Pindah Kamar' && $ki->tgl_keluar != '0000-00-00' && !empty($ki->tgl_keluar));
             $tgl_keluar = ($ki->stts_pulang != 'Pindah Kamar' && ($ki->tgl_keluar == '0000-00-00' || !$ki->tgl_keluar)) 
                 ? Carbon::now() 
                 : Carbon::parse($ki->tgl_keluar);
@@ -112,13 +123,13 @@ class BillingController extends Controller
             $durasi = $tgl_masuk->diffInDays($tgl_keluar);
             if ($durasi == 0) $durasi = 1;
             
-            $subtotal = ($durasi * $ki->trf_kamar);
+            $subtotal = ($durasi * floatval($ki->trf_kamar));
             $total_kamar += $subtotal;
             $detail_kamar[] = [
                 'item' => "Sewa Kamar - {$ki->nm_bangsal} ({$ki->kd_kamar})",
-                'tgl' => "{$ki->tgl_masuk} s.d {$ki->tgl_keluar}",
+                'tgl' => "{$ki->tgl_masuk} s.d " . ($ki->tgl_keluar == '0000-00-00' ? 'Sekarang' : $ki->tgl_keluar),
                 'qty' => $durasi,
-                'tarif' => $ki->trf_kamar,
+                'tarif' => floatval($ki->trf_kamar),
                 'subtotal' => $subtotal
             ];
         }
@@ -128,19 +139,19 @@ class BillingController extends Controller
             ->join('jns_perawatan_inap', 'rawat_inap_dr.kd_jenis_prw', '=', 'jns_perawatan_inap.kd_jenis_prw')
             ->where('no_rawat', $no_rawat)
             ->select('jns_perawatan_inap.nm_perawatan', 'rawat_inap_dr.tgl_perawatan', 'rawat_inap_dr.biaya_rawat')
-            ->get()->map(fn($item) => ['item' => $item->nm_perawatan, 'tgl' => $item->tgl_perawatan, 'qty' => 1, 'tarif' => $item->biaya_rawat, 'subtotal' => $item->biaya_rawat]);
+            ->get()->map(fn($item) => ['item' => $item->nm_perawatan, 'tgl' => $item->tgl_perawatan, 'qty' => 1, 'tarif' => floatval($item->biaya_rawat), 'subtotal' => floatval($item->biaya_rawat)]);
 
         $tindakan_pr = DB::table('rawat_inap_pr')
             ->join('jns_perawatan_inap', 'rawat_inap_pr.kd_jenis_prw', '=', 'jns_perawatan_inap.kd_jenis_prw')
             ->where('no_rawat', $no_rawat)
             ->select('jns_perawatan_inap.nm_perawatan', 'rawat_inap_pr.tgl_perawatan', 'rawat_inap_pr.biaya_rawat')
-            ->get()->map(fn($item) => ['item' => $item->nm_perawatan, 'tgl' => $item->tgl_perawatan, 'qty' => 1, 'tarif' => $item->biaya_rawat, 'subtotal' => $item->biaya_rawat]);
+            ->get()->map(fn($item) => ['item' => $item->nm_perawatan, 'tgl' => $item->tgl_perawatan, 'qty' => 1, 'tarif' => floatval($item->biaya_rawat), 'subtotal' => floatval($item->biaya_rawat)]);
 
         $tindakan_drpr = DB::table('rawat_inap_drpr')
             ->join('jns_perawatan_inap', 'rawat_inap_drpr.kd_jenis_prw', '=', 'jns_perawatan_inap.kd_jenis_prw')
             ->where('no_rawat', $no_rawat)
             ->select('jns_perawatan_inap.nm_perawatan', 'rawat_inap_drpr.tgl_perawatan', 'rawat_inap_drpr.biaya_rawat')
-            ->get()->map(fn($item) => ['item' => $item->nm_perawatan, 'tgl' => $item->tgl_perawatan, 'qty' => 1, 'tarif' => $item->biaya_rawat, 'subtotal' => $item->biaya_rawat]);
+            ->get()->map(fn($item) => ['item' => $item->nm_perawatan, 'tgl' => $item->tgl_perawatan, 'qty' => 1, 'tarif' => floatval($item->biaya_rawat), 'subtotal' => floatval($item->biaya_rawat)]);
 
         $detail_tindakan = $tindakan_dr->concat($tindakan_pr)->concat($tindakan_drpr);
         $total_tindakan = $detail_tindakan->sum('subtotal');
@@ -150,7 +161,7 @@ class BillingController extends Controller
             ->join('databarang', 'detail_pemberian_obat.kode_brng', '=', 'databarang.kode_brng')
             ->where('no_rawat', $no_rawat)
             ->select('databarang.nama_brng', 'detail_pemberian_obat.tgl_perawatan', 'detail_pemberian_obat.jml', 'detail_pemberian_obat.biaya_obat', 'detail_pemberian_obat.total')
-            ->get()->map(fn($item) => ['item' => $item->nama_brng, 'tgl' => $item->tgl_perawatan, 'qty' => $item->jml, 'tarif' => $item->biaya_obat, 'subtotal' => $item->total]);
+            ->get()->map(fn($item) => ['item' => $item->nama_brng, 'tgl' => $item->tgl_perawatan, 'qty' => floatval($item->jml), 'tarif' => floatval($item->biaya_obat), 'subtotal' => floatval($item->total)]);
         $total_obat = $detail_obat->sum('subtotal');
 
         // 5. Biaya Laboratorium
@@ -158,7 +169,7 @@ class BillingController extends Controller
             ->join('jns_perawatan_lab', 'periksa_lab.kd_jenis_prw', '=', 'jns_perawatan_lab.kd_jenis_prw')
             ->where('no_rawat', $no_rawat)
             ->select('jns_perawatan_lab.nm_perawatan', 'periksa_lab.tgl_periksa', 'periksa_lab.biaya')
-            ->get()->map(fn($item) => ['item' => $item->nm_perawatan, 'tgl' => $item->tgl_periksa, 'qty' => 1, 'tarif' => $item->biaya, 'subtotal' => $item->biaya]);
+            ->get()->map(fn($item) => ['item' => $item->nm_perawatan, 'tgl' => $item->tgl_periksa, 'qty' => 1, 'tarif' => floatval($item->biaya), 'subtotal' => floatval($item->biaya)]);
         $total_lab = $detail_lab->sum('subtotal');
 
         // 6. Biaya Radiologi
@@ -166,19 +177,40 @@ class BillingController extends Controller
             ->join('jns_perawatan_radiologi', 'periksa_radiologi.kd_jenis_prw', '=', 'jns_perawatan_radiologi.kd_jenis_prw')
             ->where('no_rawat', $no_rawat)
             ->select('jns_perawatan_radiologi.nm_perawatan', 'periksa_radiologi.tgl_periksa', 'periksa_radiologi.biaya')
-            ->get()->map(fn($item) => ['item' => $item->nm_perawatan, 'tgl' => $item->tgl_periksa, 'qty' => 1, 'tarif' => $item->biaya, 'subtotal' => $item->biaya]);
+            ->get()->map(fn($item) => ['item' => $item->nm_perawatan, 'tgl' => $item->tgl_periksa, 'qty' => 1, 'tarif' => floatval($item->biaya), 'subtotal' => floatval($item->biaya)]);
         $total_rad = $detail_rad->sum('subtotal');
 
-        $tambahan = DB::table('tambahan_biaya')->where('no_rawat', $no_rawat)->sum('besar_biaya');
-        $potongan = DB::table('pengurangan_biaya')->where('no_rawat', $no_rawat)->sum('besar_pengurangan');
+        $tambahan = floatval(DB::table('tambahan_biaya')->where('no_rawat', $no_rawat)->sum('besar_biaya'));
+        $potongan = floatval(DB::table('pengurangan_biaya')->where('no_rawat', $no_rawat)->sum('besar_pengurangan'));
+
+        // Titipan Uang Muka / Deposit
+        $uang_deposit = floatval(DB::table('deposit')->where('no_rawat', $no_rawat)->sum('besar_deposit'));
+        $nota_inap = DB::table('nota_inap')->where('no_rawat', $no_rawat)->first();
+        if ($nota_inap && floatval($nota_inap->Uang_Muka) > 0 && $uang_deposit == 0) {
+            $uang_deposit = floatval($nota_inap->Uang_Muka);
+        }
 
         $grand_total = ($biaya_reg + $total_kamar + $total_tindakan + $total_obat + $total_lab + $total_rad + $tambahan) - $potongan;
+        $net_total = max(0, $grand_total - $uang_deposit);
 
-        // Header Info
+        // Header Info & Room status
         $first_kamar = $kamar_inap->first();
+        $latest_kamar = $kamar_inap->last();
         $tgl_masuk_awal = $kamar_inap->min('tgl_masuk');
         $tgl_keluar_akhir = $kamar_inap->max('tgl_keluar');
-        if ($tgl_keluar_akhir == '0000-00-00' || !$tgl_keluar_akhir) $tgl_keluar_akhir = Carbon::now()->format('Y-m-d');
+        $is_pulang = false;
+        $stts_pulang = 'Masih Dirawat';
+
+        if ($latest_kamar) {
+            if ($latest_kamar->stts_pulang != '-' && $latest_kamar->stts_pulang != 'Pindah Kamar' && $latest_kamar->tgl_keluar != '0000-00-00' && !empty($latest_kamar->tgl_keluar)) {
+                $is_pulang = true;
+                $stts_pulang = $latest_kamar->stts_pulang;
+            }
+        }
+
+        if ($tgl_keluar_akhir == '0000-00-00' || !$tgl_keluar_akhir) {
+            $tgl_keluar_akhir = Carbon::now()->format('Y-m-d');
+        }
 
         $total_hari = 0;
         foreach($kamar_inap as $ki) {
@@ -204,15 +236,51 @@ class BillingController extends Controller
             $categories[] = ['label' => 'Tambahan/Potongan', 'total' => $tambahan - $potongan, 'items' => $itemsTP];
         }
 
+        // Saved payments from detail_nota_inap
+        $saved_payments = DB::table('detail_nota_inap')->where('no_rawat', $no_rawat)->get();
+
+        // Check unvalidated ranap prescription
+        $unvalidatedReseps = DB::table('resep_obat')
+            ->where('no_rawat', $no_rawat)
+            ->where('status', 'ranap')
+            ->where(function ($q) {
+                $q->where('tgl_perawatan', '0000-00-00')
+                  ->orWhereNull('tgl_perawatan');
+            })
+            ->get();
+
+        $unvalidatedCount = 0;
+        foreach ($unvalidatedReseps as $r) {
+            $hasItems = DB::table('resep_dokter')->where('no_resep', $r->no_resep)->exists()
+                || DB::table('resep_dokter_racikan')->where('no_resep', $r->no_resep)->exists();
+            if ($hasItems) $unvalidatedCount++;
+        }
+
         return [
             'no_rawat' => $no_rawat,
             'no_rm' => $reg->no_rkm_medis ?? '-',
             'pasien' => $reg->nm_pasien ?? '-',
-            'kamar' => $first_kamar ? "{$first_kamar->kd_kamar}, {$first_kamar->nm_bangsal}" : '-',
+            'kamar' => $latest_kamar ? "{$latest_kamar->kd_kamar}, {$latest_kamar->nm_bangsal}" : ($first_kamar ? "{$first_kamar->kd_kamar}, {$first_kamar->nm_bangsal}" : '-'),
             'tgl_perawatan' => "{$tgl_masuk_awal} s.d {$tgl_keluar_akhir} ( {$total_hari} Hari )",
+            'total_hari' => $total_hari,
             'status_bayar' => $reg ? $reg->status_bayar : 'Belum Bayar',
             'categories' => $categories,
-            'grand_total' => $grand_total
+            'grand_total' => $grand_total,
+            'deposit' => $uang_deposit,
+            'net_total' => $net_total,
+            'potongan' => $potongan,
+            'tambahan' => $tambahan,
+            'no_nota' => $nota_inap ? $nota_inap->no_nota : null,
+            'tgl_nota' => $nota_inap ? $nota_inap->tanggal : null,
+            'jam_nota' => $nota_inap ? $nota_inap->jam : null,
+            'saved_payments' => $saved_payments,
+            'is_pulang' => $is_pulang,
+            'stts_pulang' => $stts_pulang,
+            'dokter' => $reg ? ($reg->nm_dokter ?? '-') : '-',
+            'penjab' => $reg ? ($reg->png_jawab ?? '-') : '-',
+            'kd_pj' => $reg ? ($reg->kd_pj ?? '-') : '-',
+            'has_unvalidated_resep' => $unvalidatedCount > 0,
+            'unvalidated_count' => $unvalidatedCount
         ];
     }
 
@@ -222,8 +290,9 @@ class BillingController extends Controller
         $reg = DB::table('reg_periksa')
             ->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
             ->join('poliklinik', 'reg_periksa.kd_poli', '=', 'poliklinik.kd_poli')
+            ->leftJoin('dokter', 'reg_periksa.kd_dokter', '=', 'dokter.kd_dokter')
             ->where('no_rawat', $no_rawat)
-            ->select('reg_periksa.biaya_reg', 'pasien.nm_pasien', 'reg_periksa.tgl_registrasi', 'reg_periksa.no_rkm_medis', 'poliklinik.nm_poli', 'reg_periksa.status_bayar')
+            ->select('reg_periksa.biaya_reg', 'pasien.nm_pasien', 'reg_periksa.tgl_registrasi', 'reg_periksa.no_rkm_medis', 'poliklinik.nm_poli', 'reg_periksa.status_bayar', 'reg_periksa.kd_dokter', 'reg_periksa.kd_poli', 'dokter.nm_dokter', 'reg_periksa.stts')
             ->first();
         $biaya_reg = $reg ? $reg->biaya_reg : 0;
 
@@ -293,13 +362,20 @@ class BillingController extends Controller
             $categories[] = ['label' => 'Tambahan/Potongan', 'total' => $tambahan - $potongan, 'items' => $itemsTP];
         }
 
+        $isSudahPeriksa = $reg && ($reg->stts === 'Sudah' || DB::table('pemeriksaan_ralan')->where('no_rawat', $no_rawat)->exists() || $detail_tindakan->count() > 0);
+
         return [
             'no_rawat' => $no_rawat,
             'no_rm' => $reg->no_rkm_medis ?? '-',
             'pasien' => $reg->nm_pasien ?? '-',
             'poli' => $reg->nm_poli ?? '-',
+            'kd_poli' => $reg->kd_poli ?? '',
+            'kd_dokter' => $reg->kd_dokter ?? '',
+            'dokter' => $reg->nm_dokter ?? '-',
             'tgl_perawatan' => $reg ? $reg->tgl_registrasi : '-',
             'status_bayar' => $reg ? $reg->status_bayar : 'Belum Bayar',
+            'stts' => $reg ? $reg->stts : 'Belum',
+            'is_sudah_periksa' => $isSudahPeriksa,
             'categories' => $categories,
             'grand_total' => $grand_total
         ];

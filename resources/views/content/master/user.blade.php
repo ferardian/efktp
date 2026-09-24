@@ -62,8 +62,21 @@
                                          <label class="form-label">Role Akses</label>
                                          <select class="form-select" id="role" name="role">
                                              <option value="">-- Gunakan Fallback Sistem (Otomatis) --</option>
-                                             @foreach($roles ?? ['admin', 'dokter', 'apoteker', 'petugas', 'owner'] as $r)
-                                                 <option value="{{ $r }}">{{ ucfirst($r) }}</option>
+                                             @php
+                                                 $roleLabels = [
+                                                     'admin'       => 'Admin',
+                                                     'dokter'      => 'Dokter',
+                                                     'perawat'     => 'Perawat / Bidan',
+                                                     'apoteker'    => 'Apoteker',
+                                                     'petugas'     => 'Petugas',
+                                                     'laborat'     => 'Laborat / Analis',
+                                                     'kasir'       => 'Kasir',
+                                                     'rekam_medis' => 'Perekam Medis',
+                                                     'owner'       => 'Owner',
+                                                 ];
+                                             @endphp
+                                             @foreach($roles ?? ['admin', 'dokter', 'perawat', 'apoteker', 'petugas', 'laborat', 'kasir', 'rekam_medis', 'owner'] as $r)
+                                                 <option value="{{ $r }}">{{ $roleLabels[$r] ?? ucfirst(str_replace('_', ' ', $r)) }}</option>
                                              @endforeach
                                          </select>
                                      </div>

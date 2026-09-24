@@ -133,6 +133,42 @@ class AuthController extends Controller
 			return 'apoteker';
 		}
 
+		if (
+			str_contains($jabatan, 'perawat') || 
+			str_contains($jabatan, 'bidan') || 
+			str_contains($departemen, 'perawat') || 
+			str_contains($departemen, 'bidan')
+		) {
+			return 'perawat';
+		}
+
+		if (
+			str_contains($jabatan, 'laborat') || 
+			str_contains($jabatan, 'analis') || 
+			str_contains($departemen, 'laborat') || 
+			str_contains($departemen, 'analis')
+		) {
+			return 'laborat';
+		}
+
+		if (
+			str_contains($jabatan, 'kasir') || 
+			str_contains($jabatan, 'keuangan') || 
+			str_contains($departemen, 'kasir') || 
+			str_contains($departemen, 'keuangan')
+		) {
+			return 'kasir';
+		}
+
+		if (
+			str_contains($jabatan, 'rekam medis') || 
+			str_contains($jabatan, 'rm') || 
+			str_contains($departemen, 'rekam medis') || 
+			str_contains($departemen, 'rm')
+		) {
+			return 'rekam_medis';
+		}
+
 		return 'petugas';
 	}
 }

@@ -74,10 +74,10 @@
 
         function tambahResep(no_rawat) {
             const formActive = $('#modalCpptRanap').hasClass('show') ? $('#formCpptRanap') : $('#formCpptRajal');
-            const kd_dokter = formActive.find('[name=nip]').val();
+            const kd_dokter = formActive.find('[name=nip]').val() || '';
             const status = $('#modalCpptRanap').hasClass('show') ? 'ranap' : 'ralan';
 
-            if (!kd_dokter || kd_dokter === '-') {
+            if (status === 'ralan' && (!kd_dokter || kd_dokter === '-')) {
                 return Swal.fire('Peringatan', 'Silahkan pilih dokter terlebih dahulu', 'warning');
             }
 
