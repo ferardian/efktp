@@ -161,7 +161,7 @@
                         .attr('data-tgl_masuk', data.tgl_masuk)
                         .attr('data-jam_masuk', data.jam_masuk)
                         .attr('data-stts_pulang', data.stts_pulang)
-                        .attr('data-no_rkm_medis', data.reg_periksa.no_rkm_medis);
+                        .attr('data-no_rkm_medis', data.reg_periksa?.no_rkm_medis || '');
                 },
                 columns: [{
                     title: '',
@@ -193,7 +193,7 @@
 
                         let btn = `<div class="d-flex align-items-center gap-1">
                                     <button class="btn btn-success btn-sm" type="button" onclick="cpptRanap('${data}')" title="CPPT"><i class="ti ti-pencil"></i></button>
-                                    <button class="btn btn-primary btn-sm" type="button" onclick="riwayat('${row.reg_periksa.no_rkm_medis}')" title="Riwayat Perawatan"><i class="ti ti-folder-open"></i></button>
+                                    <button class="btn btn-primary btn-sm" type="button" onclick="riwayat('${row.reg_periksa?.no_rkm_medis || ''}')" title="Riwayat Perawatan"><i class="ti ti-folder-open"></i></button>
                                     <div class="dropdown">
                                         <button class="btn btn-sm ${btnErmClass} dropdown-toggle px-2 d-inline-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Menu ERM & Dokumen Klinis ${hasErm ? '(' + totalErmCount + ' Dokumen)' : ''}">
                                             <i class="ti ti-notes"></i>${badgeBtn}
@@ -249,12 +249,8 @@
                         title: 'No. Rawat',
                         data: 'no_rawat',
                         render: (data, type, row, meta) => {
-                            if (!row.reg_periksa.pasien) {
-                                alertErrorAjax({
-                                    title: 'Error',
-                                    status: 404,
-                                    statusText: `Gagal memuat pasien ${row.no_rawat} dengan No. RM ${row.reg_periksa.no_rkm_medis}, periksa kembali data registrasi`
-                                })
+                            if (!row.reg_periksa || !row.reg_periksa.pasien) {
+                                return `<span class="text-danger fw-bold" title="Data registrasi atau pasien tidak ditemukan">${data} <i class="ti ti-alert-triangle"></i></span>`;
                             }
                             return data;
                         }
@@ -262,65 +258,79 @@
                     {
                         title: 'No. RM',
                         data: 'reg_periksa.no_rkm_medis',
+                        defaultContent: '-',
                         render: (data, type, row, meta) => {
-                            return data;
+                            return data || row.reg_periksa?.no_rkm_medis || '-';
                         }
                     },
                     {
                         title: 'Nama',
                         data: 'reg_periksa.pasien.nm_pasien',
+                        defaultContent: '-',
                         render: (data, type, row, meta) => {
-                            return `${data} (${row.reg_periksa.pasien.jk})`;
+                            const pasien = row.reg_periksa?.pasien;
+                            if (!pasien) {
+                                return `<span class="badge bg-danger-lt text-danger" title="No. RM ${row.reg_periksa?.no_rkm_medis || '-'}: Data pasien tidak ditemukan di master pasien"><i class="ti ti-alert-triangle me-1"></i>Pasien Tidak Ditemukan</span>`;
+                            }
+                            return `${pasien.nm_pasien || '-'} (${pasien.jk || '-'})`;
                         }
                     },
                     {
                         title: 'Umur',
                         data: 'reg_periksa',
+                        defaultContent: '-',
                         render: (data, type, row, meta) => {
-                            return `${data.umurdaftar} ${data.sttsumur}`;
+                            if (!data) return '-';
+                            return `${data.umurdaftar || 0} ${data.sttsumur || ''}`;
                         }
                     },
                     {
                         title: 'Dokter',
                         data: 'reg_periksa.dokter.nm_dokter',
+                        defaultContent: '-',
                         render: (data, type, row, meta) => {
-                            return data;
+                            return data || row.reg_periksa?.dokter?.nm_dokter || '-';
                         }
                     },
                     {
                         title: 'Dx Awal',
                         data: 'diagnosa_awal',
+                        defaultContent: '-',
                         render: (data, type, row, meta) => {
-                            return data;
+                            return data || '-';
                         }
                     },
                     {
                         title: 'Dx Akhir',
                         data: 'diagnosa_akhir',
+                        defaultContent: '-',
                         render: (data, type, row, meta) => {
-                            return data;
+                            return data || '-';
                         }
                     },
                     {
                         title: 'Kamar',
                         data: 'kamar.bangsal.nm_bangsal',
+                        defaultContent: '-',
                         render: (data, type, row, meta) => {
-                            return data;
+                            return data || row.kamar?.bangsal?.nm_bangsal || '-';
                         }
                     },
 
                     {
                         title: 'Lama',
                         data: 'lama',
+                        defaultContent: '0',
                         render: (data, type, row, meta) => {
-                            return `${data} Hari`;
+                            return `${data || 0} Hari`;
                         }
                     },
                     {
                         title: 'Asuransi',
                         data: 'reg_periksa.penjab.png_jawab',
+                        defaultContent: '-',
                         render: (data, type, row, meta) => {
-                            return setTextPenjab(data);
+                            return setTextPenjab(data || row.reg_periksa?.penjab?.png_jawab || '-');
                         }
                     },
                     {
