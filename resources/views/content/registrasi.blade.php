@@ -46,6 +46,14 @@
                                     data-bs-toggle="modal"><i class="ti ti-users me-2"></i>Pasien
                             </button>
                         </div>
+                        <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 d-flex align-items-center ps-2">
+                            <label class="form-check form-switch mb-0 cursor-pointer user-select-none" title="Urutkan pasien yang belum diperiksa di posisi paling atas tanpa menyembunyikan pasien yang sudah diperiksa">
+                                <input class="form-check-input me-2" type="checkbox" id="checkPrioritasBelum" name="prioritas_belum" value="1">
+                                <span class="form-check-label fw-bold text-primary" style="font-size: 0.88rem;">
+                                    <i class="ti ti-arrow-up-circle me-1"></i>Prioritas Belum Periksa
+                                </span>
+                            </label>
+                        </div>
                     </div>
                 </form>
             </div>

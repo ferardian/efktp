@@ -132,28 +132,32 @@ class RegPeriksaController extends Controller
 	function get(Request $req): JsonResponse
 	{
 
-		if ($req->tglAwal || $req->tglAkhir) {
-			$regPeriksa = $this->regPeriksa->with($this->relation)
-				->whereBetween('tgl_registrasi', [
-					date('Y-m-d', strtotime($req->tglAwal)),
-					date('Y-m-d', strtotime($req->tglAkhir))
-				])
-				->orderBy('tgl_registrasi', 'DESC')
-				->orderBy('no_reg', 'ASC')
-				->orderBy('jam_reg', 'ASC');
-		} else {
-			$regPeriksa = $this->regPeriksa->with($this->relation)
-				->where('tgl_registrasi', date('Y-m-d'))
-				->orderBy('tgl_registrasi', 'DESC')
-				->orderBy('no_reg', 'ASC')
-				->orderBy('jam_reg', 'ASC');
+		$tglAwal = $req->tglAwal ? date('Y-m-d', strtotime($req->tglAwal)) : date('Y-m-d');
+		$tglAkhir = $req->tglAkhir ? date('Y-m-d', strtotime($req->tglAkhir)) : date('Y-m-d');
+		$isPrioritasBelum = $req->prioritas_belum === 'true' || $req->prioritas_belum === true || $req->prioritas_belum == '1' || $req->prioritas_belum === 1;
+
+		$regPeriksa = $this->regPeriksa->with($this->relation)
+			->whereBetween('tgl_registrasi', [$tglAwal, $tglAkhir]);
+
+		if ($isPrioritasBelum) {
+			$regPeriksa = $regPeriksa->orderByRaw("CASE 
+				WHEN stts = 'Belum' THEN 0 
+				WHEN stts = 'Berkas Diterima' THEN 1 
+				WHEN stts = 'Dirawat' THEN 2 
+				WHEN stts = 'Sudah' THEN 3 
+				ELSE 4 
+			END ASC");
 		}
+
+		$regPeriksa = $regPeriksa->orderBy('tgl_registrasi', 'DESC')
+			->orderBy('no_reg', 'ASC')
+			->orderBy('jam_reg', 'ASC');
 
 		if ($req->dokter) {
 			$regPeriksa = $regPeriksa->where('kd_dokter', $req->dokter);
 		}
 		if ($req->stts) {
-		 $regPeriksa = $regPeriksa->where('stts', $req->stts);
+		 	$regPeriksa = $regPeriksa->where('stts', $req->stts);
 		}
 
 		if ($req->poli) {
@@ -169,7 +173,7 @@ class RegPeriksaController extends Controller
 				'buktiAnestesiSignin',
 				'perencanaanPemulangan',
 			]);
-			return DataTables::of($regPeriksa)
+			$dt = DataTables::of($regPeriksa)
 				->filter(function ($query) use ($req) {
 					if ($req->has('search') && $req->get('search')['value']) {
 						$searchValue = $req->get('search')['value'];
@@ -204,10 +208,24 @@ class RegPeriksaController extends Controller
 							  });
 						});
 					}
+				});
 
+			if ($isPrioritasBelum) {
+				$dt->order(function ($query) {
+					$query->orderByRaw("CASE 
+						WHEN stts = 'Belum' THEN 0 
+						WHEN stts = 'Berkas Diterima' THEN 1 
+						WHEN stts = 'Dirawat' THEN 2 
+						WHEN stts = 'Sudah' THEN 3 
+						ELSE 4 
+					END ASC")
+					->orderBy('tgl_registrasi', 'DESC')
+					->orderBy('no_reg', 'ASC')
+					->orderBy('jam_reg', 'ASC');
+				});
+			}
 
-				})
-				->make(true);
+			return $dt->make(true);
 		}
 		return response()->json($regPeriksa->get(), 200);
 	}

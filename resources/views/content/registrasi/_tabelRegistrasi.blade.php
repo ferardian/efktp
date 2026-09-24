@@ -21,6 +21,7 @@
         const dokterLocal = localStorage.getItem('dokter') ? JSON.parse(localStorage.getItem('dokter')) : isDokter;
         const poliLocal = localStorage.getItem('poli') ? JSON.parse(localStorage.getItem('poli')) : "";
         const statusLocal = localStorage.getItem('stts') ? localStorage.getItem('stts') : '';
+        const prioritasLocal = localStorage.getItem('prioritas_belum') === '1';
 
         $(document).ready(() => {
             isObjectEmpty(isDokter) ? localStorage.setItem('dokter', !isObjectEmpty(dokterLocal) ? JSON.stringify(dokterLocal) : isDokter) : '';
@@ -33,7 +34,8 @@
             selectFilterDokter.append(optDokter)
             selectFilterPoli.append(optPoli)
             changeStatusColor(selectFilterStts.val())
-            loadTabelRegistrasi(inputTglAwal.val(), inputTglAkhir.val(), selectFilterStts.val(), selectFilterDokter.val(), selectFilterPoli.val());
+            $('#checkPrioritasBelum').prop('checked', prioritasLocal);
+            loadTabelRegistrasi(inputTglAwal.val(), inputTglAkhir.val(), selectFilterStts.val(), selectFilterDokter.val(), selectFilterPoli.val(), prioritasLocal);
         })
 
         selectFilterDokter.on('change', (e) => {
@@ -71,6 +73,12 @@
             loadTabelRegistrasi(inputTglAwal.val(), inputTglAkhir.val(), stts, selectFilterDokter.val(), selectFilterPoli.val());
             localStorage.setItem('stts', stts ? stts : '');
         })
+
+        $('#checkPrioritasBelum').on('change', function () {
+            const isChecked = $(this).is(':checked');
+            localStorage.setItem('prioritas_belum', isChecked ? '1' : '0');
+            loadTabelRegistrasi(inputTglAwal.val(), inputTglAkhir.val(), selectFilterStts.val(), selectFilterDokter.val(), selectFilterPoli.val(), isChecked);
+        });
 
         function changeStatusColor(status) {
             const select2Selection = selectFilterStts.next().find('.select2-selection');
@@ -124,7 +132,10 @@
             loadTabelRegistrasi(tglAwal, tglAkhir, selectFilterStts.val(), selectFilterDokter.val(), selectFilterPoli.val());
         })
 
-        function loadTabelRegistrasi(tglAwal = '', tglAkhir = '', stts = '', dokter = '', poli = '') {
+        function loadTabelRegistrasi(tglAwal = '', tglAkhir = '', stts = '', dokter = '', poli = '', prioritasBelum = null) {
+            if (prioritasBelum === null) {
+                prioritasBelum = $('#checkPrioritasBelum').is(':checked');
+            }
             console.log(setTableHeight())
             const tabelRegistrasi = new DataTable('#tabelRegistrasi', {
                 responsive: true,
@@ -146,6 +157,7 @@
                         stts: stts,
                         dokter: dokter,
                         poli: poli,
+                        prioritas_belum: prioritasBelum ? 1 : 0,
                     },
                 },
                 createdRow: (row, data, index) => {
