@@ -63,7 +63,7 @@
         .footer { font-size: 9px; margin-top: 6px; }
     </style>
 </head>
-<body onload="window.print()">
+<body>
     <div class="text-center header">
         <h1>{{ $setting->nama_instansi ?? 'KLINIK / FASILITAS KESEHATAN' }}</h1>
         <p>{{ $setting->alamat_instansi ?? '' }}</p>

@@ -516,7 +516,9 @@
     </div>
 
 </div>
+@endsection
 
+@push('modals')
 <!-- Modal Loket Ticket Dialog -->
 <div class="modal fade" id="modalLoketTicket" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered">
@@ -539,13 +541,13 @@
                 Kembali ke menu awal dalam <strong id="modalLoketCountdown">8</strong> detik
             </div>
 
-            <button type="button" class="btn btn-touch btn-touch-primary w-100 py-3 fs-4" onclick="closeLoketModal()">
+            <button type="button" class="btn btn-touch btn-touch-primary w-100 py-3 fs-4" id="btnSelesaiLoket" data-bs-dismiss="modal" onclick="closeLoketModal()">
                 <i class="ti ti-check me-1"></i> Selesai
             </button>
         </div>
     </div>
 </div>
-@endsection
+@endpush
 
 @push('scripts')
 <script>
@@ -1027,7 +1029,7 @@
                     // Show Modal
                     $('#modalLoketLayanan').text(res.data.layanan);
                     $('#modalLoketNomor').text(res.data.nomor_antrean);
-                    $('#modalLoketTicket').modal('show');
+                    showLoketModal();
 
                     // Update live badge counter on card
                     if (jenis === 'A') {
@@ -1065,9 +1067,60 @@
         });
     }
 
-    function closeLoketModal() {
-        if (loketCountdownInterval) clearInterval(loketCountdownInterval);
-        $('#modalLoketTicket').modal('hide');
+    function getLoketModalInstance() {
+        const modalEl = document.getElementById('modalLoketTicket');
+        if (!modalEl) return null;
+        if (window.bootstrap && bootstrap.Modal) {
+            return bootstrap.Modal.getOrCreateInstance(modalEl, {
+                backdrop: 'static',
+                keyboard: false
+            });
+        }
+        return null;
     }
+
+    function showLoketModal() {
+        const instance = getLoketModalInstance();
+        if (instance) {
+            instance.show();
+        } else {
+            $('#modalLoketTicket').modal('show');
+        }
+    }
+
+    function closeLoketModal() {
+        if (loketCountdownInterval) {
+            clearInterval(loketCountdownInterval);
+            loketCountdownInterval = null;
+        }
+        const instance = getLoketModalInstance();
+        if (instance) {
+            instance.hide();
+        } else {
+            $('#modalLoketTicket').modal('hide');
+        }
+
+        // Failsafe cleanup: immediately remove any leftover backdrop and restore interactive pointer events
+        setTimeout(() => {
+            $('.modal-backdrop').remove();
+            $('body').removeClass('modal-open').removeAttr('style');
+        }, 250);
+    }
+
+    // Event listener when modal is hidden
+    $('#modalLoketTicket').on('hidden.bs.modal', function () {
+        if (loketCountdownInterval) {
+            clearInterval(loketCountdownInterval);
+            loketCountdownInterval = null;
+        }
+        $('.modal-backdrop').remove();
+        $('body').removeClass('modal-open').removeAttr('style');
+    });
+
+    // Ensure button click immediately triggers closeLoketModal
+    $(document).on('click', '#btnSelesaiLoket', function(e) {
+        e.preventDefault();
+        closeLoketModal();
+    });
 </script>
 @endpush

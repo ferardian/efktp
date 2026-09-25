@@ -434,6 +434,21 @@
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         }
 
+        /* Modal Z-Index & Interactive Backdrop Stacking */
+        .modal {
+            z-index: 1060 !important;
+        }
+        .modal-backdrop {
+            z-index: 1050 !important;
+        }
+        .modal-dialog {
+            z-index: 1065 !important;
+            position: relative;
+        }
+        .modal-content {
+            pointer-events: auto !important;
+        }
+
         /* Hidden Print Frame */
         #printFrame {
             display: none;
@@ -623,6 +638,7 @@
         </div>
     </footer>
 
+    <!-- Modals -->
     <!-- Idle Warning Modal (Auto Reset) -->
     <div class="modal fade" id="idleModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered">
@@ -636,10 +652,10 @@
                 </p>
                 <div class="display-3 fw-bolder text-warning mb-4" id="idleCountdown">10</div>
                 <div class="d-flex justify-content-center gap-3">
-                    <button type="button" class="btn btn-touch btn-touch-primary px-4 py-2" id="btnStayActive">
+                    <button type="button" class="btn btn-touch btn-touch-primary px-4 py-2" id="btnStayActive" data-bs-dismiss="modal">
                         <i class="ti ti-hand-click me-1"></i> Ya, Lanjutkan
                     </button>
-                    <button type="button" class="btn btn-touch btn-touch-secondary px-4 py-2" id="btnResetNow">
+                    <button type="button" class="btn btn-touch btn-touch-secondary px-4 py-2" id="btnResetNow" data-bs-dismiss="modal">
                         <i class="ti ti-x me-1"></i> Selesai
                     </button>
                 </div>
@@ -647,12 +663,13 @@
         </div>
     </div>
 
-    <!-- Hidden Iframe for Thermal Printing -->
-    <iframe id="printFrame"></iframe>
+    @stack('modals')
 
-    <!-- Scripts (Correct Paths) -->
+    <!-- Hidden Iframe for Thermal Printing -->
+    <iframe id="printFrame" style="position: absolute; width: 0; height: 0; border: none; visibility: hidden;"></iframe>
+
+    <!-- Scripts (tabler.min.js includes Bootstrap 5 natively) -->
     <script src="{{ asset('js/jQuery/jquery.min.js') }}"></script>
-    <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('js/tabler.min.js') }}"></script>
     <script src="{{ asset('js/sweetalert/sweetalert2@11.js') }}"></script>
 
@@ -662,6 +679,12 @@
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             }
+        });
+
+        // Global Modal Backdrop & Focus Guard Cleanup
+        $(document).on('hidden.bs.modal', '.modal', function () {
+            $('.modal-backdrop').remove();
+            $('body').removeClass('modal-open').removeAttr('style');
         });
 
         // Web Audio Synthesizer for pleasant tactile sound feedback
@@ -810,16 +833,23 @@
 
         // Thermal Print via Hidden Iframe
         function triggerThermalPrint(url) {
-            const frame = document.getElementById('printFrame');
-            frame.src = url;
-            frame.onload = function() {
-                try {
-                    frame.contentWindow.focus();
-                    frame.contentWindow.print();
-                } catch(e) {
-                    console.error('Print error:', e);
-                }
-            };
+            try {
+                let frame = document.getElementById('printFrame');
+                if (!frame) return;
+                frame.onload = function() {
+                    try {
+                        frame.contentWindow.focus();
+                        frame.contentWindow.print();
+                    } catch(e) {
+                        console.warn('Silent print notice:', e);
+                    }
+                    // Return focus immediately so touch & clicks stay active
+                    window.focus();
+                };
+                frame.src = url;
+            } catch(e) {
+                console.error('Trigger print error:', e);
+            }
         }
     </script>
 
