@@ -14,22 +14,23 @@
     <!-- Tabler CSS -->
     <link rel="stylesheet" href="{{ asset('css/tabler.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/tabler-icon/tabler-icons.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('js/sweetalert/sweetalert2.min.css') }}">
 
     <style>
         :root {
-            --kiosk-bg: #090e1a;
-            --kiosk-surface: #0f172a;
-            --kiosk-surface-card: #141e33;
-            --kiosk-border: rgba(255, 255, 255, 0.08);
+            --kiosk-bg: #f8fafc;
+            --kiosk-surface: #ffffff;
+            --kiosk-surface-subtle: #f1f5f9;
+            --kiosk-border: #e2e8f0;
+            --kiosk-border-focus: #0d9488;
             --kiosk-primary: #0d9488;
             --kiosk-primary-hover: #0f766e;
             --kiosk-accent: #2563eb;
             --kiosk-accent-hover: #1d4ed8;
-            --kiosk-emerald: #10b981;
-            --kiosk-amber: #f59e0b;
-            --kiosk-text-main: #f8fafc;
-            --kiosk-text-muted: #94a3b8;
+            --kiosk-emerald: #059669;
+            --kiosk-amber: #d97706;
+            --kiosk-text-main: #0f172a;
+            --kiosk-text-muted: #64748b;
+            --kiosk-text-secondary: #475569;
         }
 
         * {
@@ -42,9 +43,9 @@
             font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--kiosk-bg);
             background-image: 
-                radial-gradient(at 0% 0%, rgba(13, 148, 136, 0.15) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(37, 99, 235, 0.12) 0px, transparent 50%),
-                radial-gradient(at 50% 50%, rgba(15, 23, 42, 0.6) 0px, transparent 100%);
+                radial-gradient(at 0% 0%, rgba(13, 148, 136, 0.06) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(37, 99, 235, 0.05) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, #ffffff 0px, transparent 100%);
             color: var(--kiosk-text-main);
             min-height: 100vh;
             margin: 0;
@@ -54,16 +55,15 @@
             flex-direction: column;
         }
 
-        /* Top Kiosk Header */
+        /* Top Kiosk Header (Light & Crisp) */
         .kiosk-header {
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            background: #ffffff;
             border-bottom: 1px solid var(--kiosk-border);
             padding: 1rem 2rem;
             position: sticky;
             top: 0;
             z-index: 100;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
         }
 
         .kiosk-brand-logo {
@@ -71,48 +71,51 @@
             height: 58px;
             object-fit: contain;
             border-radius: 12px;
-            background: rgba(255, 255, 255, 0.05);
+            background: #ffffff;
             padding: 4px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
         }
 
         .kiosk-title {
             font-size: 1.35rem;
             font-weight: 800;
             letter-spacing: -0.02em;
-            color: #ffffff;
+            color: #0f172a;
             margin: 0;
             line-height: 1.2;
         }
 
         .kiosk-subtitle {
-            font-size: 0.85rem;
-            color: var(--kiosk-text-muted);
+            font-size: 0.88rem;
+            color: #64748b;
             margin: 0;
+            font-weight: 500;
         }
 
         .kiosk-clock-badge {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--kiosk-border);
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
             padding: 0.5rem 1.25rem;
             border-radius: 9999px;
             display: inline-flex;
             align-items: center;
             gap: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
         }
 
         .kiosk-clock-time {
-            font-size: 1.4rem;
-            font-weight: 700;
+            font-size: 1.35rem;
+            font-weight: 800;
             font-variant-numeric: tabular-nums;
-            color: #38bdf8;
+            color: #0284c7;
             letter-spacing: 0.05em;
         }
 
         .kiosk-clock-date {
-            font-size: 0.85rem;
-            color: #cbd5e1;
-            font-weight: 500;
+            font-size: 0.88rem;
+            color: #475569;
+            font-weight: 600;
         }
 
         .live-pulse {
@@ -136,21 +139,21 @@
             }
         }
 
-        /* Tactile Touch Cards & Buttons */
+        /* Tactile Touch Cards (Pristine White Surface) */
         .touch-card {
-            background: var(--kiosk-surface-card);
+            background: #ffffff;
             border: 1px solid var(--kiosk-border);
             border-radius: 20px;
             transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             position: relative;
             overflow: hidden;
-            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
         }
 
         .touch-card:hover {
-            border-color: rgba(13, 148, 136, 0.4);
-            box-shadow: 0 20px 40px -15px rgba(13, 148, 136, 0.25);
-            transform: translateY(-3px);
+            border-color: #cbd5e1;
+            box-shadow: 0 16px 30px -10px rgba(13, 148, 136, 0.12), 0 4px 12px -2px rgba(0, 0, 0, 0.04);
+            transform: translateY(-2px);
         }
 
         .touch-card:active {
@@ -167,7 +170,6 @@
             align-items: center;
             justify-content: center;
             gap: 0.75rem;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             cursor: pointer;
             border: none;
         }
@@ -177,47 +179,52 @@
         }
 
         .btn-touch-primary {
-            background: linear-gradient(135deg, #0d9488 0%, #059669 100%);
-            color: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+            color: #ffffff !important;
+            box-shadow: 0 6px 20px rgba(13, 148, 136, 0.28);
         }
 
         .btn-touch-primary:hover {
-            background: linear-gradient(135deg, #0f766e 0%, #047857 100%);
-            color: #ffffff;
-            box-shadow: 0 8px 25px rgba(13, 148, 136, 0.4);
+            background: linear-gradient(135deg, #0f766e 0%, #115e59 100%);
+            box-shadow: 0 8px 25px rgba(13, 148, 136, 0.38);
         }
 
         .btn-touch-blue {
             background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-            color: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff !important;
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.28);
         }
 
         .btn-touch-blue:hover {
             background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
-            color: #ffffff;
-            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
+            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.38);
         }
 
         .btn-touch-emerald {
             background: linear-gradient(135deg, #059669 0%, #047857 100%);
-            color: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff !important;
+            box-shadow: 0 6px 20px rgba(5, 150, 105, 0.28);
+        }
+
+        .btn-touch-emerald:hover {
+            background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+            box-shadow: 0 8px 25px rgba(5, 150, 105, 0.38);
         }
 
         .btn-touch-secondary {
-            background: rgba(255, 255, 255, 0.08);
-            color: #e2e8f0;
-            border: 1px solid var(--kiosk-border);
+            background: #ffffff;
+            color: #334155;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
         }
 
         .btn-touch-secondary:hover {
-            background: rgba(255, 255, 255, 0.14);
-            color: #ffffff;
+            background: #f8fafc;
+            color: #0f172a;
+            border-color: #94a3b8;
         }
 
-        /* Virtual Numpad */
+        /* Virtual Numpad (Clean Light Styling) */
         .numpad-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -229,70 +236,72 @@
         .numpad-key {
             height: 64px;
             font-size: 1.65rem;
-            font-weight: 700;
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #ffffff;
+            font-weight: 800;
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            color: #0f172a;
             border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             transition: all 0.15s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
         }
 
         .numpad-key:active {
-            background: rgba(13, 148, 136, 0.35);
-            border-color: #0d9488;
+            background: #e2e8f0;
+            border-color: #cbd5e1;
             transform: scale(0.94);
         }
 
         .numpad-key.key-action {
-            background: rgba(255, 255, 255, 0.03);
-            font-size: 1rem;
-            font-weight: 600;
-            color: #94a3b8;
+            background: #f8fafc;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #64748b;
         }
 
         .numpad-key.key-delete {
-            color: #f87171;
-            background: rgba(239, 68, 68, 0.1);
-            border-color: rgba(239, 68, 68, 0.2);
+            color: #dc2626;
+            background: #fef2f2;
+            border-color: #fecaca;
         }
 
         .numpad-key.key-delete:active {
-            background: rgba(239, 68, 68, 0.3);
+            background: #fee2e2;
             border-color: #ef4444;
         }
 
-        /* Input screen */
+        /* Input Screen (Clean & Legible) */
         .kiosk-display-input {
-            background: rgba(0, 0, 0, 0.4);
-            border: 2px solid rgba(13, 148, 136, 0.4);
+            background: #ffffff;
+            border: 2.5px solid #0d9488;
             border-radius: 16px;
-            font-size: 2rem;
+            font-size: 2.1rem;
             font-weight: 800;
-            letter-spacing: 0.15em;
+            letter-spacing: 0.12em;
             text-align: center;
-            color: #38bdf8;
-            padding: 0.75rem 1rem;
+            color: #0f172a;
+            padding: 0.85rem 1rem;
             font-variant-numeric: tabular-nums;
-            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
-            transition: border-color 0.2s;
+            box-shadow: 0 4px 15px rgba(13, 148, 136, 0.1);
+            transition: all 0.2s;
         }
 
         .kiosk-display-input:focus {
-            border-color: #38bdf8;
+            border-color: #0f766e;
             outline: none;
-            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5), 0 0 15px rgba(56, 189, 248, 0.3);
+            box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.18);
         }
 
         /* Idle Warning Modal */
         #idleModal .modal-content {
-            background: #141e33;
-            border: 1px solid rgba(245, 158, 11, 0.4);
-            color: #ffffff;
+            background: #ffffff;
+            border: 1px solid #f59e0b;
+            color: #0f172a;
             border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         }
 
         /* Hidden Print Frame */
@@ -308,68 +317,75 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 6px 14px;
+            padding: 7px 16px;
             border-radius: 9999px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--kiosk-border);
-            color: var(--kiosk-text-muted);
+            font-size: 0.88rem;
+            font-weight: 700;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            color: #64748b;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
         }
 
         .step-pill.active {
-            background: rgba(13, 148, 136, 0.2);
+            background: #ccfbf1;
             border-color: #0d9488;
-            color: #2dd4bf;
+            color: #0f766e;
         }
 
         .step-pill.completed {
-            background: rgba(16, 185, 129, 0.15);
+            background: #dcfce7;
             border-color: #10b981;
-            color: #34d399;
+            color: #15803d;
         }
 
         /* Poliklinik & Doctor Cards */
         .poli-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--kiosk-border);
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
             border-radius: 16px;
-            padding: 1.25rem;
+            padding: 1.35rem;
             cursor: pointer;
             transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
         }
 
         .poli-card:hover {
-            background: rgba(13, 148, 136, 0.1);
-            border-color: rgba(13, 148, 136, 0.4);
+            background: #f0fdfa;
+            border-color: #0d9488;
             transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(13, 148, 136, 0.12);
         }
 
         .poli-card.selected {
-            background: rgba(13, 148, 136, 0.2);
+            background: #f0fdfa;
             border-color: #0d9488;
-            box-shadow: 0 0 20px rgba(13, 148, 136, 0.25);
+            border-width: 2.5px;
+            box-shadow: 0 0 20px rgba(13, 148, 136, 0.18);
         }
 
         .doctor-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--kiosk-border);
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
             border-radius: 14px;
-            padding: 1rem;
+            padding: 1.15rem;
             cursor: pointer;
             transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
         }
 
         .doctor-card:hover {
-            background: rgba(37, 99, 235, 0.1);
-            border-color: rgba(37, 99, 235, 0.4);
+            background: #eff6ff;
+            border-color: #2563eb;
             transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.12);
         }
 
         .doctor-card.selected {
-            background: rgba(37, 99, 235, 0.2);
+            background: #eff6ff;
             border-color: #2563eb;
-            box-shadow: 0 0 20px rgba(37, 99, 235, 0.25);
+            border-width: 2.5px;
+            box-shadow: 0 0 20px rgba(37, 99, 235, 0.18);
         }
 
         /* Thermal Ticket Preview Modal */
@@ -379,8 +395,9 @@
             border-radius: 12px;
             padding: 24px;
             font-family: 'Courier New', Courier, monospace;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             position: relative;
+            border: 1px solid #e2e8f0;
         }
 
         .ticket-receipt-card::before,
@@ -408,11 +425,10 @@
         .kiosk-footer {
             margin-top: auto;
             border-top: 1px solid var(--kiosk-border);
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(12px);
-            padding: 0.75rem 2rem;
-            color: var(--kiosk-text-muted);
-            font-size: 0.85rem;
+            background: #ffffff;
+            padding: 0.85rem 2rem;
+            color: #64748b;
+            font-size: 0.88rem;
         }
     </style>
     @stack('styles')
@@ -443,12 +459,12 @@
                 <div class="kiosk-clock-badge d-none d-md-inline-flex">
                     <span class="live-pulse"></span>
                     <span class="kiosk-clock-time" id="kioskClock">--:--:--</span>
-                    <span class="text-secondary">|</span>
+                    <span class="text-muted">|</span>
                     <span class="kiosk-clock-date" id="kioskDate">--------</span>
                 </div>
 
                 <button class="btn btn-touch-secondary px-3 py-2" id="btnFullscreen" title="Layar Penuh">
-                    <i class="ti ti-maximize fs-2"></i>
+                    <i class="ti ti-maximize fs-2 text-secondary"></i>
                 </button>
 
                 <a href="{{ url('/') }}" class="btn btn-touch-secondary px-3 py-2 text-danger" title="Kembali ke Sistem SIMPUS" id="btnExitKiosk">
@@ -467,12 +483,12 @@
     <footer class="kiosk-footer text-center">
         <div class="container-fluid d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2">
             <div>
-                <span class="fw-semibold text-white">Anjungan Pendaftaran Mandiri (APM)</span> · Sentuh layar untuk berinteraksi
+                <span class="fw-bold text-dark">Anjungan Pendaftaran Mandiri (APM)</span> · Sentuh layar untuk berinteraksi
             </div>
             <div class="d-flex align-items-center gap-3 text-secondary">
-                <span><i class="ti ti-printer me-1"></i> Printer Thermal Siap</span>
+                <span><i class="ti ti-printer text-teal me-1"></i> Printer Thermal Siap</span>
                 <span>·</span>
-                <span><i class="ti ti-shield-check me-1"></i> Terintegrasi BPJS & SIMPUS</span>
+                <span><i class="ti ti-shield-check text-success me-1"></i> Terintegrasi BPJS & SIMPUS</span>
             </div>
         </div>
     </footer>
@@ -484,7 +500,7 @@
                 <div class="mb-3 text-warning">
                     <i class="ti ti-clock-pause" style="font-size: 4rem;"></i>
                 </div>
-                <h3 class="fw-bold mb-2">Apakah Anda Masih di Sini?</h3>
+                <h3 class="fw-bold mb-2 text-dark">Apakah Anda Masih di Sini?</h3>
                 <p class="text-secondary mb-3">
                     Layar akan kembali ke menu awal secara otomatis demi keamanan privasi data dalam:
                 </p>
@@ -504,11 +520,11 @@
     <!-- Hidden Iframe for Thermal Printing -->
     <iframe id="printFrame"></iframe>
 
-    <!-- Scripts -->
-    <script src="{{ asset('js/jQuery/jquery-3.6.0.min.js') }}"></script>
+    <!-- Scripts (Correct Paths) -->
+    <script src="{{ asset('js/jQuery/jquery.min.js') }}"></script>
     <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('js/tabler.min.js') }}"></script>
-    <script src="{{ asset('js/sweetalert/sweetalert2.all.min.js') }}"></script>
+    <script src="{{ asset('js/sweetalert/sweetalert2@11.js') }}"></script>
 
     <script>
         // Setup CSRF header
@@ -551,7 +567,6 @@
                     if (!this.ctx) return;
                     if (this.ctx.state === 'suspended') this.ctx.resume();
                     const now = this.ctx.currentTime;
-                    // Play a pleasant two-tone chord
                     [587.33, 880].forEach((freq, i) => {
                         const osc = this.ctx.createOscillator();
                         const gain = this.ctx.createGain();
@@ -568,7 +583,7 @@
             }
         };
 
-        // Tap sound on any touch button
+        // Tap sound on touch interactions
         $(document).on('click', '.btn, .numpad-key, .touch-card, .poli-card, .doctor-card', function() {
             AudioFeedback.tap();
         });
@@ -597,11 +612,11 @@
             }
         });
 
-        // Idle Detector & Auto Reset (60s inactivity on sub-screens)
+        // Idle Detector & Auto Reset (45s inactivity on sub-screens)
         let idleTime = 0;
         let idleInterval = null;
         let countdownInterval = null;
-        let isSubScreenActive = false; // Set to true when user enters registration wizard
+        let isSubScreenActive = false;
 
         function resetIdleTimer() {
             idleTime = 0;
@@ -617,7 +632,7 @@
                     return;
                 }
                 idleTime += 1;
-                if (idleTime >= 45) { // 45 seconds of inactivity
+                if (idleTime >= 45) {
                     showIdleWarning();
                 }
             }, 1000);
