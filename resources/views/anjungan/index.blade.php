@@ -108,7 +108,7 @@
                     <div>
                         <div class="d-flex align-items-center justify-content-between mb-3">
                             <span class="badge bg-primary-lt text-primary px-3 py-1 fs-5 fw-bold">
-                                <i class="ti ti-bolt me-1"></i> OPSI 2 · TANPA ANTRE LOKET
+                                <i class="ti ti-bolt me-1"></i> OPSI 2
                             </span>
                             <div class="text-primary fs-1">
                                 <i class="ti ti-device-touch"></i>
