@@ -751,16 +751,36 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // Fullscreen Toggle
+        // Fullscreen Mode Manager with Auto-Restore
+        let isKioskFullscreenPreferred = false;
+
+        function updateFullscreenIcon() {
+            if (document.fullscreenElement) {
+                $('#btnFullscreen').find('i').removeClass('ti-maximize').addClass('ti-minimize');
+            } else {
+                $('#btnFullscreen').find('i').removeClass('ti-minimize').addClass('ti-maximize');
+            }
+        }
+
+        document.addEventListener('fullscreenchange', updateFullscreenIcon);
+
         $('#btnFullscreen').on('click', function() {
             if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(() => {});
-                $(this).find('i').removeClass('ti-maximize').addClass('ti-minimize');
+                document.documentElement.requestFullscreen().then(() => {
+                    isKioskFullscreenPreferred = true;
+                }).catch(() => {});
             } else {
+                isKioskFullscreenPreferred = false;
                 if (document.exitFullscreen) {
                     document.exitFullscreen().catch(() => {});
-                    $(this).find('i').removeClass('ti-minimize').addClass('ti-maximize');
                 }
+            }
+        });
+
+        // Automatically re-engage fullscreen on the next touch/click if preferred (e.g. after print preview)
+        $(document).on('click pointerdown touchstart', function() {
+            if (isKioskFullscreenPreferred && !document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
             }
         });
 
