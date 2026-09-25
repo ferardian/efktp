@@ -59,6 +59,13 @@
                     <div class="form-footer">
                         <button type="submit" class="btn btn-primary w-100">Masuk</button>
                     </div>
+                    <div class="hr-text my-3">atau</div>
+                    <div>
+                        <a href="{{ route('anjungan.index') }}" class="btn btn-outline-teal w-100 d-flex align-items-center justify-content-center gap-2 py-2">
+                            <i class="ti ti-device-touch fs-2"></i>
+                            <span>Buka Anjungan Mandiri (APM)</span>
+                        </a>
+                    </div>
                 </form>
             </div>
         </div>

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Anjungan\AnjunganController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BahasaPasienController;
 use App\Http\Controllers\Bridging as Bridging;
@@ -114,6 +115,16 @@ Route::get('/setting/ppk', [SettingController::class, 'getKodePPK']);
 Route::get('/registrasi/get/panggil', [RegPeriksaController::class, 'getPanggil']);
 Route::post('/registrasi/update', [RegPeriksaController::class, 'update']);
 Route::get('/registrasi/bukti/print', [RegPeriksaController::class, 'print']);
+
+// Anjungan Pendaftaran Mandiri (APM) - Standalone Public Kiosk
+Route::prefix('anjungan')->group(function () {
+	Route::get('/', [AnjunganController::class, 'index'])->name('anjungan.index');
+	Route::post('/antrean-loket', [AnjunganController::class, 'getAntreanLoket'])->name('anjungan.antrean.loket');
+	Route::post('/cek-pasien', [AnjunganController::class, 'cekPasien'])->name('anjungan.cek.pasien');
+	Route::get('/jadwal-poli', [AnjunganController::class, 'getJadwalPoli'])->name('anjungan.jadwal.poli');
+	Route::post('/daftar-mandiri', [AnjunganController::class, 'daftarMandiri'])->name('anjungan.daftar.mandiri');
+	Route::get('/cetak-struk/{jenis}/{id}', [AnjunganController::class, 'cetakStruk'])->name('anjungan.cetak.struk')->where('id', '.*');
+});
 
 Route::middleware('auth:web,admin')->group(function () {
 
