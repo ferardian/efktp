@@ -630,8 +630,8 @@
             <div>
                 <span class="fw-bold text-dark">Anjungan Pendaftaran Mandiri (APM)</span> · Sentuh layar untuk berinteraksi
             </div>
-            <div class="d-flex align-items-center gap-3 text-secondary">
-                <span><i class="ti ti-shield-check text-success me-1"></i> Terintegrasi BPJS & SIMPUS</span>
+            <div class="text-secondary fs-5">
+                <span>{{ $setting->nama_instansi ?? '' }}</span>
             </div>
         </div>
     </footer>
