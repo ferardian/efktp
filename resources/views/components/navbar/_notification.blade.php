@@ -12,10 +12,10 @@
     </a>
     <div class="dropdown-menu dropdown-menu-arrow dropdown-menu-end shadow-lg p-0" id="notif-dropdown-menu" style="min-width: 380px; max-width: 420px; font-size: 11px; z-index: 1060;">
         <!-- Header -->
-        <div class="card-header d-flex justify-content-between align-items-center py-2 px-3 border-bottom bg-surface">
+        <div class="card-header d-flex justify-content-between align-items-center py-2 px-3 border-bottom">
             <div>
-                <span class="fw-bold text-dark fs-3"><i class="ti ti-bell-ringing text-primary me-1"></i> Selesai Periksa</span>
-                <span class="badge bg-primary-subtle text-primary ms-1" id="notif-header-count">0</span>
+                <span class="fw-bold fs-3 notif-patient-name"><i class="ti ti-bell-ringing text-primary me-1"></i> Selesai Periksa</span>
+                <span class="badge bg-primary text-white ms-1 px-2" id="notif-header-count">0</span>
             </div>
             <div class="d-flex align-items-center gap-1">
                 <a href="{{ url('/kasir/ralan') }}" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 10px;">
@@ -112,7 +112,29 @@
         }
     }
     .notif-item-hover:hover {
-        background-color: rgba(32, 107, 196, 0.06);
+        background-color: rgba(32, 107, 196, 0.08);
+    }
+    #notif-dropdown-menu .notif-patient-name {
+        color: #1e293b !important;
+    }
+    [data-bs-theme="dark"] #notif-dropdown-menu .notif-patient-name,
+    header[data-bs-theme="dark"] #notif-dropdown-menu .notif-patient-name,
+    body[data-bs-theme="dark"] #notif-dropdown-menu .notif-patient-name,
+    .theme-dark #notif-dropdown-menu .notif-patient-name {
+        color: #f8fafc !important;
+    }
+    #notif-dropdown-menu .notif-meta-text {
+        color: #64748b !important;
+    }
+    [data-bs-theme="dark"] #notif-dropdown-menu .notif-meta-text,
+    header[data-bs-theme="dark"] #notif-dropdown-menu .notif-meta-text,
+    body[data-bs-theme="dark"] #notif-dropdown-menu .notif-meta-text,
+    .theme-dark #notif-dropdown-menu .notif-meta-text {
+        color: #cbd5e1 !important;
+    }
+    #notif-dropdown-menu .list-group-item {
+        background-color: transparent !important;
+        border-color: rgba(125, 125, 125, 0.15) !important;
     }
 </style>
 
@@ -372,8 +394,8 @@
             data.forEach(item => {
                 const jam = item.jam_selesai || item.jam_reg || '-';
                 const penjaminBadge = item.png_jawab && item.png_jawab.toLowerCase().includes('bpjs')
-                    ? '<span class="badge bg-success-subtle text-success border border-success" style="font-size: 8.5px;">BPJS</span>'
-                    : `<span class="badge bg-secondary-subtle text-secondary" style="font-size: 8.5px;">${item.png_jawab || 'Umum'}</span>`;
+                    ? '<span class="badge bg-green text-white" style="font-size: 8.5px; padding: 2px 6px;">BPJS</span>'
+                    : `<span class="badge bg-secondary text-white" style="font-size: 8.5px; padding: 2px 6px;">${item.png_jawab || 'Umum'}</span>`;
 
                 const urlKasir = `{{ url('/kasir/ralan') }}?search=${encodeURIComponent(item.no_rawat)}&auto_select=1`;
 
@@ -381,19 +403,19 @@
                     <div class="list-group-item p-2 notif-item-hover border-bottom">
                         <div class="d-flex justify-content-between align-items-start mb-1">
                             <div>
-                                <span class="fw-bold text-dark fs-4">${item.nm_pasien}</span>
-                                <span class="text-muted ms-1 small">(${item.no_rkm_medis})</span>
+                                <span class="fw-bold fs-4 notif-patient-name">${item.nm_pasien}</span>
+                                <span class="notif-meta-text ms-1 small">(${item.no_rkm_medis})</span>
                             </div>
                             <span class="badge bg-info-subtle text-info border border-info" style="font-size: 9px;" title="Jam Selesai Periksa">
                                 <i class="ti ti-clock me-1"></i>${jam}
                             </span>
                         </div>
-                        <div class="small text-muted d-flex justify-content-between align-items-center mb-1">
+                        <div class="small notif-meta-text d-flex justify-content-between align-items-center mb-1">
                             <span><i class="ti ti-building-hospital me-1 text-primary"></i>${item.nm_poli}</span>
                             ${penjaminBadge}
                         </div>
-                        <div class="small text-muted d-flex justify-content-between align-items-center">
-                            <span><i class="ti ti-stethoscope me-1 text-secondary"></i>${item.nm_dokter}</span>
+                        <div class="small notif-meta-text d-flex justify-content-between align-items-center">
+                            <span><i class="ti ti-stethoscope me-1 text-info"></i>${item.nm_dokter}</span>
                             <a href="${urlKasir}" class="btn btn-sm btn-primary py-0 px-2 d-inline-flex align-items-center" style="font-size: 9.5px;">
                                 <i class="ti ti-cash me-1"></i> Kasir
                             </a>
@@ -404,7 +426,7 @@
 
             if (totalCount > data.length) {
                 html += `
-                    <div class="text-center p-2 bg-light-subtle">
+                    <div class="text-center p-2 border-top" style="background-color: rgba(125, 125, 125, 0.05);">
                         <a href="{{ url('/kasir/ralan') }}" class="text-primary fw-semibold" style="font-size: 10px;">
                             Lihat ${totalCount - data.length} pasien lainnya di Kasir Ralan &raquo;
                         </a>
@@ -434,8 +456,8 @@
                         </div>
                         <button type="button" class="btn-close btn-close-sm" style="font-size: 9px;" onclick="$('#${toastId}').fadeOut(250, function(){ $(this).remove(); });"></button>
                     </div>
-                    <div class="fw-bold text-dark fs-4 mb-0">${patient.nm_pasien}</div>
-                    <div class="small text-muted d-flex justify-content-between align-items-center mt-1">
+                    <div class="fw-bold fs-4 mb-0 notif-patient-name">${patient.nm_pasien}</div>
+                    <div class="small notif-meta-text d-flex justify-content-between align-items-center mt-1">
                         <span><i class="ti ti-stethoscope me-1 text-primary"></i>${patient.nm_dokter}</span>
                         <span class="text-muted"><i class="ti ti-clock me-1"></i>${jam}</span>
                     </div>
