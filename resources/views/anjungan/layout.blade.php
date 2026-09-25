@@ -631,8 +631,6 @@
                 <span class="fw-bold text-dark">Anjungan Pendaftaran Mandiri (APM)</span> · Sentuh layar untuk berinteraksi
             </div>
             <div class="d-flex align-items-center gap-3 text-secondary">
-                <span><i class="ti ti-printer text-teal me-1"></i> Printer Thermal Siap</span>
-                <span>·</span>
                 <span><i class="ti ti-shield-check text-success me-1"></i> Terintegrasi BPJS & SIMPUS</span>
             </div>
         </div>
