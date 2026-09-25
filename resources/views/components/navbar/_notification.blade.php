@@ -5,10 +5,7 @@
             <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
             <path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6" />
             <path d="M9 17v1a3 3 0 0 0 6 0v-1" />
-        </svg>
-        <span class="badge bg-danger text-white position-absolute top-0 start-100 badge-pill" id="notif-ralan-badge" style="display: none; font-size: 0.65rem; padding: 2px 5px; transform: translate(-40%, -20%) !important; border: 1.5px solid #fff;">
-            0
-        </span>
+        <span id="notif-ralan-badge" style="display: none;"></span>
     </a>
     <div class="dropdown-menu dropdown-menu-arrow dropdown-menu-end shadow-lg p-0" id="notif-dropdown-menu" style="min-width: 380px; max-width: 420px; font-size: 11px; z-index: 1060;">
         <!-- Header -->
@@ -83,6 +80,30 @@
         animation: bellRing 0.8s ease-in-out infinite;
         transform-origin: top center;
         color: #e03131 !important;
+    }
+    #notif-ralan-badge {
+        position: absolute !important;
+        top: 2px !important;
+        right: 0px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        min-width: 17px !important;
+        height: 17px !important;
+        padding: 0 4px !important;
+        box-sizing: border-box !important;
+        font-size: 9.5px !important;
+        font-weight: 700 !important;
+        line-height: 1 !important;
+        letter-spacing: 0 !important;
+        text-align: center !important;
+        color: #ffffff !important;
+        background-color: #d63939 !important;
+        border-radius: 9999px !important;
+        border: 2px solid #ffffff !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+        transform: translate(25%, -25%) !important;
+        pointer-events: none !important;
     }
     .notif-toast-card {
         pointer-events: auto;
@@ -405,7 +426,7 @@
                     $('#notif-header-count').text(count);
 
                     if (count > 0) {
-                        badge.text(count > 99 ? '99+' : count).show();
+                        badge.text(count > 99 ? '99+' : count).css('display', 'inline-flex');
                     } else {
                         badge.hide();
                         bellIcon.removeClass('bell-ring-anim');
