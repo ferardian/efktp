@@ -62,7 +62,7 @@
 
                     <div class="d-flex flex-column gap-3 mt-4">
                         <!-- Button BPJS -->
-                        <button type="button" class="btn btn-touch btn-touch-emerald p-3 p-xl-4 text-start justify-content-between" onclick="ambilAntreanLoket('A')">
+                        <button type="button" class="btn btn-touch btn-touch-emerald p-3 p-xl-4 text-start justify-content-between" id="btnAmbilLoketA" onclick="ambilAntreanLoket('A')">
                             <div class="d-flex align-items-center gap-3">
                                 <div class="bg-white text-success rounded-circle p-2 d-flex align-items-center justify-content-center shadow-sm" style="width: 54px; height: 54px;">
                                     <i class="ti ti-shield-check fs-1"></i>
@@ -81,7 +81,7 @@
                         </button>
 
                         <!-- Button Umum -->
-                        <button type="button" class="btn btn-touch btn-touch-blue p-3 p-xl-4 text-start justify-content-between" onclick="ambilAntreanLoket('B')">
+                        <button type="button" class="btn btn-touch btn-touch-blue p-3 p-xl-4 text-start justify-content-between" id="btnAmbilLoketB" onclick="ambilAntreanLoket('B')">
                             <div class="d-flex align-items-center gap-3">
                                 <div class="bg-white text-primary rounded-circle p-2 d-flex align-items-center justify-content-center shadow-sm" style="width: 54px; height: 54px;">
                                     <i class="ti ti-wallet fs-1"></i>
@@ -520,7 +520,7 @@
 
 @push('modals')
 <!-- Modal Loket Ticket Dialog -->
-<div class="modal fade" id="modalLoketTicket" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+<div class="modal fade" id="modalLoketTicket" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" data-bs-focus="false">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content touch-card text-center p-4 p-md-5 bg-white">
             <div class="mb-2 text-teal">
@@ -541,7 +541,7 @@
                 Kembali ke menu awal dalam <strong id="modalLoketCountdown">8</strong> detik
             </div>
 
-            <button type="button" class="btn btn-touch btn-touch-primary w-100 py-3 fs-4" id="btnSelesaiLoket" data-bs-dismiss="modal" onclick="closeLoketModal()">
+            <button type="button" class="btn btn-touch btn-touch-primary w-100 py-3 fs-4" id="btnSelesaiLoket" data-bs-dismiss="modal">
                 <i class="ti ti-check me-1"></i> Selesai
             </button>
         </div>
@@ -1007,29 +1007,18 @@
 
     // Ambil Antrean Loket (A or B)
     function ambilAntreanLoket(jenis) {
-        Swal.fire({
-            title: 'Mencetak Nomor Antrean...',
-            text: 'Mohon tunggu sebentar',
-            allowOutsideClick: false,
-            didOpen: () => { Swal.showLoading(); }
-        });
+        const targetBtn = jenis === 'A' ? $('#btnAmbilLoketA') : $('#btnAmbilLoketB');
+        if (targetBtn.prop('disabled')) return;
+        targetBtn.prop('disabled', true).addClass('opacity-75');
 
         $.ajax({
             url: '{{ route("anjungan.antrean.loket") }}',
             type: 'POST',
             data: { jenis: jenis },
             success: function(res) {
-                Swal.close();
+                targetBtn.prop('disabled', false).removeClass('opacity-75');
                 if (res.success) {
                     AudioFeedback.success();
-
-                    // Trigger thermal print
-                    triggerThermalPrint('{{ url("anjungan/cetak-struk/loket") }}/' + res.data.id);
-
-                    // Show Modal
-                    $('#modalLoketLayanan').text(res.data.layanan);
-                    $('#modalLoketNomor').text(res.data.nomor_antrean);
-                    showLoketModal();
 
                     // Update live badge counter on card
                     if (jenis === 'A') {
@@ -1039,6 +1028,16 @@
                         let currentB = parseInt($('#badgeLoketB').text().replace(/[^0-9]/g, '')) || 0;
                         $('#badgeLoketB').html('<i class="ti ti-ticket me-1"></i> ' + (currentB + 1) + ' Antrean');
                     }
+
+                    // Update modal content
+                    $('#modalLoketLayanan').text(res.data.layanan);
+                    $('#modalLoketNomor').text(res.data.nomor_antrean);
+
+                    // Show Modal
+                    showLoketModal();
+
+                    // Trigger thermal print
+                    triggerThermalPrint('{{ url("anjungan/cetak-struk/loket") }}/' + res.data.id);
 
                     // Auto close modal countdown
                     let seconds = 8;
@@ -1054,7 +1053,7 @@
                 }
             },
             error: function(xhr) {
-                Swal.close();
+                targetBtn.prop('disabled', false).removeClass('opacity-75');
                 const res = xhr.responseJSON;
                 const msg = res && res.message ? res.message : 'Gagal membuat tiket antrean loket.';
                 Swal.fire({
@@ -1073,7 +1072,8 @@
         if (window.bootstrap && bootstrap.Modal) {
             return bootstrap.Modal.getOrCreateInstance(modalEl, {
                 backdrop: 'static',
-                keyboard: false
+                keyboard: false,
+                focus: false
             });
         }
         return null;
@@ -1084,7 +1084,7 @@
         if (instance) {
             instance.show();
         } else {
-            $('#modalLoketTicket').modal('show');
+            $('#modalLoketTicket').modal({ backdrop: 'static', keyboard: false, focus: false }).modal('show');
         }
     }
 
@@ -1104,7 +1104,7 @@
         setTimeout(() => {
             $('.modal-backdrop').remove();
             $('body').removeClass('modal-open').removeAttr('style');
-        }, 250);
+        }, 200);
     }
 
     // Event listener when modal is hidden
@@ -1117,9 +1117,9 @@
         $('body').removeClass('modal-open').removeAttr('style');
     });
 
-    // Ensure button click immediately triggers closeLoketModal
-    $(document).on('click', '#btnSelesaiLoket', function(e) {
-        e.preventDefault();
+    // Ensure button click immediately triggers closeLoketModal on any pointer event
+    $(document).on('click pointerdown touchstart', '#btnSelesaiLoket', function(e) {
+        e.stopPropagation();
         closeLoketModal();
     });
 </script>

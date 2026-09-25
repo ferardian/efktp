@@ -668,8 +668,9 @@
     <!-- Hidden Iframe for Thermal Printing -->
     <iframe id="printFrame" style="position: absolute; width: 0; height: 0; border: none; visibility: hidden;"></iframe>
 
-    <!-- Scripts (tabler.min.js includes Bootstrap 5 natively) -->
+    <!-- Scripts -->
     <script src="{{ asset('js/jQuery/jquery.min.js') }}"></script>
+    <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('js/tabler.min.js') }}"></script>
     <script src="{{ asset('js/sweetalert/sweetalert2@11.js') }}"></script>
 
@@ -831,22 +832,46 @@
 
         startIdleMonitor();
 
-        // Thermal Print via Hidden Iframe
+        // Thermal Print via Dynamic Temporary Iframe with Instant Teardown
         function triggerThermalPrint(url) {
             try {
-                let frame = document.getElementById('printFrame');
-                if (!frame) return;
-                frame.onload = function() {
-                    try {
-                        frame.contentWindow.focus();
-                        frame.contentWindow.print();
-                    } catch(e) {
-                        console.warn('Silent print notice:', e);
-                    }
-                    // Return focus immediately so touch & clicks stay active
-                    window.focus();
+                // Remove any previous print frame to prevent stale focus locks
+                $('#printFrame').remove();
+
+                const iframe = document.createElement('iframe');
+                iframe.id = 'printFrame';
+                iframe.style.position = 'fixed';
+                iframe.style.right = '0';
+                iframe.style.bottom = '0';
+                iframe.style.width = '0';
+                iframe.style.height = '0';
+                iframe.style.border = 'none';
+                iframe.style.opacity = '0';
+                iframe.style.pointerEvents = 'none';
+                document.body.appendChild(iframe);
+
+                iframe.onload = function() {
+                    setTimeout(() => {
+                        try {
+                            iframe.contentWindow.focus();
+                            iframe.contentWindow.print();
+                        } catch(e) {
+                            console.warn('Print notification:', e);
+                        } finally {
+                            // Immediately restore focus to main window and ticket action button
+                            window.focus();
+                            document.body.focus();
+                            const btn = document.getElementById('btnSelesaiLoket');
+                            if (btn) btn.focus();
+                            // Teardown the iframe so Chrome completely releases focus lock
+                            setTimeout(() => {
+                                $(iframe).remove();
+                            }, 400);
+                        }
+                    }, 50);
                 };
-                frame.src = url;
+
+                iframe.src = url;
             } catch(e) {
                 console.error('Trigger print error:', e);
             }
