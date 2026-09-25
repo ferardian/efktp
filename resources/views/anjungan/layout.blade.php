@@ -160,30 +160,57 @@
             transform: scale(0.985);
         }
 
-        /* Touch Interactive Guide Badge */
+        /* Touch Interactive Guide Badge (Elevated & Tactile) */
         .touch-guide-badge {
-            background: #ffffff;
-            border: 1.5px solid #99f6e4;
+            background: linear-gradient(135deg, #ffffff 0%, #f0fdfa 100%);
+            border: 1.5px solid #0d9488;
             border-radius: 9999px;
-            padding: 0.45rem 1.15rem;
+            padding: 0.5rem 1.25rem;
             display: inline-flex;
             align-items: center;
-            gap: 0.75rem;
-            box-shadow: 0 4px 14px -2px rgba(13, 148, 136, 0.12);
+            gap: 0.85rem;
+            box-shadow: 
+                0 10px 25px -4px rgba(13, 148, 136, 0.22),
+                0 4px 6px -2px rgba(0, 0, 0, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.95);
+            position: relative;
+            transition: all 0.25s ease;
         }
 
         .touch-icon-pulse {
-            width: 32px;
-            height: 32px;
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
             background: linear-gradient(135deg, #0d9488 0%, #059669 100%);
             color: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.15rem;
-            box-shadow: 0 2px 8px rgba(13, 148, 136, 0.35);
-            animation: touch-bounce 1.6s infinite ease-in-out;
+            font-size: 1.3rem;
+            box-shadow: 0 4px 12px rgba(13, 148, 136, 0.4);
+            position: relative;
+            flex-shrink: 0;
+            animation: touch-bounce 1.8s infinite ease-in-out;
+        }
+
+        .touch-icon-pulse::before {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            border: 2px solid rgba(13, 148, 136, 0.65);
+            animation: touch-ripple 1.8s infinite cubic-bezier(0, 0.2, 0.8, 1);
+        }
+
+        @keyframes touch-ripple {
+            0% {
+                transform: scale(0.9);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1.6);
+                opacity: 0;
+            }
         }
 
         @keyframes touch-bounce {
@@ -191,22 +218,76 @@
                 transform: translateY(0) scale(1);
             }
             50% {
-                transform: translateY(-2px) scale(1.08);
-                box-shadow: 0 5px 12px rgba(13, 148, 136, 0.45);
+                transform: translateY(-3px) scale(1.06);
             }
         }
 
-        .touch-guide-text {
-            font-size: 0.95rem;
-            color: #0f766e;
-            font-weight: 600;
-            letter-spacing: -0.01em;
-            line-height: 1.2;
+        .touch-guide-content {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+            line-height: 1.25;
         }
 
-        .touch-guide-text strong {
-            color: #0f172a;
+        .touch-guide-label {
+            font-size: 0.72rem;
             font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #0d9488;
+        }
+
+        .touch-guide-action {
+            font-size: 0.98rem;
+            font-weight: 700;
+            color: #0f172a;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .touch-guide-action .highlight {
+            color: #0d9488;
+            font-weight: 800;
+        }
+
+        .touch-guide-arrow {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: #ccfbf1;
+            color: #0f766e;
+            font-size: 0.95rem;
+            animation: arrow-bounce 1.5s infinite ease-in-out;
+        }
+
+        @keyframes arrow-bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(3px);
+            }
+        }
+
+        /* High-Clarity Typography for Kiosk Screen (No Flatness) */
+        .text-secondary {
+            color: #475569 !important;
+        }
+
+        .touch-card p.text-secondary {
+            color: #334155 !important;
+            font-size: 1.15rem;
+            line-height: 1.6;
+        }
+
+        .touch-card p.text-secondary strong {
+            color: #0f172a !important;
+            font-weight: 700;
         }
 
         .btn-touch {

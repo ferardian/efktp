@@ -18,14 +18,20 @@
                                 Pendaftaran & Antrean Pasien
                             </h2>
                         </div>
-                        <div class="d-none d-md-block">
+                        <div class="d-flex align-items-center">
                             <div class="touch-guide-badge">
                                 <span class="touch-icon-pulse">
                                     <i class="ti ti-hand-finger"></i>
                                 </span>
-                                <div class="touch-guide-text">
-                                    <strong>Sentuh Layar</strong> pada Tombol Pilihan di Bawah
+                                <div class="touch-guide-content">
+                                    <span class="touch-guide-label">Instruksi Kiosk</span>
+                                    <span class="touch-guide-action">
+                                        <span class="highlight">Sentuh Layar</span> pada Pilihan Opsi di Bawah
+                                    </span>
                                 </div>
+                                <span class="touch-guide-arrow">
+                                    <i class="ti ti-arrow-down"></i>
+                                </span>
                             </div>
                         </div>
                     </div>
