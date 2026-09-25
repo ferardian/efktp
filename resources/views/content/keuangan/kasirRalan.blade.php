@@ -594,6 +594,23 @@
             antreanDataList = response.data || [];
             $('#totalAntreanBadge').text(antreanDataList.length + ' Pasien');
             renderAntreanList(antreanDataList);
+
+            // Jika dibuka dari notifikasi dengan parameter search / no_rawat
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchParam = urlParams.get('search') || urlParams.get('no_rawat') || urlParams.get('keyword');
+            if (searchParam && !window._hasAutoSelectedFromUrl) {
+                window._hasAutoSelectedFromUrl = true;
+                $('#search_pasien').val(searchParam);
+                filterAntreanLocal();
+                if (urlParams.get('auto_select') === '1') {
+                    const matched = antreanDataList.find(i => i.no_rawat === searchParam || i.no_rkm_medis === searchParam);
+                    if (matched) {
+                        selectPasienKasir(matched.no_rawat);
+                    } else if (antreanDataList.length > 0) {
+                        selectPasienKasir(antreanDataList[0].no_rawat);
+                    }
+                }
+            }
         }).fail(() => {
             listContainer.html('<div class="text-center text-danger p-4"><i class="ti ti-x"></i> Gagal memuat antrean</div>');
         });

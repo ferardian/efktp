@@ -202,4 +202,5 @@ return [
 	'bpjsKode' => env('BPJS_KODE'),
 	'billing_note' => env('BILLING_NOTE'),
 	'enable_menu_role' => env('ENABLE_MENU_ROLE', false),
+	'notifikasi_selesai_ralan' => env('NOTIFIKASI_SELESAI_RALAN', true),
 ];

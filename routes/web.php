@@ -222,6 +222,7 @@ Route::middleware('auth:web,admin')->group(function () {
     Route::get('/keuangan/pembayaran-ralan/data', [\App\Http\Controllers\Keuangan\PembayaranRalanController::class, 'getData']);
     Route::get('/keuangan/pembayaran-ralan/export-pdf', [\App\Http\Controllers\Keuangan\PembayaranRalanController::class, 'exportPdf']);
     Route::get('/keuangan/pembayaran-ralan/export-excel', [\App\Http\Controllers\Keuangan\PembayaranRalanController::class, 'exportExcel']);
+    Route::get('/notifikasi/ralan-selesai', [\App\Http\Controllers\NotifikasiRalanController::class, 'getAntreanSelesai']);
 
 	// JADWAL PRAKTEK
 	Route::get('/master/jadwal', [JadwalController::class, 'index']);
