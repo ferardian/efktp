@@ -9,18 +9,24 @@
         <div class="row mb-4">
             <div class="col-12">
                 <div class="touch-card px-4 py-3 p-lg-4" style="background: linear-gradient(135deg, #ffffff 0%, #f0fdfa 100%); border-left: 6px solid #0d9488;">
-                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
                         <div>
                             <span class="badge bg-teal-lt text-teal mb-1 px-3 py-1 fw-bold fs-6">
                                 <i class="ti ti-building-hospital me-1"></i> Pelayanan Pasien Mandiri
                             </span>
-                            <h2 class="h1 fw-extrabold text-dark mb-0">
+                            <h2 class="display-6 fw-extrabold text-dark mb-0" style="letter-spacing: -0.02em;">
                                 Pendaftaran & Antrean Pasien
                             </h2>
                         </div>
-                        <div class="text-secondary fs-5 d-none d-md-flex align-items-center gap-2">
-                            <i class="ti ti-device-touch text-teal fs-2"></i>
-                            <span>Sentuh layar pada tombol opsi di bawah untuk memulai</span>
+                        <div class="d-none d-md-block">
+                            <div class="touch-guide-badge">
+                                <span class="touch-icon-pulse">
+                                    <i class="ti ti-hand-finger"></i>
+                                </span>
+                                <div class="touch-guide-text">
+                                    <strong>Sentuh Layar</strong> pada Tombol Pilihan di Bawah
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -160,6 +160,55 @@
             transform: scale(0.985);
         }
 
+        /* Touch Interactive Guide Badge */
+        .touch-guide-badge {
+            background: #ffffff;
+            border: 1.5px solid #99f6e4;
+            border-radius: 9999px;
+            padding: 0.45rem 1.15rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            box-shadow: 0 4px 14px -2px rgba(13, 148, 136, 0.12);
+        }
+
+        .touch-icon-pulse {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0d9488 0%, #059669 100%);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            box-shadow: 0 2px 8px rgba(13, 148, 136, 0.35);
+            animation: touch-bounce 1.6s infinite ease-in-out;
+        }
+
+        @keyframes touch-bounce {
+            0%, 100% {
+                transform: translateY(0) scale(1);
+            }
+            50% {
+                transform: translateY(-2px) scale(1.08);
+                box-shadow: 0 5px 12px rgba(13, 148, 136, 0.45);
+            }
+        }
+
+        .touch-guide-text {
+            font-size: 0.95rem;
+            color: #0f766e;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            line-height: 1.2;
+        }
+
+        .touch-guide-text strong {
+            color: #0f172a;
+            font-weight: 800;
+        }
+
         .btn-touch {
             border-radius: 14px;
             padding: 1rem 1.75rem;
