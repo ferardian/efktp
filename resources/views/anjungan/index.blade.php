@@ -5,37 +5,22 @@
 
     <!-- HOME VIEW (Default Screen) -->
     <div id="viewHome">
-        <!-- Welcome Hero Banner (Clean Light Healthcare Style) -->
+        <!-- Header Banner (Clean, Minimal, Professional) -->
         <div class="row mb-4">
             <div class="col-12">
-                <div class="touch-card p-4 p-lg-5" style="background: linear-gradient(135deg, #ffffff 0%, #f0fdfa 100%); border-left: 6px solid #0d9488;">
-                    <div class="row align-items-center">
-                        <div class="col-md-8">
-                            <span class="badge bg-teal-lt text-teal mb-2 px-3 py-1 fw-bold fs-5">
-                                <i class="ti ti-heart-handshake me-1"></i> Pelayanan Pendaftaran Mandiri
+                <div class="touch-card px-4 py-3 p-lg-4" style="background: linear-gradient(135deg, #ffffff 0%, #f0fdfa 100%); border-left: 6px solid #0d9488;">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div>
+                            <span class="badge bg-teal-lt text-teal mb-1 px-3 py-1 fw-bold fs-6">
+                                <i class="ti ti-building-hospital me-1"></i> Pelayanan Pasien Mandiri
                             </span>
-                            <h2 class="display-6 fw-extrabold text-dark mb-2">
-                                Layanan Cepat, Praktis, & Nyaman
+                            <h2 class="h1 fw-extrabold text-dark mb-0">
+                                Pendaftaran & Antrean Pasien
                             </h2>
-                            <p class="text-secondary fs-4 mb-0">
-                                Silakan pilih layanan: <strong>Ambil Antrean Loket</strong> bagi pasien baru / administrasi, atau <strong>Pendaftaran Mandiri</strong> bagi pasien lama yang sudah memiliki nomor rekam medis.
-                            </p>
                         </div>
-                        <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                            <div class="d-inline-flex flex-column gap-2 bg-white p-3 rounded-3 border border-secondary-subtle shadow-sm">
-                                <div class="d-flex align-items-center justify-content-between gap-3 text-secondary">
-                                    <span class="fw-semibold"><i class="ti ti-ticket me-1 text-teal"></i> Loket BPJS (A):</span>
-                                    <span class="badge bg-teal fs-6" id="badgeLoketA">{{ $antreanLoketA }}</span>
-                                </div>
-                                <div class="d-flex align-items-center justify-content-between gap-3 text-secondary">
-                                    <span class="fw-semibold"><i class="ti ti-ticket me-1 text-primary"></i> Loket Umum (B):</span>
-                                    <span class="badge bg-primary fs-6" id="badgeLoketB">{{ $antreanLoketB }}</span>
-                                </div>
-                                <div class="d-flex align-items-center justify-content-between gap-3 text-secondary">
-                                    <span class="fw-semibold"><i class="ti ti-stethoscope me-1 text-success"></i> Pasien Poli Hari Ini:</span>
-                                    <span class="badge bg-success fs-6" id="badgeReg">{{ $registrasiHariIni }}</span>
-                                </div>
-                            </div>
+                        <div class="text-secondary fs-5 d-none d-md-flex align-items-center gap-2">
+                            <i class="ti ti-device-touch text-teal fs-2"></i>
+                            <span>Sentuh layar pada tombol opsi di bawah untuk memulai</span>
                         </div>
                     </div>
                 </div>
@@ -75,7 +60,12 @@
                                     <div class="fs-5 text-white-50">Ambil Tiket Loket Kode A</div>
                                 </div>
                             </div>
-                            <i class="ti ti-chevron-right fs-1 text-white"></i>
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="badge bg-white text-success fw-bold px-3 py-2 fs-5 rounded-pill shadow-sm" id="badgeLoketA">
+                                    <i class="ti ti-ticket me-1"></i> {{ $antreanLoketA }} Antrean
+                                </span>
+                                <i class="ti ti-chevron-right fs-1 text-white"></i>
+                            </div>
                         </button>
 
                         <!-- Button Umum -->
@@ -89,7 +79,12 @@
                                     <div class="fs-5 text-white-50">Ambil Tiket Loket Kode B</div>
                                 </div>
                             </div>
-                            <i class="ti ti-chevron-right fs-1 text-white"></i>
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="badge bg-white text-primary fw-bold px-3 py-2 fs-5 rounded-pill shadow-sm" id="badgeLoketB">
+                                    <i class="ti ti-ticket me-1"></i> {{ $antreanLoketB }} Antrean
+                                </span>
+                                <i class="ti ti-chevron-right fs-1 text-white"></i>
+                            </div>
                         </button>
                     </div>
                 </div>
@@ -140,7 +135,12 @@
                                     <div class="fs-5 text-white-50">Sentuh di sini untuk check-in</div>
                                 </div>
                             </div>
-                            <i class="ti ti-arrow-right fs-1 text-white"></i>
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="badge bg-white text-teal fw-bold px-3 py-2 fs-5 rounded-pill shadow-sm" id="badgeReg">
+                                    <i class="ti ti-stethoscope me-1"></i> {{ $registrasiHariIni }} Terdaftar
+                                </span>
+                                <i class="ti ti-arrow-right fs-1 text-white"></i>
+                            </div>
                         </button>
                     </div>
                 </div>
@@ -945,6 +945,10 @@
 
                     goToStep(5);
 
+                    // Update live badge counter
+                    let currentReg = parseInt($('#badgeReg').text().replace(/[^0-9]/g, '')) || 0;
+                    $('#badgeReg').html('<i class="ti ti-stethoscope me-1"></i> ' + (currentReg + 1) + ' Terdaftar');
+
                     // Countdown Auto Reset (10s)
                     let timeLeft = 10;
                     $('#resCountdown').text(timeLeft);
@@ -1012,6 +1016,15 @@
                     $('#modalLoketLayanan').text(res.data.layanan);
                     $('#modalLoketNomor').text(res.data.nomor_antrean);
                     $('#modalLoketTicket').modal('show');
+
+                    // Update live badge counter on card
+                    if (jenis === 'A') {
+                        let currentA = parseInt($('#badgeLoketA').text().replace(/[^0-9]/g, '')) || 0;
+                        $('#badgeLoketA').html('<i class="ti ti-ticket me-1"></i> ' + (currentA + 1) + ' Antrean');
+                    } else {
+                        let currentB = parseInt($('#badgeLoketB').text().replace(/[^0-9]/g, '')) || 0;
+                        $('#badgeLoketB').html('<i class="ti ti-ticket me-1"></i> ' + (currentB + 1) + ' Antrean');
+                    }
 
                     // Auto close modal countdown
                     let seconds = 8;
