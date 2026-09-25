@@ -28,7 +28,7 @@
         </div>
 
         <!-- Dynamic Controls (On / Off Switch Mandiri per User) -->
-        <div class="bg-light-subtle px-3 py-1 border-bottom d-flex align-items-center justify-content-between" style="font-size: 10px;">
+        <div class="notif-controls-bar px-3 py-1 border-bottom d-flex align-items-center justify-content-between" style="font-size: 10px;">
             <div class="form-check form-switch mb-0 d-flex align-items-center me-2">
                 <input class="form-check-input me-1" type="checkbox" role="switch" id="toggle-notif-active" checked style="cursor: pointer;">
                 <label class="form-check-label user-select-none fw-semibold" for="toggle-notif-active" style="cursor: pointer;" title="Nyalakan/matikan auto-notifikasi di komputer ini">Aktif</label>
@@ -86,21 +86,47 @@
     }
     .notif-toast-card {
         pointer-events: auto;
-        background: #ffffff;
-        color: #1e293b;
-        border: 1px solid #e2e8f0;
-        border-left: 5px solid #206bc4;
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        background: #ffffff !important;
+        color: #1e293b !important;
+        border: 1px solid #cbd5e1 !important;
+        border-left: 5px solid #206bc4 !important;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.08) !important;
         border-radius: 8px;
-        padding: 10px 12px;
+        padding: 12px 14px;
         transition: all 0.3s ease;
         animation: toastSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    [data-bs-theme="dark"] .notif-toast-card {
-        background: #1e293b;
-        color: #f8fafc;
-        border-color: #334155;
+    .notif-toast-card .notif-patient-name {
+        color: #0f172a !important;
     }
+    .notif-toast-card .notif-meta-text {
+        color: #475569 !important;
+    }
+    .notif-toast-card .btn-close {
+        filter: none !important;
+    }
+
+    /* Dark Mode (hanya aktif jika body memang di-set ke mode dark) */
+    body[data-bs-theme="dark"] .notif-toast-card,
+    [data-bs-theme="dark"]#notif-toast-container .notif-toast-card {
+        background: #182234 !important;
+        color: #f8fafc !important;
+        border: 1px solid #334155 !important;
+        border-left: 5px solid #38bdf8 !important;
+    }
+    body[data-bs-theme="dark"] .notif-toast-card .notif-patient-name,
+    [data-bs-theme="dark"]#notif-toast-container .notif-toast-card .notif-patient-name {
+        color: #f8fafc !important;
+    }
+    body[data-bs-theme="dark"] .notif-toast-card .notif-meta-text,
+    [data-bs-theme="dark"]#notif-toast-container .notif-toast-card .notif-meta-text {
+        color: #cbd5e1 !important;
+    }
+    body[data-bs-theme="dark"] .notif-toast-card .btn-close,
+    [data-bs-theme="dark"]#notif-toast-container .notif-toast-card .btn-close {
+        filter: invert(1) grayscale(100%) brightness(200%) !important;
+    }
+
     @keyframes toastSlideIn {
         from {
             transform: translateX(100%);
@@ -114,23 +140,66 @@
     .notif-item-hover:hover {
         background-color: rgba(32, 107, 196, 0.08);
     }
-    #notif-dropdown-menu .notif-patient-name {
+
+    /* Tone Dropdown Menu: Default Light / Clean White matching general app */
+    #notif-dropdown-menu[data-bs-theme="light"],
+    #notif-dropdown-menu:not([data-bs-theme="dark"]) {
+        background-color: #ffffff !important;
         color: #1e293b !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
     }
-    [data-bs-theme="dark"] #notif-dropdown-menu .notif-patient-name,
-    header[data-bs-theme="dark"] #notif-dropdown-menu .notif-patient-name,
-    body[data-bs-theme="dark"] #notif-dropdown-menu .notif-patient-name,
-    .theme-dark #notif-dropdown-menu .notif-patient-name {
-        color: #f8fafc !important;
+    #notif-dropdown-menu[data-bs-theme="light"] .card-header,
+    #notif-dropdown-menu:not([data-bs-theme="dark"]) .card-header {
+        background-color: #f8fafc !important;
+        border-bottom: 1px solid #e2e8f0 !important;
     }
-    #notif-dropdown-menu .notif-meta-text {
+    #notif-dropdown-menu[data-bs-theme="light"] .notif-controls-bar,
+    #notif-dropdown-menu:not([data-bs-theme="dark"]) .notif-controls-bar {
+        background-color: #f1f5f9 !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        color: #334155 !important;
+    }
+    #notif-dropdown-menu[data-bs-theme="light"] .notif-patient-name,
+    #notif-dropdown-menu:not([data-bs-theme="dark"]) .notif-patient-name {
+        color: #0f172a !important;
+    }
+    #notif-dropdown-menu[data-bs-theme="light"] .notif-meta-text,
+    #notif-dropdown-menu:not([data-bs-theme="dark"]) .notif-meta-text {
         color: #64748b !important;
     }
-    [data-bs-theme="dark"] #notif-dropdown-menu .notif-meta-text,
-    header[data-bs-theme="dark"] #notif-dropdown-menu .notif-meta-text,
-    body[data-bs-theme="dark"] #notif-dropdown-menu .notif-meta-text,
-    .theme-dark #notif-dropdown-menu .notif-meta-text {
+    #notif-dropdown-menu[data-bs-theme="light"] .card-footer,
+    #notif-dropdown-menu:not([data-bs-theme="dark"]) .card-footer {
+        background-color: #f8fafc !important;
+        border-top: 1px solid #e2e8f0 !important;
+        color: #64748b !important;
+    }
+
+    /* Tone Dropdown Menu: Dark Mode jika user sengaja memilih tema gelap */
+    #notif-dropdown-menu[data-bs-theme="dark"] {
+        background-color: #182234 !important;
+        color: #f8fafc !important;
+        border: 1px solid #2c3b52 !important;
+    }
+    #notif-dropdown-menu[data-bs-theme="dark"] .card-header {
+        background-color: #1e293b !important;
+        border-bottom: 1px solid #2c3b52 !important;
+    }
+    #notif-dropdown-menu[data-bs-theme="dark"] .notif-controls-bar {
+        background-color: #1a2536 !important;
+        border-bottom: 1px solid #2c3b52 !important;
         color: #cbd5e1 !important;
+    }
+    #notif-dropdown-menu[data-bs-theme="dark"] .notif-patient-name {
+        color: #ffffff !important;
+    }
+    #notif-dropdown-menu[data-bs-theme="dark"] .notif-meta-text {
+        color: #94a3b8 !important;
+    }
+    #notif-dropdown-menu[data-bs-theme="dark"] .card-footer {
+        background-color: #1e293b !important;
+        border-top: 1px solid #2c3b52 !important;
+        color: #94a3b8 !important;
     }
     #notif-dropdown-menu .list-group-item {
         background-color: transparent !important;
@@ -173,6 +242,12 @@
 
         function initNotification() {
             if (typeof $ === 'undefined') return;
+
+            // Pindahkan container toast ke body agar tidak mewarisi atribut data-bs-theme="dark" dari header
+            if ($('#notif-toast-container').closest('header').length) {
+                $('body').append($('#notif-toast-container'));
+            }
+            syncNotifTheme();
 
             $('#toggle-notif-active').prop('checked', isEnabled);
             $('#toggle-notif-sound').prop('checked', isSoundOn);
@@ -225,6 +300,13 @@
                     $(document).ready(initNotification);
                 }
             });
+        }
+
+        function syncNotifTheme() {
+            const isBodyDark = $('body').attr('data-bs-theme') === 'dark' || $('body').hasClass('theme-dark') || localStorage.getItem('tablerTheme') === 'dark';
+            const theme = isBodyDark ? 'dark' : 'light';
+            $('#notif-dropdown-menu').attr('data-bs-theme', theme);
+            $('#notif-toast-container').attr('data-bs-theme', theme);
         }
 
         function updateSoundIcon() {
@@ -447,25 +529,25 @@
                 <div class="notif-toast-card" id="${toastId}">
                     <div class="d-flex justify-content-between align-items-center mb-1">
                         <div class="d-flex align-items-center gap-1">
-                            <span class="badge bg-success text-white py-0 px-1" style="font-size: 8.5px;">
+                            <span class="badge bg-green text-white py-1 px-2" style="font-size: 9px; font-weight: 600;">
                                 <i class="ti ti-check me-1"></i> Selesai Periksa
                             </span>
-                            <span class="badge bg-primary-subtle text-primary py-0 px-1" style="font-size: 8.5px;">
+                            <span class="badge bg-primary text-white py-1 px-2" style="font-size: 9px;">
                                 ${patient.nm_poli}
                             </span>
                         </div>
                         <button type="button" class="btn-close btn-close-sm" style="font-size: 9px;" onclick="$('#${toastId}').fadeOut(250, function(){ $(this).remove(); });"></button>
                     </div>
-                    <div class="fw-bold fs-4 mb-0 notif-patient-name">${patient.nm_pasien}</div>
+                    <div class="fw-bold fs-3 mb-1 notif-patient-name">${patient.nm_pasien}</div>
                     <div class="small notif-meta-text d-flex justify-content-between align-items-center mt-1">
                         <span><i class="ti ti-stethoscope me-1 text-primary"></i>${patient.nm_dokter}</span>
-                        <span class="text-muted"><i class="ti ti-clock me-1"></i>${jam}</span>
+                        <span class="notif-meta-text"><i class="ti ti-clock me-1"></i>${jam}</span>
                     </div>
-                    <div class="d-flex justify-content-end gap-2 mt-2 pt-1 border-top">
-                        <button type="button" class="btn btn-sm btn-ghost-secondary py-0 px-2" style="font-size: 10px;" onclick="$('#${toastId}').fadeOut(250, function(){ $(this).remove(); });">
+                    <div class="d-flex justify-content-end gap-2 mt-2 pt-2 border-top">
+                        <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 10px;" onclick="$('#${toastId}').fadeOut(250, function(){ $(this).remove(); });">
                             Tutup
                         </button>
-                        <a href="${urlKasir}" class="btn btn-sm btn-primary py-0 px-2" style="font-size: 10px;">
+                        <a href="${urlKasir}" class="btn btn-sm btn-primary py-1 px-3 d-inline-flex align-items-center shadow-sm" style="font-size: 10.5px; font-weight: 500;">
                             <i class="ti ti-cash me-1"></i> Proses Kasir
                         </a>
                     </div>
