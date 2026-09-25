@@ -116,6 +116,7 @@
     }
 </style>
 
+@push('script')
 <script>
     (function () {
         // Preference keys
@@ -148,8 +149,9 @@
             knownRawats = new Set();
         }
 
-        // Initialize UI switches
-        $(document).ready(function () {
+        function initNotification() {
+            if (typeof $ === 'undefined') return;
+
             $('#toggle-notif-active').prop('checked', isEnabled);
             $('#toggle-notif-sound').prop('checked', isSoundOn);
             $('#toggle-notif-toast').prop('checked', isToastOn);
@@ -191,7 +193,17 @@
             } else {
                 $('#notif-loading-state').html('<div class="text-muted"><i class="ti ti-bell-off me-1"></i> Notifikasi dinonaktifkan di perangkat ini.</div>');
             }
-        });
+        }
+
+        if (window.jQuery) {
+            $(document).ready(initNotification);
+        } else {
+            document.addEventListener('DOMContentLoaded', function () {
+                if (window.jQuery) {
+                    $(document).ready(initNotification);
+                }
+            });
+        }
 
         function updateSoundIcon() {
             if (isSoundOn) {
@@ -450,4 +462,5 @@
         }
     })();
 </script>
+@endpush
 @endif
