@@ -126,6 +126,36 @@
     .notif-toast-card .btn-close {
         filter: none !important;
     }
+    .notif-toast-card .badge,
+    #notif-dropdown-menu .badge {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        vertical-align: middle !important;
+        line-height: 1 !important;
+        padding: 3px 8px !important;
+        height: 20px !important;
+        box-sizing: border-box !important;
+        font-size: 9.5px !important;
+        letter-spacing: 0 !important;
+        font-weight: 600 !important;
+    }
+    .notif-toast-card .badge i,
+    #notif-dropdown-menu .badge i {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        line-height: 0 !important;
+        font-size: 13px !important;
+        margin-right: 4px !important;
+        margin-top: -1px !important;
+    }
+    .notif-toast-card .badge span,
+    #notif-dropdown-menu .badge span {
+        display: inline-flex !important;
+        align-items: center !important;
+        line-height: 1 !important;
+    }
 
     /* Dark Mode (hanya aktif jika body memang di-set ke mode dark) */
     body[data-bs-theme="dark"] .notif-toast-card,
@@ -497,8 +527,8 @@
             data.forEach(item => {
                 const jam = item.jam_selesai || item.jam_reg || '-';
                 const penjaminBadge = item.png_jawab && item.png_jawab.toLowerCase().includes('bpjs')
-                    ? '<span class="badge bg-green text-white" style="font-size: 8.5px; padding: 2px 6px;">BPJS</span>'
-                    : `<span class="badge bg-secondary text-white" style="font-size: 8.5px; padding: 2px 6px;">${item.png_jawab || 'Umum'}</span>`;
+                    ? '<span class="badge bg-green text-white"><span>BPJS</span></span>'
+                    : `<span class="badge bg-secondary text-white"><span>${item.png_jawab || 'Umum'}</span></span>`;
 
                 const urlKasir = `{{ url('/kasir/ralan') }}?search=${encodeURIComponent(item.no_rawat)}&auto_select=1`;
 
@@ -509,8 +539,9 @@
                                 <span class="fw-bold fs-4 notif-patient-name">${item.nm_pasien}</span>
                                 <span class="notif-meta-text ms-1 small">(${item.no_rkm_medis})</span>
                             </div>
-                            <span class="badge bg-info-subtle text-info border border-info" style="font-size: 9px;" title="Jam Selesai Periksa">
-                                <i class="ti ti-clock me-1"></i>${jam}
+                            <span class="badge bg-info-subtle text-info border border-info" title="Jam Selesai Periksa">
+                                <i class="ti ti-clock"></i>
+                                <span>${jam}</span>
                             </span>
                         </div>
                         <div class="small notif-meta-text d-flex justify-content-between align-items-center mb-1">
@@ -550,11 +581,12 @@
                 <div class="notif-toast-card" id="${toastId}">
                     <div class="d-flex justify-content-between align-items-center mb-1">
                         <div class="d-flex align-items-center gap-1">
-                            <span class="badge bg-green text-white py-1 px-2" style="font-size: 9px; font-weight: 600;">
-                                <i class="ti ti-check me-1"></i> Selesai Periksa
+                            <span class="badge bg-green text-white">
+                                <i class="ti ti-check"></i>
+                                <span>Selesai Periksa</span>
                             </span>
-                            <span class="badge bg-primary text-white py-1 px-2" style="font-size: 9px;">
-                                ${patient.nm_poli}
+                            <span class="badge bg-primary text-white">
+                                <span>${patient.nm_poli}</span>
                             </span>
                         </div>
                         <button type="button" class="btn-close btn-close-sm" style="font-size: 9px;" onclick="$('#${toastId}').fadeOut(250, function(){ $(this).remove(); });"></button>
