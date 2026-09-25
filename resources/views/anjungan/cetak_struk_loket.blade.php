@@ -60,7 +60,13 @@
         <div class="service-badge">{{ $label }}</div>
         <div class="nomor-antrean">{{ $antrean->antrian }}</div>
         <div class="meta-info">
-            {{ \Carbon\Carbon::parse($antrean->date_list)->translatedFormat('d/m/Y') }} · {{ substr($antrean->jam, 0, 5) }} WIB
+            @php
+                $jamStr = date('H:i');
+                if (!empty($antrean->kd_list) && strlen($antrean->kd_list) >= 12) {
+                    $jamStr = substr($antrean->kd_list, 6, 2) . ':' . substr($antrean->kd_list, 8, 2);
+                }
+            @endphp
+            {{ \Carbon\Carbon::parse($antrean->date_list)->translatedFormat('d/m/Y') }} · {{ $jamStr }} WIB
         </div>
     </div>
 

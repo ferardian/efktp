@@ -82,28 +82,19 @@ class AnjunganController extends Controller
         try {
             DB::beginTransaction();
 
-            // Hitung nomor urut berikutnya hari ini
-            $last = TbList::where('date_list', $today)
-                ->where('kd_layanan', $jenis)
-                ->orderBy('kd_list', 'desc')
-                ->lockForUpdate()
-                ->first();
-
-            $nextNum = 1;
-            if ($last && !empty($last->antrian)) {
-                $numOnly = (int) preg_replace('/[^0-9]/', '', $last->antrian);
-                $nextNum = $numOnly + 1;
-            }
-
-            $nomorAntrian = $jenis . sprintf('%03d', $nextNum);
-
-            $tbList = TbList::create([
+            // Insert ke tb_list (Trigger tb_list otomatis mengisi kd_list, date_list, status='Print', dan antrian)
+            DB::table('tb_list')->insert([
+                'kd_list'    => '',
                 'date_list'  => $today,
                 'kd_layanan' => $jenis,
-                'antrian'    => $nomorAntrian,
-                'jam'        => date('H:i:s'),
-                'keterangan' => 'Print',
+                'antrian'    => '',
+                'status'     => 'Print',
             ]);
+
+            $tbList = TbList::where('kd_layanan', $jenis)
+                ->where('date_list', $today)
+                ->orderBy('kd_list', 'desc')
+                ->first();
 
             DB::commit();
 
@@ -113,7 +104,7 @@ class AnjunganController extends Controller
                 'success' => true,
                 'data'    => [
                     'id'            => $tbList->kd_list,
-                    'nomor_antrean' => $nomorAntrian,
+                    'nomor_antrean' => $tbList->antrian,
                     'jenis'         => $jenis,
                     'layanan'       => $label,
                     'tanggal'       => Carbon::now()->translatedFormat('l, d F Y'),
@@ -122,7 +113,7 @@ class AnjunganController extends Controller
                     'alamat'        => $setting ? $setting->alamat_instansi : '',
                     'kontak'        => $setting ? $setting->kontak : '',
                 ],
-                'message' => "Nomor antrean {$nomorAntrian} berhasil dicetak.",
+                'message' => "Nomor antrean {$tbList->antrian} berhasil dicetak.",
             ]);
         } catch (Exception $e) {
             DB::rollBack();
@@ -130,7 +121,7 @@ class AnjunganController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengambil nomor antrean. Silakan coba lagi atau hubungi petugas.',
+                'message' => 'Gagal mengambil nomor antrean: ' . $e->getMessage(),
             ], 500);
         }
     }

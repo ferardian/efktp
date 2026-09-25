@@ -11,13 +11,16 @@ class TbList extends Model
 
     protected $table = 'tb_list';
     protected $primaryKey = 'kd_list';
+    public $incrementing = false;
+    protected $keyType = 'string';
     public $timestamps = false;
 
     protected $fillable = [
+        'kd_list',
         'date_list',
         'kd_layanan',
         'antrian',
-        'jam',
-        'keterangan',
+        'kd_loket',
+        'status',
     ];
 }
