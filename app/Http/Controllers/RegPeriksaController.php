@@ -352,8 +352,7 @@ class RegPeriksaController extends Controller
 			'almt_pj' => $request->alamatpj,
 			'stts' => 'Belum',
 			'stts_daftar' => $request->status,
-			// 'biaya_reg' => $this->poliklinik->getTarifPoliklinik($request->kd_poli),
-			'biaya_reg' => 0,
+			'biaya_reg' => $this->poliklinik->getTarifPoliklinik($request->kd_poli, $request->status, $request->kd_pj),
 			'status_lanjut' => 'Ralan',
 			'status_bayar' => 'Belum Bayar',
 			'status_poli' => $this->setStatusPoli(new Request([

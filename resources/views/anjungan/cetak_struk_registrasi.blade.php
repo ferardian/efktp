@@ -124,6 +124,13 @@
             <td class="colon">:</td>
             <td class="val">{{ $reg->no_rawat }}</td>
         </tr>
+        @if(($reg->biaya_reg ?? 0) > 0)
+        <tr>
+            <td class="label">Biaya Reg</td>
+            <td class="colon">:</td>
+            <td class="val">Rp {{ number_format($reg->biaya_reg, 0, ',', '.') }}</td>
+        </tr>
+        @endif
     </table>
 
     <div class="divider"></div>

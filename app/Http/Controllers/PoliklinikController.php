@@ -90,10 +90,19 @@ class PoliklinikController extends Controller
         $poli = $poli->get();
         return response()->json($poli);
     }
-    function getTarifPoliklinik($kd_poli): int
+    function getTarifPoliklinik($kd_poli, $status = 'Baru', $kd_pj = null): float
     {
-        $poli = Poliklinik::select('registrasi')->where('kd_poli', $kd_poli)->first();
-        return $poli->registrasi;
+        // Pasien BPJS digratiskan / tidak dikenakan biaya registrasi di FKTP
+        if ($kd_pj === 'BPJ') {
+            return 0;
+        }
+
+        $poli = Poliklinik::select('registrasi', 'registrasilama')->where('kd_poli', $kd_poli)->first();
+        if (!$poli) {
+            return 0;
+        }
+
+        return (strtolower($status) === 'lama') ? (float) $poli->registrasilama : (float) $poli->registrasi;
     }
 
     public function bulkDestroy(Request $request)

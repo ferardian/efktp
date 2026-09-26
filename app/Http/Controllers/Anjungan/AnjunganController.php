@@ -407,6 +407,15 @@ class AnjunganController extends Controller
                 $umurTh = Carbon::parse($pasien->tgl_lahir)->age;
             }
 
+            // Hitung biaya_reg otomatis dari tabel poliklinik (pasien APM mandiri berstatus Lama)
+            $biayaReg = 0;
+            if ($kdPj !== 'BPJ') {
+                $poli = Poliklinik::select('registrasi', 'registrasilama')->where('kd_poli', $request->kd_poli)->first();
+                if ($poli) {
+                    $biayaReg = (float) $poli->registrasilama;
+                }
+            }
+
             $regData = [
                 'no_reg'        => $noReg,
                 'no_rawat'      => $noRawat,
@@ -417,7 +426,7 @@ class AnjunganController extends Controller
                 'p_jawab'       => $pasien->namakeluarga ?: $pasien->nm_pasien,
                 'almt_pj'       => $pasien->alamatpj ?: ($pasien->alamat ?: '-'),
                 'hubunganpj'    => $pasien->keluarga ?: 'Diri Sendiri',
-                'biaya_reg'     => 0,
+                'biaya_reg'     => $biayaReg,
                 'stts'          => 'Belum',
                 'stts_daftar'   => 'Lama',
                 'status_lanjut' => 'Ralan',
