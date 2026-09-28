@@ -11,8 +11,14 @@ class TemplateLaboratorium extends Model
     use HasFactory, Compoships;
 
     protected $table = 'template_laboratorium';
+    protected $primaryKey = 'id_template';
     protected $guarded = [];
     public $timestamps = false;
+
+    public function jenisPerawatan()
+    {
+        return $this->belongsTo(JnsPerawatanLab::class, 'kd_jenis_prw', 'kd_jenis_prw');
+    }
 
     public function detail()
     {

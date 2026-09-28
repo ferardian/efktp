@@ -799,3 +799,4 @@ require 'Extras/jenis_perawatan.php';
 require 'Extras/antrean.php';
 require 'Extras/hasil_usg.php';
 require 'Extras/paket_obat.php';
+require 'Extras/tarif_lab.php';

@@ -310,7 +310,28 @@ class MenuController extends Controller
                 ]);
             }
 
-            // Seed default menu mappings for new roles if not yet initialized
+            // Ensure Master Tarif Lab menu exists
+            $masterParent = Menu::where('name', 'Master')->whereNull('parent_id')->first();
+            if ($masterParent) {
+                $existingTarifLab = Menu::where('url', 'master/tarif-lab')->first();
+                if (!$existingTarifLab) {
+                    $newTarifLab = Menu::create([
+                        'name'      => 'Tarif & Tindakan Lab',
+                        'url'       => 'master/tarif-lab',
+                        'icon'      => '<i class="ti ti-test-pipe me-1"></i>',
+                        'parent_id' => $masterParent->id,
+                        'order_num' => 5,
+                        'target'    => '_self',
+                        'position'  => 'navbar',
+                    ]);
+
+                    $roles = ['admin', 'owner', 'petugas', 'dokter', 'laborat'];
+                    foreach ($roles as $r) {
+                        MenuRole::firstOrCreate(['menu_id' => $newTarifLab->id, 'role' => $r]);
+                    }
+                }
+            }
+
             $newRolesDefaults = [
                 'perawat' => [
                     Menu::where('url', '/')->value('id'),
