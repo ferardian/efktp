@@ -585,7 +585,7 @@
         loadingAjax();
         $.get("{{ url('/master/tarif-lab/detail') }}/" + kd)
             .done(function(res) {
-                loadingAjax().close();
+                Swal.close();
                 if (res.success && res.data) {
                     let d = res.data;
                     currentActiveLab = d;
@@ -628,7 +628,7 @@
                 }
             })
             .fail(function(err) {
-                loadingAjax().close();
+                Swal.close();
                 Swal.fire('Error', 'Gagal memuat detail tarif', 'error');
             });
     }
@@ -650,15 +650,8 @@
             method: 'POST',
             data: formData,
             success: function(res) {
-                loadingAjax().close();
+                Swal.close();
                 if (res.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil',
-                        text: res.message,
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
                     $('#tbTarifLab').DataTable().ajax.reload(null, false);
                     if (mode === 'create') {
                         // Buka penawaran langsung mengelola template
@@ -677,6 +670,7 @@
                             resetFormTarifLab();
                         });
                     } else {
+                        toast(res.message || 'Tarif berhasil diperbarui');
                         editTarifLab(kd);
                     }
                 } else {
@@ -684,7 +678,7 @@
                 }
             },
             error: function(xhr) {
-                loadingAjax().close();
+                Swal.close();
                 let msg = 'Gagal menyimpan data';
                 if (xhr.responseJSON && xhr.responseJSON.message) {
                     msg = xhr.responseJSON.message;
@@ -698,13 +692,13 @@
         loadingAjax();
         $.post("{{ url('/master/tarif-lab/toggle-status') }}/" + kd, { _token: "{{ csrf_token() }}" })
             .done(function(res) {
-                loadingAjax().close();
+                Swal.close();
                 if (res.success) {
                     $('#tbTarifLab').DataTable().ajax.reload(null, false);
                 }
             })
             .fail(function() {
-                loadingAjax().close();
+                Swal.close();
                 Swal.fire('Error', 'Gagal mengubah status', 'error');
             });
     }
@@ -727,7 +721,7 @@
                     type: 'DELETE',
                     data: { _token: "{{ csrf_token() }}" },
                     success: function(res) {
-                        loadingAjax().close();
+                        Swal.close();
                         if (res.success) {
                             Swal.fire('Terhapus', res.message, 'success');
                             $('#tbTarifLab').DataTable().ajax.reload(null, false);
@@ -739,7 +733,7 @@
                         }
                     },
                     error: function(xhr) {
-                        loadingAjax().close();
+                        Swal.close();
                         let msg = 'Gagal menghapus data.';
                         if (xhr.responseJSON && xhr.responseJSON.message) {
                             msg = xhr.responseJSON.message;
@@ -765,7 +759,7 @@
         loadingAjax();
         $.get("{{ url('/master/tarif-lab/detail') }}/" + kd)
             .done(function(res) {
-                loadingAjax().close();
+                Swal.close();
                 if (res.success && res.data) {
                     let d = res.data;
                     $('#tplLabNama').text(d.nm_perawatan);
@@ -780,7 +774,7 @@
                 }
             })
             .fail(function() {
-                loadingAjax().close();
+                Swal.close();
                 Swal.fire('Error', 'Gagal memuat data laboratorium', 'error');
             });
     }
@@ -903,7 +897,7 @@
         loadingAjax();
         $.post("{{ route('master.tarif-lab.template.store') }}", formData)
             .done(function(res) {
-                loadingAjax().close();
+                Swal.close();
                 if (res.success) {
                     resetFormTemplateItem();
                     loadTemplateList(kd);
@@ -913,7 +907,7 @@
                 }
             })
             .fail(function(xhr) {
-                loadingAjax().close();
+                Swal.close();
                 let msg = 'Gagal menyimpan item parameter';
                 if (xhr.responseJSON && xhr.responseJSON.message) {
                     msg = xhr.responseJSON.message;
@@ -941,7 +935,7 @@
                     type: 'DELETE',
                     data: { _token: "{{ csrf_token() }}" },
                     success: function(res) {
-                        loadingAjax().close();
+                        Swal.close();
                         if (res.success) {
                             loadTemplateList(kd);
                             $('#tbTarifLab').DataTable().ajax.reload(null, false);
@@ -950,7 +944,7 @@
                         }
                     },
                     error: function(xhr) {
-                        loadingAjax().close();
+                        Swal.close();
                         let msg = 'Gagal menghapus parameter';
                         if (xhr.responseJSON && xhr.responseJSON.message) {
                             msg = xhr.responseJSON.message;
@@ -1003,7 +997,7 @@
             to_kd_jenis_prw: toKd
         })
         .done(function(res) {
-            loadingAjax().close();
+            Swal.close();
             if (res.success) {
                 $('#modalCopyTemplate').modal('hide');
                 Swal.fire('Berhasil', res.message, 'success');
@@ -1014,7 +1008,7 @@
             }
         })
         .fail(function(xhr) {
-            loadingAjax().close();
+            Swal.close();
             let msg = 'Gagal menyalin parameter';
             if (xhr.responseJSON && xhr.responseJSON.message) {
                 msg = xhr.responseJSON.message;
