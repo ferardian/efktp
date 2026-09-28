@@ -88,8 +88,8 @@
                             <div class="row g-2 mb-3">
                                 <div class="col-md-6">
                                     <label class="form-label required">Kode Tindakan</label>
-                                    <div class="input-group input-group-sm">
-                                        <input type="text" class="form-control fw-bold text-uppercase" id="kd_jenis_prw" name="kd_jenis_prw" placeholder="PK0001" required maxlength="15">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control fw-bold text-uppercase" id="kd_jenis_prw" name="kd_jenis_prw" placeholder="J000110" required maxlength="15">
                                         <button class="btn btn-outline-primary" type="button" onclick="generateKodeLab()" id="btnAutoKode" title="Generate otomatis kode berikutnya">
                                             <i class="ti ti-wand me-1"></i> Auto
                                         </button>
@@ -97,7 +97,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label required">Kategori Lab</label>
-                                    <select class="form-select form-select-sm" id="kategori" name="kategori" required onchange="onKategoriChanged()">
+                                    <select class="form-select" id="kategori" name="kategori" required>
                                         <option value="PK" selected>PK (Patologi Klinik)</option>
                                         <option value="PA">PA (Patologi Anatomi)</option>
                                         <option value="MB">MB (Mikrobiologi)</option>
@@ -113,7 +113,7 @@
                             <div class="row g-2 mb-3">
                                 <div class="col-md-6">
                                     <label class="form-label required">Penjamin (Cara Bayar)</label>
-                                    <select class="form-select form-select-sm" id="kd_pj" name="kd_pj" required>
+                                    <select class="form-select" id="kd_pj" name="kd_pj" required>
                                         @foreach($penjab as $pj)
                                             <option value="{{ $pj->kd_pj }}" {{ $pj->kd_pj == 'A09' || $pj->kd_pj == '-' ? 'selected' : '' }}>
                                                 {{ $pj->png_jawab }}
@@ -123,7 +123,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label required">Kelas Pelayanan</label>
-                                    <select class="form-select form-select-sm" id="kelas" name="kelas" required>
+                                    <select class="form-select" id="kelas" name="kelas" required>
                                         <option value="Rawat Jalan" selected>Rawat Jalan</option>
                                         <option value="-">-</option>
                                         <option value="Kelas 1">Kelas 1</option>
@@ -550,9 +550,8 @@
     }
 
     function generateKodeLab() {
-        let kat = $('#kategori').val() || 'PK';
         $('#kd_jenis_prw').attr('placeholder', 'Memuat...');
-        $.get("{{ route('master.tarif-lab.next-kode') }}", { kategori: kat })
+        $.get("{{ route('master.tarif-lab.next-kode') }}")
             .done(function(res) {
                 if (res.next_kode && $('#form_mode').val() === 'create') {
                     $('#kd_jenis_prw').val(res.next_kode);

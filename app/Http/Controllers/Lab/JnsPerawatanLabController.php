@@ -67,25 +67,24 @@ class JnsPerawatanLabController extends Controller
     }
 
     /**
-     * Generate Next Kode Jenis Perawatan Lab otomatis (e.g. PK0001, PA0001, MB0001)
+     * Generate Next Kode Jenis Perawatan Lab otomatis
+     * Mengikuti pola prefix referensi Khanza HMS (DlgJnsPerawatanLab.java):
+     * Valid.autoNomer3("select ifnull(MAX(CONVERT(RIGHT(kd_jenis_prw,6),signed)),0) from jns_perawatan_lab where kd_jenis_prw like 'J%'", "J", 6, TKd);
+     * Menghasilkan format: J000001 s/d J000110
      */
     public function getNextKode(Request $request): JsonResponse
     {
-        $kategori = in_array($request->kategori, ['PK', 'PA', 'MB']) ? $request->kategori : 'PK';
-        $prefix = $kategori;
+        $prefix = 'J';
 
-        // Cari kode dengan prefix kategori
-        $latest = JnsPerawatanLab::where('kd_jenis_prw', 'like', "{$prefix}%")
-            ->selectRaw("MAX(CAST(SUBSTRING(kd_jenis_prw, " . (strlen($prefix) + 1) . ") AS UNSIGNED)) as max_num")
-            ->first();
+        $latest = DB::select("SELECT IFNULL(MAX(CONVERT(RIGHT(kd_jenis_prw, 6), SIGNED)), 0) AS max_num FROM jns_perawatan_lab WHERE kd_jenis_prw LIKE 'J%'");
+        $maxNum = (!empty($latest) && isset($latest[0]->max_num)) ? (int)$latest[0]->max_num : 0;
 
-        $num = ($latest && $latest->max_num) ? ($latest->max_num + 1) : 1;
-        $nextKode = $prefix . str_pad($num, 4, '0', STR_PAD_LEFT);
+        $nextNum = $maxNum + 1;
+        $nextKode = $prefix . str_pad($nextNum, 6, '0', STR_PAD_LEFT);
 
-        // Pastikan unik jika kebetulan sudah terpakai
         while (JnsPerawatanLab::where('kd_jenis_prw', $nextKode)->exists()) {
-            $num++;
-            $nextKode = $prefix . str_pad($num, 4, '0', STR_PAD_LEFT);
+            $nextNum++;
+            $nextKode = $prefix . str_pad($nextNum, 6, '0', STR_PAD_LEFT);
         }
 
         return response()->json(['next_kode' => $nextKode]);
