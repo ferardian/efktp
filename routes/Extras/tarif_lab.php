@@ -3,7 +3,7 @@
 use App\Http\Controllers\Lab\JnsPerawatanLabController;
 use Illuminate\Support\Facades\Route;
 
-Route::group(['middleware' => 'auth'], function () {
+Route::middleware('auth:web,admin')->group(function () {
     Route::get('/master/tarif-lab', [JnsPerawatanLabController::class, 'index'])->name('master.tarif-lab.index');
     Route::get('/master/tarif-lab/data', [JnsPerawatanLabController::class, 'dataTable'])->name('master.tarif-lab.data');
     Route::get('/master/tarif-lab/get-next-kode', [JnsPerawatanLabController::class, 'getNextKode'])->name('master.tarif-lab.next-kode');
