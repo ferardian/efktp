@@ -195,6 +195,12 @@
                                 <a class="dropdown-item" href="{{ url('satusehat/mapping/lokasi') }}">
                                     Mapping Lokasi
                                 </a>
+                                <a class="dropdown-item {{ Request::is('satusehat/mapping/lab*') ? 'active' : '' }}" href="{{ url('satusehat/mapping/lab') }}">
+                                    Mapping Laborat (LOINC)
+                                </a>
+                                <a class="dropdown-item {{ Request::is('satusehat/servicerequest-lab*') ? 'active' : '' }}" href="{{ url('satusehat/servicerequest-lab') }}">
+                                    ServiceRequest Lab
+                                </a>
                                 <a class="dropdown-item {{ Request::is('satusehat/medication') ? 'active' : '' }}" href="{{ url('satusehat/medication') }}">
                                     Medication
                                 </a>

@@ -39,6 +39,10 @@
                     <button type="button" class="btn btn-outline-secondary btn-sm shadow-xs p-0 d-inline-flex align-items-center justify-content-center m-0" id="btnRefreshLab" title="Refresh Data" style="height: 32px; width: 32px; font-size: 11px;">
                         <i class="ti ti-refresh"></i>
                     </button>
+
+                    <a href="{{ route('satusehat.servicerequest-lab.index') }}" target="_blank" class="btn btn-outline-teal btn-sm shadow-xs px-2 d-inline-flex align-items-center justify-content-center m-0" title="Buka Bridging SatuSehat ServiceRequest Lab" style="height: 32px; font-size: 11px;">
+                        <i class="ti ti-dna me-1"></i> SatuSehat Lab
+                    </a>
                 </div>
             </div>
 

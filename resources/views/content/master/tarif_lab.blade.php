@@ -236,6 +236,9 @@
                         </div>
                     </div>
                     <div class="d-flex gap-2">
+                        <a href="{{ url('satusehat/mapping/lab') }}" target="_blank" class="btn btn-sm btn-outline-teal" title="Buka Mapping SatuSehat LOINC">
+                            <i class="ti ti-dna me-1"></i> Mapping LOINC
+                        </a>
                         <button type="button" class="btn btn-sm btn-outline-indigo" onclick="openModalCopyTemplate()">
                             <i class="ti ti-copy me-1"></i> Salin dari Paket Lain
                         </button>

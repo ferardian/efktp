@@ -704,6 +704,19 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::delete('satusehat/medication/mapping/{kode_brng}', [Bridging\SatuSehat::class, 'deleteMappingObat'])->name('satusehat.medication.mapping.delete');
 	Route::post('satusehat/medication/sync', [Bridging\SatuSehat::class, 'sendMedication'])->name('satusehat.medication.sync');
 
+	// SatuSehat ServiceRequest Lab
+	Route::get('satusehat/servicerequest-lab', [Bridging\SatuSehatServiceRequestLabController::class, 'index'])->name('satusehat.servicerequest-lab.index');
+	Route::get('satusehat/servicerequest-lab/data', [Bridging\SatuSehatServiceRequestLabController::class, 'getData'])->name('satusehat.servicerequest-lab.data');
+	Route::post('satusehat/servicerequest-lab/send', [Bridging\SatuSehatServiceRequestLabController::class, 'send'])->name('satusehat.servicerequest-lab.send');
+	Route::post('satusehat/servicerequest-lab/sync-batch', [Bridging\SatuSehatServiceRequestLabController::class, 'syncBatch'])->name('satusehat.servicerequest-lab.sync-batch');
+
+	// SatuSehat Mapping Lab (LOINC & SNOMED CT)
+	Route::get('satusehat/mapping/lab', [Bridging\SatuSehatServiceRequestLabController::class, 'mappingIndex'])->name('satusehat.mapping.lab.index');
+	Route::get('satusehat/mapping/lab/data', [Bridging\SatuSehatServiceRequestLabController::class, 'getMappingData'])->name('satusehat.mapping.lab.data');
+	Route::post('satusehat/mapping/lab', [Bridging\SatuSehatServiceRequestLabController::class, 'saveMapping'])->name('satusehat.mapping.lab.save');
+	Route::delete('satusehat/mapping/lab/{id_template}', [Bridging\SatuSehatServiceRequestLabController::class, 'deleteMapping'])->name('satusehat.mapping.lab.delete');
+
+
 	// SETTING
 
 	Route::get('/setting', [BridgingPcareSettingController::class, 'index']);

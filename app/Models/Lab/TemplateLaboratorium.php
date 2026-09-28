@@ -24,4 +24,10 @@ class TemplateLaboratorium extends Model
     {
         return $this->hasMany(DetailPemeriksaanLab::class, 'id_template', 'id_template');
     }
+
+    public function satuSehatMappingLab()
+    {
+        return $this->hasOne(\App\Models\SatuSehatMappingLab::class, 'id_template', 'id_template');
+    }
 }
+
