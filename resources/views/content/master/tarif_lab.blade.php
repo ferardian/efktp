@@ -455,9 +455,10 @@
                     name: 'template_count',
                     className: 'text-center',
                     render: function(data, type, row) {
-                        let badgeClass = data > 0 ? 'bg-indigo-lt text-indigo' : 'bg-light text-muted';
+                        let count = (data !== undefined && data !== null && !isNaN(data)) ? parseInt(data) : (row.template_count ? parseInt(row.template_count) : 0);
+                        let badgeClass = count > 0 ? 'bg-indigo-lt text-indigo' : 'bg-light text-muted';
                         return `<button type="button" class="btn btn-xs ${badgeClass} border-0" onclick="openTemplateModal('${row.kd_jenis_prw}')" title="Klik untuk kelola sub-parameter">
-                                    <i class="ti ti-dna-2 me-1"></i><strong>${data}</strong> item
+                                    <i class="ti ti-dna-2 me-1"></i><strong>${count}</strong> item
                                 </button>`;
                     }
                 },

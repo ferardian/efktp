@@ -38,8 +38,7 @@ class JnsPerawatanLabController extends Controller
     public function dataTable(Request $request)
     {
         $query = JnsPerawatanLab::with('penjab')
-            ->withCount('template')
-            ->select('jns_perawatan_lab.*');
+            ->withCount('template');
 
         if ($request->has('status') && $request->status !== '') {
             $query->where('status', $request->status);
@@ -52,6 +51,9 @@ class JnsPerawatanLabController extends Controller
         }
 
         return datatables()->of($query)
+            ->addColumn('template_count', function ($row) {
+                return (int) ($row->template_count ?? 0);
+            })
             ->addColumn('total_byr_formatted', function ($row) {
                 return 'Rp ' . number_format($row->total_byr ?? 0, 0, ',', '.');
             })
