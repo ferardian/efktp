@@ -576,7 +576,7 @@ Route::middleware('auth:web,admin')->group(function () {
 	// SURAT SAKIT
 	Route::get('surat/sakit', [SuratSakitController::class, 'get']);
 	Route::get('surat/sakit/setnomor', [SuratSakitController::class, 'setNoSurat']);
-	Route::get('surat/sakit/print/{noSurat}', [SuratSakitController::class, 'print'])->where('noSurat', '.*');
+	Route::get('surat/sakit/print/{noSurat?}', [SuratSakitController::class, 'print'])->where('noSurat', '.*');
 	Route::post('surat/sakit', [SuratSakitController::class, 'create']);
 	Route::post('surat/sakit/delete/{noSurat}', [SuratSakitController::class, 'delete'])->where('noSurat', '.*');
 

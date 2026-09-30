@@ -120,8 +120,12 @@ class SuratSakitController extends Controller
 		}
 	}
 
-	public function print(Request $request, $noSurat)
+	public function print(Request $request, $noSurat = null)
 	{
+		$noSurat = $request->query('no_surat') ?: $noSurat;
+		if (!$noSurat) {
+			abort(404, 'Nomor Surat Sakit tidak disertakan');
+		}
 		$noSurat = urldecode($noSurat);
 		$surat = SuratSakit::with([
 			'regPeriksa' => function ($q) {

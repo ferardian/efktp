@@ -149,7 +149,7 @@
         });
 
         function loadIframeSuratSakit(no_surat, mode) {
-            const url = `{{ url('/surat/sakit/print') }}/${encodeURIComponent(no_surat)}?diagnosa=${mode}`;
+            const url = `{{ url('/surat/sakit/print') }}?no_surat=${encodeURIComponent(no_surat)}&diagnosa=${mode}`;
             modalCetakSuratSakit.find('#print').removeAttr('src').attr('src', url);
         }
 
