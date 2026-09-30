@@ -51,16 +51,11 @@
                             <label class="btn btn-outline-primary" for="opt_diag_ada" title="Cetak dengan teks diagnosa">
                                 <i class="ti ti-file-text me-1"></i> Dengan Diagnosa
                             </label>
-
-                            <input type="radio" class="btn-check" name="opt_diagnosa_surat" id="opt_diag_none" value="none" autocomplete="off">
-                            <label class="btn btn-outline-secondary" for="opt_diag_none" title="Sembunyikan baris diagnosa">
-                                <i class="ti ti-eye-off me-1"></i> Tanpa Diagnosa
-                            </label>
                         </div>
                     </div>
                     <div class="text-muted small">
                         <span id="labelKetDiagnosa" class="badge bg-warning-lt py-1 px-2">
-                            <i class="ti ti-pencil me-1"></i>Diagnosa dikosongkan (garis titik-titik) untuk diisi manual dokter
+                            <i class="ti ti-pencil me-1"></i>Diagnosa dikosongkan untuk diisi manual dokter
                         </span>
                     </div>
                 </div>
@@ -139,11 +134,9 @@
         function updateLabelKetDiagnosa(mode) {
             const label = $('#labelKetDiagnosa');
             if (mode === 'manual' || mode === '0') {
-                label.attr('class', 'badge bg-warning-lt py-1 px-2').html('<i class="ti ti-pencil me-1"></i>Diagnosa dikosongkan (garis titik-titik) untuk diisi manual dokter');
+                label.attr('class', 'badge bg-warning-lt py-1 px-2').html('<i class="ti ti-pencil me-1"></i>Diagnosa dikosongkan untuk diisi manual dokter');
             } else if (mode === 'ada' || mode === '1') {
                 label.attr('class', 'badge bg-primary-lt py-1 px-2').html('<i class="ti ti-file-text me-1"></i>Mencetak nama diagnosa pada surat');
-            } else if (mode === 'none') {
-                label.attr('class', 'badge bg-secondary-lt py-1 px-2').html('<i class="ti ti-eye-off me-1"></i>Baris diagnosa disembunyikan dari surat');
             }
         }
 

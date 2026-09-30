@@ -110,7 +110,6 @@
                                         <li><h6 class="dropdown-header py-1 text-muted">Opsi Cetak:</h6></li>
                                         <li><a class="dropdown-item" href="javascript:void(0)" onclick="cetakSuratSakit('${data}', 'manual')"><i class="ti ti-pencil text-warning me-2"></i>Kosongkan Diagnosa (Manual)</a></li>
                                         <li><a class="dropdown-item" href="javascript:void(0)" onclick="cetakSuratSakit('${data}', 'ada')"><i class="ti ti-file-text text-primary me-2"></i>Dengan Diagnosa</a></li>
-                                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="cetakSuratSakit('${data}', 'none')"><i class="ti ti-eye-off text-muted me-2"></i>Tanpa Diagnosa</a></li>
                                     </ul>
                                 </div>
                             </div>`;
