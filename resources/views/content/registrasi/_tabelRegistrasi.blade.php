@@ -253,10 +253,10 @@
                             return `<div class="d-flex align-items-center gap-1">
                                 <button type="button" class="btn btn-sm ${classBtnPemerisksaan}" onclick="showCpptRalan('${row.no_rawat}')" title="Buka CPPT"><i class="ti ti-file-pencil"></i> CPPT</button>
                                 <div class="dropdown">
-                                    <button class="btn btn-sm ${btnErmClass} dropdown-toggle px-2 d-inline-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Menu ERM ${hasErm ? '(' + totalErmCount + ' Dokumen)' : ''}">
+                                    <button class="btn btn-sm ${btnErmClass} dropdown-toggle px-2 d-inline-flex align-items-center" type="button" data-bs-toggle="dropdown" data-bs-popper-config='{"modifiers":[{"name":"flip","options":{"fallbackPlacements":["top-end"]}},{"name":"preventOverflow","options":{"boundary":"viewport","altAxis":false}}]}' aria-expanded="false" title="Menu ERM ${hasErm ? '(' + totalErmCount + ' Dokumen)' : ''}">
                                         <i class="ti ti-clipboard-text"></i>${badgeBtn}
                                     </button>
-                                     <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="z-index: 1055; min-width: 260px;">
+                                     <ul class="dropdown-menu dropdown-menu-end dropdown-menu-erm shadow" style="z-index: 1055; min-width: 270px;">
                                          <!-- GAWAT DARURAT -->
                                          <li><h6 class="dropdown-header text-uppercase py-1 text-danger fw-bold"><i class="ti ti-ambulance me-1"></i> Gawat Darurat (UGD / IGD)</h6></li>
                                          <li>
@@ -477,3 +477,30 @@
         }
     </script>
 @endpush()
+
+@push('style')
+    <style>
+        .dropdown-menu-erm {
+            max-height: 400px;
+            max-height: 60vh;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            overscroll-behavior: contain;
+        }
+        .dropdown-menu-erm::-webkit-scrollbar {
+            width: 5px;
+        }
+        .dropdown-menu-erm::-webkit-scrollbar-track {
+            background: #f8fafc;
+            border-radius: 4px;
+        }
+        .dropdown-menu-erm::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .dropdown-menu-erm::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+@endpush
+
