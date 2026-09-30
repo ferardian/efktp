@@ -21,8 +21,13 @@
                 <input type="text" class="form-control" name="pekerjaan" id="pekerjaan" readonly />
             </div>
             <div class="col-xl-4 col-md-6 col-sm-12">
-                <label for="diagnosa">Diagnosa</label>
-                <input type="text" class="form-control" name="diagnosa" id="diagnosa" />
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <label for="diagnosa" class="m-0">Diagnosa</label>
+                    <a href="javascript:void(0)" class="text-danger small text-decoration-none" id="btnKosongkanDiagnosa" title="Kosongkan diagnosa agar diisi manual oleh dokter">
+                        <i class="ti ti-eraser me-1"></i>Kosongkan (Manual)
+                    </a>
+                </div>
+                <input type="text" class="form-control" name="diagnosa" id="diagnosa" placeholder="Kosongkan jika diisi manual oleh dokter" />
             </div>
             <div class="col-xl-4 col-md-6 col-sm-12">
                 <label for="tanggalawal">Tanggal</label>
@@ -71,6 +76,11 @@
                 formSuratSakit.find('#no_surat').val(no);
             })
         })
+
+        $('#btnKosongkanDiagnosa').on('click', (e) => {
+            e.preventDefault();
+            formSuratSakit.find('#diagnosa').val('').focus();
+        });
 
         $('#btnSimpanSuratSakit').on('click', (e) => {
             e.preventDefault

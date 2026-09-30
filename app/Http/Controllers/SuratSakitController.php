@@ -120,7 +120,7 @@ class SuratSakitController extends Controller
 		}
 	}
 
-	public function print($noSurat)
+	public function print(Request $request, $noSurat)
 	{
 		$noSurat = urldecode($noSurat);
 		$surat = SuratSakit::with([
@@ -132,14 +132,44 @@ class SuratSakitController extends Controller
 		])->where('no_surat', $noSurat)->first();
 		$setting = Setting::first();
 
-		if ($surat->diagnosa_surat) {
-			$diagnosa = $surat->diagnosa_surat;
-		} elseif ($surat->diagnosa && count($surat->diagnosa) > 0) {
-			$diagnosa = collect($surat->diagnosa)->map(function ($dx) {
-				return $dx->penyakit->nm_penyakit;
-			})->join(';');
+		if (!$surat) {
+			abort(404, 'Surat Sakit tidak ditemukan');
+		}
+
+		// Opsi Diagnosa:
+		// 'ada' / '1'    => Tampilkan diagnosa
+		// 'manual' / '0' => Kosongkan diagnosa (garis titik-titik untuk diisi manual oleh dokter)
+		// 'none'         => Tanpa baris diagnosa sama sekali
+		$optDiagnosa = $request->query('diagnosa');
+
+		if ($optDiagnosa === 'none') {
+			$modeDiagnosa = 'none';
+			$diagnosa = '';
+		} elseif ($optDiagnosa === '0' || $optDiagnosa === 'manual' || $request->query('tanpa_diagnosa') == '1') {
+			$modeDiagnosa = 'manual';
+			$diagnosa = '';
+		} elseif ($optDiagnosa === '1' || $optDiagnosa === 'ada') {
+			$modeDiagnosa = 'ada';
+			if (!empty($surat->diagnosa_surat) && $surat->diagnosa_surat !== '-') {
+				$diagnosa = $surat->diagnosa_surat;
+			} elseif ($surat->diagnosa && count($surat->diagnosa) > 0) {
+				$diagnosa = collect($surat->diagnosa)->map(function ($dx) {
+					return $dx->penyakit->nm_penyakit;
+				})->join(';');
+			} else {
+				$diagnosa = '-';
+			}
 		} else {
-			$diagnosa = '-';
+			// Jika tidak ada parameter query eksplisit:
+			// Jika diagnosa_surat diisi teks dan bukan '-', tampilkan 'ada'
+			if (!empty($surat->diagnosa_surat) && $surat->diagnosa_surat !== '-') {
+				$modeDiagnosa = 'ada';
+				$diagnosa = $surat->diagnosa_surat;
+			} else {
+				// Default bila dikosongkan saat input surat: mode manual dokter
+				$modeDiagnosa = 'manual';
+				$diagnosa = '';
+			}
 		}
 
 		$data = [
@@ -149,10 +179,11 @@ class SuratSakitController extends Controller
 			'umur' => Carbon::parse($surat->regPeriksa->pasien->tgl_lahir)->diff($surat->regPeriksa->tgl_registrasi)->format('%y Th %m Bl %d Hr'),
 			'jk' => $surat->regPeriksa->pasien->jk == 'L' ? 'Laki-laki' : 'Perempuan',
 			'pekerjaan' => $surat->regPeriksa->pasien->pekerjaan,
-			'instansi' => $surat->regPeriksa->pasien->perusahaanPasien->nama_perusahaan,
+			'instansi' => $surat->regPeriksa->pasien->perusahaanPasien->nama_perusahaan ?? '-',
 			'alamat' => "{$surat->regPeriksa->pasien->alamat}, {$surat->regPeriksa->pasien->kel->nm_kel}, {$surat->regPeriksa->pasien->kec->nm_kec}, {$surat->regPeriksa->pasien->kab->nm_kab}",
 			'lama' => $surat->lamasakit,
 			'diagnosa' => $diagnosa,
+			'mode_diagnosa' => $modeDiagnosa,
 			'tgl_awal' => $surat->tanggalawal,
 			'tgl_akhir' => $surat->tanggalakhir,
 			'dokter' => $surat->regPeriksa->dokter->nm_dokter,

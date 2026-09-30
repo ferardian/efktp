@@ -101,10 +101,19 @@
                         title: '',
                         data: 'no_surat',
                         render: (data, type, row, meta) => {
-                            return `<button type="button" class="btn btn-sm btn-danger" onclick="deleteSuratSakit('${data}')"><i class="ti ti-trash"></i></button>
-<button type="button" class="btn btn-sm btn-success" onclick="cetakSuratSakit('${data}')"><i class="ti ti-printer"></i></button>
-<!--                            <a href="{{ url('/') }}/surat/sakit/print/${data}" class="btn btn-sm btn-success" target="_blank"><i class="ti ti-printer"></i></a>-->
-                            `;
+                            return `<div class="d-inline-flex align-items-center gap-1">
+                                <button type="button" class="btn btn-sm btn-danger" onclick="deleteSuratSakit('${data}')" title="Hapus"><i class="ti ti-trash"></i></button>
+                                <div class="btn-group btn-group-sm">
+                                    <button type="button" class="btn btn-sm btn-success" onclick="cetakSuratSakit('${data}')" title="Cetak Surat"><i class="ti ti-printer"></i></button>
+                                    <button type="button" class="btn btn-sm btn-success dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false" title="Pilih Opsi Cetak"></button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow">
+                                        <li><h6 class="dropdown-header py-1 text-muted">Opsi Cetak:</h6></li>
+                                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="cetakSuratSakit('${data}', 'manual')"><i class="ti ti-pencil text-warning me-2"></i>Kosongkan Diagnosa (Manual)</a></li>
+                                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="cetakSuratSakit('${data}', 'ada')"><i class="ti ti-file-text text-primary me-2"></i>Dengan Diagnosa</a></li>
+                                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="cetakSuratSakit('${data}', 'none')"><i class="ti ti-eye-off text-muted me-2"></i>Tanpa Diagnosa</a></li>
+                                    </ul>
+                                </div>
+                            </div>`;
                         },
                     },
 

@@ -38,16 +38,25 @@
                 <td>Alamat</td>
                 <td>:</td>
                 <td>{{ $data['alamat'] }}</td>
+            </tr>
             <tr>
                 <td>Keterangan</td>
                 <td>:</td>
                 <td>Memerlukan istirahat selama <u><b>{{ $data['lama'] }}</b></u> Hari karena sakit terhitung sejak tanggal <b><u>{{ date('d-m-Y', strtotime($data['tgl_awal'])) }}</u></b> sampai dengan <b><u>{{ date('d-m-Y', strtotime($data['tgl_akhir'])) }}</u></b> </td>
             </tr>
+            @if(($data['mode_diagnosa'] ?? '') !== 'none')
             <tr>
                 <td>Diagnosa</td>
                 <td>:</td>
-                <td>{{ $data['diagnosa'] }}</td>
+                <td>
+                    @if(($data['mode_diagnosa'] ?? '') === 'manual' || empty($data['diagnosa']) || $data['diagnosa'] === '-')
+                        ........................................................................................................
+                    @else
+                        {{ $data['diagnosa'] }}
+                    @endif
+                </td>
             </tr>
+            @endif
         </table>
 
         <div style="margin-top:20px;text-align: center;left:0px">
