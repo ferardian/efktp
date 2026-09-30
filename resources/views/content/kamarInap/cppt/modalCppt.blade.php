@@ -106,6 +106,8 @@
     </div>
 </div>
 @include('content.kamarInap.cppt.sub._modalBeriObatUdd')
+@include('content.pemeriksaan.modal._modalEditRacikan')
+@include('content.pemeriksaan.modal._modalCetakResep')
 @push('script')
     <script>
         var modalCpptRanap = $('#modalCpptRanap')
