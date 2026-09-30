@@ -290,9 +290,14 @@
                                     <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle d-inline-flex" data-bs-toggle="dropdown" aria-expanded="false">
                                         <i class="ti ti-printer"></i><span>Cetak Billing / Nota</span>
                                     </button>
-                                    <ul class="dropdown-menu dropdown-menu-end">
-                                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="cetakBillingKasirRanap('80')"><i class="ti ti-receipt me-1"></i> Thermal 80mm</a></li>
-                                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="cetakBillingKasirRanap('58')"><i class="ti ti-receipt me-1"></i> Thermal 58mm</a></li>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow">
+                                        <li><h6 class="dropdown-header text-uppercase text-muted" style="font-size: 0.65rem;">Format Dokumen (HVS)</h6></li>
+                                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="cetakBillingKasirRanap('a4')"><i class="ti ti-file-text me-2 text-primary"></i> Kertas A4 (Laporan Lengkap)</a></li>
+                                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="cetakBillingKasirRanap('a5')"><i class="ti ti-file me-2 text-info"></i> Kertas A5 (Setengah Kuarto)</a></li>
+                                        <li><hr class="dropdown-divider my-1"></li>
+                                        <li><h6 class="dropdown-header text-uppercase text-muted" style="font-size: 0.65rem;">Format Struk Thermal</h6></li>
+                                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="cetakBillingKasirRanap('80')"><i class="ti ti-receipt me-2 text-secondary"></i> Thermal 80mm</a></li>
+                                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="cetakBillingKasirRanap('58')"><i class="ti ti-receipt me-2 text-secondary"></i> Thermal 58mm</a></li>
                                     </ul>
                                 </div>
                             </div>
@@ -854,15 +859,28 @@
                 }).done((resp) => {
                     Swal.fire({
                         icon: 'success',
-                        title: 'Berhasil!',
-                        text: `Billing Rawat Inap berhasil ditutup. No. Nota: ${resp.no_nota}`,
+                        title: 'Billing Berhasil Ditutup!',
+                        html: `
+                            <p class="mb-3 text-muted">No. Nota: <strong>${resp.no_nota}</strong></p>
+                            <div class="text-start mb-2 small fw-bold text-dark">Pilih Ukuran Cetak:</div>
+                            <div class="d-grid gap-2">
+                                <button type="button" class="btn btn-outline-primary btn-sm text-start" onclick="cetakBillingKasirRanap('a4'); Swal.close();">
+                                    <i class="ti ti-file-text me-1"></i> Cetak Format A4 (Laporan Lengkap)
+                                </button>
+                                <button type="button" class="btn btn-outline-info btn-sm text-start" onclick="cetakBillingKasirRanap('a5'); Swal.close();">
+                                    <i class="ti ti-file me-1"></i> Cetak Format A5 (Setengah Kuarto)
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm text-start" onclick="cetakBillingKasirRanap('80'); Swal.close();">
+                                    <i class="ti ti-receipt me-1"></i> Cetak Struk Thermal 80mm
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm text-start" onclick="cetakBillingKasirRanap('58'); Swal.close();">
+                                    <i class="ti ti-receipt me-1"></i> Cetak Struk Thermal 58mm
+                                </button>
+                            </div>
+                        `,
+                        showConfirmButton: false,
                         showCancelButton: true,
-                        confirmButtonText: 'Cetak Nota (80mm)',
                         cancelButtonText: 'Selesai'
-                    }).then((printRes) => {
-                        if (printRes.isConfirmed) {
-                            cetakBillingKasirRanap('80');
-                        }
                     });
 
                     loadAntreanRanap();

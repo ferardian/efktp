@@ -27,7 +27,7 @@ class BillingController extends Controller
     public function printBilling(Request $request)
     {
         $no_rawat = $request->no_rawat;
-        $size = $request->input('size', '80'); // '80' or '58'
+        $size = strtolower($request->input('size', '80')); // 'a4', 'a5', '80', '58'
         $show_obat = $request->input('show_obat', '1') !== '0';
         $mode = $request->input('mode', '');
 
@@ -54,37 +54,63 @@ class BillingController extends Controller
         $isEstimasi = ($mode === 'estimasi') || ($billingData['status_bayar'] !== 'Sudah Bayar');
 
         $setting = Setting::first();
+        $pegawai = session()->get('pegawai');
+        $petugas = $pegawai ? $pegawai->nama : 'Kasir / Petugas';
 
-        // Convert mm to points (1mm = 2.83465 pt)
-        // 58 mm width = 164.4 pt
-        // 80 mm width = 226.7 pt
-        // Let's compute a dynamic height based on the number of items, to prevent unnecessary blank pages
-        $itemCount = 0;
-        foreach ($billingData['categories'] as $cat) {
-            if (count($cat['items']) > 0) {
-                if ($cat['label'] === 'Obat & Alkes' && !$show_obat) {
-                    $itemCount += 1; // only the category header
-                } else {
-                    $itemCount += count($cat['items']) + 1; // items + category header
+        if ($size === 'a4') {
+            $pdf = PDF::loadView('content.print.billing', [
+                'data' => $billingData,
+                'setting' => $setting,
+                'size' => $size,
+                'show_obat' => $show_obat,
+                'is_estimasi' => $isEstimasi,
+                'petugas' => $petugas
+            ])
+            ->setPaper('a4', 'portrait')
+            ->setOptions(['defaultFont' => 'Arial', 'isRemoteEnabled' => true]);
+        } elseif ($size === 'a5') {
+            $pdf = PDF::loadView('content.print.billing', [
+                'data' => $billingData,
+                'setting' => $setting,
+                'size' => $size,
+                'show_obat' => $show_obat,
+                'is_estimasi' => $isEstimasi,
+                'petugas' => $petugas
+            ])
+            ->setPaper('a5', 'portrait')
+            ->setOptions(['defaultFont' => 'Arial', 'isRemoteEnabled' => true]);
+        } else {
+            // Convert mm to points (1mm = 2.83465 pt)
+            // 58 mm width = 140.0 pt
+            // 80 mm width = 226.7 pt
+            $itemCount = 0;
+            foreach ($billingData['categories'] as $cat) {
+                if (count($cat['items']) > 0) {
+                    if ($cat['label'] === 'Obat & Alkes' && !$show_obat) {
+                        $itemCount += 1; // only the category header
+                    } else {
+                        $itemCount += count($cat['items']) + 1; // items + category header
+                    }
                 }
             }
+            
+            $baseHeight = ($size == '58') ? 370 : 420;
+            $itemHeight = ($size == '58') ? 18 : 22;
+            $height = $baseHeight + ($itemCount * $itemHeight);
+
+            $width = ($size == '58') ? 140.0 : 226.7;
+
+            $pdf = PDF::loadView('content.print.billing', [
+                'data' => $billingData,
+                'setting' => $setting,
+                'size' => $size,
+                'show_obat' => $show_obat,
+                'is_estimasi' => $isEstimasi,
+                'petugas' => $petugas
+            ])
+            ->setPaper(array(0, 0, $width, $height))
+            ->setOptions(['defaultFont' => 'Arial', 'isRemoteEnabled' => true]);
         }
-        
-        $baseHeight = ($size == '58') ? 370 : 420;
-        $itemHeight = ($size == '58') ? 18 : 22;
-        $height = $baseHeight + ($itemCount * $itemHeight);
-
-        $width = ($size == '58') ? 140.0 : 226.7;
-
-        $pdf = PDF::loadView('content.print.billing', [
-            'data' => $billingData,
-            'setting' => $setting,
-            'size' => $size,
-            'show_obat' => $show_obat,
-            'is_estimasi' => $isEstimasi
-        ])
-        ->setPaper(array(0, 0, $width, $height))
-        ->setOptions(['defaultFont' => 'Arial', 'isRemoteEnabled' => true]);
 
         return $pdf->stream('cetak billing.pdf');
     }

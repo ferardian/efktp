@@ -168,9 +168,14 @@
                                 <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i class="ti ti-printer me-1"></i> Cetak Nota
                                 </button>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="cetakNotaKasir('80')">Ukuran 80mm (Thermal)</a></li>
-                                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="cetakNotaKasir('58')">Ukuran 58mm (Thermal)</a></li>
+                                <ul class="dropdown-menu dropdown-menu-end shadow">
+                                    <li><h6 class="dropdown-header text-uppercase text-muted" style="font-size: 0.65rem;">Format Dokumen (HVS)</h6></li>
+                                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="cetakNotaKasir('a4')"><i class="ti ti-file-text me-2 text-primary"></i> Kertas A4 (Laporan Lengkap)</a></li>
+                                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="cetakNotaKasir('a5')"><i class="ti ti-file me-2 text-info"></i> Kertas A5 (Setengah Kuarto)</a></li>
+                                    <li><hr class="dropdown-divider my-1"></li>
+                                    <li><h6 class="dropdown-header text-uppercase text-muted" style="font-size: 0.65rem;">Format Struk Thermal</h6></li>
+                                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="cetakNotaKasir('80')"><i class="ti ti-receipt me-2 text-secondary"></i> Ukuran 80mm (Thermal)</a></li>
+                                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="cetakNotaKasir('58')"><i class="ti ti-receipt me-2 text-secondary"></i> Ukuran 58mm (Thermal)</a></li>
                                 </ul>
                             </div>
                             <button type="button" class="btn btn-sm btn-outline-danger" onclick="tutupTransaksiPasien()" title="Tutup Transaksi Pasien">
