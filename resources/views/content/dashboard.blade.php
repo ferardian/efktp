@@ -171,6 +171,134 @@
             </div>
         </div>
 
+        {{-- OPERATIONAL LIVE INSIGHTS (ANTREAN POLI & PASIEN TERAKHIR) --}}
+        <div class="row row-cards mb-3">
+            {{-- A. RINGKASAN ANTREAN POLIKLINIK --}}
+            <div class="col-lg-6 col-md-12">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center py-2">
+                        <h4 class="card-title m-0 d-flex align-items-center">
+                            <i class="ti ti-heart-rate-monitor text-primary me-2 fs-2"></i> Status Antrean Poli Hari Ini
+                        </h4>
+                        <span class="badge bg-primary-lt">{{ count($poliQueue ?? []) }} Poli Aktif</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-vcenter card-table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Poliklinik</th>
+                                    <th class="text-center">Menunggu</th>
+                                    <th class="text-center">Selesai</th>
+                                    <th class="text-center">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($poliQueue ?? [] as $pq)
+                                    <tr>
+                                        <td>
+                                            <span class="fw-semibold">{{ $pq->nm_poli }}</span>
+                                        </td>
+                                        <td class="text-center">
+                                            @if($pq->menunggu > 0)
+                                                <span class="badge bg-warning text-white px-2">{{ $pq->menunggu }} Antre</span>
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-center">
+                                            @if($pq->selesai > 0)
+                                                <span class="badge bg-success-lt px-2">{{ $pq->selesai }} Selesai</span>
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-center fw-bold">
+                                            {{ $pq->total }}
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-3">
+                                            <i class="ti ti-info-circle me-1"></i> Belum ada antrean poli hari ini
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            {{-- D. 5 PENDAFTARAN PASIEN TERAKHIR --}}
+            <div class="col-lg-6 col-md-12">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center py-2">
+                        <h4 class="card-title m-0 d-flex align-items-center">
+                            <i class="ti ti-activity text-teal me-2 fs-2"></i> Pasien Terdaftar Terakhir
+                        </h4>
+                        <a href="{{ url('/registrasi') }}" class="btn btn-sm btn-link p-0 text-decoration-none">
+                            Lihat Semua <i class="ti ti-chevron-right ms-1"></i>
+                        </a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-vcenter card-table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Pasien</th>
+                                    <th>Poli / Dokter</th>
+                                    <th class="text-center">Status</th>
+                                    <th class="text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($recentPatients ?? [] as $rp)
+                                    <tr>
+                                        <td>
+                                            <div class="fw-bold text-dark">{{ $rp->nm_pasien }}</div>
+                                            <div class="text-muted small">RM: {{ $rp->no_rkm_medis }} &bull; {{ substr($rp->jam_reg, 0, 5) }}</div>
+                                        </td>
+                                        <td>
+                                            <div class="text-dark">{{ $rp->nm_poli }}</div>
+                                            <div class="text-muted small text-truncate" style="max-width: 140px;">{{ $rp->nm_dokter ?? '-' }}</div>
+                                        </td>
+                                        <td class="text-center">
+                                            @if($rp->stts === 'Sudah')
+                                                <span class="badge bg-success-lt">Sudah Periksa</span>
+                                            @elseif($rp->stts === 'Belum')
+                                                <span class="badge bg-warning-lt">Menunggu</span>
+                                            @elseif($rp->stts === 'Dirujuk')
+                                                <span class="badge bg-info-lt">Dirujuk</span>
+                                            @else
+                                                <span class="badge bg-secondary-lt">{{ $rp->stts }}</span>
+                                            @endif
+                                            <div class="mt-1">
+                                                @if($rp->status_bayar === 'Sudah Bayar')
+                                                    <span class="badge bg-green text-white" style="font-size: 8px;">Lunas</span>
+                                                @else
+                                                    <span class="badge bg-danger text-white" style="font-size: 8px;">Belum Bayar</span>
+                                                @endif
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <a href="{{ url('/billing/ralan?no_rawat=' . urlencode($rp->no_rawat)) }}" target="_blank" class="btn btn-sm btn-outline-secondary py-1 px-2" title="Cetak / Lihat Nota">
+                                                <i class="ti ti-printer"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-3">
+                                            <i class="ti ti-info-circle me-1"></i> Belum ada pasien terdaftar hari ini
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         {{-- GLOBAL UNIFIED FILTER BAR FOR CHARTS --}}
         <div class="card mb-3">
             <div class="card-body py-2 px-3">
