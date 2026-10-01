@@ -229,21 +229,8 @@ class ResepObatController extends Controller
 		$petugas = $pegawai ? ($pegawai->nama ?? $pegawai->nik) : 'Apoteker';
 
 		$pasien = $resep->regPeriksa->pasien ?? null;
-		$alamatLengkap = $pasien ? ($pasien->alamat ?: '-') : '-';
-		if ($pasien) {
-			$wilayah = array_filter([
-				$pasien->kel?->nm_kel ? 'Ds. ' . $pasien->kel->nm_kel : null,
-				$pasien->kec?->nm_kec ? 'Kec. ' . $pasien->kec->nm_kec : null,
-				$pasien->kab?->nm_kab ? 'Kab. ' . $pasien->kab->nm_kab : null,
-				$pasien->prop?->nm_prop ?? null,
-			]);
-			if (!empty($wilayah)) {
-				$strWilayah = implode(', ', $wilayah);
-				if (!str_contains(strtolower($alamatLengkap), strtolower($pasien->kec?->nm_kec ?? '___'))) {
-					$alamatLengkap .= ', ' . $strWilayah;
-				}
-			}
-		}
+		// Hanya gunakan field alamat saja agar tidak melebihi halaman etiket
+		$alamatLengkap = $pasien ? (trim($pasien->alamat) ?: '-') : '-';
 
 		$tglResep = (!empty($resep->tgl_peresepan) && $resep->tgl_peresepan !== '0000-00-00') ? $resep->tgl_peresepan : ($resep->tgl_perawatan ?: date('Y-m-d'));
 		$jamResep = (!empty($resep->jam_peresepan) && $resep->jam_peresepan !== '00:00:00') ? $resep->jam_peresepan : ($resep->jam && $resep->jam !== '00:00:00' ? $resep->jam : date('H:i:s'));

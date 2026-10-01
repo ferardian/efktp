@@ -169,7 +169,7 @@
         .signa-dosis {
             width: 50%;
             text-align: center;
-            font-size: 15.5pt;
+            font-size: 13pt;
             font-weight: bold;
             line-height: 1;
         }
@@ -184,16 +184,16 @@
         }
         .signa-petunjuk {
             text-align: center;
-            font-size: 7pt;
-            line-height: 1.1;
-            margin-top: 1px;
+            font-size: 6.5pt;
+            line-height: 1;
+            margin-top: 0.5px;
         }
         .signa-doa {
             text-align: center;
-            font-size: 6.2pt;
-            line-height: 1.1;
-            margin-top: 0.5px;
-            padding-bottom: 2px;
+            font-size: 5.8pt;
+            line-height: 1;
+            margin-top: 0.3px;
+            padding-bottom: 1px;
         }
 
         /* ========================================================
@@ -326,7 +326,7 @@
         .signa-dosis {
             width: 50%;
             text-align: center;
-            font-size: 13.5pt;
+            font-size: 11.5pt;
             font-weight: bold;
             line-height: 1;
         }
@@ -341,16 +341,16 @@
         }
         .signa-petunjuk {
             text-align: center;
-            font-size: 6.2pt;
+            font-size: 5.8pt;
             line-height: 1;
-            margin-top: 0.5px;
+            margin-top: 0.3px;
         }
         .signa-doa {
             text-align: center;
-            font-size: 5.5pt;
+            font-size: 5pt;
             line-height: 1;
-            margin-top: 0.5px;
-            padding-bottom: 1px;
+            margin-top: 0.3px;
+            padding-bottom: 0.5px;
         }
 
         /* ========================================================
