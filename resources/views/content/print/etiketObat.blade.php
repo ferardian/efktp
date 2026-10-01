@@ -33,7 +33,6 @@
         }
         .etiket-card {
             width: 100%;
-            height: 100%;
             page-break-after: always;
         }
         .etiket-card:last-child {
