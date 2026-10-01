@@ -1,4 +1,4 @@
-<div class="card h-100 shadow-sm border-0">
+<div class="card h-100">
     <div class="card-header d-flex justify-content-between align-items-center py-2">
         <h4 class="card-title m-0 d-flex align-items-center">
             <i class="ti ti-map-2 text-teal me-2 fs-2"></i> Sebaran Kecamatan

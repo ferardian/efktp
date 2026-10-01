@@ -2,36 +2,32 @@
 
 @section('body')
     <div class="container-xl">
-        {{-- HERO WELCOME BANNER --}}
-        <div class="card mb-3 border-0 shadow-sm overflow-hidden" style="background: linear-gradient(135deg, #1b3a5b 0%, #206bc4 100%); color: #ffffff;">
-            <div class="card-body p-4 position-relative">
+        {{-- WELCOME HEADER & QUICK ACTIONS (CLEAN NATIVE STYLE) --}}
+        <div class="card mb-3">
+            <div class="card-body py-3 px-3">
                 <div class="row align-items-center">
-                    <div class="col-lg-7 col-md-12 mb-3 mb-lg-0">
-                        <div class="d-flex align-items-center mb-2">
-                            <span class="avatar avatar-md bg-white text-primary rounded-circle shadow-sm me-3">
-                                <i class="ti ti-user-check fs-2"></i>
-                            </span>
+                    <div class="col-lg-7 col-md-12 mb-2 mb-lg-0">
+                        <div class="d-flex align-items-center">
                             <div>
-                                <span class="badge bg-white-lt text-white px-2 py-1 mb-1">
-                                    <i class="ti ti-shield-check me-1"></i> {{ session()->get('pegawai')->nama ?? 'Petugas' }}
-                                </span>
-                                <h2 class="mb-0 text-white fw-bold">{{ $data->nama_instansi }}</h2>
-                                <div class="text-white opacity-75 small">Sistem Pelayanan Pasien &amp; Informasi Manajemen Klinis Terpadu</div>
+                                <div class="text-muted small mb-1">
+                                    <i class="ti ti-user me-1 text-primary"></i> Selamat Datang : <strong>{{ session()->get('pegawai')->nama ?? 'Petugas' }}</strong>
+                                </div>
+                                <h2 class="mb-0 fw-bold text-dark">{{ $data->nama_instansi }}</h2>
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-5 col-md-12">
-                        <div class="d-flex flex-wrap gap-2 justify-content-lg-end justify-content-start">
-                            <a href="{{ url('/registrasi') }}" class="btn btn-sm btn-white text-primary fw-bold shadow-sm">
+                    <div class="col-lg-5 col-md-12 text-lg-end">
+                        <div class="btn-list justify-content-lg-end">
+                            <a href="{{ url('/registrasi') }}" class="btn btn-sm btn-outline-primary">
                                 <i class="ti ti-user-plus me-1"></i> Registrasi
                             </a>
-                            <a href="{{ url('/kasir/ralan') }}" class="btn btn-sm btn-white text-primary fw-bold shadow-sm">
+                            <a href="{{ url('/kasir/ralan') }}" class="btn btn-sm btn-outline-secondary">
                                 <i class="ti ti-cash me-1"></i> Kasir Ralan
                             </a>
-                            <a href="{{ url('/ranap') }}" class="btn btn-sm btn-white text-primary fw-bold shadow-sm">
+                            <a href="{{ url('/ranap') }}" class="btn btn-sm btn-outline-secondary">
                                 <i class="ti ti-bed me-1"></i> Rawat Inap
                             </a>
-                            <a href="{{ url('/farmasi/resep') }}" class="btn btn-sm btn-white text-primary fw-bold shadow-sm">
+                            <a href="{{ url('/farmasi/resep') }}" class="btn btn-sm btn-outline-secondary">
                                 <i class="ti ti-pill me-1"></i> Resep Obat
                             </a>
                         </div>
@@ -44,7 +40,8 @@
         <div class="row row-cards mb-3">
             {{-- 1. TOTAL KUNJUNGAN --}}
             <div class="col-sm-6 col-lg-3">
-                <div class="card card-sm shadow-sm h-100 border-0 border-top border-primary border-3">
+                <div class="card card-sm">
+                    <div class="card-status-top bg-primary"></div>
                     <div class="card-body">
                         <div class="row align-items-center">
                             <div class="col-auto">
@@ -69,11 +66,12 @@
 
             {{-- 2. PEMBIAYAAN UMUM --}}
             <div class="col-sm-6 col-lg-2">
-                <div class="card card-sm shadow-sm h-100 border-0 border-top border-warning border-3">
+                <div class="card card-sm">
+                    <div class="card-status-top bg-yellow"></div>
                     <div class="card-body">
                         <div class="row align-items-center">
                             <div class="col-auto">
-                                <span class="bg-warning text-white avatar">
+                                <span class="bg-yellow text-white avatar">
                                     <i class="ti ti-wallet fs-2"></i>
                                 </span>
                             </div>
@@ -89,11 +87,12 @@
 
             {{-- 3. PEMBIAYAAN BPJS --}}
             <div class="col-sm-6 col-lg-2">
-                <div class="card card-sm shadow-sm h-100 border-0 border-top border-success border-3">
+                <div class="card card-sm">
+                    <div class="card-status-top bg-green"></div>
                     <div class="card-body">
                         <div class="row align-items-center">
                             <div class="col-auto">
-                                <span class="bg-success text-white avatar">
+                                <span class="bg-green text-white avatar">
                                     <i class="ti ti-shield-heart fs-2"></i>
                                 </span>
                             </div>
@@ -109,11 +108,12 @@
 
             {{-- 4. STATUS PELAYANAN --}}
             <div class="col-sm-6 col-lg-2">
-                <div class="card card-sm shadow-sm h-100 border-0 border-top border-danger border-3">
+                <div class="card card-sm">
+                    <div class="card-status-top bg-red"></div>
                     <div class="card-body">
                         <div class="row align-items-center">
                             <div class="col-auto">
-                                <span class="bg-danger text-white avatar">
+                                <span class="bg-red text-white avatar">
                                     <i class="ti ti-stethoscope fs-2"></i>
                                 </span>
                             </div>
@@ -135,7 +135,8 @@
 
             {{-- 5. KETERISIAN BED RAWAT INAP (BOR) --}}
             <div class="col-sm-12 col-lg-3">
-                <div class="card card-sm shadow-sm h-100 border-0 border-top border-indigo border-3">
+                <div class="card card-sm">
+                    <div class="card-status-top bg-indigo"></div>
                     <div class="card-body">
                         <div class="row align-items-center">
                             <div class="col-auto">
@@ -162,7 +163,7 @@
         </div>
 
         {{-- GLOBAL UNIFIED FILTER BAR FOR CHARTS --}}
-        <div class="card mb-3 shadow-sm border-0">
+        <div class="card mb-3">
             <div class="card-body py-2 px-3">
                 <div class="row align-items-center justify-content-between g-2">
                     <div class="col-xl-5 col-lg-6 col-md-12 d-flex align-items-center flex-wrap gap-2">

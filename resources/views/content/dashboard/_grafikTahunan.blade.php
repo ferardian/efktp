@@ -1,4 +1,4 @@
-<div class="card shadow-sm border-0">
+<div class="card">
     <div class="card-header d-flex justify-content-between align-items-center py-2 flex-wrap gap-2">
         <h4 class="card-title m-0 d-flex align-items-center">
             <i class="ti ti-chart-line text-primary me-2 fs-2"></i>
