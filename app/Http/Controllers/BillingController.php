@@ -390,6 +390,15 @@ class BillingController extends Controller
 
         $isSudahPeriksa = $reg && ($reg->stts === 'Sudah' || DB::table('pemeriksaan_ralan')->where('no_rawat', $no_rawat)->exists() || $detail_tindakan->count() > 0);
 
+        $saved_payments = DB::table('nota_bayar')
+            ->leftJoin('bayar_nota', 'nota_bayar.nota_no', '=', 'bayar_nota.nota_no')
+            ->where('nota_bayar.no_rawat', $no_rawat)
+            ->select('bayar_nota.nama_bayar', 'bayar_nota.besar_bayar')
+            ->get();
+
+        $deposit = 0; // ralan tidak punya deposit, set 0
+        $net_total = max(0, $grand_total - $potongan);
+
         return [
             'no_rawat' => $no_rawat,
             'no_rm' => $reg->no_rkm_medis ?? '-',
@@ -403,7 +412,12 @@ class BillingController extends Controller
             'stts' => $reg ? $reg->stts : 'Belum',
             'is_sudah_periksa' => $isSudahPeriksa,
             'categories' => $categories,
-            'grand_total' => $grand_total
+            'grand_total' => $grand_total,
+            'potongan' => $potongan,
+            'tambahan' => $tambahan,
+            'deposit' => $deposit,
+            'net_total' => $net_total,
+            'saved_payments' => $saved_payments,
         ];
     }
 
