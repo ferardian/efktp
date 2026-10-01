@@ -72,7 +72,7 @@
             text-overflow: ellipsis;
         }
         .clinic-phone {
-            font-size: 7.8pt;
+            font-size: 6.8pt;
             font-weight: bold;
             color: #000;
             line-height: 1.1;
@@ -232,7 +232,7 @@
             text-overflow: ellipsis;
         }
         .clinic-phone {
-            font-size: 7pt;
+            font-size: 6.2pt;
             font-weight: bold;
             color: #000;
             line-height: 1.05;
@@ -391,7 +391,7 @@
             text-overflow: ellipsis;
         }
         .clinic-phone {
-            font-size: 6.5pt;
+            font-size: 5.8pt;
             font-weight: bold;
             color: #000;
             line-height: 1;
@@ -667,10 +667,10 @@
     $kontakFormatted = '-';
     if (!empty($rawKontak)) {
         if (preg_match('/^(hp|telp|wa)\b/i', $rawKontak)) {
-            // Sudah ada prefix, tampilkan apa adanya tapi ganti prefix teks dengan simbol
-            $kontakFormatted = '☎ ' . preg_replace('/^(hp|telp|wa)[:\s]*/i', '', $rawKontak);
+            // Sudah ada prefix, strip lalu ganti ke 'Telp.'
+            $kontakFormatted = 'Telp. ' . preg_replace('/^(hp|telp|wa)[:\s]*/i', '', $rawKontak);
         } else {
-            $kontakFormatted = '☎ ' . $rawKontak;
+            $kontakFormatted = 'Telp. ' . $rawKontak;
         }
     }
 @endphp
