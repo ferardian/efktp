@@ -36,13 +36,13 @@
             </div>
         </div>
 
-        {{-- KPI STATS CARDS ROW (5 CARDS) --}}
-        <div class="row row-cards mb-3">
+        {{-- KPI STATS CARDS ROW (5 CARDS DENGAN TINGGI SERAGAM) --}}
+        <div class="row row-cards mb-3 align-items-stretch">
             {{-- 1. TOTAL KUNJUNGAN --}}
             <div class="col-sm-6 col-lg-3">
-                <div class="card card-sm overflow-hidden">
+                <div class="card card-sm h-100 overflow-hidden">
                     <div class="card-status-top bg-primary"></div>
-                    <div class="card-body">
+                    <div class="card-body d-flex flex-column justify-content-between">
                         <div class="row align-items-center">
                             <div class="col-auto">
                                 <span class="bg-primary text-white avatar">
@@ -51,7 +51,7 @@
                             </div>
                             <div class="col">
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <div class="subheader mb-0">Kunjungan Hari Ini</div>
+                                    <div class="subheader mb-0">Kunjungan</div>
                                     <span class="badge bg-green-lt small py-0 px-1" title="Real-time hari ini">
                                         <span class="badge-dot bg-green me-1"></span>Live
                                     </span>
@@ -66,9 +66,9 @@
 
             {{-- 2. PEMBIAYAAN UMUM --}}
             <div class="col-sm-6 col-lg-2">
-                <div class="card card-sm overflow-hidden">
+                <div class="card card-sm h-100 overflow-hidden">
                     <div class="card-status-top bg-yellow"></div>
-                    <div class="card-body">
+                    <div class="card-body d-flex flex-column justify-content-between">
                         <div class="row align-items-center">
                             <div class="col-auto">
                                 <span class="bg-yellow text-white avatar">
@@ -76,7 +76,10 @@
                                 </span>
                             </div>
                             <div class="col">
-                                <div class="subheader mb-0">Pasien Umum</div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="subheader mb-0">Umum</div>
+                                    <span class="badge bg-yellow-lt small py-0 px-1">Mandiri</span>
+                                </div>
                                 <div class="h1 mb-0 mt-1" id="totalUmum">0</div>
                                 <div class="text-muted small mt-1">Bayar mandiri</div>
                             </div>
@@ -87,9 +90,9 @@
 
             {{-- 3. PEMBIAYAAN BPJS --}}
             <div class="col-sm-6 col-lg-2">
-                <div class="card card-sm overflow-hidden">
+                <div class="card card-sm h-100 overflow-hidden">
                     <div class="card-status-top bg-green"></div>
-                    <div class="card-body">
+                    <div class="card-body d-flex flex-column justify-content-between">
                         <div class="row align-items-center">
                             <div class="col-auto">
                                 <span class="bg-green text-white avatar">
@@ -97,9 +100,12 @@
                                 </span>
                             </div>
                             <div class="col">
-                                <div class="subheader mb-0">Pasien BPJS</div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="subheader mb-0">BPJS</div>
+                                    <span class="badge bg-green-lt small py-0 px-1">JKN/KIS</span>
+                                </div>
                                 <div class="h1 mb-0 mt-1" id="totalBpjs">0</div>
-                                <div class="text-muted small mt-1">JKN / KIS</div>
+                                <div class="text-muted small mt-1">Peserta BPJS</div>
                             </div>
                         </div>
                     </div>
@@ -108,9 +114,9 @@
 
             {{-- 4. STATUS PELAYANAN --}}
             <div class="col-sm-6 col-lg-2">
-                <div class="card card-sm overflow-hidden">
+                <div class="card card-sm h-100 overflow-hidden">
                     <div class="card-status-top bg-red"></div>
-                    <div class="card-body">
+                    <div class="card-body d-flex flex-column justify-content-between">
                         <div class="row align-items-center">
                             <div class="col-auto">
                                 <span class="bg-red text-white avatar">
@@ -118,14 +124,17 @@
                                 </span>
                             </div>
                             <div class="col">
-                                <div class="subheader mb-0">Pelayanan</div>
-                                <div class="h2 mb-0 mt-1">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="subheader mb-0">Pelayanan</div>
+                                    <span class="badge bg-red-lt small py-0 px-1">Ralan</span>
+                                </div>
+                                <div class="h1 mb-0 mt-1">
                                     <span class="text-success" id="totalDiperiksa">0</span>
                                     <span class="text-muted fs-4">/</span>
                                     <span class="text-warning" id="totalMenunggu">0</span>
                                 </div>
                                 <div class="text-muted small mt-1">
-                                    <span class="text-success fw-bold">Selesai</span> / <span class="text-warning fw-bold">Menunggu</span>
+                                    <span class="text-success fw-bold">Selesai</span> / <span class="text-warning fw-bold">Antre</span>
                                 </div>
                             </div>
                         </div>
@@ -135,9 +144,9 @@
 
             {{-- 5. KETERISIAN BED RAWAT INAP (BOR) --}}
             <div class="col-sm-12 col-lg-3">
-                <div class="card card-sm overflow-hidden">
+                <div class="card card-sm h-100 overflow-hidden">
                     <div class="card-status-top bg-indigo"></div>
-                    <div class="card-body">
+                    <div class="card-body d-flex flex-column justify-content-between">
                         <div class="row align-items-center">
                             <div class="col-auto">
                                 <span class="bg-indigo text-white avatar">
@@ -146,7 +155,7 @@
                             </div>
                             <div class="col">
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <div class="subheader mb-0">Bed Rawat Inap</div>
+                                    <div class="subheader mb-0">Rawat Inap</div>
                                     <span class="badge bg-indigo-lt small py-0 px-1">BOR {{ $bedStats['bor'] ?? 0 }}%</span>
                                 </div>
                                 <div class="h1 mb-0 mt-1">
