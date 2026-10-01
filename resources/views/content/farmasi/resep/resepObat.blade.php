@@ -2,25 +2,55 @@
 
 @section('body')
     <style>
-        #tbResepObat .btn {
+        #tbResepObat .btn, #tbUddRanap .btn {
             display: inline-flex !important;
             align-items: center !important;
             justify-content: center !important;
             vertical-align: middle !important;
             line-height: 1 !important;
-            gap: 0.25rem !important;
+            gap: 0.3rem !important;
+            padding: 0.32rem 0.55rem !important;
+            font-size: 0.8125rem !important;
+            font-weight: 500 !important;
+            border-radius: 6px !important;
+            white-space: nowrap !important;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+            transition: all 0.15s ease-in-out !important;
         }
-        #tbResepObat .btn i {
+        #tbResepObat .btn:hover, #tbUddRanap .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+        }
+        #tbResepObat .btn i, #tbUddRanap .btn i {
             display: inline-flex !important;
             align-items: center !important;
             justify-content: center !important;
             line-height: 0 !important;
-            font-size: 1.15em !important;
+            font-size: 1.1em !important;
             margin: 0 !important;
         }
-        #tbResepObat .btn span {
+        #tbResepObat .btn span, #tbUddRanap .btn span {
             display: inline-block !important;
             line-height: 1 !important;
+        }
+        #tbResepObat .btn-group, #tbUddRanap .btn-group {
+            display: inline-flex !important;
+            vertical-align: middle !important;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+            border-radius: 6px !important;
+        }
+        #tbResepObat .btn-group .btn, #tbUddRanap .btn-group .btn {
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            transform: none !important;
+        }
+        #tbResepObat .btn-group .btn:first-child, #tbUddRanap .btn-group .btn:first-child {
+            border-top-left-radius: 6px !important;
+            border-bottom-left-radius: 6px !important;
+        }
+        #tbResepObat .btn-group .btn:last-child, #tbUddRanap .btn-group .btn:last-child {
+            border-top-right-radius: 6px !important;
+            border-bottom-right-radius: 6px !important;
         }
 
         /* Pill Tabs Style for Filter Status Rawat */
@@ -210,45 +240,42 @@
                     },
                 },
                 columns: [{
-                    title: '',
+                    title: 'AKSI',
                     data: 'no_resep',
                     render: (data, type, row, meta) => {
+                        const sudahValidasi = row.jam && row.jam !== '00:00:00';
+                        const sudahSelesai = isAvailableTime(row.jam_penyerahan);
 
-                        let colorBtn, displayPanggil = '',
-                            displaySelesai = '';
+                        // Tombol Lihat & Etiket disatukan dalam btn-group ringkas dan rapi
+                        const btnLihat = `<button type="button" class="btn btn-sm btn-outline-primary" onclick="showDetailResep('${data}')" title="Lihat Detail Resep"><i class="ti ti-eye"></i><span>Lihat</span></button>`;
+                        const btnEtiket = `<button type="button" class="btn btn-sm btn-outline-secondary" onclick="modalCetakEtiket('${data}')" title="Cetak Etiket Obat"><i class="ti ti-printer"></i><span>Etiket</span></button>`;
 
-                        if (isAvailableTime(row.jam_penyerahan)) {
-                            colorBtn = `btn-success`
-                            display = `d-none`
+                        let btnProses = '';
 
+                        if (!sudahValidasi) {
+                            // Tahap 1: Belum divalidasi oleh farmasi -> Aksi utama: Validasi
+                            btnProses = `<button type="button" class="btn btn-sm btn-warning" onclick="showModalValidasiResep('${data}')" title="Validasi Resep & Stok Obat"><i class="ti ti-checklist"></i><span>Validasi</span></button>`;
+                        } else if (!sudahSelesai) {
+                            // Tahap 2: Sudah divalidasi, menunggu penyerahan obat -> Panggil, Selesai, Batal
+                            let btnPanggil = '';
+                            if (row.status !== 'ranap') {
+                                const nmPasien = (row.reg_periksa?.pasien?.nm_pasien || '').replace(/'/g, "\\'");
+                                btnPanggil = `<button type="button" class="btn btn-sm btn-success" onclick="panggilResepPasien('${data}', '${nmPasien}')" title="Panggil Antrian Apotek"><i class="ti ti-phone"></i><span>Panggil</span></button>`;
+                            }
+                            const btnSelesai = `<button type="button" class="btn btn-sm btn-primary" onclick="setPenyerahanResep('${data}')" title="Penyerahan Obat (Selesai)"><i class="ti ti-send"></i><span>Selesai</span></button>`;
+                            const btnBatal = `<button type="button" class="btn btn-sm btn-outline-danger" onclick="batalValidasiResep('${data}')" title="Batal Validasi"><i class="ti ti-x"></i><span>Batal</span></button>`;
+                            btnProses = `${btnPanggil} ${btnSelesai} ${btnBatal}`;
                         } else {
-                            colorBtn = `btn-danger`
-                            display = ``
+                            // Tahap 3: Selesai diserahkan
+                            btnProses = `<span class="badge bg-success-lt text-success d-inline-flex align-items-center gap-1 py-1 px-2" style="font-size:0.75rem;"><i class="ti ti-check"></i><span>Diserahkan</span></span>`;
                         }
 
-                        let btnValidasi = '';
-                        let btnBatalValidasi = '';
-                        if (row.jam === '00:00:00') {
-                            displayPanggil = 'd-none';
-                            displaySelesai = 'd-none';
-                            btnValidasi = `<button class="btn btn-sm btn-warning" onclick="showModalValidasiResep('${data}')"><i class="ti ti-checklist"></i><span>Validasi</span></button>`;
-                        } else if (row.jam_penyerahan === '00:00:00') {
-                            // Sudah divalidasi, belum diserahkan — tampilkan tombol Batal Validasi
-                            btnBatalValidasi = `<button class="btn btn-sm btn-outline-danger" onclick="batalValidasiResep('${data}')"><i class="ti ti-x"></i><span>Batal Validasi</span></button>`;
-                        }
-
-                        // Untuk pasien Ranap, sembunyikan tombol Panggil (karena panggil apotek adalah antrian rawat jalan)
-                        if (row.status === 'ranap') {
-                            displayPanggil = 'd-none';
-                        }
-
-                        return `<div class="d-inline-flex align-items-center gap-1 flex-wrap">
-                            <button class="btn btn-sm ${colorBtn}" onclick="showDetailResep('${data}')"><i class="ti ti-search"></i><span>Lihat</span></button>
-                            ${btnValidasi}
-                            ${btnBatalValidasi}
-                            <button class="btn btn-sm btn-outline-secondary" onclick="modalCetakEtiket('${data}')" title="Cetak Etiket Obat"><i class="ti ti-printer"></i><span>Etiket</span></button>
-                            <button class="btn btn-sm btn-success ${display} ${displayPanggil}" onclick="panggilResepPasien('${data}', '${row.reg_periksa.pasien.nm_pasien}')"><i class="ti ti-phone"></i><span>Panggil</span></button>
-                            <button class="btn btn-sm btn-primary ${display} ${displaySelesai}" onclick="setPenyerahanResep('${data}')"><i class="ti ti-send"></i><span>Selesai</span></button>
+                        return `<div class="d-inline-flex align-items-center gap-1 text-nowrap">
+                            <div class="btn-group btn-group-sm" role="group">
+                                ${btnLihat}
+                                ${btnEtiket}
+                            </div>
+                            ${btnProses}
                         </div>`;
                     },
                 },
@@ -358,19 +385,19 @@
                 },
                 columns: [
                     {
-                        title: '',
+                        title: 'AKSI',
                         data: 'no_permintaan',
                         render: (data, type, row, meta) => {
                             let btnValidasi = '';
                             let btnBatalValidasi = '';
                             if (row.status === 'Belum') {
-                                btnValidasi = `<button class="btn btn-sm btn-warning" onclick="showModalValidasiUdd('${data}')"><i class="ti ti-checklist"></i><span>Validasi</span></button>`;
+                                btnValidasi = `<button type="button" class="btn btn-sm btn-warning" onclick="showModalValidasiUdd('${data}')" title="Validasi Permintaan Stok"><i class="ti ti-checklist"></i><span>Validasi</span></button>`;
                             } else {
-                                btnValidasi = `<button class="btn btn-sm btn-info" onclick="showModalValidasiUdd('${data}')"><i class="ti ti-search"></i><span>Lihat</span></button>`;
-                                btnBatalValidasi = `<button class="btn btn-sm btn-outline-danger" onclick="batalValidasiUdd('${data}')"><i class="ti ti-x"></i><span>Batal Validasi</span></button>`;
+                                btnValidasi = `<button type="button" class="btn btn-sm btn-outline-info" onclick="showModalValidasiUdd('${data}')" title="Lihat Detail Permintaan"><i class="ti ti-eye"></i><span>Lihat</span></button>`;
+                                btnBatalValidasi = `<button type="button" class="btn btn-sm btn-outline-danger" onclick="batalValidasiUdd('${data}')" title="Batal Validasi"><i class="ti ti-x"></i><span>Batal</span></button>`;
                             }
 
-                            return `<div class="d-inline-flex align-items-center gap-1 flex-wrap">
+                            return `<div class="d-inline-flex align-items-center gap-1 text-nowrap">
                                 ${btnValidasi}
                                 ${btnBatalValidasi}
                             </div>`;
