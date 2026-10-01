@@ -145,6 +145,7 @@
     @include('content.farmasi.resep._modalDetailResep')
     @include('content.farmasi.resep._modalValidasiResep')
     @include('content.farmasi.resep._modalValidasiUdd')
+    @include('content.farmasi.resep._modalCetakEtiket')
 @endsection
 @push('script')
     <script>
@@ -245,6 +246,7 @@
                             <button class="btn btn-sm ${colorBtn}" onclick="showDetailResep('${data}')"><i class="ti ti-search"></i><span>Lihat</span></button>
                             ${btnValidasi}
                             ${btnBatalValidasi}
+                            <button class="btn btn-sm btn-outline-secondary" onclick="modalCetakEtiket('${data}')" title="Cetak Etiket Obat"><i class="ti ti-printer"></i><span>Etiket</span></button>
                             <button class="btn btn-sm btn-success ${display} ${displayPanggil}" onclick="panggilResepPasien('${data}', '${row.reg_periksa.pasien.nm_pasien}')"><i class="ti ti-phone"></i><span>Panggil</span></button>
                             <button class="btn btn-sm btn-primary ${display} ${displaySelesai}" onclick="setPenyerahanResep('${data}')"><i class="ti ti-send"></i><span>Selesai</span></button>
                         </div>`;
@@ -487,7 +489,10 @@
             return jams;
         }
 
+        let currentDetailNoResep = '';
         function showDetailResep(no_resep) {
+            currentDetailNoResep = no_resep;
+            modalDetailResep.data('no_resep', no_resep);
             $.get(`{{ url('/farmasi/resep/get') }}`, {
                 no_resep: no_resep
             }).done((response) => {

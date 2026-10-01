@@ -195,6 +195,123 @@ class ResepObatController extends Controller
 		return $pdf->stream('cetak resep.pdf');
 	}
 
+	public function printEtiket(Request $request, $no_resep = null)
+	{
+		$no_resep = $no_resep ?: $request->no_resep;
+		if (!$no_resep) {
+			abort(404, 'Nomor Resep tidak ditemukan');
+		}
+
+		$ukuran = $request->ukuran ?: '8x5'; // '8x6', '8x5', '7x5', '5x3'
+		$itemType = $request->item_type; // 'all' (default), 'umum', 'racik'
+		$itemKey = $request->item_key; // kode_brng or no_racik
+
+		$resep = ResepObat::where('no_resep', $no_resep)->with([
+			'regPeriksa.pasien',
+			'regPeriksa.dokter',
+			'regPeriksa.poliklinik',
+			'regPeriksa.penjab',
+			'dokter',
+			'resepDokter.obat.satuan',
+			'resepRacikan.detail.obat.satuan',
+			'resepRacikan.metode'
+		])->first();
+
+		if (!$resep) {
+			abort(404, 'Data resep tidak ditemukan');
+		}
+
+		$setting = Setting::first();
+		$pegawai = session()->get('pegawai');
+		$petugas = $pegawai ? ($pegawai->nama ?? $pegawai->nik) : 'Apoteker';
+
+		$items = [];
+
+		// 1. Obat Non-Racik (resep_dokter)
+		if (!$itemType || $itemType === 'all' || $itemType === 'umum') {
+			foreach ($resep->resepDokter as $rd) {
+				if ($itemKey && $itemType === 'umum' && $rd->kode_brng != $itemKey) {
+					continue;
+				}
+				$items[] = [
+					'tipe' => 'umum',
+					'kode' => $rd->kode_brng,
+					'nama' => $rd->obat->nama_brng ?? $rd->kode_brng,
+					'satuan' => $rd->obat->satuan->satuan ?? 'TAB',
+					'jml' => $rd->jml,
+					'aturan_pakai' => $rd->aturan_pakai ?: 'Sesuai Petunjuk Dokter',
+					'keterangan' => '',
+					'detail_racik' => []
+				];
+			}
+		}
+
+		// 2. Obat Racikan (resep_dokter_racikan)
+		if (!$itemType || $itemType === 'all' || $itemType === 'racik') {
+			foreach ($resep->resepRacikan as $rr) {
+				if ($itemKey && $itemType === 'racik' && $rr->no_racik != $itemKey) {
+					continue;
+				}
+				$detailList = [];
+				if ($rr->detail) {
+					foreach ($rr->detail as $dtl) {
+						$nmObat = $dtl->obat->nama_brng ?? $dtl->kode_brng;
+						$detailList[] = $nmObat;
+					}
+				}
+				$items[] = [
+					'tipe' => 'racik',
+					'kode' => $rr->no_racik,
+					'nama' => ($rr->metode->nm_racik ?? 'Racikan') . ' ' . $rr->nama_racik,
+					'satuan' => $rr->metode->nm_racik ?? 'Bks',
+					'jml' => $rr->jml_dr,
+					'aturan_pakai' => $rr->aturan_pakai ?: 'Sesuai Petunjuk Dokter',
+					'keterangan' => $rr->keterangan ?: '',
+					'detail_racik' => $detailList
+				];
+			}
+		}
+
+		if (empty($items)) {
+			$items[] = [
+				'tipe' => 'umum',
+				'kode' => '-',
+				'nama' => 'Tidak Ada Obat',
+				'satuan' => '-',
+				'jml' => 0,
+				'aturan_pakai' => '-',
+				'keterangan' => '',
+				'detail_racik' => []
+			];
+		}
+
+		// Dimensions in points (1 cm = 28.3464567 pt)
+		$dimensions = [
+			'8x6' => [226.77, 170.08],
+			'8x5' => [226.77, 141.73],
+			'7x5' => [198.43, 141.73],
+			'5x3' => [141.73, 85.04],
+		];
+
+		$paperSize = $dimensions[$ukuran] ?? $dimensions['8x5'];
+
+		$pdf = Pdf::loadView('content.print.etiketObat', [
+			'resep' => $resep,
+			'items' => $items,
+			'setting' => $setting,
+			'ukuran' => $ukuran,
+			'petugas' => $petugas,
+		])
+		->setPaper([0, 0, $paperSize[0], $paperSize[1]])
+		->setOptions([
+			'defaultFont' => 'Helvetica',
+			'isRemoteEnabled' => true,
+			'isHtml5ParserEnabled' => true,
+		]);
+
+		return $pdf->stream("etiket-{$no_resep}-{$ukuran}.pdf");
+	}
+
 	public function setPenyerahan(Request $request)
 	{
 		$data = [

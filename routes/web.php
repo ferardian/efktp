@@ -482,6 +482,7 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::get('/resep/get', [ResepObatController::class, 'get']);
 	Route::post('/resep/delete', [ResepObatController::class, 'delete']);
 	Route::get('/resep/print', [ResepObatController::class, 'print']);
+	Route::get('/resep/etiket/{no_resep?}', [ResepObatController::class, 'printEtiket']);
 	Route::post('/resep/create-form-paket', [ResepObatController::class, 'createResepPaket']);
 	Route::get('/resep/unvalidated', [ResepObatController::class, 'getUnvalidated']);
 	Route::post('/resep/validate', [ResepObatController::class, 'validateResep']);
@@ -517,6 +518,7 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::get('farmasi/resep/rekap/data', [ResepObatController::class, 'rekapData']);
 	Route::get('farmasi/resep/rekap/pdf', [ResepObatController::class, 'rekapPdf']);
 	Route::get('farmasi/resep/get', [ResepObatController::class, 'get']);
+	Route::get('farmasi/resep/etiket/{no_resep?}', [ResepObatController::class, 'printEtiket']);
 	Route::post('farmasi/resep/set/penyerahan', [ResepObatController::class, 'setPenyerahan']);
 	Route::post('farmasi/resep/batal-validasi', [ResepObatController::class, 'batalValidasi']);
 

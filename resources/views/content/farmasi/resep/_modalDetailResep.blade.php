@@ -15,7 +15,10 @@
 
                 </ol>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer d-flex justify-content-between">
+                <button type="button" class="btn btn-outline-primary" id="btnCetakEtiketDariDetail" onclick="openModalEtiketFromDetail()">
+                    <i class="ti ti-printer me-1"></i>Cetak Etiket
+                </button>
                 <button type="button" class="btn btn-danger" data-bs-dismiss="modal"><i class="ti ti-x me-2"></i>Keluar</button>
             </div>
         </div>
