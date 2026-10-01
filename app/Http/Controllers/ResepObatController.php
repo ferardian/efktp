@@ -207,7 +207,10 @@ class ResepObatController extends Controller
 		$itemKey = $request->item_key; // kode_brng or no_racik
 
 		$resep = ResepObat::where('no_resep', $no_resep)->with([
-			'regPeriksa.pasien',
+			'regPeriksa.pasien.kel',
+			'regPeriksa.pasien.kec',
+			'regPeriksa.pasien.kab',
+			'regPeriksa.pasien.prop',
 			'regPeriksa.dokter',
 			'regPeriksa.poliklinik',
 			'regPeriksa.penjab',
@@ -225,6 +228,64 @@ class ResepObatController extends Controller
 		$pegawai = session()->get('pegawai');
 		$petugas = $pegawai ? ($pegawai->nama ?? $pegawai->nik) : 'Apoteker';
 
+		$pasien = $resep->regPeriksa->pasien ?? null;
+		$alamatLengkap = $pasien ? ($pasien->alamat ?: '-') : '-';
+		if ($pasien) {
+			$wilayah = array_filter([
+				$pasien->kel?->nm_kel ? 'Ds. ' . $pasien->kel->nm_kel : null,
+				$pasien->kec?->nm_kec ? 'Kec. ' . $pasien->kec->nm_kec : null,
+				$pasien->kab?->nm_kab ? 'Kab. ' . $pasien->kab->nm_kab : null,
+				$pasien->prop?->nm_prop ?? null,
+			]);
+			if (!empty($wilayah)) {
+				$strWilayah = implode(', ', $wilayah);
+				if (!str_contains(strtolower($alamatLengkap), strtolower($pasien->kec?->nm_kec ?? '___'))) {
+					$alamatLengkap .= ', ' . $strWilayah;
+				}
+			}
+		}
+
+		$tglResep = (!empty($resep->tgl_peresepan) && $resep->tgl_peresepan !== '0000-00-00') ? $resep->tgl_peresepan : ($resep->tgl_perawatan ?: date('Y-m-d'));
+		$jamResep = (!empty($resep->jam_peresepan) && $resep->jam_peresepan !== '00:00:00') ? $resep->jam_peresepan : ($resep->jam && $resep->jam !== '00:00:00' ? $resep->jam : date('H:i:s'));
+		$waktuLengkap = date('d/m/Y', strtotime($tglResep)) . '  ' . (strlen($jamResep) >= 5 ? substr($jamResep, 0, 8) : '00:00:00');
+
+		$apotekerNama = config('farmasi.apoteker_nama') ?: (env('APOTEKER_NAMA') ?: '-');
+		$apotekerSipa = config('farmasi.apoteker_sipa') ?: (env('APOTEKER_SIPA') ?: '-');
+
+		$parseAturan = function ($rawAturan, $keterangan = '') {
+			$raw = trim($rawAturan ?: '');
+			$dosis = $raw;
+			$petunjuk = 'Sebelum/sesudah makan';
+			$satuanNote = '(sendok takar/tablet/bungkus)';
+
+			if (preg_match('/^(\d+\s*[xX]\s*[\d\.\/\,\-]+)(.*)$/i', $raw, $m)) {
+				$dosis = trim(str_replace(' ', '', strtolower($m[1])));
+				$sisa = trim($m[2]);
+				if (!empty($sisa)) {
+					$petunjuk = $sisa;
+				}
+			} elseif (empty($raw) || $raw === '-' || $raw === 'Sesuai Petunjuk Dokter') {
+				$dosis = '3x1';
+				$petunjuk = 'Sebelum/sesudah makan';
+			}
+
+			if (!empty($keterangan)) {
+				$petunjuk = $keterangan;
+			}
+
+			return [
+				'dosis' => $dosis,
+				'petunjuk' => $petunjuk,
+				'satuan_note' => $satuanNote,
+			];
+		};
+
+		$formatJml = function ($jml) {
+			if (!is_numeric($jml)) return $jml;
+			$f = (float) $jml;
+			return number_format($f, 1, '.', '');
+		};
+
 		$items = [];
 
 		// 1. Obat Non-Racik (resep_dokter)
@@ -233,13 +294,18 @@ class ResepObatController extends Controller
 				if ($itemKey && $itemType === 'umum' && $rd->kode_brng != $itemKey) {
 					continue;
 				}
+				$aturanParsed = $parseAturan($rd->aturan_pakai);
 				$items[] = [
 					'tipe' => 'umum',
 					'kode' => $rd->kode_brng,
 					'nama' => $rd->obat->nama_brng ?? $rd->kode_brng,
-					'satuan' => $rd->obat->satuan->satuan ?? 'TAB',
+					'satuan' => $rd->obat->satuan->satuan ?? 'Kapsul',
 					'jml' => $rd->jml,
+					'jml_formatted' => $formatJml($rd->jml),
 					'aturan_pakai' => $rd->aturan_pakai ?: 'Sesuai Petunjuk Dokter',
+					'dosis' => $aturanParsed['dosis'],
+					'petunjuk' => $aturanParsed['petunjuk'],
+					'satuan_note' => $aturanParsed['satuan_note'],
 					'keterangan' => '',
 					'detail_racik' => []
 				];
@@ -259,13 +325,18 @@ class ResepObatController extends Controller
 						$detailList[] = $nmObat;
 					}
 				}
+				$aturanParsed = $parseAturan($rr->aturan_pakai, $rr->keterangan);
 				$items[] = [
 					'tipe' => 'racik',
 					'kode' => $rr->no_racik,
 					'nama' => ($rr->metode->nm_racik ?? 'Racikan') . ' ' . $rr->nama_racik,
-					'satuan' => $rr->metode->nm_racik ?? 'Bks',
+					'satuan' => $rr->metode->nm_racik ?? 'Bungkus',
 					'jml' => $rr->jml_dr,
+					'jml_formatted' => $formatJml($rr->jml_dr),
 					'aturan_pakai' => $rr->aturan_pakai ?: 'Sesuai Petunjuk Dokter',
+					'dosis' => $aturanParsed['dosis'],
+					'petunjuk' => $aturanParsed['petunjuk'],
+					'satuan_note' => $aturanParsed['satuan_note'],
 					'keterangan' => $rr->keterangan ?: '',
 					'detail_racik' => $detailList
 				];
@@ -279,7 +350,11 @@ class ResepObatController extends Controller
 				'nama' => 'Tidak Ada Obat',
 				'satuan' => '-',
 				'jml' => 0,
+				'jml_formatted' => '0.0',
 				'aturan_pakai' => '-',
+				'dosis' => '-',
+				'petunjuk' => '-',
+				'satuan_note' => '',
 				'keterangan' => '',
 				'detail_racik' => []
 			];
@@ -301,6 +376,12 @@ class ResepObatController extends Controller
 			'setting' => $setting,
 			'ukuran' => $ukuran,
 			'petugas' => $petugas,
+			'alamat_lengkap' => $alamatLengkap,
+			'waktu_lengkap' => $waktuLengkap,
+			'apoteker_nama' => $apotekerNama,
+			'apoteker_sipa' => $apotekerSipa,
+			'pasien' => $pasien,
+			'dokter_nama' => $resep->dokter->nm_dokter ?? ($resep->regPeriksa->dokter->nm_dokter ?? '-'),
 		])
 		->setPaper([0, 0, $paperSize[0], $paperSize[1]])
 		->setOptions([

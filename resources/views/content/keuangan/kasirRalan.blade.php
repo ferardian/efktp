@@ -449,8 +449,8 @@
                         <div class="row g-2 align-items-end">
                             <div class="col-md-6">
                                 <label class="form-label small mb-1">Nama / Kode Tindakan</label>
-                                <div class="input-group input-group-sm">
-                                    <input type="text" class="form-control form-control-sm" id="kasirSearchTindakanInput" placeholder="Ketik nama / kode tindakan..." autocomplete="off">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="kasirSearchTindakanInput" placeholder="Ketik nama / kode tindakan..." autocomplete="off">
                                     <button type="button" class="btn btn-primary" onclick="searchMasterTindakan()">
                                         <i class="ti ti-search me-1"></i> Cari
                                     </button>
@@ -458,10 +458,10 @@
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label small mb-1">Diskon per Item (Rp)</label>
-                                <input type="number" class="form-control form-control-sm" id="kasirTindakanDiskon" value="0" min="0">
+                                <input type="number" class="form-control" id="kasirTindakanDiskon" value="0" min="0">
                             </div>
                             <div class="col-md-3">
-                                <button type="button" class="btn btn-sm btn-outline-secondary w-100" onclick="$('#kasirSearchTindakanInput').val(''); searchMasterTindakan();">
+                                <button type="button" class="btn btn-outline-secondary w-100" onclick="$('#kasirSearchTindakanInput').val(''); searchMasterTindakan();">
                                     <i class="ti ti-list me-1"></i> Tampilkan Semua
                                 </button>
                             </div>
@@ -1242,6 +1242,44 @@
         });
     }
 
+    function calculateMasterTindakanPrice(item, pelaksana) {
+        let price = 0;
+        const material = parseFloat(item.material) || 0;
+        const bhp = parseFloat(item.bhp) || 0;
+        const jmDr = parseFloat(item.tarif_tindakandr) || 0;
+        const jmPr = parseFloat(item.tarif_tindakanpr) || 0;
+        const kso = parseFloat(item.kso) || 0;
+        const menejemen = parseFloat(item.menejemen) || 0;
+
+        if (pelaksana === 'dr') {
+            price = parseFloat(item.total_byrdr) || 0;
+            if (price === 0 && (material > 0 || bhp > 0 || menejemen > 0 || kso > 0)) {
+                price = material + bhp + jmDr + kso + menejemen;
+            }
+        } else if (pelaksana === 'pr') {
+            price = parseFloat(item.total_byrpr) || 0;
+            if (price === 0 && (material > 0 || bhp > 0 || menejemen > 0 || kso > 0)) {
+                price = material + bhp + jmPr + kso + menejemen;
+            }
+        } else if (pelaksana === 'drpr') {
+            price = parseFloat(item.total_byrdrpr) || 0;
+            if (price === 0 && (material > 0 || bhp > 0 || menejemen > 0 || kso > 0)) {
+                price = material + bhp + jmDr + jmPr + kso + menejemen;
+            }
+        }
+
+        // Secondary fallback: jika masih 0 tapi ada total_byrdr yang terisi dan jmDr = 0 (misal tarif sarana hanya terhitung di total_byrdr)
+        if (price === 0) {
+            if (pelaksana === 'pr' && parseFloat(item.total_byrdr) > 0 && jmDr === 0) {
+                price = parseFloat(item.total_byrdr);
+            } else if (pelaksana === 'dr' && parseFloat(item.total_byrpr) > 0 && jmPr === 0) {
+                price = parseFloat(item.total_byrpr);
+            }
+        }
+
+        return price;
+    }
+
     function renderMasterTindakanTable(data) {
         const tbody = $('#tabelHasilPencarianTindakan tbody');
         const pelaksana = $('input[name="kasirTindakanType"]:checked').val();
@@ -1253,10 +1291,7 @@
 
         let rows = '';
         data.forEach((item, index) => {
-            let price = 0;
-            if (pelaksana === 'dr') price = parseFloat(item.total_byrdr) || 0;
-            else if (pelaksana === 'pr') price = parseFloat(item.total_byrpr) || 0;
-            else if (pelaksana === 'drpr') price = parseFloat(item.total_byrdrpr) || 0;
+            const price = calculateMasterTindakanPrice(item, pelaksana);
 
             rows += `<tr>
                 <td class="font-monospace small">${item.kd_jenis_prw}</td>
@@ -1280,10 +1315,7 @@
         if (!item) return;
 
         const pelaksana = $('input[name="kasirTindakanType"]:checked').val();
-        let price = 0;
-        if (pelaksana === 'dr') price = parseFloat(item.total_byrdr) || 0;
-        else if (pelaksana === 'pr') price = parseFloat(item.total_byrpr) || 0;
-        else if (pelaksana === 'drpr') price = parseFloat(item.total_byrdrpr) || 0;
+        const price = calculateMasterTindakanPrice(item, pelaksana);
 
         const diskon = parseFloat($('#kasirTindakanDiskon').val()) || 0;
         const subtotal = Math.max(0, price - diskon);

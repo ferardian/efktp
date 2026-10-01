@@ -82,11 +82,23 @@ class JenisPerawatanController extends Controller
 
         if ($request->pelaksana) {
             if ($request->pelaksana == 'dr') {
-                $data = $data->where('total_byrdr', '>', 0);
+                $data = $data->where(function($q) {
+                    $q->where('total_byrdr', '>', 0)
+                      ->orWhere('material', '>', 0)
+                      ->orWhere('menejemen', '>', 0);
+                });
             } elseif ($request->pelaksana == 'pr') {
-                $data = $data->where('total_byrpr', '>', 0);
+                $data = $data->where(function($q) {
+                    $q->where('total_byrpr', '>', 0)
+                      ->orWhere('material', '>', 0)
+                      ->orWhere('menejemen', '>', 0);
+                });
             } elseif ($request->pelaksana == 'drpr') {
-                $data = $data->where('total_byrdrpr', '>', 0);
+                $data = $data->where(function($q) {
+                    $q->where('total_byrdrpr', '>', 0)
+                      ->orWhere('material', '>', 0)
+                      ->orWhere('menejemen', '>', 0);
+                });
             }
         }
 
