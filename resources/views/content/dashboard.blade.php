@@ -238,9 +238,11 @@
 
         function setCardKunjungan() {
             getRegPeriksa().done((response) => {
-                const totalKunjungan = response.length;
-                const totalBpjs = response.filter((item) => item.kd_pj === 'BPJ').length;
-                const totalUmum = response.filter((item) => item.kd_pj === 'A09').length;
+                const bpjsCodes = ['BPJ', 'A65', 'A28'];
+                const umumCodes = ['-', 'A09', 'A50'];
+
+                const totalBpjs = response.filter((item) => bpjsCodes.includes(item.kd_pj)).length;
+                const totalUmum = response.filter((item) => umumCodes.includes(item.kd_pj) || !item.kd_pj).length;
                 const totalDiperiksa = response.filter((item) => item.stts === 'Sudah').length;
                 const totalMenunggu = response.filter((item) => item.stts === 'Belum').length;
                 const totalDirujuk = response.filter((item) => item.stts === 'Dirujuk').length;
