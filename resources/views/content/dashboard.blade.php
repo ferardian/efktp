@@ -238,11 +238,19 @@
 
         function setCardKunjungan() {
             getRegPeriksa().done((response) => {
-                const bpjsCodes = ['BPJ', 'A65', 'A28'];
-                const umumCodes = ['-', 'A09', 'A50'];
+                const totalKunjungan = response ? response.length : 0;
 
-                const totalBpjs = response.filter((item) => bpjsCodes.includes(item.kd_pj)).length;
-                const totalUmum = response.filter((item) => umumCodes.includes(item.kd_pj) || !item.kd_pj).length;
+                // Deteksi dinamis: Cek jika nama penjamin mengandung 'BPJS' atau kode penjamin BPJS
+                const isBpjs = (item) => {
+                    const pjName = (item.penjab?.png_jawab || '').toUpperCase();
+                    const pjCode = (item.kd_pj || '').toUpperCase();
+                    return pjName.includes('BPJS') || ['BPJ', 'A65', 'A28'].includes(pjCode);
+                };
+
+                const totalBpjs = response.filter(isBpjs).length;
+                // Pasien Umum mencakup semua pasien non-BPJS secara universal
+                const totalUmum = totalKunjungan - totalBpjs;
+
                 const totalDiperiksa = response.filter((item) => item.stts === 'Sudah').length;
                 const totalMenunggu = response.filter((item) => item.stts === 'Belum').length;
                 const totalDirujuk = response.filter((item) => item.stts === 'Dirujuk').length;
