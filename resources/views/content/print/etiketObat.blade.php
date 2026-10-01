@@ -46,7 +46,6 @@
         .etiket-frame {
             border: 1.8pt solid #0b5e28;
             box-sizing: border-box;
-            height: 57mm;
         }
         .header-table {
             width: 100%;
@@ -207,7 +206,6 @@
         .etiket-frame {
             border: 1.5pt solid #0b5e28;
             box-sizing: border-box;
-            height: 48mm;
         }
         .header-table {
             width: 100%;
@@ -368,7 +366,6 @@
         .etiket-frame {
             border: 1.3pt solid #0b5e28;
             box-sizing: border-box;
-            height: 48mm;
         }
         .header-table {
             width: 100%;
@@ -525,7 +522,6 @@
         .etiket-frame {
             border: 0.8pt solid #0b5e28;
             box-sizing: border-box;
-            height: 28.4mm;
         }
         .header-table {
             width: 100%;
