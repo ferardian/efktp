@@ -1301,15 +1301,23 @@ class ResepObatController extends Controller
 				$detailObatRacikanToInsert = [];
 
 				// 1. Proses Obat Non-Racikan
+				$activeNonRacikKodes = [];
 				foreach ($items_non_racik as $item) {
 					$kode_brng = $item['kode_brng'] ?? '';
 					$qty = floatval($item['jml'] ?? 0);
-					$aturan = $item['aturan_pakai'] ?? '';
+					$aturan = trim($item['aturan_pakai'] ?? '');
 					$is_deleted = !empty($item['is_deleted']);
+					$kode_brng_asal = $item['kode_brng_asal'] ?? null;
 
 					if (!$kode_brng || $is_deleted || $qty <= 0) {
+						DB::table('resep_dokter')
+							->where('no_resep', $no_resep)
+							->where('kode_brng', $kode_brng)
+							->delete();
 						continue;
 					}
+
+					$activeNonRacikKodes[] = $kode_brng;
 
 					$obat = DB::table('databarang')->where('kode_brng', $kode_brng)->first();
 					if (!$obat) {
@@ -1355,6 +1363,35 @@ class ResepObatController extends Controller
 							'aturan' => $aturan
 						];
 					}
+
+					// Sinkronkan ke tabel resep_dokter agar aturan pakai & obat terbaru tersimpan
+					if ($kode_brng_asal && $kode_brng_asal !== $kode_brng) {
+						DB::table('resep_dokter')
+							->where('no_resep', $no_resep)
+							->where('kode_brng', $kode_brng_asal)
+							->delete();
+					}
+
+					DB::table('resep_dokter')->updateOrInsert(
+						['no_resep' => $no_resep, 'kode_brng' => $kode_brng],
+						[
+							'jml' => $qty,
+							'aturan_pakai' => $aturan
+						]
+					);
+
+					if (!empty($aturan)) {
+						DB::table('master_aturan_pakai')->insertOrIgnore([
+							'aturan' => $aturan
+						]);
+					}
+				}
+
+				if (!empty($activeNonRacikKodes)) {
+					DB::table('resep_dokter')
+						->where('no_resep', $no_resep)
+						->whereNotIn('kode_brng', $activeNonRacikKodes)
+						->delete();
 				}
 
 				// 2. Ambil master racikan dokter asli untuk metadata racikan (nama_racik, kd_racik, keterangan)
@@ -1379,37 +1416,62 @@ class ResepObatController extends Controller
 				foreach ($items_racik as $ir) {
 					$nr = $ir['no_racik'] ?? null;
 					if (!$nr) continue;
+					$aturanRacik = trim($ir['aturan_pakai'] ?? '');
+					$jmlRacik = floatval($ir['jml_dr'] ?? 1);
+
 					if (isset($racikMap[$nr])) {
 						if (isset($ir['jml_dr'])) {
-							$racikMap[$nr]['jml_dr'] = floatval($ir['jml_dr']);
+							$racikMap[$nr]['jml_dr'] = $jmlRacik;
 						}
 						if (isset($ir['aturan_pakai'])) {
-							$racikMap[$nr]['aturan_pakai'] = $ir['aturan_pakai'];
+							$racikMap[$nr]['aturan_pakai'] = $aturanRacik;
 						}
 					} else {
 						$racikMap[$nr] = [
 							'no_racik' => $nr,
 							'nama_racik' => 'Racikan ' . $nr,
 							'kd_racik' => 'R01',
-							'jml_dr' => floatval($ir['jml_dr'] ?? 1),
-							'aturan_pakai' => $ir['aturan_pakai'] ?? '',
+							'jml_dr' => $jmlRacik,
+							'aturan_pakai' => $aturanRacik,
 							'keterangan' => '-'
 						];
+					}
+
+					// Sinkronkan ke tabel resep_dokter_racikan
+					DB::table('resep_dokter_racikan')->updateOrInsert(
+						['no_resep' => $no_resep, 'no_racik' => $nr],
+						[
+							'nama_racik' => $racikMap[$nr]['nama_racik'],
+							'kd_racik' => $racikMap[$nr]['kd_racik'],
+							'jml_dr' => $racikMap[$nr]['jml_dr'],
+							'aturan_pakai' => $racikMap[$nr]['aturan_pakai'],
+							'keterangan' => $racikMap[$nr]['keterangan'] ?? '-'
+						]
+					);
+
+					if (!empty($aturanRacik)) {
+						DB::table('master_aturan_pakai')->insertOrIgnore([
+							'aturan' => $aturanRacik
+						]);
 					}
 				}
 
 				// 3. Proses Detail Bahan Racikan & Header Racikan
 				$processedRacikHeaders = [];
+				$activeRacikDetailKeys = [];
 
 				foreach ($items_racik_detail as $ird) {
 					$no_racik = $ird['no_racik'] ?? '';
 					$kode_brng = $ird['kode_brng'] ?? '';
 					$qty = floatval($ird['jml'] ?? 0);
 					$is_deleted = !empty($ird['is_deleted']);
+					$kode_brng_asal = $ird['kode_brng_asal'] ?? null;
 
 					if (!$no_racik || !$kode_brng || $is_deleted || $qty <= 0) {
 						continue;
 					}
+
+					$activeRacikDetailKeys[] = "{$no_racik}_{$kode_brng}";
 
 					$obat = DB::table('databarang')->where('kode_brng', $kode_brng)->first();
 					if (!$obat) {
@@ -1454,6 +1516,29 @@ class ResepObatController extends Controller
 						'kode_brng' => $kode_brng
 					];
 
+					// Sinkronkan ke tabel resep_dokter_racikan_detail
+					if ($kode_brng_asal && $kode_brng_asal !== $kode_brng) {
+						DB::table('resep_dokter_racikan_detail')
+							->where('no_resep', $no_resep)
+							->where('no_racik', $no_racik)
+							->where('kode_brng', $kode_brng_asal)
+							->delete();
+					}
+
+					DB::table('resep_dokter_racikan_detail')->updateOrInsert(
+						[
+							'no_resep' => $no_resep,
+							'no_racik' => $no_racik,
+							'kode_brng' => $kode_brng
+						],
+						[
+							'p1' => 1,
+							'p2' => 1,
+							'kandungan' => 0,
+							'jml' => $qty
+						]
+					);
+
 					// Masukkan header obat_racikan jika belum dimasukkan
 					if (!isset($processedRacikHeaders[$no_racik])) {
 						$header = $racikMap[$no_racik] ?? [
@@ -1477,6 +1562,22 @@ class ResepObatController extends Controller
 							'keterangan' => $header['keterangan'] ?? '-'
 						];
 						$processedRacikHeaders[$no_racik] = true;
+					}
+				}
+
+				if (!empty($activeRacikDetailKeys)) {
+					$existingDetails = DB::table('resep_dokter_racikan_detail')
+						->where('no_resep', $no_resep)
+						->get();
+					foreach ($existingDetails as $ed) {
+						$key = "{$ed->no_racik}_{$ed->kode_brng}";
+						if (!in_array($key, $activeRacikDetailKeys)) {
+							DB::table('resep_dokter_racikan_detail')
+								->where('no_resep', $no_resep)
+								->where('no_racik', $ed->no_racik)
+								->where('kode_brng', $ed->kode_brng)
+								->delete();
+						}
 					}
 				}
 
@@ -1515,7 +1616,7 @@ class ResepObatController extends Controller
 
 			return response()->json([
 				'status' => 'success',
-				'message' => 'Berhasil memvalidasi dan meng-adjust resep obat (Resep asli dokter tetap tersimpan)',
+				'message' => 'Berhasil memvalidasi dan menyimpan perubahan resep obat',
 				'data' => $result
 			], 200);
 		} catch (\Exception $e) {
