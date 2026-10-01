@@ -324,15 +324,25 @@
             </div>
         </div>
 
-        {{-- CHARTS ROW (10 BESAR PENYAKIT, KELURAHAN, KECAMATAN) --}}
+        {{-- CHARTS ROW 1: KARAKTERISTIK PASIEN, KUNJUNGAN POLI, 10 BESAR PENYAKIT --}}
         <div class="row row-cards mb-3">
+            <div class="col-lg-4 col-md-12">
+                @include('content.dashboard._demografiPasien')
+            </div>
+            <div class="col-lg-4 col-md-12">
+                @include('content.dashboard._grafikPoli')
+            </div>
             <div class="col-lg-4 col-md-12">
                 @include('content.dashboard._grafikPenyakit')
             </div>
-            <div class="col-lg-4 col-md-12">
+        </div>
+
+        {{-- CHARTS ROW 2: SEBARAN WILAYAH (KELURAHAN & KECAMATAN) --}}
+        <div class="row row-cards mb-3">
+            <div class="col-lg-6 col-md-12">
                 @include('content.dashboard._grafikKelurahan')
             </div>
-            <div class="col-lg-4 col-md-12">
+            <div class="col-lg-6 col-md-12">
                 @include('content.dashboard._grafikKecamatan')
             </div>
         </div>
@@ -362,6 +372,7 @@
         });
 
         function loadAllDashboardCharts(tgl1, tgl2) {
+            dataDemografiPasien(tgl1, tgl2);
             dataGrafikDiagnosa(tgl1, tgl2);
             dataGrafikKelurahan(tgl1, tgl2);
             dataGrafikKecamatan(tgl1, tgl2);

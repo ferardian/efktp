@@ -132,6 +132,7 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::post('/logout', [AuthController::class, 'logout']);
 	Route::get('/logout', [AuthController::class, 'logout']);
 	Route::get('/', [DashboardController::class, 'index']);
+	Route::get('/dashboard/demografi', [DashboardController::class, 'getDemografi']);
 
 	// pasien
 	Route::get('/pasien/riwayat', [PasienController::class, 'getRiwayat']);
