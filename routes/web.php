@@ -7,6 +7,7 @@ use App\Http\Controllers\Bridging as Bridging;
 use App\Http\Controllers\Bridging\Icare;
 use App\Http\Controllers\BridgingPcareSettingController;
 use App\Http\Controllers\CacatFisikController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DataBarangController;
 use App\Http\Controllers\DiagnosaPasienController;
 use App\Http\Controllers\DokterController;
@@ -130,9 +131,7 @@ Route::middleware('auth:web,admin')->group(function () {
 
 	Route::post('/logout', [AuthController::class, 'logout']);
 	Route::get('/logout', [AuthController::class, 'logout']);
-	Route::get('/', function () {
-		return view('content.dashboard', ['data' => Setting::first()]);
-	});
+	Route::get('/', [DashboardController::class, 'index']);
 
 	// pasien
 	Route::get('/pasien/riwayat', [PasienController::class, 'getRiwayat']);

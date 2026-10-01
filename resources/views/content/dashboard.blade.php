@@ -1,153 +1,299 @@
 @extends('layout')
 
 @section('body')
-    <div class="container">
-        <div class="card mb-2">
-            <div class="card-body">
-                <span>Selamat Datang : {{ session()->get('pegawai')->nama }}</span>
-                <h1>{{ $data->nama_instansi }}</h1>
+    <div class="container-xl">
+        {{-- HERO WELCOME BANNER --}}
+        <div class="card mb-3 border-0 shadow-sm overflow-hidden" style="background: linear-gradient(135deg, #1b3a5b 0%, #206bc4 100%); color: #ffffff;">
+            <div class="card-body p-4 position-relative">
+                <div class="row align-items-center">
+                    <div class="col-lg-7 col-md-12 mb-3 mb-lg-0">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="avatar avatar-md bg-white text-primary rounded-circle shadow-sm me-3">
+                                <i class="ti ti-user-check fs-2"></i>
+                            </span>
+                            <div>
+                                <span class="badge bg-white-lt text-white px-2 py-1 mb-1">
+                                    <i class="ti ti-shield-check me-1"></i> {{ session()->get('pegawai')->nama ?? 'Petugas' }}
+                                </span>
+                                <h2 class="mb-0 text-white fw-bold">{{ $data->nama_instansi }}</h2>
+                                <div class="text-white opacity-75 small">Sistem Pelayanan Pasien &amp; Informasi Manajemen Klinis Terpadu</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-5 col-md-12">
+                        <div class="d-flex flex-wrap gap-2 justify-content-lg-end justify-content-start">
+                            <a href="{{ url('/registrasi') }}" class="btn btn-sm btn-white text-primary fw-bold shadow-sm">
+                                <i class="ti ti-user-plus me-1"></i> Registrasi
+                            </a>
+                            <a href="{{ url('/kasir/ralan') }}" class="btn btn-sm btn-white text-primary fw-bold shadow-sm">
+                                <i class="ti ti-cash me-1"></i> Kasir Ralan
+                            </a>
+                            <a href="{{ url('/ranap') }}" class="btn btn-sm btn-white text-primary fw-bold shadow-sm">
+                                <i class="ti ti-bed me-1"></i> Rawat Inap
+                            </a>
+                            <a href="{{ url('/farmasi/resep') }}" class="btn btn-sm btn-white text-primary fw-bold shadow-sm">
+                                <i class="ti ti-pill me-1"></i> Resep Obat
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="row row-cards">
+
+        {{-- KPI STATS CARDS ROW (5 CARDS) --}}
+        <div class="row row-cards mb-3">
+            {{-- 1. TOTAL KUNJUNGAN --}}
             <div class="col-sm-6 col-lg-3">
-                <div class="card">
-                    <div class="card-status-top bg-primary"></div>
-                    <div class="card-stamp">
-                        <div class="card-stamp-icon bg-primary">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
-                                <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
-                            </svg>
-                        </div>
-                    </div>
+                <div class="card card-sm shadow-sm h-100 border-0 border-top border-primary border-3">
                     <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <div class="subheader">Kunjungan Pasien</div>
-                        </div>
-                        <div class="d-flex align-items-baseline">
-                            <div class="h1 mb-3 me-2" id="totalKunjungan">0</div>
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-primary text-white avatar">
+                                    <i class="ti ti-users fs-2"></i>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="subheader mb-0">Kunjungan Hari Ini</div>
+                                    <span class="badge bg-green-lt small py-0 px-1" title="Real-time hari ini">
+                                        <span class="badge-dot bg-green me-1"></span>Live
+                                    </span>
+                                </div>
+                                <div class="h1 mb-0 mt-1" id="totalKunjungan">0</div>
+                                <div class="text-muted small mt-1">Total pasien terdaftar</div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-sm-6 col-lg-3">
-                <div class="card">
-                    <div class="card-status-top bg-yellow"></div>
-                    <div class="card-stamp">
-                        <div class="card-stamp-icon bg-yellow">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-cashapp" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <path
-                                    d="M17.1 8.648a.568 .568 0 0 1 -.761 .011a5.682 5.682 0 0 0 -3.659 -1.34c-1.102 0 -2.205 .363 -2.205 1.374c0 1.023 1.182 1.364 2.546 1.875c2.386 .796 4.363 1.796 4.363 4.137c0 2.545 -1.977 4.295 -5.204 4.488l-.295 1.364a.557 .557 0 0 1 -.546 .443h-2.034l-.102 -.011a.568 .568 0 0 1 -.432 -.67l.318 -1.444a7.432 7.432 0 0 1 -3.273 -1.784v-.011a.545 .545 0 0 1 0 -.773l1.137 -1.102c.214 -.2 .547 -.2 .761 0a5.495 5.495 0 0 0 3.852 1.5c1.478 0 2.466 -.625 2.466 -1.614c0 -.989 -1 -1.25 -2.886 -1.954c-2 -.716 -3.898 -1.728 -3.898 -4.091c0 -2.75 2.284 -4.091 4.989 -4.216l.284 -1.398a.545 .545 0 0 1 .545 -.432h2.023l.114 .012a.544 .544 0 0 1 .42 .647l-.307 1.557a8.528 8.528 0 0 1 2.818 1.58l.023 .022c.216 .228 .216 .569 0 .773l-1.057 1.057z" />
-                            </svg>
-                        </div>
-                    </div>
+
+            {{-- 2. PEMBIAYAAN UMUM --}}
+            <div class="col-sm-6 col-lg-2">
+                <div class="card card-sm shadow-sm h-100 border-0 border-top border-warning border-3">
                     <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <div class="subheader">Pembiayaan Umum</div>
-                        </div>
-                        <div class="d-flex align-items-baseline">
-                            <div class="h1 mb-3 me-2" id="totalUmum">0</div>
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-warning text-white avatar">
+                                    <i class="ti ti-wallet fs-2"></i>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <div class="subheader mb-0">Pasien Umum</div>
+                                <div class="h1 mb-0 mt-1" id="totalUmum">0</div>
+                                <div class="text-muted small mt-1">Bayar mandiri</div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-sm-6 col-lg-3">
-                <div class="card">
-                    <div class="card-status-top bg-green"></div>
-                    <div class="card-stamp">
-                        <div class="card-stamp-icon bg-green">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-heart-handshake" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <path d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572" />
-                                <path d="M12 6l-3.293 3.293a1 1 0 0 0 0 1.414l.543 .543c.69 .69 1.81 .69 2.5 0l1 -1a3.182 3.182 0 0 1 4.5 0l2.25 2.25" />
-                                <path d="M12.5 15.5l2 2" />
-                                <path d="M15 13l2 2" />
-                            </svg>
-                        </div>
-                    </div>
+
+            {{-- 3. PEMBIAYAAN BPJS --}}
+            <div class="col-sm-6 col-lg-2">
+                <div class="card card-sm shadow-sm h-100 border-0 border-top border-success border-3">
                     <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <div class="subheader">Pembiayaan BPJS</div>
-                        </div>
-                        <div class="d-flex align-items-baseline">
-                            <div class="h1 mb-3 me-2" id="totalBpjs">0</div>
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-success text-white avatar">
+                                    <i class="ti ti-shield-heart fs-2"></i>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <div class="subheader mb-0">Pasien BPJS</div>
+                                <div class="h1 mb-0 mt-1" id="totalBpjs">0</div>
+                                <div class="text-muted small mt-1">JKN / KIS</div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-sm-6 col-lg-3">
-                <div class="card">
-                    <div class="card-status-top bg-red"></div>
-                    <div class="card-stamp">
-                        <div class="card-stamp-icon bg-red">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-stethoscope" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <path d="M6 4h-1a2 2 0 0 0 -2 2v3.5h0a5.5 5.5 0 0 0 11 0v-3.5a2 2 0 0 0 -2 -2h-1" />
-                                <path d="M8 15a6 6 0 1 0 12 0v-3" />
-                                <path d="M11 3v2" />
-                                <path d="M6 3v2" />
-                                <path d="M20 10m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
-                            </svg>
-                        </div>
-                    </div>
+
+            {{-- 4. STATUS PELAYANAN --}}
+            <div class="col-sm-6 col-lg-2">
+                <div class="card card-sm shadow-sm h-100 border-0 border-top border-danger border-3">
                     <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <div class="subheader">Diperiksa/Dirujuk</div>
-                        </div>
-                        <div class="d-flex align-items-baseline">
-                            <div class="h1 mb-3 me-2" id="totalDiperiksa">0</div>
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-danger text-white avatar">
+                                    <i class="ti ti-stethoscope fs-2"></i>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <div class="subheader mb-0">Pelayanan</div>
+                                <div class="h2 mb-0 mt-1">
+                                    <span class="text-success" id="totalDiperiksa">0</span>
+                                    <span class="text-muted fs-4">/</span>
+                                    <span class="text-warning" id="totalMenunggu">0</span>
+                                </div>
+                                <div class="text-muted small mt-1">
+                                    <span class="text-success fw-bold">Selesai</span> / <span class="text-warning fw-bold">Menunggu</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-4 col-md-12 col-sm-12">
+
+            {{-- 5. KETERISIAN BED RAWAT INAP (BOR) --}}
+            <div class="col-sm-12 col-lg-3">
+                <div class="card card-sm shadow-sm h-100 border-0 border-top border-indigo border-3">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-indigo text-white avatar">
+                                    <i class="ti ti-bed fs-2"></i>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="subheader mb-0">Bed Rawat Inap</div>
+                                    <span class="badge bg-indigo-lt small py-0 px-1">BOR {{ $bedStats['bor'] ?? 0 }}%</span>
+                                </div>
+                                <div class="h1 mb-0 mt-1">
+                                    {{ $bedStats['isi'] ?? 0 }} <span class="fs-4 text-muted">/ {{ $bedStats['total'] ?? 0 }} Terisi</span>
+                                </div>
+                                <div class="text-muted small mt-1">
+                                    <span class="text-success fw-bold">{{ $bedStats['kosong'] ?? 0 }}</span> Bed siap pakai
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- GLOBAL UNIFIED FILTER BAR FOR CHARTS --}}
+        <div class="card mb-3 shadow-sm border-0">
+            <div class="card-body py-2 px-3">
+                <div class="row align-items-center justify-content-between g-2">
+                    <div class="col-xl-5 col-lg-6 col-md-12 d-flex align-items-center flex-wrap gap-2">
+                        <span class="text-muted small fw-bold d-flex align-items-center">
+                            <i class="ti ti-adjustments-horizontal text-primary me-1 fs-3"></i> Periode Analisis:
+                        </span>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-primary btn-period active" data-type="today">Hari Ini</button>
+                            <button type="button" class="btn btn-outline-primary btn-period" data-type="7days">7 Hari</button>
+                            <button type="button" class="btn btn-outline-primary btn-period" data-type="month">Bulan Ini</button>
+                        </div>
+                    </div>
+                    <div class="col-xl-6 col-lg-6 col-md-12">
+                        <div class="d-flex align-items-center justify-content-lg-end gap-2">
+                            <div class="input-group input-group-sm" style="max-width: 320px;">
+                                <span class="input-group-text bg-light text-muted"><i class="ti ti-calendar"></i></span>
+                                <input type="text" class="form-control filterTangal text-center" id="tglGlobal1" value="{{ date('d-m-Y') }}" placeholder="Tgl Mulai">
+                                <span class="input-group-text bg-light text-muted">s.d.</span>
+                                <input type="text" class="form-control filterTangal text-center" id="tglGlobal2" value="{{ date('d-m-Y') }}" placeholder="Tgl Akhir">
+                                <button class="btn btn-primary" id="btnApplyGlobalFilter" title="Terapkan Filter">
+                                    <i class="ti ti-search me-1"></i> Terapkan
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- CHARTS ROW (10 BESAR PENYAKIT, KELURAHAN, KECAMATAN) --}}
+        <div class="row row-cards mb-3">
+            <div class="col-lg-4 col-md-12">
                 @include('content.dashboard._grafikPenyakit')
             </div>
-            <div class="col-lg-4 col-md-12 col-sm-12">
+            <div class="col-lg-4 col-md-12">
                 @include('content.dashboard._grafikKelurahan')
             </div>
-            <div class="col-lg-4 col-md-12 col-sm-12">
+            <div class="col-lg-4 col-md-12">
                 @include('content.dashboard._grafikKecamatan')
             </div>
-            <div class="col-lg-12 col-md-12 col-sm-12">
+        </div>
+
+        {{-- ANNUAL TREND CHART --}}
+        <div class="row row-cards mb-4">
+            <div class="col-12">
                 @include('content.dashboard._grafikTahunan')
             </div>
         </div>
     </div>
 @endsection
+
 @push('script')
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.0.0/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.0.0/chartjs-plugin-datalabels.min.js"></script>
     <script>
         $(document).ready(() => {
             setCardKunjungan();
-            dataGrafikKecamatan();
-            dataGrafikKelurahan();
-            dataGrafikTahunan()
-        })
+            
+            // Initial load for all charts (Hari Ini)
+            const todayFormatted = $('#tglGlobal1').val();
+            loadAllDashboardCharts(splitTanggal(todayFormatted), splitTanggal(todayFormatted));
+            
+            // Tahunan
+            dataGrafikTahunan();
+        });
+
+        function loadAllDashboardCharts(tgl1, tgl2) {
+            dataGrafikDiagnosa(tgl1, tgl2);
+            dataGrafikKelurahan(tgl1, tgl2);
+            dataGrafikKecamatan(tgl1, tgl2);
+        }
 
         function setCardKunjungan() {
             getRegPeriksa().done((response) => {
-                const totalKunjungan = response.length
-                const totalBpjs = response.filter((bpjs) => {
-                    return bpjs.kd_pj == 'BPJ';
-                }).length
-                const totalUmum = response.filter((umum) => {
-                    return umum.kd_pj == 'A09';
-                }).length
-                const totalDiperiksa = response.filter((regPeriksa) => {
-                    return regPeriksa.stts == 'Sudah';
-                }).length
-                const totalDirujuk = response.filter((regPeriksa) => {
-                    return regPeriksa.stts == 'Dirujuk';
-                }).length
-                $('#totalKunjungan').html(totalKunjungan)
-                $('#totalBpjs').html(totalBpjs)
-                $('#totalUmum').html(totalUmum)
-                $('#totalDiperiksa').html(`${totalDiperiksa} / ${totalDirujuk}`)
-            })
+                const totalKunjungan = response.length;
+                const totalBpjs = response.filter((item) => item.kd_pj === 'BPJ').length;
+                const totalUmum = response.filter((item) => item.kd_pj === 'A09').length;
+                const totalDiperiksa = response.filter((item) => item.stts === 'Sudah').length;
+                const totalMenunggu = response.filter((item) => item.stts === 'Belum').length;
+                const totalDirujuk = response.filter((item) => item.stts === 'Dirujuk').length;
+
+                $('#totalKunjungan').html(totalKunjungan);
+                $('#totalBpjs').html(totalBpjs);
+                $('#totalUmum').html(totalUmum);
+                $('#totalDiperiksa').html(totalDiperiksa);
+                $('#totalMenunggu').html(totalMenunggu);
+            });
         }
+
+        // Global Period Quick Buttons
+        $('.btn-period').on('click', function() {
+            $('.btn-period').removeClass('active');
+            $(this).addClass('active');
+
+            const period = $(this).data('type');
+            const now = new Date();
+            let d1 = new Date();
+            let d2 = new Date();
+
+            if (period === 'today') {
+                // today
+            } else if (period === '7days') {
+                d1.setDate(now.getDate() - 6);
+            } else if (period === 'month') {
+                d1 = new Date(now.getFullYear(), now.getMonth(), 1);
+            }
+
+            const formatDate = (d) => {
+                const day = String(d.getDate()).padStart(2, '0');
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const year = d.getFullYear();
+                return `${day}-${month}-${year}`;
+            };
+
+            const tgl1Text = formatDate(d1);
+            const tgl2Text = formatDate(d2);
+
+            $('#tglGlobal1').val(tgl1Text);
+            $('#tglGlobal2').val(tgl2Text);
+
+            loadAllDashboardCharts(splitTanggal(tgl1Text), splitTanggal(tgl2Text));
+        });
+
+        // Apply Custom Date Range Button
+        $('#btnApplyGlobalFilter').on('click', function() {
+            $('.btn-period').removeClass('active');
+            const tgl1 = $('#tglGlobal1').val();
+            const tgl2 = $('#tglGlobal2').val();
+
+            if (!tgl1 || !tgl2) return;
+            loadAllDashboardCharts(splitTanggal(tgl1), splitTanggal(tgl2));
+        });
     </script>
 @endpush
