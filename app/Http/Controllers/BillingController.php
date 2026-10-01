@@ -390,10 +390,8 @@ class BillingController extends Controller
 
         $isSudahPeriksa = $reg && ($reg->stts === 'Sudah' || DB::table('pemeriksaan_ralan')->where('no_rawat', $no_rawat)->exists() || $detail_tindakan->count() > 0);
 
-        $saved_payments = DB::table('nota_bayar')
-            ->leftJoin('bayar_nota', 'nota_bayar.nota_no', '=', 'bayar_nota.nota_no')
-            ->where('nota_bayar.no_rawat', $no_rawat)
-            ->select('bayar_nota.nama_bayar', 'bayar_nota.besar_bayar')
+        $saved_payments = DB::table('detail_nota_jalan')
+            ->where('no_rawat', $no_rawat)
             ->get();
 
         $deposit = 0; // ralan tidak punya deposit, set 0

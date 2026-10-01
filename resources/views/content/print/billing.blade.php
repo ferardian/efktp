@@ -331,7 +331,7 @@
                         @endif
                         <tr class="grand-total-box">
                             <td style="padding: 4px;">SISA TAGIHAN</td>
-                            <td style="padding: 4px; text-align: right;">Rp. {{ number_format($data['net_total'] ?? max(0, $data['grand_total'] - $data['deposit']), 0, ',', '.') }}</td>
+                            <td style="padding: 4px; text-align: right;">Rp. {{ number_format($data['net_total'] ?? max(0, $data['grand_total'] - ($data['deposit'] ?? 0)), 0, ',', '.') }}</td>
                         </tr>
                         @if(!empty($data['saved_payments']) && count($data['saved_payments']) > 0)
                             @foreach($data['saved_payments'] as $sp)
@@ -589,7 +589,7 @@
                 </tr>
                 <tr style="font-size: {{ ($size == '58') ? '9px' : '11px' }}; font-weight: bold;">
                     <td style="white-space: nowrap;">SISA TAGIHAN</td>
-                    <td class="text-right">Rp. {{ number_format($data['net_total'] ?? max(0, $data['grand_total'] - $data['deposit']), 0, ',', '.') }}</td>
+                    <td class="text-right">Rp. {{ number_format($data['net_total'] ?? max(0, $data['grand_total'] - ($data['deposit'] ?? 0)), 0, ',', '.') }}</td>
                 </tr>
             @endif
             @if(!empty($data['saved_payments']) && count($data['saved_payments']) > 0)
