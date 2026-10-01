@@ -247,7 +247,6 @@
                                     <th>Pasien</th>
                                     <th>Poli / Dokter</th>
                                     <th class="text-center">Status</th>
-                                    <th class="text-center">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -279,15 +278,10 @@
                                                 @endif
                                             </div>
                                         </td>
-                                        <td class="text-center">
-                                            <a href="{{ url('/billing/ralan?no_rawat=' . urlencode($rp->no_rawat)) }}" target="_blank" class="btn btn-sm btn-outline-secondary py-1 px-2" title="Cetak / Lihat Nota">
-                                                <i class="ti ti-printer"></i>
-                                            </a>
-                                        </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="4" class="text-center text-muted py-3">
+                                        <td colspan="3" class="text-center text-muted py-3">
                                             <i class="ti ti-info-circle me-1"></i> Belum ada pasien terdaftar hari ini
                                         </td>
                                     </tr>
