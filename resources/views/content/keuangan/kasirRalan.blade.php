@@ -1232,7 +1232,6 @@
         $.get("{{ url('/jns-perawatan/get') }}", {
             keyword: keyword,
             pelaksana: pelaksana,
-            kd_poli: currentBillingData ? currentBillingData.kd_poli : null,
             limit: 30
         }).done((response) => {
             masterTindakanSearchResults = response || [];
