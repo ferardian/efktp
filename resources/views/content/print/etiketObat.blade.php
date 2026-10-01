@@ -667,9 +667,10 @@
     $kontakFormatted = '-';
     if (!empty($rawKontak)) {
         if (preg_match('/^(hp|telp|wa)\b/i', $rawKontak)) {
-            $kontakFormatted = $rawKontak;
+            // Sudah ada prefix, tampilkan apa adanya tapi ganti prefix teks dengan simbol
+            $kontakFormatted = '☎ ' . preg_replace('/^(hp|telp|wa)[:\s]*/i', '', $rawKontak);
         } else {
-            $kontakFormatted = 'Hp: ' . $rawKontak;
+            $kontakFormatted = '☎ ' . $rawKontak;
         }
     }
 @endphp
