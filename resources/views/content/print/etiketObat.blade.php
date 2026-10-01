@@ -67,6 +67,9 @@
             color: #222;
             line-height: 1.1;
             margin-top: 0.5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .clinic-phone {
             font-size: 7.8pt;
@@ -224,6 +227,9 @@
             color: #222;
             line-height: 1.05;
             margin-top: 0.5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .clinic-phone {
             font-size: 7pt;
@@ -380,6 +386,9 @@
             font-size: 5pt;
             color: #222;
             line-height: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .clinic-phone {
             font-size: 6.5pt;
