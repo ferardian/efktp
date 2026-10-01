@@ -27,7 +27,13 @@
         :root {
             --tblr-font-sans-serif: 'Inter Var', -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif;
             --tblr-border-radius: var(--tblr-border-radius-lg);
+            --tblr-card-border-radius: var(--tblr-border-radius-lg);
             --tblr-border-color: #e1e1e1; /* warna border */
+        }
+
+        .card-status-top {
+            border-top-left-radius: inherit !important;
+            border-top-right-radius: inherit !important;
         }
 
         body {

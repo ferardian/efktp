@@ -40,7 +40,7 @@
         <div class="row row-cards mb-3">
             {{-- 1. TOTAL KUNJUNGAN --}}
             <div class="col-sm-6 col-lg-3">
-                <div class="card card-sm">
+                <div class="card card-sm overflow-hidden">
                     <div class="card-status-top bg-primary"></div>
                     <div class="card-body">
                         <div class="row align-items-center">
@@ -66,7 +66,7 @@
 
             {{-- 2. PEMBIAYAAN UMUM --}}
             <div class="col-sm-6 col-lg-2">
-                <div class="card card-sm">
+                <div class="card card-sm overflow-hidden">
                     <div class="card-status-top bg-yellow"></div>
                     <div class="card-body">
                         <div class="row align-items-center">
@@ -87,7 +87,7 @@
 
             {{-- 3. PEMBIAYAAN BPJS --}}
             <div class="col-sm-6 col-lg-2">
-                <div class="card card-sm">
+                <div class="card card-sm overflow-hidden">
                     <div class="card-status-top bg-green"></div>
                     <div class="card-body">
                         <div class="row align-items-center">
@@ -108,7 +108,7 @@
 
             {{-- 4. STATUS PELAYANAN --}}
             <div class="col-sm-6 col-lg-2">
-                <div class="card card-sm">
+                <div class="card card-sm overflow-hidden">
                     <div class="card-status-top bg-red"></div>
                     <div class="card-body">
                         <div class="row align-items-center">
@@ -135,7 +135,7 @@
 
             {{-- 5. KETERISIAN BED RAWAT INAP (BOR) --}}
             <div class="col-sm-12 col-lg-3">
-                <div class="card card-sm">
+                <div class="card card-sm overflow-hidden">
                     <div class="card-status-top bg-indigo"></div>
                     <div class="card-body">
                         <div class="row align-items-center">
