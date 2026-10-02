@@ -379,13 +379,20 @@ function alertErrorBpjs(data) {
     const message = antrianError || metaData.message || data?.message || 'Terjadi kesalahan sistem';
     const code = metaData.code || (antrianError ? '201' : (data?.code || '500'));
 
-    const errors = Array.isArray(response) ? response.map(
-        ({ field, message }) => `${field} : ${message}`
-    ).join('<br>') : response ?? '';
+    let errors = '';
+    if (Array.isArray(response)) {
+        errors = response.map(
+            ({ field, message }) => `${field ? field + ' : ' : ''}${message || ''}`
+        ).join('<br>');
+    } else if (typeof response === 'object' && response !== null) {
+        errors = response.message || response.field || '';
+    } else {
+        errors = response ?? '';
+    }
 
     return Swal.fire({
         title: 'Pesan dari BPJS',
-        html: `<small>${code} ${message}</small> <br/><strong class="text-danger">${errors}</strong>`,
+        html: `<small>${code} ${message}</small>${errors ? '<br/><strong class="text-danger">' + errors + '</strong>' : ''}`,
         icon: 'error',
     });
 }

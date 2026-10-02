@@ -986,11 +986,24 @@
                     loadingAjax('Mengecek pendaftaran di server BPJS...');
                     
                     // 1.1 Cek apakah sudah terdaftar di server BPJS (biar tidak double)
-                    const resListPendaftaran = await $.get(`{{ url('/bridging/pcare/pendaftaran/tglDaftar') }}/${data.tgl_daftar}`);
+                    // Ambil pendaftaran dengan limit 100 agar antrean tinggi (misal A2-9) tidak terlewat
+                    let resListPendaftaran = await $.get(`{{ url('/bridging/pcare/pendaftaran/tglDaftar') }}/${data.tgl_daftar}/0/100`);
                     
                     let pendaftaranBPJS = null;
-                    if (resListPendaftaran && resListPendaftaran.metaData && resListPendaftaran.metaData.code == 200 && resListPendaftaran.response && resListPendaftaran.response.list) {
-                        pendaftaranBPJS = resListPendaftaran.response.list.find(item => item.peserta.noKartu === data.no_peserta);
+                    if (resListPendaftaran && (resListPendaftaran.metaData?.code == 200 || resListPendaftaran.metadata?.code == 200) && resListPendaftaran.response?.list) {
+                        pendaftaranBPJS = resListPendaftaran.response.list.find(item => item.peserta?.noKartu === data.no_peserta);
+                    }
+
+                    // Jika belum ketemu di 100 pertama dan total list >= 100, coba halaman berikutnya 100-200
+                    if (!pendaftaranBPJS && resListPendaftaran?.response?.list?.length >= 100) {
+                        try {
+                            const resList2 = await $.get(`{{ url('/bridging/pcare/pendaftaran/tglDaftar') }}/${data.tgl_daftar}/100/100`);
+                            if (resList2?.response?.list) {
+                                pendaftaranBPJS = resList2.response.list.find(item => item.peserta?.noKartu === data.no_peserta);
+                            }
+                        } catch (e) {
+                            console.error('Gagal fetch halaman 2 pendaftaran:', e);
+                        }
                     }
 
                     const kdProviderPeserta = await $.get(`{{ url('/setting/ppk') }}`);
@@ -1017,8 +1030,8 @@
                         syncData['kdProviderPeserta'] = kdProviderPst;
                         syncData['status'] = 'Terkirim';
                         syncData['kunjunganSakit'] = pendaftaranBPJS.kunjSakit === true || pendaftaranBPJS.kunjSakit === 'Kunjungan Sakit' ? 'Kunjungan Sakit' : 'Kunjungan Sehat';
-                        syncData['kdTkp'] = pendaftaranBPJS.tkp.kdTkp;
-                        syncData['tkp'] = pendaftaranBPJS.tkp.nmTkp === 'RJTP' ? 'Rawat Jalan' : (pendaftaranBPJS.tkp.nmTkp === 'RITP' ? 'Rawat Inap' : pendaftaranBPJS.tkp.nmTkp);
+                        syncData['kdTkp'] = pendaftaranBPJS.tkp?.kdTkp || '10';
+                        syncData['tkp'] = pendaftaranBPJS.tkp?.nmTkp === 'RJTP' ? 'Rawat Jalan' : (pendaftaranBPJS.tkp?.nmTkp === 'RITP' ? 'Rawat Inap' : (pendaftaranBPJS.tkp?.nmTkp || 'Rawat Jalan'));
 
                         // Parse tensi for sync
                         if (data.tensi && data.tensi.includes('/')) {
@@ -1090,9 +1103,50 @@
                             await $.post(`{{ url('/pcare/pendaftaran') }}`, pendaftaranData);
                             showToast('Berhasil mendaftarkan pasien ke PCare secara otomatis');
                         } else {
-                            Swal.close();
-                            alertErrorBpjs(pendaftaranRes || { metaData: { message: 'Gagal Bridging Pendaftaran', code: 500 } });
-                            return; // Berhenti jika pendaftaran gagal
+                            // Cek jika errornya adalah 'Peserta sudah di-entri di poli yang sama'
+                            // Ini artinya pasien sebenarnya SUDAH TERDAFTAR di PCare (misal via Mobile JKN)
+                            const errMsg = (pendaftaranMetaData?.message || '').toLowerCase();
+                            if (pendaftaranMetaData?.code == 401 || errMsg.includes('di-entri di poli yang sama') || errMsg.includes('sudah terdaftar')) {
+                                loadingAjax('Mencocokkan nomor urut pendaftaran dari server BPJS...');
+                                try {
+                                    const retryFetch = await $.get(`{{ url('/bridging/pcare/pendaftaran/tglDaftar') }}/${data.tgl_daftar}/0/200`);
+                                    if (retryFetch?.response?.list) {
+                                        pendaftaranBPJS = retryFetch.response.list.find(item => item.peserta?.noKartu === data.no_peserta);
+                                    }
+                                } catch (e) {
+                                    console.error('Retry fetch error:', e);
+                                }
+
+                                if (pendaftaranBPJS) {
+                                    const syncData = { ...data };
+                                    syncData['tgl_registrasi'] = data.tgl_daftar;
+                                    syncData['noUrut'] = pendaftaranBPJS.noUrut;
+                                    syncData['kdProviderPeserta'] = kdProviderPst;
+                                    syncData['status'] = 'Terkirim';
+                                    syncData['kunjunganSakit'] = pendaftaranBPJS.kunjSakit === true || pendaftaranBPJS.kunjSakit === 'Kunjungan Sakit' ? 'Kunjungan Sakit' : 'Kunjungan Sehat';
+                                    syncData['kdTkp'] = pendaftaranBPJS.tkp?.kdTkp || '10';
+                                    syncData['tkp'] = pendaftaranBPJS.tkp?.nmTkp === 'RJTP' ? 'Rawat Jalan' : (pendaftaranBPJS.tkp?.nmTkp === 'RITP' ? 'Rawat Inap' : (pendaftaranBPJS.tkp?.nmTkp || 'Rawat Jalan'));
+
+                                    if (data.tensi && data.tensi.includes('/')) {
+                                        syncData['sistole'] = data.tensi.split('/')[0];
+                                        syncData['diastole'] = data.tensi.split('/')[1];
+                                    } else {
+                                        syncData['sistole'] = 0;
+                                        syncData['diastole'] = 0;
+                                    }
+
+                                    await $.post(`{{ url('/pcare/pendaftaran') }}`, syncData);
+                                    showToast('Berhasil mendeteksi pendaftaran pasien dari server BPJS');
+                                } else {
+                                    Swal.close();
+                                    alertErrorBpjs(pendaftaranRes || { metaData: { message: 'Gagal Bridging Pendaftaran', code: 500 } });
+                                    return;
+                                }
+                            } else {
+                                Swal.close();
+                                alertErrorBpjs(pendaftaranRes || { metaData: { message: 'Gagal Bridging Pendaftaran', code: 500 } });
+                                return; // Berhenti jika pendaftaran gagal
+                            }
                         }
                     }
                 }

@@ -33,7 +33,7 @@ class Pendaftaran extends Controller
     /**
      * Ambil pendaftaran berdasarkan tanggal
      */
-    public function getByTanggal(string $tgl = '', int $start = 0, int $limit = 15): array
+    public function getByTanggal(string $tgl = '', int $start = 0, int $limit = 100): array
     {
         return $this->pendaftaran->getByTanggal($tgl ?: date('d-m-Y'), $start, $limit);
     }
