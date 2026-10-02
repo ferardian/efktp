@@ -985,26 +985,13 @@
                 if (!checkPendaftaran || Object.keys(checkPendaftaran).length === 0) {
                     loadingAjax('Mengecek pendaftaran di server BPJS...');
                     
-                    // 1.1 Cek apakah sudah terdaftar di server BPJS (biar tidak double)
-                    // Ambil pendaftaran dengan limit 100 agar antrean tinggi (misal A2-9) tidak terlewat
-                    let resListPendaftaran = await $.get(`{{ url('/bridging/pcare/pendaftaran/tglDaftar') }}/${data.tgl_daftar}/0/100`);
+                    // 1.1 Cek apakah sudah terdaftar di server BPJS (via backend yang me-loop pagination BPJS limit 15)
+                    let resCariPendaftaran = await $.get(`{{ url('/bridging/pcare/pendaftaran/cari') }}`, {
+                        noKartu: data.no_peserta,
+                        tglDaftar: data.tgl_daftar
+                    });
                     
-                    let pendaftaranBPJS = null;
-                    if (resListPendaftaran && (resListPendaftaran.metaData?.code == 200 || resListPendaftaran.metadata?.code == 200) && resListPendaftaran.response?.list) {
-                        pendaftaranBPJS = resListPendaftaran.response.list.find(item => item.peserta?.noKartu === data.no_peserta);
-                    }
-
-                    // Jika belum ketemu di 100 pertama dan total list >= 100, coba halaman berikutnya 100-200
-                    if (!pendaftaranBPJS && resListPendaftaran?.response?.list?.length >= 100) {
-                        try {
-                            const resList2 = await $.get(`{{ url('/bridging/pcare/pendaftaran/tglDaftar') }}/${data.tgl_daftar}/100/100`);
-                            if (resList2?.response?.list) {
-                                pendaftaranBPJS = resList2.response.list.find(item => item.peserta?.noKartu === data.no_peserta);
-                            }
-                        } catch (e) {
-                            console.error('Gagal fetch halaman 2 pendaftaran:', e);
-                        }
-                    }
+                    let pendaftaranBPJS = resCariPendaftaran?.pendaftaran || null;
 
                     const kdProviderPeserta = await $.get(`{{ url('/setting/ppk') }}`);
                     
@@ -1109,12 +1096,13 @@
                             if (pendaftaranMetaData?.code == 401 || errMsg.includes('di-entri di poli yang sama') || errMsg.includes('sudah terdaftar')) {
                                 loadingAjax('Mencocokkan nomor urut pendaftaran dari server BPJS...');
                                 try {
-                                    const retryFetch = await $.get(`{{ url('/bridging/pcare/pendaftaran/tglDaftar') }}/${data.tgl_daftar}/0/200`);
-                                    if (retryFetch?.response?.list) {
-                                        pendaftaranBPJS = retryFetch.response.list.find(item => item.peserta?.noKartu === data.no_peserta);
-                                    }
+                                    const retryCari = await $.get(`{{ url('/bridging/pcare/pendaftaran/cari') }}`, {
+                                        noKartu: data.no_peserta,
+                                        tglDaftar: data.tgl_daftar
+                                    });
+                                    pendaftaranBPJS = retryCari?.pendaftaran || null;
                                 } catch (e) {
-                                    console.error('Retry fetch error:', e);
+                                    console.error('Retry cari pendaftaran error:', e);
                                 }
 
                                 if (pendaftaranBPJS) {

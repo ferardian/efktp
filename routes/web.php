@@ -751,6 +751,7 @@ Route::middleware('auth:web,admin')->group(function () {
 
 	// PENDAFTARAN
 	Route::get('/bridging/pcare/pendaftaran', [Bridging\Pendaftaran::class, 'get']);
+	Route::get('/bridging/pcare/pendaftaran/cari', [Bridging\Pendaftaran::class, 'cariPeserta']);
 	Route::get('/bridging/pcare/pendaftaran/tglDaftar/{tglDaftar?}/{start?}/{limit?}', [Bridging\Pendaftaran::class, 'getByTanggal']);
 	Route::post('/bridging/pcare/pendaftaran', [Bridging\Pendaftaran::class, 'post']);
 	Route::post('/bridging/pcare/pendaftaran/delete', [Bridging\Pendaftaran::class, 'delete']);

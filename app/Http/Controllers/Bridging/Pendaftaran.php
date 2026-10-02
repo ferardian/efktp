@@ -31,11 +31,58 @@ class Pendaftaran extends Controller
     }
 
     /**
-     * Ambil pendaftaran berdasarkan tanggal
+     * Ambil pendaftaran berdasarkan tanggal (Limit maksimal BPJS PCare adalah 15)
      */
-    public function getByTanggal(string $tgl = '', int $start = 0, int $limit = 100): array
+    public function getByTanggal(string $tgl = '', int $start = 0, int $limit = 15): array
     {
+        $limit = min((int) ($limit ?: 15), 15);
         return $this->pendaftaran->getByTanggal($tgl ?: date('d-m-Y'), $start, $limit);
+    }
+
+    /**
+     * Cari pendaftaran peserta hari ini dengan perulangan pagination (karena limit BPJS max 15)
+     */
+    public function cariPeserta(Request $request): JsonResponse
+    {
+        $noKartu   = trim($request->noKartu ?? '');
+        $tglDaftar = $request->tglDaftar ?: date('d-m-Y');
+
+        if (!$noKartu) {
+            return response()->json(['status' => 'not_found', 'pendaftaran' => null], 400);
+        }
+
+        $start    = 0;
+        $limit    = 15;
+        $maxPages = 20; // Cari hingga 20 halaman x 15 = 300 antrean pasien
+        $found    = null;
+
+        for ($page = 0; $page < $maxPages; $page++) {
+            $res = $this->pendaftaran->getByTanggal($tglDaftar, $start, $limit);
+            $list = $res['response']['list'] ?? [];
+
+            if (empty($list) || !is_array($list)) {
+                break;
+            }
+
+            foreach ($list as $item) {
+                if (($item['peserta']['noKartu'] ?? '') === $noKartu) {
+                    $found = $item;
+                    break 2;
+                }
+            }
+
+            // Jika jumlah data kurang dari limit (15), berarti sudah di halaman terakhir
+            if (count($list) < $limit) {
+                break;
+            }
+
+            $start += $limit;
+        }
+
+        return response()->json([
+            'status'      => $found ? 'success' : 'not_found',
+            'pendaftaran' => $found
+        ]);
     }
 
     /**
