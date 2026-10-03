@@ -72,8 +72,18 @@
                                         <th width="10%" class="text-center">Stok Depo</th>
                                         <th width="7%" class="text-center">Qty Dr</th>
                                         <th width="12%" class="text-center">Qty Validasi</th>
-                                        <th width="10%" class="text-center">Emb (Rp)</th>
-                                        <th width="10%" class="text-center">Tuslah (Rp)</th>
+                                        <th width="10%" class="text-center">
+                                            <div class="d-flex align-items-center justify-content-center gap-1">
+                                                <span>Emb (Rp)</span>
+                                                <button type="button" class="btn btn-badge btn-outline-secondary p-0 px-1" style="font-size: 10px; line-height: 1.2;" onclick="setAllEmbalaseNonRacik(0)" title="Set Semua Emb = 0">0</button>
+                                            </div>
+                                        </th>
+                                        <th width="10%" class="text-center">
+                                            <div class="d-flex align-items-center justify-content-center gap-1">
+                                                <span>Tuslah (Rp)</span>
+                                                <button type="button" class="btn btn-badge btn-outline-secondary p-0 px-1" style="font-size: 10px; line-height: 1.2;" onclick="setAllTuslahNonRacik(0)" title="Set Semua Tuslah = 0">0</button>
+                                            </div>
+                                        </th>
                                         <th width="13%">Aturan Pakai</th>
                                         <th width="6%" class="text-center">Aksi</th>
                                     </tr>
@@ -285,10 +295,16 @@
                             </div>
                         </td>
                         <td>
-                            <input type="number" step="any" min="0" class="form-control form-control-sm text-end val-emb-nonracik" data-kode="${item.kode_brng}" value="${valDefaultEmbalase}">
+                            <div class="input-group input-group-sm">
+                                <input type="number" step="any" min="0" class="form-control form-control-sm text-end val-emb-nonracik" data-kode="${item.kode_brng}" value="${valDefaultEmbalase}" title="Klik 2x untuk nolkan">
+                                <button type="button" class="btn btn-outline-secondary px-1" style="font-size: 11px;" onclick="$(this).prev('input').val(0)" title="Nolkan Embalase">0</button>
+                            </div>
                         </td>
                         <td>
-                            <input type="number" step="any" min="0" class="form-control form-control-sm text-end val-tuslah-nonracik" data-kode="${item.kode_brng}" value="${valDefaultTuslah}">
+                            <div class="input-group input-group-sm">
+                                <input type="number" step="any" min="0" class="form-control form-control-sm text-end val-tuslah-nonracik" data-kode="${item.kode_brng}" value="${valDefaultTuslah}" title="Klik 2x untuk nolkan">
+                                <button type="button" class="btn btn-outline-secondary px-1" style="font-size: 11px;" onclick="$(this).prev('input').val(0)" title="Nolkan Tuslah">0</button>
+                            </div>
                         </td>
                         <td>
                             <input type="text" class="form-control form-control-sm val-aturan-nonracik" data-kode="${item.kode_brng}" value="${item.aturan_pakai || ''}" placeholder="Aturan pakai...">
@@ -372,10 +388,15 @@
                             <div class="d-flex align-items-center gap-2 flex-wrap">
                                 <span class="small text-muted">Jml Racik:</span>
                                 <input type="number" step="1" min="1" class="form-control form-control-sm text-center fw-bold val-qty-dr-racik" style="width: 65px;" data-no-racik="${racik.no_racik}" value="${racik.jml_dr}">
-                                <span class="small text-muted ms-1">Emb:</span>
-                                <input type="number" step="any" min="0" class="form-control form-control-sm text-end val-emb-racik" style="width: 75px;" data-no-racik="${racik.no_racik}" value="${valDefaultEmbalase}" title="Embalase Racikan #${racik.no_racik}">
+                                <div class="input-group input-group-sm" style="width: 105px;">
+                                    <input type="number" step="any" min="0" class="form-control form-control-sm text-end px-1 val-emb-racik" data-no-racik="${racik.no_racik}" value="${valDefaultEmbalase}" title="Embalase Racikan #${racik.no_racik} (Klik 2x untuk nolkan)">
+                                    <button type="button" class="btn btn-outline-secondary px-1" style="font-size: 11px;" onclick="$(this).prev('input').val(0)" title="Nolkan Embalase">0</button>
+                                </div>
                                 <span class="small text-muted ms-1">Tsl:</span>
-                                <input type="number" step="any" min="0" class="form-control form-control-sm text-end val-tuslah-racik" style="width: 75px;" data-no-racik="${racik.no_racik}" value="${valDefaultTuslah}" title="Tuslah Racikan #${racik.no_racik}">
+                                <div class="input-group input-group-sm" style="width: 105px;">
+                                    <input type="number" step="any" min="0" class="form-control form-control-sm text-end px-1 val-tuslah-racik" data-no-racik="${racik.no_racik}" value="${valDefaultTuslah}" title="Tuslah Racikan #${racik.no_racik} (Klik 2x untuk nolkan)">
+                                    <button type="button" class="btn btn-outline-secondary px-1" style="font-size: 11px;" onclick="$(this).prev('input').val(0)" title="Nolkan Tuslah">0</button>
+                                </div>
                                 <input type="text" class="form-control form-control-sm val-aturan-racik" style="width: 170px;" data-no-racik="${racik.no_racik}" value="${racik.aturan_pakai || ''}" placeholder="Aturan pakai...">
                                 <button type="button" class="btn btn-xs btn-outline-primary d-inline-flex align-items-center gap-1" onclick="openLookupObatValidasi('tambah_racik', null, '${racik.no_racik}')">
                                     <i class="ti ti-plus"></i><span>Tambah Bahan</span>
@@ -509,10 +530,16 @@
                             </div>
                         </td>
                         <td>
-                            <input type="number" step="any" min="0" class="form-control form-control-sm text-end val-emb-nonracik" data-kode="${item.kode_brng}" value="${valDefaultEmbalase}">
+                            <div class="input-group input-group-sm">
+                                <input type="number" step="any" min="0" class="form-control form-control-sm text-end val-emb-nonracik" data-kode="${item.kode_brng}" value="${valDefaultEmbalase}" title="Klik 2x untuk nolkan">
+                                <button type="button" class="btn btn-outline-secondary px-1" style="font-size: 11px;" onclick="$(this).prev('input').val(0)" title="Nolkan Embalase">0</button>
+                            </div>
                         </td>
                         <td>
-                            <input type="number" step="any" min="0" class="form-control form-control-sm text-end val-tuslah-nonracik" data-kode="${item.kode_brng}" value="${valDefaultTuslah}">
+                            <div class="input-group input-group-sm">
+                                <input type="number" step="any" min="0" class="form-control form-control-sm text-end val-tuslah-nonracik" data-kode="${item.kode_brng}" value="${valDefaultTuslah}" title="Klik 2x untuk nolkan">
+                                <button type="button" class="btn btn-outline-secondary px-1" style="font-size: 11px;" onclick="$(this).prev('input').val(0)" title="Nolkan Tuslah">0</button>
+                            </div>
                         </td>
                         <td>
                             <input type="text" class="form-control form-control-sm val-aturan-nonracik" data-kode="${item.kode_brng}" value="3 x 1" placeholder="Aturan pakai...">
@@ -713,6 +740,28 @@
                 $(this).remove();
             });
         }
+
+        // ==========================================
+        // SHORTCUT EMBALASE & TUSLAH (NOLKAN / RESET)
+        // ==========================================
+        function setAllEmbalaseNonRacik(val) {
+            $('.val-emb-nonracik').val(val);
+        }
+
+        function setAllTuslahNonRacik(val) {
+            $('.val-tuslah-nonracik').val(val);
+        }
+
+        // Double click shortcut pada input emb & tuslah untuk langsung nolkan atau kembalikan default
+        $(document).on('dblclick', '.val-emb-nonracik, .val-emb-racik', function () {
+            const cur = parseFloat($(this).val() || 0);
+            $(this).val(cur > 0 ? 0 : (valDefaultEmbalase || 0));
+        });
+
+        $(document).on('dblclick', '.val-tuslah-nonracik, .val-tuslah-racik', function () {
+            const cur = parseFloat($(this).val() || 0);
+            $(this).val(cur > 0 ? 0 : (valDefaultTuslah || 0));
+        });
 
         // ==========================================
         // SUBMIT VALIDASI & ADJUST

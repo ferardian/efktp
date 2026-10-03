@@ -185,8 +185,18 @@
                                                 <th width="10%">Harga (Rp)</th>
                                                 <th width="11%">Qty</th>
                                                 <th width="5%">Disc(%)</th>
-                                                <th width="8%">Emb (Rp)</th>
-                                                <th width="8%">Tsl (Rp)</th>
+                                                <th width="8%" class="text-center">
+                                                    <div class="d-flex align-items-center justify-content-center gap-1">
+                                                        <span>Emb (Rp)</span>
+                                                        <button type="button" class="btn btn-badge btn-outline-secondary p-0 px-1" style="font-size: 10px; line-height: 1.2;" onclick="setAllCartEmbalase(0)" title="Nolkan Semua Embalase Keranjang">0</button>
+                                                    </div>
+                                                </th>
+                                                <th width="8%" class="text-center">
+                                                    <div class="d-flex align-items-center justify-content-center gap-1">
+                                                        <span>Tsl (Rp)</span>
+                                                        <button type="button" class="btn btn-badge btn-outline-secondary p-0 px-1" style="font-size: 10px; line-height: 1.2;" onclick="setAllCartTuslah(0)" title="Nolkan Semua Tuslah Keranjang">0</button>
+                                                    </div>
+                                                </th>
                                                 <th width="10%">Subtotal (Rp)</th>
                                                 <th width="10%">Aturan Pakai</th>
                                                 <th width="4%">Aksi</th>
@@ -962,19 +972,27 @@
                                value="${item.dis}" min="0" max="100"
                                onchange="updateCartItemField(${index}, 'dis', this.value)">
                     </td>
-                    <td style="min-width: 70px;" class="text-center">
-                        <input type="number" class="form-control form-control-sm text-end mx-auto" 
-                               style="max-width: 75px;"
-                               value="${item.embalase || 0}" min="0" step="any"
-                               onchange="updateCartItemField(${index}, 'embalase', this.value)"
-                               title="Biaya Wadah / Embalase">
+                    <td style="min-width: 85px;" class="text-center">
+                        <div class="input-group input-group-sm mx-auto" style="max-width: 90px;">
+                            <input type="number" class="form-control form-control-sm text-end px-1" 
+                                   value="${item.embalase || 0}" min="0" step="any"
+                                   onchange="updateCartItemField(${index}, 'embalase', this.value)"
+                                   ondblclick="toggleCartItemField(${index}, 'embalase')"
+                                   title="Biaya Wadah / Embalase (Klik 2x untuk nolkan)">
+                            <button type="button" class="btn btn-outline-secondary px-1" style="font-size: 11px;" 
+                                    onclick="updateCartItemField(${index}, 'embalase', 0)" title="Nolkan Embalase">0</button>
+                        </div>
                     </td>
-                    <td style="min-width: 70px;" class="text-center">
-                        <input type="number" class="form-control form-control-sm text-end mx-auto" 
-                               style="max-width: 75px;"
-                               value="${item.tuslah || 0}" min="0" step="any"
-                               onchange="updateCartItemField(${index}, 'tuslah', this.value)"
-                               title="Biaya Jasa / Tuslah">
+                    <td style="min-width: 85px;" class="text-center">
+                        <div class="input-group input-group-sm mx-auto" style="max-width: 90px;">
+                            <input type="number" class="form-control form-control-sm text-end px-1" 
+                                   value="${item.tuslah || 0}" min="0" step="any"
+                                   onchange="updateCartItemField(${index}, 'tuslah', this.value)"
+                                   ondblclick="toggleCartItemField(${index}, 'tuslah')"
+                                   title="Biaya Jasa / Tuslah (Klik 2x untuk nolkan)">
+                            <button type="button" class="btn btn-outline-secondary px-1" style="font-size: 11px;" 
+                                    onclick="updateCartItemField(${index}, 'tuslah', 0)" title="Nolkan Tuslah">0</button>
+                        </div>
                     </td>
                     <td class="text-end fw-bold text-success fs-4 text-nowrap">
                         Rp ${formatNumber(itemTotal)}
@@ -1015,6 +1033,33 @@
             cartItems[index].aturan_pakai = value;
         }
 
+        renderCartTable();
+        calculateBilling();
+    }
+
+    function toggleCartItemField(index, field) {
+        if (!cartItems[index]) return;
+        if (field === 'embalase') {
+            cartItems[index].embalase = (cartItems[index].embalase > 0) ? 0 : (currentDefaultEmbalase || 0);
+        } else if (field === 'tuslah') {
+            cartItems[index].tuslah = (cartItems[index].tuslah > 0) ? 0 : (currentDefaultTuslah || 0);
+        }
+        renderCartTable();
+        calculateBilling();
+    }
+
+    function setAllCartEmbalase(val) {
+        cartItems.forEach(item => {
+            item.embalase = parseFloat(val) || 0;
+        });
+        renderCartTable();
+        calculateBilling();
+    }
+
+    function setAllCartTuslah(val) {
+        cartItems.forEach(item => {
+            item.tuslah = parseFloat(val) || 0;
+        });
         renderCartTable();
         calculateBilling();
     }
