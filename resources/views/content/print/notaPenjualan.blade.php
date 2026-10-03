@@ -145,6 +145,18 @@
                     {{ number_format($item->total, 0, ',', '.') }}
                 </td>
             </tr>
+            @if($item->embalase > 0 || $item->tuslah > 0)
+                <tr>
+                    <td colspan="2" style="font-size: 9px; color: #555;">
+                        @if($item->embalase > 0)
+                            + Emb: Rp {{ number_format($item->embalase, 0, ',', '.') }}
+                        @endif
+                        @if($item->tuslah > 0)
+                            + Tuslah: Rp {{ number_format($item->tuslah, 0, ',', '.') }}
+                        @endif
+                    </td>
+                </tr>
+            @endif
             @if(!empty($item->aturan_pakai))
                 <tr>
                     <td colspan="2" style="font-size: 9px; font-style: italic; color: #333;">

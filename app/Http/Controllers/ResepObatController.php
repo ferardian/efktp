@@ -779,6 +779,10 @@ class ResepObatController extends Controller
 				$ttljual = 0;
 				$ttlhpp = 0;
 
+				$setEmbalase = DB::table('set_embalase')->first();
+				$defaultEmbalase = floatval($setEmbalase?->embalase_per_obat ?? 0);
+				$defaultTuslah = floatval($setEmbalase?->tuslah_per_obat ?? 0);
+
 				$detailPemberianObatToInsert = [];
 				$aturanPakaiToInsert = [];
 				$obatRacikanToInsert = [];
@@ -798,9 +802,14 @@ class ResepObatController extends Controller
 					$biaya_obat = $this->calculateHargaObat($obat, $isRanap, $kamarKelas);
 					$h_beli = floatval($obat->h_beli);
 
+					$firstBatch = true;
 					foreach ($deductions as $d) {
 						$subQty = floatval($d['jml']);
-						$total_item = $biaya_obat * $subQty;
+						$emb = $firstBatch ? $defaultEmbalase : 0;
+						$tus = $firstBatch ? $defaultTuslah : 0;
+						$firstBatch = false;
+
+						$total_item = ($biaya_obat * $subQty) + $emb + $tus;
 
 						$ttljual += $total_item;
 						$ttlhpp += $h_beli * $subQty;
@@ -813,8 +822,8 @@ class ResepObatController extends Controller
 							'h_beli' => $h_beli,
 							'biaya_obat' => $biaya_obat,
 							'jml' => $subQty,
-							'embalase' => 0,
-							'tuslah' => 0,
+							'embalase' => $emb,
+							'tuslah' => $tus,
 							'total' => $total_item,
 							'status' => $isRanap ? 'Ranap' : 'Ralan',
 							'kd_bangsal' => $bangsal,
@@ -847,6 +856,7 @@ class ResepObatController extends Controller
 						'keterangan' => $rr->keterangan ?? '-'
 					];
 
+					$firstOfRacik = true;
 					foreach ($rr->detail as $rrd) {
 						$obat = DB::table('databarang')->where('kode_brng', $rrd->kode_brng)->first();
 						if (!$obat) {
@@ -863,7 +873,11 @@ class ResepObatController extends Controller
 
 						foreach ($deductions as $d) {
 							$subQty = floatval($d['jml']);
-							$total_item = $biaya_obat * $subQty;
+							$emb = $firstOfRacik ? $defaultEmbalase : 0;
+							$tus = $firstOfRacik ? $defaultTuslah : 0;
+							$firstOfRacik = false;
+
+							$total_item = ($biaya_obat * $subQty) + $emb + $tus;
 
 							$ttljual += $total_item;
 							$ttlhpp += $h_beli * $subQty;
@@ -876,8 +890,8 @@ class ResepObatController extends Controller
 								'h_beli' => $h_beli,
 								'biaya_obat' => $biaya_obat,
 								'jml' => $subQty,
-								'embalase' => 0,
-								'tuslah' => 0,
+								'embalase' => $emb,
+								'tuslah' => $tus,
 								'total' => $total_item,
 								'status' => $isRanap ? 'Ranap' : 'Ralan',
 								'kd_bangsal' => $bangsal,
@@ -1208,12 +1222,18 @@ class ResepObatController extends Controller
 			}
 		}
 
+		$setEmbalase = DB::table('set_embalase')->first();
+		$defaultEmbalase = floatval($setEmbalase?->embalase_per_obat ?? 0);
+		$defaultTuslah = floatval($setEmbalase?->tuslah_per_obat ?? 0);
+
 		return response()->json([
 			'kd_bangsal' => $bangsal,
 			'nm_bangsal' => $nm_bangsal,
 			'is_ranap' => $isRanap,
 			'kamar_info' => $kamarInfo,
 			'kelas' => $kamarKelas,
+			'default_embalase' => $defaultEmbalase,
+			'default_tuslah' => $defaultTuslah,
 			'resep' => $resep
 		]);
 	}
@@ -1295,6 +1315,10 @@ class ResepObatController extends Controller
 				$ttljual = 0;
 				$ttlhpp = 0;
 
+				$setEmbalase = DB::table('set_embalase')->first();
+				$defaultEmbalase = floatval($setEmbalase?->embalase_per_obat ?? 0);
+				$defaultTuslah = floatval($setEmbalase?->tuslah_per_obat ?? 0);
+
 				$detailPemberianObatToInsert = [];
 				$aturanPakaiToInsert = [];
 				$obatRacikanToInsert = [];
@@ -1329,9 +1353,17 @@ class ResepObatController extends Controller
 					$biaya_obat = $this->calculateHargaObat($obat, $isRanap, $kamarKelas);
 					$h_beli = floatval($obat->h_beli);
 
+					$embInput = isset($item['embalase']) && $item['embalase'] !== '' ? floatval($item['embalase']) : $defaultEmbalase;
+					$tusInput = isset($item['tuslah']) && $item['tuslah'] !== '' ? floatval($item['tuslah']) : $defaultTuslah;
+
+					$firstBatch = true;
 					foreach ($deductions as $d) {
 						$subQty = floatval($d['jml']);
-						$total_item = $biaya_obat * $subQty;
+						$emb = $firstBatch ? $embInput : 0;
+						$tus = $firstBatch ? $tusInput : 0;
+						$firstBatch = false;
+
+						$total_item = ($biaya_obat * $subQty) + $emb + $tus;
 
 						$ttljual += $total_item;
 						$ttlhpp += $h_beli * $subQty;
@@ -1344,8 +1376,8 @@ class ResepObatController extends Controller
 							'h_beli' => $h_beli,
 							'biaya_obat' => $biaya_obat,
 							'jml' => $subQty,
-							'embalase' => 0,
-							'tuslah' => 0,
+							'embalase' => $emb,
+							'tuslah' => $tus,
 							'total' => $total_item,
 							'status' => $isRanap ? 'Ranap' : 'Ralan',
 							'kd_bangsal' => $bangsal,
@@ -1413,9 +1445,16 @@ class ResepObatController extends Controller
 				}
 
 				// Update data racikan jika disesuaikan pada modal (jml_dr atau aturan_pakai)
+				$racikEmbalaseMap = [];
+				$racikTuslahMap = [];
+
 				foreach ($items_racik as $ir) {
 					$nr = $ir['no_racik'] ?? null;
 					if (!$nr) continue;
+
+					$racikEmbalaseMap[$nr] = isset($ir['embalase']) && $ir['embalase'] !== '' ? floatval($ir['embalase']) : $defaultEmbalase;
+					$racikTuslahMap[$nr] = isset($ir['tuslah']) && $ir['tuslah'] !== '' ? floatval($ir['tuslah']) : $defaultTuslah;
+
 					$aturanRacik = trim($ir['aturan_pakai'] ?? '');
 					$jmlRacik = floatval($ir['jml_dr'] ?? 1);
 
@@ -1459,6 +1498,7 @@ class ResepObatController extends Controller
 				// 3. Proses Detail Bahan Racikan & Header Racikan
 				$processedRacikHeaders = [];
 				$activeRacikDetailKeys = [];
+				$processedRacikFees = [];
 
 				foreach ($items_racik_detail as $ird) {
 					$no_racik = $ird['no_racik'] ?? '';
@@ -1483,9 +1523,18 @@ class ResepObatController extends Controller
 					$biaya_obat = $this->calculateHargaObat($obat, $isRanap, $kamarKelas);
 					$h_beli = floatval($obat->h_beli);
 
+					$isFirstOfRacik = !in_array($no_racik, $processedRacikFees);
+
 					foreach ($deductions as $d) {
 						$subQty = floatval($d['jml']);
-						$total_item = $biaya_obat * $subQty;
+						$emb = $isFirstOfRacik ? ($racikEmbalaseMap[$no_racik] ?? $defaultEmbalase) : 0;
+						$tus = $isFirstOfRacik ? ($racikTuslahMap[$no_racik] ?? $defaultTuslah) : 0;
+						if ($isFirstOfRacik) {
+							$processedRacikFees[] = $no_racik;
+							$isFirstOfRacik = false;
+						}
+
+						$total_item = ($biaya_obat * $subQty) + $emb + $tus;
 
 						$ttljual += $total_item;
 						$ttlhpp += $h_beli * $subQty;
@@ -1498,8 +1547,8 @@ class ResepObatController extends Controller
 							'h_beli' => $h_beli,
 							'biaya_obat' => $biaya_obat,
 							'jml' => $subQty,
-							'embalase' => 0,
-							'tuslah' => 0,
+							'embalase' => $emb,
+							'tuslah' => $tus,
 							'total' => $total_item,
 							'status' => $isRanap ? 'Ranap' : 'Ralan',
 							'kd_bangsal' => $bangsal,
@@ -1739,7 +1788,7 @@ class ResepObatController extends Controller
 
 				// 3. Reverse jurnal HANYA untuk Rawat Jalan (Rawat Inap dijurnal saat Kasir Close Billing)
 				if (!$isRanap) {
-					$ttljual = $detailObat->sum(fn($d) => floatval($d->biaya_obat) * floatval($d->jml));
+					$ttljual = $detailObat->sum(fn($d) => floatval($d->total));
 					$ttlhpp  = $detailObat->sum(fn($d) => floatval($d->h_beli) * floatval($d->jml));
 
 					if ($ttljual > 0 || $ttlhpp > 0) {

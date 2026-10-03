@@ -318,6 +318,41 @@
                                         </form>
                                     </div>
                                 </div>
+
+                                <!-- Card Set Embalase & Tuslah (SIMKES Khanza Standard) -->
+                                <div class="card bg-white border shadow-sm mt-3">
+                                    <div class="card-header bg-light py-3 border-bottom">
+                                        <h4 class="card-title fw-bold text-dark mb-0">
+                                            <i class="ti ti-package me-2 text-success"></i> Pengaturan Embalase & Tuslah (set_embalase)
+                                        </h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <form id="formEmbalasePage">
+                                            @csrf
+                                            <div class="mb-3">
+                                                <label class="form-label required fw-bold text-dark" style="color: #1e293b !important;">Embalase per Obat (Rp)</label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text bg-light fw-bold text-dark">Rp</span>
+                                                    <input type="number" step="any" min="0" class="form-control fw-bold text-end" id="page_embalase_per_obat" value="{{ $setEmbalase->embalase_per_obat ?? 0 }}">
+                                                </div>
+                                                <div class="form-text small mt-1">Biaya wadah/bungkus/klip obat pada resep dan penjualan bebas.</div>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label required fw-bold text-dark" style="color: #1e293b !important;">Tuslah per Obat / Racik (Rp)</label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text bg-light fw-bold text-dark">Rp</span>
+                                                    <input type="number" step="any" min="0" class="form-control fw-bold text-end" id="page_tuslah_per_obat" value="{{ $setEmbalase->tuslah_per_obat ?? 0 }}">
+                                                </div>
+                                                <div class="form-text small mt-1">Biaya jasa dispensing resep dokter dan racikan farmasi.</div>
+                                            </div>
+
+                                            <button type="button" class="btn btn-success w-100 fw-bold" id="btnSimpanEmbalasePage" onclick="simpanEmbalaseFromPage()">
+                                                <i class="ti ti-check me-1"></i> Simpan Tarif Embalase & Tuslah
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Kolom Kanan: Live Interactive Simulator -->
@@ -889,6 +924,25 @@
                 showConfirmButton: false,
                 toast: true,
                 position: 'top-end'
+            });
+        }
+
+        function simpanEmbalaseFromPage() {
+            const emb = parseFloat($('#page_embalase_per_obat').val() || 0);
+            const tus = parseFloat($('#page_tuslah_per_obat').val() || 0);
+            const btn = $('#btnSimpanEmbalasePage');
+            btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Menyimpan...');
+
+            $.post(`{{ url('/farmasi/set-embalase') }}`, {
+                _token: `{{ csrf_token() }}`,
+                embalase_per_obat: emb,
+                tuslah_per_obat: tus
+            }).done((res) => {
+                btn.prop('disabled', false).html('<i class="ti ti-check me-1"></i> Simpan Tarif Embalase & Tuslah');
+                toastSuccess(res.message || 'Pengaturan embalase dan tuslah berhasil disimpan');
+            }).fail((err) => {
+                btn.prop('disabled', false).html('<i class="ti ti-check me-1"></i> Simpan Tarif Embalase & Tuslah');
+                toastError(err.responseJSON?.message || 'Gagal menyimpan pengaturan embalase');
             });
         }
 

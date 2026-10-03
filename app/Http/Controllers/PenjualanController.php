@@ -40,13 +40,19 @@ class PenjualanController extends Controller
         $today = date('Y-m-d');
         $nextNota = $this->generateNextNota($today);
 
+        $setEmbalase = DB::table('set_embalase')->first();
+        $embalaseDefault = floatval($setEmbalase?->embalase_per_obat ?? 0);
+        $tuslahDefault = floatval($setEmbalase?->tuslah_per_obat ?? 0);
+
         return view('content.farmasi.penjualan', compact(
             'bangsal',
             'petugas',
             'akunBayar',
             'currentNip',
             'today',
-            'nextNota'
+            'nextNota',
+            'embalaseDefault',
+            'tuslahDefault'
         ));
     }
 

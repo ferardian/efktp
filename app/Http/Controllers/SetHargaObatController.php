@@ -42,8 +42,15 @@ class SetHargaObatController extends Controller
         }
 
         $jenisList = Jenis::orderBy('nama', 'asc')->get();
+        $setEmbalase = DB::table('set_embalase')->first();
+        if (!$setEmbalase) {
+            $setEmbalase = (object)[
+                'embalase_per_obat' => 0,
+                'tuslah_per_obat'   => 0,
+            ];
+        }
 
-        return view('content.farmasi.setHarga', compact('pengaturanUmum', 'marginUmum', 'jenisList'));
+        return view('content.farmasi.setHarga', compact('pengaturanUmum', 'marginUmum', 'jenisList', 'setEmbalase'));
     }
 
     public function updatePengaturanUmum(Request $request)
@@ -568,6 +575,51 @@ class SetHargaObatController extends Controller
                     'vip'       => ['label' => 'Rawat Inap VIP', 'harga' => floatval($barang->vip), 'margin' => $calculateMargin($barang->vip)],
                     'vvip'      => ['label' => 'Rawat Inap VVIP', 'harga' => floatval($barang->vvip), 'margin' => $calculateMargin($barang->vvip)],
                 ]
+            ]
+        ]);
+    }
+
+    public function getSetEmbalase()
+    {
+        $setting = DB::table('set_embalase')->first();
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'embalase_per_obat' => floatval($setting->embalase_per_obat ?? 0),
+                'tuslah_per_obat'   => floatval($setting->tuslah_per_obat ?? 0),
+            ]
+        ]);
+    }
+
+    public function updateSetEmbalase(Request $request)
+    {
+        $request->validate([
+            'embalase_per_obat' => 'required|numeric|min:0',
+            'tuslah_per_obat'   => 'required|numeric|min:0',
+        ]);
+
+        $emb = floatval($request->embalase_per_obat);
+        $tus = floatval($request->tuslah_per_obat);
+
+        $exists = DB::table('set_embalase')->first();
+        if ($exists) {
+            DB::table('set_embalase')->update([
+                'embalase_per_obat' => $emb,
+                'tuslah_per_obat'   => $tus,
+            ]);
+        } else {
+            DB::table('set_embalase')->insert([
+                'embalase_per_obat' => $emb,
+                'tuslah_per_obat'   => $tus,
+            ]);
+        }
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Pengaturan Embalase & Tuslah berhasil disimpan',
+            'data'    => [
+                'embalase_per_obat' => $emb,
+                'tuslah_per_obat'   => $tus,
             ]
         ]);
     }

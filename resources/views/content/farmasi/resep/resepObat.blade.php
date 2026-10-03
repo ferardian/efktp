@@ -147,6 +147,11 @@
                         </li>
                     </ul>
                 </div>
+                <div>
+                    <button type="button" class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1" onclick="openModalSetEmbalase()">
+                        <i class="ti ti-settings text-primary"></i><span>Set Embalase & Tuslah</span>
+                    </button>
+                </div>
             </div>
             <div class="card-body">
                 <div id="table-default" class="table-responsive">
@@ -176,6 +181,7 @@
     @include('content.farmasi.resep._modalValidasiResep')
     @include('content.farmasi.resep._modalValidasiUdd')
     @include('content.farmasi.resep._modalCetakEtiket')
+    @include('content.farmasi._modalSetEmbalase')
 @endsection
 @push('script')
     <script>

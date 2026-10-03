@@ -164,30 +164,37 @@
                                     <h4 class="card-title text-primary mb-0">
                                         <i class="ti ti-list-check me-1"></i> Daftar Obat Terpilih
                                     </h4>
-                                    <button type="button" class="btn btn-outline-danger btn-sm py-1" onclick="clearCart()" id="btnClearCart" style="display: none;">
-                                        <i class="ti ti-trash me-1"></i> Kosongkan Keranjang
-                                    </button>
+                                    <div>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm py-1 me-1" onclick="openModalSetEmbalase()">
+                                            <i class="ti ti-settings me-1 text-primary"></i> Set Embalase & Tuslah
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger btn-sm py-1" onclick="clearCart()" id="btnClearCart" style="display: none;">
+                                            <i class="ti ti-trash me-1"></i> Kosongkan Keranjang
+                                        </button>
+                                    </div>
                                 </div>
                                 <div class="table-responsive" style="min-height: 260px; max-height: calc(100vh - 440px); overflow-y: auto;">
                                     <table class="table table-vcenter table-striped table-hover table-bordered mb-0" id="tabelKeranjangPenjualan">
                                         <thead class="table-light sticky-top" style="z-index: 1;">
                                             <tr class="text-center small fw-bold">
                                                 <th width="3%">#</th>
-                                                <th width="9%">Kode</th>
-                                                <th width="19%">Nama Obat / Barang</th>
-                                                <th width="14%">Satuan Jual</th>
-                                                <th width="8%">Stok Gudang</th>
-                                                <th width="11%">Harga (Rp)</th>
-                                                <th width="12%">Qty</th>
-                                                <th width="6%">Disc(%)</th>
-                                                <th width="11%">Subtotal (Rp)</th>
-                                                <th width="11%">Aturan Pakai</th>
+                                                <th width="8%">Kode</th>
+                                                <th width="17%">Nama Obat / Barang</th>
+                                                <th width="12%">Satuan Jual</th>
+                                                <th width="7%">Stok</th>
+                                                <th width="10%">Harga (Rp)</th>
+                                                <th width="11%">Qty</th>
+                                                <th width="5%">Disc(%)</th>
+                                                <th width="8%">Emb (Rp)</th>
+                                                <th width="8%">Tsl (Rp)</th>
+                                                <th width="10%">Subtotal (Rp)</th>
+                                                <th width="10%">Aturan Pakai</th>
                                                 <th width="4%">Aksi</th>
                                             </tr>
                                         </thead>
                                         <tbody id="cartTableBody">
                                             <tr id="emptyCartRow">
-                                                <td colspan="11" class="text-center text-muted py-5">
+                                                <td colspan="13" class="text-center text-muted py-5">
                                                     <i class="ti ti-basket-off fs-1 text-secondary mb-2 d-block"></i>
                                                     Keranjang masih kosong. Gunakan kotak pencarian di atas untuk menambahkan obat.
                                                 </td>
@@ -428,6 +435,7 @@
             </div>
         </div>
     </div>
+    @include('content.farmasi._modalSetEmbalase')
 @endsection
 
 @push('script')
@@ -435,6 +443,8 @@
     // State Keranjang Belanja
     let cartItems = [];
     let timeoutSearch = null;
+    let currentDefaultEmbalase = {{ $embalaseDefault ?? 0 }};
+    let currentDefaultTuslah = {{ $tuslahDefault ?? 0 }};
 
     $(document).ready(function () {
         // F2 Keyboard Shortcut to Focus Medicine Search
@@ -735,8 +745,8 @@
                 dis: 0,
                 bsr_dis: 0,
                 tambahan: 0,
-                embalase: 0,
-                tuslah: 0,
+                embalase: currentDefaultEmbalase,
+                tuslah: currentDefaultTuslah,
                 aturan_pakai: multiplier > 1 ? `1 ${selectedOpt.name}` : '',
                 no_batch: '',
                 no_faktur: ''
@@ -952,6 +962,20 @@
                                value="${item.dis}" min="0" max="100"
                                onchange="updateCartItemField(${index}, 'dis', this.value)">
                     </td>
+                    <td style="min-width: 70px;" class="text-center">
+                        <input type="number" class="form-control form-control-sm text-end mx-auto" 
+                               style="max-width: 75px;"
+                               value="${item.embalase || 0}" min="0" step="any"
+                               onchange="updateCartItemField(${index}, 'embalase', this.value)"
+                               title="Biaya Wadah / Embalase">
+                    </td>
+                    <td style="min-width: 70px;" class="text-center">
+                        <input type="number" class="form-control form-control-sm text-end mx-auto" 
+                               style="max-width: 75px;"
+                               value="${item.tuslah || 0}" min="0" step="any"
+                               onchange="updateCartItemField(${index}, 'tuslah', this.value)"
+                               title="Biaya Jasa / Tuslah">
+                    </td>
                     <td class="text-end fw-bold text-success fs-4 text-nowrap">
                         Rp ${formatNumber(itemTotal)}
                     </td>
@@ -983,6 +1007,10 @@
             cartItems[index].base_h_jual = newPrice / mult;
         } else if (field === 'dis') {
             cartItems[index].dis = parseFloat(value) || 0;
+        } else if (field === 'embalase') {
+            cartItems[index].embalase = parseFloat(value) || 0;
+        } else if (field === 'tuslah') {
+            cartItems[index].tuslah = parseFloat(value) || 0;
         } else if (field === 'aturan_pakai') {
             cartItems[index].aturan_pakai = value;
         }

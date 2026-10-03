@@ -67,18 +67,20 @@
                             <table class="table table-sm table-hover align-middle mb-0" id="tbValidasiNonRacik">
                                 <thead class="table-light">
                                     <tr>
-                                        <th width="10%">Kode</th>
-                                        <th width="32%">Nama Obat</th>
-                                        <th width="12%" class="text-center">Stok Depo</th>
-                                        <th width="8%" class="text-center">Qty Dokter</th>
-                                        <th width="15%" class="text-center">Qty Validasi</th>
-                                        <th width="15%">Aturan Pakai</th>
-                                        <th width="8%" class="text-center">Aksi</th>
+                                        <th width="8%">Kode</th>
+                                        <th width="24%">Nama Obat</th>
+                                        <th width="10%" class="text-center">Stok Depo</th>
+                                        <th width="7%" class="text-center">Qty Dr</th>
+                                        <th width="12%" class="text-center">Qty Validasi</th>
+                                        <th width="10%" class="text-center">Emb (Rp)</th>
+                                        <th width="10%" class="text-center">Tuslah (Rp)</th>
+                                        <th width="13%">Aturan Pakai</th>
+                                        <th width="6%" class="text-center">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td colspan="7" class="text-center text-muted">Memuat data obat...</td>
+                                        <td colspan="9" class="text-center text-muted">Memuat data obat...</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -162,6 +164,8 @@
 
         let currentKdBangsal = 'AP';
         let currentNmBangsal = 'Apotek';
+        let valDefaultEmbalase = 0;
+        let valDefaultTuslah = 0;
         let lookupTimer = null;
         let lookupContext = {
             mode: 'tambah', // 'tambah', 'substitusi', 'tambah_racik', 'substitusi_racik'
@@ -201,6 +205,8 @@
 
                     currentKdBangsal = response.kd_bangsal || 'AP';
                     currentNmBangsal = response.bangsal_name || response.nm_bangsal || 'Apotek';
+                    valDefaultEmbalase = parseFloat(response.default_embalase || 0);
+                    valDefaultTuslah = parseFloat(response.default_tuslah || 0);
                     $('#lblDepoLookup').text(currentNmBangsal);
 
                     $('#val_no_resep').val(resep.no_resep);
@@ -243,7 +249,7 @@
             tbody.empty();
 
             if (!items || !items.length) {
-                tbody.append('<tr id="rowEmptyNonRacik"><td colspan="7" class="text-center text-muted py-3">Tidak ada obat non-racikan</td></tr>');
+                tbody.append('<tr id="rowEmptyNonRacik"><td colspan="9" class="text-center text-muted py-3">Tidak ada obat non-racikan</td></tr>');
                 return;
             }
 
@@ -277,6 +283,12 @@
                                 <input type="number" step="0.01" min="0" class="form-control text-center fw-bold val-qty-nonracik" data-kode="${item.kode_brng}" value="${qtyDr}">
                                 <span class="input-group-text cell-satuan-addon">${satuan}</span>
                             </div>
+                        </td>
+                        <td>
+                            <input type="number" step="any" min="0" class="form-control form-control-sm text-end val-emb-nonracik" data-kode="${item.kode_brng}" value="${valDefaultEmbalase}">
+                        </td>
+                        <td>
+                            <input type="number" step="any" min="0" class="form-control form-control-sm text-end val-tuslah-nonracik" data-kode="${item.kode_brng}" value="${valDefaultTuslah}">
                         </td>
                         <td>
                             <input type="text" class="form-control form-control-sm val-aturan-nonracik" data-kode="${item.kode_brng}" value="${item.aturan_pakai || ''}" placeholder="Aturan pakai...">
@@ -357,10 +369,14 @@
                                 <span class="badge bg-primary me-2">Racik #${racik.no_racik}</span>
                                 <strong>${racik.nama_racik}</strong> (${metode})
                             </div>
-                            <div class="d-flex align-items-center gap-2">
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
                                 <span class="small text-muted">Jml Racik:</span>
-                                <input type="number" step="1" min="1" class="form-control form-control-sm text-center fw-bold val-qty-dr-racik" style="width: 75px;" data-no-racik="${racik.no_racik}" value="${racik.jml_dr}">
-                                <input type="text" class="form-control form-control-sm val-aturan-racik" style="width: 200px;" data-no-racik="${racik.no_racik}" value="${racik.aturan_pakai || ''}" placeholder="Aturan pakai...">
+                                <input type="number" step="1" min="1" class="form-control form-control-sm text-center fw-bold val-qty-dr-racik" style="width: 65px;" data-no-racik="${racik.no_racik}" value="${racik.jml_dr}">
+                                <span class="small text-muted ms-1">Emb:</span>
+                                <input type="number" step="any" min="0" class="form-control form-control-sm text-end val-emb-racik" style="width: 75px;" data-no-racik="${racik.no_racik}" value="${valDefaultEmbalase}" title="Embalase Racikan #${racik.no_racik}">
+                                <span class="small text-muted ms-1">Tsl:</span>
+                                <input type="number" step="any" min="0" class="form-control form-control-sm text-end val-tuslah-racik" style="width: 75px;" data-no-racik="${racik.no_racik}" value="${valDefaultTuslah}" title="Tuslah Racikan #${racik.no_racik}">
+                                <input type="text" class="form-control form-control-sm val-aturan-racik" style="width: 170px;" data-no-racik="${racik.no_racik}" value="${racik.aturan_pakai || ''}" placeholder="Aturan pakai...">
                                 <button type="button" class="btn btn-xs btn-outline-primary d-inline-flex align-items-center gap-1" onclick="openLookupObatValidasi('tambah_racik', null, '${racik.no_racik}')">
                                     <i class="ti ti-plus"></i><span>Tambah Bahan</span>
                                 </button>
@@ -491,6 +507,12 @@
                                 <input type="number" step="0.01" min="0" class="form-control text-center fw-bold val-qty-nonracik" data-kode="${item.kode_brng}" value="1">
                                 <span class="input-group-text cell-satuan-addon">${satuan}</span>
                             </div>
+                        </td>
+                        <td>
+                            <input type="number" step="any" min="0" class="form-control form-control-sm text-end val-emb-nonracik" data-kode="${item.kode_brng}" value="${valDefaultEmbalase}">
+                        </td>
+                        <td>
+                            <input type="number" step="any" min="0" class="form-control form-control-sm text-end val-tuslah-nonracik" data-kode="${item.kode_brng}" value="${valDefaultTuslah}">
                         </td>
                         <td>
                             <input type="text" class="form-control form-control-sm val-aturan-nonracik" data-kode="${item.kode_brng}" value="3 x 1" placeholder="Aturan pakai...">
@@ -707,12 +729,16 @@
                 const isNew = $(this).attr('data-is-new') ? 1 : 0;
                 if (kode) {
                     const jml = parseFloat($(this).find('.val-qty-nonracik').val() || 0);
+                    const emb = parseFloat($(this).find('.val-emb-nonracik').val() || 0);
+                    const tus = parseFloat($(this).find('.val-tuslah-nonracik').val() || 0);
                     const aturan = $(this).find('.val-aturan-nonracik').val() || '';
                     items_non_racik.push({
                         kode_brng: kode,
                         kode_brng_asal: kodeAsal,
                         is_new: isNew,
                         jml: jml,
+                        embalase: emb,
+                        tuslah: tus,
                         aturan_pakai: aturan
                     });
                 }
@@ -739,12 +765,16 @@
             const items_racik = [];
             $('#containerValidasiRacikan .card').each(function () {
                 const inputQtyDr = $(this).find('.val-qty-dr-racik');
+                const inputEmb = $(this).find('.val-emb-racik');
+                const inputTus = $(this).find('.val-tuslah-racik');
                 const inputAturan = $(this).find('.val-aturan-racik');
                 const no_racik = inputQtyDr.data('no-racik');
                 if (no_racik) {
                     items_racik.push({
                         no_racik: no_racik,
                         jml_dr: parseFloat(inputQtyDr.val() || 1),
+                        embalase: parseFloat(inputEmb.val() || 0),
+                        tuslah: parseFloat(inputTus.val() || 0),
                         aturan_pakai: inputAturan.val() || ''
                     });
                 }

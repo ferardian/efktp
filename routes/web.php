@@ -461,8 +461,9 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::delete('/farmasi/set-harga/delete-barang/{kode_brng}', [\App\Http\Controllers\SetHargaObatController::class, 'deleteBarang']);
 	Route::post('/farmasi/set-harga/apply-harga', [\App\Http\Controllers\SetHargaObatController::class, 'applyHarga']);
 	Route::get('/farmasi/set-harga/simulate-price', [\App\Http\Controllers\SetHargaObatController::class, 'simulatePrice']);
-	Route::get('/farmasi/set-harga/data-monitoring-obat', [\App\Http\Controllers\SetHargaObatController::class, 'dataMonitoringObat']);
 	Route::get('/farmasi/set-harga/detail-obat/{kode_brng}', [\App\Http\Controllers\SetHargaObatController::class, 'detailHargaObat']);
+	Route::get('/farmasi/set-embalase', [\App\Http\Controllers\SetHargaObatController::class, 'getSetEmbalase']);
+	Route::post('/farmasi/set-embalase', [\App\Http\Controllers\SetHargaObatController::class, 'updateSetEmbalase']);
 
 	// Laporan Penjualan Obat Per Item
 	Route::get('/farmasi/laporan-penjualan-item', [\App\Http\Controllers\LaporanPenjualanItemController::class, 'index']);
