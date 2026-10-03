@@ -87,60 +87,68 @@ return new class extends Migration
             DB::table('kelurahan')->where('kd_kel', $defaultKel->kd_kel)->update(['kd_kel' => 1, 'nm_kel' => '-']);
         }
 
-        // 6. Import from sip_pekalongan
-        // PROPINSI
-        $provs = DB::table('sip_pekalongan.satset_prov')->get();
-        foreach ($provs as $p) {
-            if ($p->id_prov == 1) continue;
-            DB::table('propinsi')->updateOrInsert(
-                ['kd_prop' => (int) $p->id_prov],
-                ['nm_prop' => $p->nm_prov]
-            );
-        }
+        // 6. Import Data Wilayah (Propinsi, Kabupaten, Kecamatan, Kelurahan)
+        $sqlFile = database_path('sql/wilayah.sql');
+        if (file_exists($sqlFile)) {
+            // Langsung eksekusi dump data wilayah mandiri dari database/sql/wilayah.sql
+            DB::unprepared(file_get_contents($sqlFile));
+        } else {
+            // Fallback: Jika ada tabel lokal sip_pekalongan (di mesin dev lama)
+            try {
+                if (Schema::hasTable('sip_pekalongan.satset_prov')) {
+                    $provs = DB::table('sip_pekalongan.satset_prov')->get();
+                    foreach ($provs as $p) {
+                        if ($p->id_prov == 1) continue;
+                        DB::table('propinsi')->updateOrInsert(
+                            ['kd_prop' => (int) $p->id_prov],
+                            ['nm_prop' => $p->nm_prov]
+                        );
+                    }
 
-        // KABUPATEN
-        $kabs = DB::table('sip_pekalongan.satset_kab')->get();
-        foreach ($kabs as $k) {
-            if ($k->id_kab == 1) continue;
-            DB::table('kabupaten')->updateOrInsert(
-                ['kd_kab' => (int) $k->id_kab],
-                ['nm_kab' => $k->nm_kab]
-            );
-        }
+                    $kabs = DB::table('sip_pekalongan.satset_kab')->get();
+                    foreach ($kabs as $k) {
+                        if ($k->id_kab == 1) continue;
+                        DB::table('kabupaten')->updateOrInsert(
+                            ['kd_kab' => (int) $k->id_kab],
+                            ['nm_kab' => $k->nm_kab]
+                        );
+                    }
 
-        // KECAMATAN
-        $kecs = DB::table('sip_pekalongan.satset_kec')->get();
-        $kecChunks = $kecs->chunk(1000);
-        foreach ($kecChunks as $chunk) {
-            $insertData = [];
-            foreach ($chunk as $kc) {
-                if ($kc->id_kec == 1) continue;
-                $insertData[] = [
-                    'kd_kec' => (int) $kc->id_kec,
-                    'nm_kec' => $kc->nm_kec
-                ];
-            }
-            if (!empty($insertData)) {
-                DB::table('kecamatan')->upsert($insertData, ['kd_kec'], ['nm_kec']);
-            }
-        }
+                    $kecs = DB::table('sip_pekalongan.satset_kec')->get();
+                    foreach ($kecs->chunk(1000) as $chunk) {
+                        $insertData = [];
+                        foreach ($chunk as $kc) {
+                            if ($kc->id_kec == 1) continue;
+                            $insertData[] = [
+                                'kd_kec' => (int) $kc->id_kec,
+                                'nm_kec' => $kc->nm_kec
+                            ];
+                        }
+                        if (!empty($insertData)) {
+                            DB::table('kecamatan')->upsert($insertData, ['kd_kec'], ['nm_kec']);
+                        }
+                    }
 
-        // KELURAHAN (83,437 rows -> chunked processing)
-        DB::table('sip_pekalongan.satset_desa')
-            ->orderBy('id_desa')
-            ->chunk(3000, function ($desas) {
-                $insertData = [];
-                foreach ($desas as $d) {
-                    if (empty($d->id_desa) || $d->id_desa == 1) continue;
-                    $insertData[] = [
-                        'kd_kel' => (int) $d->id_desa,
-                        'nm_kel' => $d->nm_desa
-                    ];
+                    DB::table('sip_pekalongan.satset_desa')
+                        ->orderBy('id_desa')
+                        ->chunk(3000, function ($desas) {
+                            $insertData = [];
+                            foreach ($desas as $d) {
+                                if (empty($d->id_desa) || $d->id_desa == 1) continue;
+                                $insertData[] = [
+                                    'kd_kel' => (int) $d->id_desa,
+                                    'nm_kel' => $d->nm_desa
+                                ];
+                            }
+                            if (!empty($insertData)) {
+                                DB::table('kelurahan')->upsert($insertData, ['kd_kel'], ['nm_kel']);
+                            }
+                        });
                 }
-                if (!empty($insertData)) {
-                    DB::table('kelurahan')->upsert($insertData, ['kd_kel'], ['nm_kel']);
-                }
-            });
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("Wilayah import satset fallback skipped: " . $e->getMessage());
+            }
+        }
 
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
     }
