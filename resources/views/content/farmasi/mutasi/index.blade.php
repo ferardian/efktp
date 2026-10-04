@@ -647,7 +647,7 @@
                     keterangan: ket,
                     items: cartMutasi
                 }).done((response) => {
-                    loadingAjax().close();
+                    Swal.close();
                     Swal.fire({
                         icon: 'success',
                         title: 'Berhasil!',
@@ -667,7 +667,7 @@
                         tableHistory.ajax.reload();
                     }
                 }).fail((xhr) => {
-                    loadingAjax().close();
+                    Swal.close();
                     alertErrorAjax(xhr);
                 });
             }
@@ -755,13 +755,13 @@
                     no_batch: no_batch,
                     no_faktur: no_faktur
                 }).done((response) => {
-                    loadingAjax().close();
+                    Swal.close();
                     Swal.fire('Berhasil', response.message, 'success');
                     if (tableHistory) {
                         tableHistory.ajax.reload();
                     }
                 }).fail((xhr) => {
-                    loadingAjax().close();
+                    Swal.close();
                     alertErrorAjax(xhr);
                 });
             }
