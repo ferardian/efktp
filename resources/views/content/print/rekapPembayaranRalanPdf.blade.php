@@ -93,18 +93,19 @@
                 <tr>
                     <th width="3%">No</th>
                     <th width="7%">Tgl</th>
-                    <th width="10%">No. Nota</th>
+                    <th width="9%">No. Nota</th>
                     <th width="6%">No. RM</th>
-                    <th width="14%">Nama Pasien</th>
-                    <th width="10%">Poliklinik</th>
-                    <th width="6%">Reg</th>
-                    <th width="7%">Obat+BHP</th>
-                    <th width="8%">Tindakan</th>
-                    <th width="6%">Lab</th>
-                    <th width="6%">Rad</th>
-                    <th width="5%">Tamb</th>
-                    <th width="5%">Pot</th>
-                    <th width="9%">Total Biaya</th>
+                    <th width="13%">Nama Pasien</th>
+                    <th width="9%">Poliklinik</th>
+                    <th width="11%">Dokter</th>
+                    <th width="5%">Reg</th>
+                    <th width="6%">Obat+BHP</th>
+                    <th width="7%">Tindakan</th>
+                    <th width="5%">Lab</th>
+                    <th width="5%">Rad</th>
+                    <th width="4%">Tamb</th>
+                    <th width="4%">Pot</th>
+                    <th width="8%">Total Biaya</th>
                 </tr>
             </thead>
             <tbody>
@@ -116,6 +117,7 @@
                         <td class="text-center">{{ $item['no_rkm_medis'] }}</td>
                         <td>{{ $item['nm_pasien'] }}</td>
                         <td>{{ $item['nm_poli'] }}</td>
+                        <td>{{ $item['nm_dokter'] ?? '-' }}</td>
                         <td class="text-right">{{ number_format($item['biaya_reg'], 0, ',', '.') }}</td>
                         <td class="text-right">{{ number_format($item['biaya_obat'], 0, ',', '.') }}</td>
                         <td class="text-right">{{ number_format($item['biaya_tindakan'], 0, ',', '.') }}</td>
@@ -129,7 +131,7 @@
             </tbody>
             <tfoot>
                 <tr style="font-weight: bold; background-color: #f8f9fa;">
-                    <td colspan="6" class="text-center">TOTAL KESELURUHAN</td>
+                    <td colspan="7" class="text-center">TOTAL KESELURUHAN</td>
                     <td class="text-right">{{ number_format($totals['registrasi'], 0, ',', '.') }}</td>
                     <td class="text-right">{{ number_format($totals['obat'], 0, ',', '.') }}</td>
                     <td class="text-right">{{ number_format($totals['tindakan'], 0, ',', '.') }}</td>
