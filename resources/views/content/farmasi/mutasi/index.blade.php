@@ -305,8 +305,9 @@
         </div>
     </div>
 </div>
+@endsection
 
-@push('scripts')
+@push('script')
 <script>
     let cartMutasi = [];
     let tableHistory = null;
@@ -778,4 +779,3 @@
     }
 </script>
 @endpush
-@endsection
