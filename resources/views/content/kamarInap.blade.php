@@ -68,6 +68,7 @@
     @include('content.erm._modalMonitoringAnestesi')
     @include('content.erm._modalPerencanaanPemulangan')
     @include('content.erm._modalPemantauanAnestesiBedah')
+    @include('content.erm._modalPersetujuanRujukan')
 @endsection
 @push('script')
     <script>
@@ -238,6 +239,13 @@
                                                 </a>
                                             </li>
                                             <li><a class="dropdown-item py-1" href="javascript:void(0)" onclick="penilaianAwalKeperawatanRanap('${row.no_rawat}')"><i class="ti ti-clipboard-check text-success me-2"></i> Kajian Awal Keperawatan</a></li>
+                                            <li><hr class="dropdown-divider my-1"></li>
+                                            <li><h6 class="dropdown-header text-uppercase py-1 text-muted fw-bold"><i class="ti ti-ambulance me-1"></i> Rujukan & Edukasi</h6></li>
+                                            <li>
+                                                <a class="dropdown-item py-1 d-flex justify-content-between align-items-center" href="javascript:void(0)" onclick="bukaPersetujuanRujukan('${row.no_rawat}')">
+                                                    <span><i class="ti ti-file-certificate text-danger me-2"></i> Persetujuan / Penolakan Rujukan</span>
+                                                </a>
+                                            </li>
                                         </ul>
                                     </div>
                                 </div>`;

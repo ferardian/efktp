@@ -73,6 +73,7 @@ use App\Http\Controllers\PenilaianPreAnestesiController;
 use App\Http\Controllers\LaporanAnestesiController;
 use App\Http\Controllers\PerencanaanPemulanganController;
 use App\Http\Controllers\PemantauanAnestesiBedahController;
+use App\Http\Controllers\PersetujuanPenolakanRujukanController;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -330,6 +331,14 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::post('/erm/persetujuan-tindakan', [PersetujuanPenolakanTindakanController::class, 'store']);
 	Route::post('/erm/persetujuan-tindakan/delete', [PersetujuanPenolakanTindakanController::class, 'delete']);
 	Route::get('/erm/persetujuan-tindakan/print/{no_pernyataan}', [PersetujuanPenolakanTindakanController::class, 'print']);
+
+	// PERSETUJUAN / PENOLAKAN RUJUKAN & EDUKASI RUJUKAN
+	Route::get('/erm/persetujuan-rujukan/list/{no_rawat?}', [PersetujuanPenolakanRujukanController::class, 'getByNoRawat'])->where('no_rawat', '.*');
+	Route::get('/erm/persetujuan-rujukan/show/{no_surat}', [PersetujuanPenolakanRujukanController::class, 'show']);
+	Route::get('/erm/persetujuan-rujukan/referensi/{no_rawat?}', [PersetujuanPenolakanRujukanController::class, 'getReferensiRujukan'])->where('no_rawat', '.*');
+	Route::post('/erm/persetujuan-rujukan', [PersetujuanPenolakanRujukanController::class, 'store']);
+	Route::post('/erm/persetujuan-rujukan/delete', [PersetujuanPenolakanRujukanController::class, 'destroy']);
+	Route::get('/erm/persetujuan-rujukan/print/{no_surat}', [PersetujuanPenolakanRujukanController::class, 'print']);
 
 	// KAJIAN PRA BEDAH
 	Route::get('/erm/pra-bedah/list/{no_rawat?}', [PenilaianPreOperasiController::class, 'getByNoRawat'])->where('no_rawat', '.*');

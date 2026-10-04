@@ -331,6 +331,13 @@
                                                  ${hasPp ? `<span class="badge bg-success text-white rounded-pill ms-2 px-1 py-0" style="font-size: 0.7rem;"><i class="ti ti-check me-1" style="font-size: 0.65rem;"></i>${ppCount}</span>` : ''}
                                              </a>
                                          </li>
+                                         <li><hr class="dropdown-divider my-1"></li>
+                                         <li><h6 class="dropdown-header text-uppercase py-1 text-muted fw-bold"><i class="ti ti-ambulance me-1"></i> Rujukan & Edukasi</h6></li>
+                                         <li>
+                                             <a class="dropdown-item py-1 d-flex justify-content-between align-items-center" href="javascript:void(0)" onclick="bukaPersetujuanRujukan('${row.no_rawat}')">
+                                                 <span><i class="ti ti-file-certificate text-danger me-2"></i> Persetujuan / Penolakan Rujukan</span>
+                                             </a>
+                                         </li>
                                      </ul>
                                 </div>
                             </div>`;
