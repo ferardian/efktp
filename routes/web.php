@@ -619,6 +619,7 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::get('kamar/ketersediaan', [KamarInapController::class, 'getKamarKosong']);
 
 	Route::get('pemeriksaan/ranap', [PemeriksaanRanapController::class, 'get']);
+	Route::get('pemeriksaan/ranap/print/{no_rawat}', [PemeriksaanRanapController::class, 'printCppt'])->where('no_rawat', '.*');
 	Route::post('pemeriksaan/ranap', [PemeriksaanRanapController::class, 'create']);
 	Route::post('pemeriksaan/ranap/update', [PemeriksaanRanapController::class, 'update']);
 	Route::post('pemeriksaan/ranap/delete', [PemeriksaanRanapController::class, 'delete']);

@@ -193,7 +193,8 @@
                         }
 
                         let btn = `<div class="d-flex align-items-center gap-1">
-                                    <button class="btn btn-success btn-sm" type="button" onclick="cpptRanap('${data}')" title="CPPT"><i class="ti ti-pencil"></i></button>
+                                    <button class="btn btn-success btn-sm" type="button" onclick="cpptRanap('${data}')" title="Buka / Input CPPT"><i class="ti ti-pencil"></i></button>
+                                    <a class="btn btn-outline-danger btn-sm" href="/pemeriksaan/ranap/print/${data}" target="_blank" title="Cetak Lembar CPPT Terintegrasi (PDF)"><i class="ti ti-printer"></i></a>
                                     <button class="btn btn-primary btn-sm" type="button" onclick="riwayat('${row.reg_periksa?.no_rkm_medis || ''}')" title="Riwayat Perawatan"><i class="ti ti-folder-open"></i></button>
                                     <div class="dropdown">
                                         <button class="btn btn-sm ${btnErmClass} dropdown-toggle px-2 d-inline-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Menu ERM & Dokumen Klinis ${hasErm ? '(' + totalErmCount + ' Dokumen)' : ''}">
@@ -201,6 +202,12 @@
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="z-index: 1055;">
                                             <li><h6 class="dropdown-header text-uppercase py-1"><i class="ti ti-heart-rate-monitor me-1"></i> Form Medis & ERM</h6></li>
+                                            <li>
+                                                <a class="dropdown-item py-1 fw-bold text-danger" href="/pemeriksaan/ranap/print/${row.no_rawat}" target="_blank">
+                                                    <span><i class="ti ti-printer text-danger me-2"></i> Cetak Lembar CPPT (PDF)</span>
+                                                </a>
+                                            </li>
+                                            <li><hr class="dropdown-divider my-1"></li>
                                             <li>
                                                 <a class="dropdown-item py-1 d-flex justify-content-between align-items-center ${hasIc ? 'fw-bold text-success' : ''}" href="javascript:void(0)" onclick="bukaInformedConsent('${row.no_rawat}')">
                                                     <span><i class="ti ti-file-certificate ${hasIc ? 'text-success' : 'text-primary'} me-2"></i> Informed Consent</span>

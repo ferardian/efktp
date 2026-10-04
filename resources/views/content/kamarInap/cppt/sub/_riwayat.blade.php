@@ -37,8 +37,8 @@
         </div>
 
         <p class="card-title m-1">Riwayat Pemeriksaan</p>
-        <div class="row mb-2">
-            <div class="col-lg-5 col-md-12 col-sm-12">
+        <div class="row mb-2 align-items-center">
+            <div class="col-lg-8 col-md-12 col-sm-12">
                 <div class="input-group">
                     <input type="text" class="form-control filterTangal" id="tglCppt1" name="tglCppt1"
                         value="{{ date('d-m-Y') }}">
@@ -46,8 +46,15 @@
                     <input type="text" class="form-control filterTangal" id="tglCppt2" name="tglCppt2"
                         value="{{ date('d-m-Y') }}">
                     <button type="button" class="btn btn-secondary" id="btnFilterCppt" name="btnFilterCppt"
-                        onclick="filterCpptRanap()"><i class="ti ti-search me-1"></i></button>
+                        onclick="filterCpptRanap()"><i class="ti ti-search me-1"></i> Cari</button>
+                    <button type="button" class="btn btn-outline-danger" id="btnCetakCpptPdf" title="Cetak CPPT sesuai rentang tanggal"
+                        onclick="cetakCpptRanap()"><i class="ti ti-printer me-1"></i> Cetak CPPT</button>
                 </div>
+            </div>
+            <div class="col-lg-4 col-md-12 text-lg-end mt-2 mt-lg-0">
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="cetakCpptSemua()" title="Cetak seluruh riwayat CPPT selama masa rawat inap">
+                    <i class="ti ti-file-certificate me-1"></i> Cetak Semua (KRS)
+                </button>
             </div>
         </div>
         <div class="accordion" id="listRiwayat" style="height: 75vh; overflow-y: auto; overflow-x: hidden;">
@@ -73,6 +80,29 @@
         var tglCppt1 = $('#tglCppt1');
         var tglCppt2 = $('#tglCppt2');
 
+        window.cetakCpptRanap = function () {
+            const no_rawat = formCpptRanap.find('input[name="no_rawat"]').val();
+            if (!no_rawat) {
+                Swal.fire('Perhatian', 'Nomor rawat pasien tidak ditemukan.', 'warning');
+                return;
+            }
+            const tgl1 = tglCppt1.val();
+            const tgl2 = tglCppt2.val();
+            let url = `{{ url('/pemeriksaan/ranap/print') }}/${encodeURIComponent(no_rawat)}`;
+            if (tgl1 && tgl2) {
+                url += `?tglCppt1=${encodeURIComponent(tgl1)}&tglCppt2=${encodeURIComponent(tgl2)}`;
+            }
+            window.open(url, '_blank');
+        };
+
+        window.cetakCpptSemua = function () {
+            const no_rawat = formCpptRanap.find('input[name="no_rawat"]').val();
+            if (!no_rawat) {
+                Swal.fire('Perhatian', 'Nomor rawat pasien tidak ditemukan.', 'warning');
+                return;
+            }
+            window.open(`{{ url('/pemeriksaan/ranap/print') }}/${encodeURIComponent(no_rawat)}`, '_blank');
+        };
 
         function filterCpptRanap() {
             $.get(`{{ url('/pemeriksaan/ranap') }}`, {

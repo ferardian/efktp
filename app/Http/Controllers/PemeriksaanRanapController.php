@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\PemeriksaanRanap;
+use App\Models\RegPeriksa;
+use App\Models\Setting;
 use App\Traits\Track;
 use Illuminate\Database\QueryException;
 use Yajra\DataTables\DataTables;
@@ -140,4 +142,34 @@ class PemeriksaanRanapController extends Controller
         }
     }
 
+    /**
+     * Cetak Lembar Catatan Perkembangan Pasien Terintegrasi (CPPT) / Kajian Ulang
+     */
+    public function printCppt(Request $request, string $no_rawat)
+    {
+        $regPeriksa = RegPeriksa::with([
+            'pasien',
+            'dokter',
+            'poliklinik',
+            'kamarInap.kamar.bangsal',
+        ])->where('no_rawat', $no_rawat)->firstOrFail();
+
+        $query = PemeriksaanRanap::with(['pegawai.dokter'])
+            ->where('no_rawat', $no_rawat);
+
+        if ($request->tglCppt1 && $request->tglCppt2) {
+            $query->whereBetween('tgl_perawatan', [
+                date('Y-m-d', strtotime($request->tglCppt1)),
+                date('Y-m-d', strtotime($request->tglCppt2)),
+            ]);
+        }
+
+        $listCppt = $query->orderBy('tgl_perawatan', 'ASC')
+            ->orderBy('jam_rawat', 'ASC')
+            ->get();
+
+        $setting = Setting::first();
+
+        return view('content.print.cpptRanapPdf', compact('regPeriksa', 'listCppt', 'setting', 'request'));
+    }
 }
