@@ -478,6 +478,14 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::post('/opname/store', [\App\Http\Controllers\OpnameController::class, 'store']);
 	Route::post('/opname/delete', [\App\Http\Controllers\OpnameController::class, 'destroy']);
 
+	// Mutasi Obat & BHP Antar Gudang/Depo (Khanza DlgMutasiBarang Standard)
+	Route::get('/farmasi/mutasi', [\App\Http\Controllers\MutasiBarangController::class, 'index']);
+	Route::get('/farmasi/mutasi/data', [\App\Http\Controllers\MutasiBarangController::class, 'data']);
+	Route::get('/farmasi/mutasi/get-stok-asal', [\App\Http\Controllers\MutasiBarangController::class, 'getStokAsal']);
+	Route::post('/farmasi/mutasi/store', [\App\Http\Controllers\MutasiBarangController::class, 'store']);
+	Route::post('/farmasi/mutasi/delete', [\App\Http\Controllers\MutasiBarangController::class, 'destroy']);
+	Route::get('/farmasi/mutasi/print', [\App\Http\Controllers\MutasiBarangController::class, 'print']);
+
 	// Resep Obat
 	Route::post('/resep/create', [ResepObatController::class, 'create']);
 	Route::get('/resep/get', [ResepObatController::class, 'get']);

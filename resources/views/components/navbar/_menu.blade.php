@@ -170,6 +170,9 @@
                     <a href="{{ url('farmasi/opname') }}" class="dropdown-item {{ Request::is('farmasi/opname') ? 'active' : '' }}">
                         Stok Opname
                     </a>
+                    <a href="{{ url('farmasi/mutasi') }}" class="dropdown-item {{ Request::is('farmasi/mutasi*') ? 'active' : '' }}">
+                        Mutasi Obat & BHP
+                    </a>
                     <a href="{{ url('farmasi/set-harga') }}" class="dropdown-item {{ Request::is('farmasi/set-harga*') ? 'active' : '' }}">
                         Set Harga Obat
                     </a>
