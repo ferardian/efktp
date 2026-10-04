@@ -81,7 +81,7 @@
             }
             const tgl1 = tglCppt1.val();
             const tgl2 = tglCppt2.val();
-            let url = `{{ url('/pemeriksaan/ranap/print') }}/${encodeURIComponent(no_rawat)}`;
+            let url = `{{ url('/pemeriksaan/ranap/print') }}/${no_rawat}`;
             if (tgl1 && tgl2) {
                 url += `?tglCppt1=${encodeURIComponent(tgl1)}&tglCppt2=${encodeURIComponent(tgl2)}`;
             }
@@ -94,7 +94,7 @@
                 Swal.fire('Perhatian', 'Nomor rawat pasien tidak ditemukan.', 'warning');
                 return;
             }
-            window.open(`{{ url('/pemeriksaan/ranap/print') }}/${encodeURIComponent(no_rawat)}`, '_blank');
+            window.open(`{{ url('/pemeriksaan/ranap/print') }}/${no_rawat}`, '_blank');
         };
 
         function filterCpptRanap() {

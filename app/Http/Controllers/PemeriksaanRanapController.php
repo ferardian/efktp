@@ -145,8 +145,13 @@ class PemeriksaanRanapController extends Controller
     /**
      * Cetak Lembar Catatan Perkembangan Pasien Terintegrasi (CPPT) / Kajian Ulang
      */
-    public function printCppt(Request $request, string $no_rawat)
+    public function printCppt(Request $request, ?string $no_rawat = null)
     {
+        $no_rawat = $no_rawat ? urldecode($no_rawat) : $request->get('no_rawat');
+        if (!$no_rawat) {
+            abort(404, 'Nomor rawat tidak ditemukan');
+        }
+
         $regPeriksa = RegPeriksa::with([
             'pasien',
             'dokter',
