@@ -99,16 +99,15 @@ class MutasiBarangController extends Controller
                 return date('d/m/Y H:i', strtotime($row->tanggal));
             })
             ->editColumn('nama_brng', function ($row) {
-                $html = '<span class="fw-bold text-dark">' . e($row->nama_brng) . '</span>';
+                $nama = e($row->nama_brng);
                 $gol = strtolower($row->nama_golongan ?? '');
-                if (str_contains($gol, 'narkotik') || $row->kode_golongan === 'G07') {
-                    $html .= ' <span class="badge bg-danger text-white rounded-pill px-2 py-0 ms-1 fw-bold" style="font-size: 0.68rem;" title="Golongan Narkotika"><i class="ti ti-alert-triangle me-1"></i>Narkotika</span>';
-                } elseif (str_contains($gol, 'psiko') || $row->kode_golongan === 'G01') {
-                    $html .= ' <span class="badge text-white rounded-pill px-2 py-0 ms-1 fw-bold" style="background-color: #6f42c1 !important; font-size: 0.68rem;" title="Golongan Psikotropika"><i class="ti ti-pill me-1"></i>Psikotropika</span>';
-                } elseif (str_contains($gol, 'prekusor') || str_contains($gol, 'prekursor') || $row->kode_golongan === 'G06') {
-                    $html .= ' <span class="badge bg-warning text-dark rounded-pill px-2 py-0 ms-1 fw-bold" style="font-size: 0.68rem;" title="Golongan Prekursor"><i class="ti ti-flask me-1"></i>Prekursor</span>';
+                $kdGol = $row->kode_golongan ?? '';
+                if (str_contains($gol, 'narko') || $kdGol === 'G07') {
+                    return '<span class="text-danger fw-bold"><span class="badge bg-danger text-white me-1" style="font-size: 0.70rem; padding: 2px 5px; vertical-align: middle;">NARKO</span>' . $nama . '</span>';
+                } elseif (str_contains($gol, 'psiko') || $kdGol === 'G01') {
+                    return '<span class="fw-bold" style="color: #6f42c1 !important;"><span class="badge text-white me-1" style="background-color: #6f42c1; font-size: 0.70rem; padding: 2px 5px; vertical-align: middle;">PSIKO</span>' . $nama . '</span>';
                 }
-                return $html;
+                return '<span class="text-dark fw-bold">' . $nama . '</span>';
             })
             ->editColumn('jml', function ($row) {
                 return number_format($row->jml, 0, ',', '.') . ' ' . ($row->satuan ?? '');

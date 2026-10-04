@@ -419,15 +419,16 @@
 
     let cachedLookupItems = [];
 
-    function getBadgeGolonganObat(it) {
-        if (it.is_narkotika) {
-            return '<span class="badge bg-danger text-white rounded-pill px-2 py-0 ms-1 fw-bold" style="font-size: 0.68rem;" title="Golongan Narkotika"><i class="ti ti-alert-triangle me-1"></i>Narkotika</span>';
-        } else if (it.is_psikotropika) {
-            return '<span class="badge text-white rounded-pill px-2 py-0 ms-1 fw-bold" style="background-color: #6f42c1 !important; font-size: 0.68rem;" title="Golongan Psikotropika"><i class="ti ti-pill me-1"></i>Psikotropika</span>';
-        } else if (it.is_prekursor) {
-            return '<span class="badge bg-warning text-dark rounded-pill px-2 py-0 ms-1 fw-bold" style="font-size: 0.68rem;" title="Golongan Prekursor"><i class="ti ti-flask me-1"></i>Prekursor</span>';
+    function renderNamaObatItem(it) {
+        if (typeof formatNamaObatWithGolongan === 'function') {
+            return formatNamaObatWithGolongan(it.nama_brng, it.nama_golongan, it.kode_golongan);
         }
-        return '';
+        if (it.is_narkotika) {
+            return `<span class="text-danger fw-bold"><span class="badge bg-danger text-white me-1" style="font-size: 0.70rem; padding: 2px 5px; vertical-align: middle;">NARKO</span>${it.nama_brng}</span>`;
+        } else if (it.is_psikotropika) {
+            return `<span class="fw-bold" style="color: #6f42c1 !important;"><span class="badge text-white me-1" style="background-color: #6f42c1; font-size: 0.70rem; padding: 2px 5px; vertical-align: middle;">PSIKO</span>${it.nama_brng}</span>`;
+        }
+        return `<span class="text-dark fw-bold">${it.nama_brng}</span>`;
     }
 
     function renderLookupObatTable(items) {
@@ -439,16 +440,10 @@
         let html = '';
         items.forEach((it) => {
             const encodedItem = encodeURIComponent(JSON.stringify(it));
-            const badgeGol = getBadgeGolonganObat(it);
             html += `
                 <tr>
                     <td class="font-monospace text-muted">${it.kode_brng}</td>
-                    <td>
-                        <div class="d-flex align-items-center flex-wrap gap-1">
-                            <span class="fw-bold text-dark">${it.nama_brng}</span>
-                            ${badgeGol}
-                        </div>
-                    </td>
+                    <td>${renderNamaObatItem(it)}</td>
                     <td class="text-center">${it.satuan || '-'}</td>
                     <td class="text-muted small">${it.no_batch ? it.no_batch : '<span class="text-secondary">-</span>'}</td>
                     <td class="text-end fw-bold text-danger">${numberFormat(it.stok_asal)}</td>
@@ -524,6 +519,8 @@
             stok_asal: parseFloat(item.stok_asal || 0),
             stok_tujuan: parseFloat(item.stok_tujuan || 0),
             h_beli: parseFloat(item.h_beli || 0),
+            kode_golongan: item.kode_golongan || '',
+            nama_golongan: item.nama_golongan || '',
             is_narkotika: item.is_narkotika,
             is_psikotropika: item.is_psikotropika,
             is_prekursor: item.is_prekursor,
@@ -577,10 +574,7 @@
                     <td class="text-center text-muted">${index + 1}</td>
                     <td class="font-monospace text-muted small">${item.kode_brng}</td>
                     <td>
-                        <div class="d-flex align-items-center flex-wrap gap-1">
-                            <span class="fw-bold text-dark">${item.nama_brng}</span>
-                            ${getBadgeGolonganObat(item)}
-                        </div>
+                        <div>${renderNamaObatItem(item)}</div>
                         ${item.no_faktur ? `<small class="text-muted d-block">Faktur: ${item.no_faktur}</small>` : ''}
                     </td>
                     <td class="text-center">${item.satuan}</td>
