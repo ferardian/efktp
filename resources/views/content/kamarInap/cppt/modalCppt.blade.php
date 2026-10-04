@@ -90,7 +90,18 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-outline-danger me-auto" id="btnCetakModalCpptRanap" onclick="cetakCpptRanap()"><i class="ti ti-printer me-1"></i> Cetak Lembar CPPT (PDF)</button>
+                <div class="btn-group me-auto">
+                    <button type="button" class="btn btn-outline-danger" onclick="cetakCpptRanap()">
+                        <i class="ti ti-printer me-1"></i> Cetak Lembar CPPT (PDF)
+                    </button>
+                    <button type="button" class="btn btn-outline-danger dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="visually-hidden">Pilihan Cetak</span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="cetakCpptRanap()"><i class="ti ti-calendar me-2"></i> Sesuai Filter Tanggal</a></li>
+                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="cetakCpptSemua()"><i class="ti ti-file-certificate me-2"></i> Seluruh Masa Rawat Inap (KRS)</a></li>
+                    </ul>
+                </div>
                 <button type="button" id="btnResetCpptRanap" class="btn btn-warning d-none"><i class="ti ti-reload me-1"></i>Baru</button>
                 <button type="button" id="btnSalinCpptRanap" class="btn btn-primary d-none"><i class="ti ti-copy me-1"></i> Copy</button>
                 <button type="button" id="btnSimpanCpptRanap" class="btn btn-success" onclick="createCpptRanap()"><i class="ti ti-device-floppy me-1"></i> Simpan</button>

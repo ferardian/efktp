@@ -37,8 +37,8 @@
         </div>
 
         <p class="card-title m-1">Riwayat Pemeriksaan</p>
-        <div class="row mb-2 align-items-center">
-            <div class="col-lg-8 col-md-12 col-sm-12">
+        <div class="row mb-2">
+            <div class="col-lg-6 col-md-12 col-sm-12">
                 <div class="input-group">
                     <input type="text" class="form-control filterTangal" id="tglCppt1" name="tglCppt1"
                         value="{{ date('d-m-Y') }}">
@@ -47,14 +47,7 @@
                         value="{{ date('d-m-Y') }}">
                     <button type="button" class="btn btn-secondary" id="btnFilterCppt" name="btnFilterCppt"
                         onclick="filterCpptRanap()"><i class="ti ti-search me-1"></i> Cari</button>
-                    <button type="button" class="btn btn-outline-danger" id="btnCetakCpptPdf" title="Cetak CPPT sesuai rentang tanggal"
-                        onclick="cetakCpptRanap()"><i class="ti ti-printer me-1"></i> Cetak CPPT</button>
                 </div>
-            </div>
-            <div class="col-lg-4 col-md-12 text-lg-end mt-2 mt-lg-0">
-                <button type="button" class="btn btn-sm btn-outline-primary" onclick="cetakCpptSemua()" title="Cetak seluruh riwayat CPPT selama masa rawat inap">
-                    <i class="ti ti-file-certificate me-1"></i> Cetak Semua (KRS)
-                </button>
             </div>
         </div>
         <div class="accordion" id="listRiwayat" style="height: 75vh; overflow-y: auto; overflow-x: hidden;">
