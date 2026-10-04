@@ -56,11 +56,14 @@ class MutasiBarangController extends Controller
         $query = DB::table('mutasibarang')
             ->join('databarang', 'mutasibarang.kode_brng', '=', 'databarang.kode_brng')
             ->leftJoin('kodesatuan', 'databarang.kode_sat', '=', 'kodesatuan.kode_sat')
+            ->leftJoin('golongan_barang', 'databarang.kode_golongan', '=', 'golongan_barang.kode')
             ->leftJoin('bangsal as b_dari', 'mutasibarang.kd_bangsaldari', '=', 'b_dari.kd_bangsal')
             ->leftJoin('bangsal as b_ke', 'mutasibarang.kd_bangsalke', '=', 'b_ke.kd_bangsal')
             ->select(
                 'mutasibarang.kode_brng',
                 'databarang.nama_brng',
+                'databarang.kode_golongan',
+                'golongan_barang.nama as nama_golongan',
                 'kodesatuan.satuan',
                 'mutasibarang.jml',
                 'mutasibarang.harga',
@@ -95,6 +98,18 @@ class MutasiBarangController extends Controller
             ->editColumn('tanggal', function ($row) {
                 return date('d/m/Y H:i', strtotime($row->tanggal));
             })
+            ->editColumn('nama_brng', function ($row) {
+                $html = '<span class="fw-bold text-dark">' . e($row->nama_brng) . '</span>';
+                $gol = strtolower($row->nama_golongan ?? '');
+                if (str_contains($gol, 'narkotik') || $row->kode_golongan === 'G07') {
+                    $html .= ' <span class="badge bg-danger text-white rounded-pill px-2 py-0 ms-1 fw-bold" style="font-size: 0.68rem;" title="Golongan Narkotika"><i class="ti ti-alert-triangle me-1"></i>Narkotika</span>';
+                } elseif (str_contains($gol, 'psiko') || $row->kode_golongan === 'G01') {
+                    $html .= ' <span class="badge text-white rounded-pill px-2 py-0 ms-1 fw-bold" style="background-color: #6f42c1 !important; font-size: 0.68rem;" title="Golongan Psikotropika"><i class="ti ti-pill me-1"></i>Psikotropika</span>';
+                } elseif (str_contains($gol, 'prekusor') || str_contains($gol, 'prekursor') || $row->kode_golongan === 'G06') {
+                    $html .= ' <span class="badge bg-warning text-dark rounded-pill px-2 py-0 ms-1 fw-bold" style="font-size: 0.68rem;" title="Golongan Prekursor"><i class="ti ti-flask me-1"></i>Prekursor</span>';
+                }
+                return $html;
+            })
             ->editColumn('jml', function ($row) {
                 return number_format($row->jml, 0, ',', '.') . ' ' . ($row->satuan ?? '');
             })
@@ -120,7 +135,7 @@ class MutasiBarangController extends Controller
                        'onclick="batalMutasiItem(\'' . e($row->kode_brng) . '\', \'' . e($row->kd_bangsaldari) . '\', \'' . e($row->kd_bangsalke) . '\', \'' . e($tglRaw) . '\', \'' . e($row->no_batch) . '\', \'' . e($row->no_faktur) . '\', ' . floatval($row->jml) . ')" title="Batalkan / Rollback Mutasi">' .
                        '<i class="ti ti-rotate-2"></i><span>Batal</span></button>';
             })
-            ->rawColumns(['dari_ke', 'batch_faktur', 'action'])
+            ->rawColumns(['dari_ke', 'batch_faktur', 'nama_brng', 'action'])
             ->make(true);
     }
 
@@ -142,6 +157,7 @@ class MutasiBarangController extends Controller
         $query = DB::table('gudangbarang')
             ->join('databarang', 'gudangbarang.kode_brng', '=', 'databarang.kode_brng')
             ->leftJoin('kodesatuan', 'databarang.kode_sat', '=', 'kodesatuan.kode_sat')
+            ->leftJoin('golongan_barang', 'databarang.kode_golongan', '=', 'golongan_barang.kode')
             ->where('gudangbarang.kd_bangsal', $dari)
             ->where('gudangbarang.stok', '>', 0)
             ->where('databarang.status', '1');
@@ -157,14 +173,16 @@ class MutasiBarangController extends Controller
         $items = $query->select(
             'databarang.kode_brng',
             'databarang.nama_brng',
+            'databarang.kode_golongan',
+            'golongan_barang.nama as nama_golongan',
             'kodesatuan.satuan',
             'databarang.h_beli',
             'gudangbarang.stok as stok_asal',
             DB::raw('COALESCE(gudangbarang.no_batch, "") as no_batch'),
             DB::raw('COALESCE(gudangbarang.no_faktur, "") as no_faktur')
-        )->orderBy('databarang.nama_brng', 'asc')->limit(100)->get();
+        )->orderBy('databarang.nama_brng', 'asc')->limit(120)->get();
 
-        // Cari stok di gudang tujuan untuk masing-masing item
+        // Cari stok di gudang tujuan dan set flag Narkotika / Psikotropika
         foreach ($items as $item) {
             $stokTujuan = DB::table('gudangbarang')
                 ->where('kode_brng', $item->kode_brng)
@@ -174,6 +192,11 @@ class MutasiBarangController extends Controller
                 ->value('stok');
 
             $item->stok_tujuan = floatval($stokTujuan ?? 0);
+
+            $gol = strtolower($item->nama_golongan ?? '');
+            $item->is_narkotika = (str_contains($gol, 'narkotik') || $item->kode_golongan === 'G07');
+            $item->is_psikotropika = (str_contains($gol, 'psiko') || $item->kode_golongan === 'G01');
+            $item->is_prekursor = (str_contains($gol, 'prekusor') || str_contains($gol, 'prekursor') || $item->kode_golongan === 'G06');
         }
 
         return response()->json($items);
@@ -533,12 +556,15 @@ class MutasiBarangController extends Controller
         $items = DB::table('mutasibarang')
             ->join('databarang', 'mutasibarang.kode_brng', '=', 'databarang.kode_brng')
             ->leftJoin('kodesatuan', 'databarang.kode_sat', '=', 'kodesatuan.kode_sat')
+            ->leftJoin('golongan_barang', 'databarang.kode_golongan', '=', 'golongan_barang.kode')
             ->where('mutasibarang.kd_bangsaldari', $dari)
             ->where('mutasibarang.kd_bangsalke', $ke)
             ->where('mutasibarang.tanggal', $tgl)
             ->select(
                 'mutasibarang.*',
                 'databarang.nama_brng',
+                'databarang.kode_golongan',
+                'golongan_barang.nama as nama_golongan',
                 'kodesatuan.satuan'
             )->get();
 

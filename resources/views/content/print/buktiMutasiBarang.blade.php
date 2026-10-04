@@ -146,11 +146,24 @@
                     $sub = $it->jml * $it->harga;
                     $totalJml += $it->jml;
                     $totalNominal += $sub;
+                    $gol = strtolower($it->nama_golongan ?? '');
+                    $isNarkotika = (str_contains($gol, 'narkotik') || ($it->kode_golongan ?? '') === 'G07');
+                    $isPsikotropika = (str_contains($gol, 'psiko') || ($it->kode_golongan ?? '') === 'G01');
+                    $isPrekursor = (str_contains($gol, 'prekusor') || str_contains($gol, 'prekursor') || ($it->kode_golongan ?? '') === 'G06');
                 @endphp
                 <tr>
                     <td class="text-center">{{ $idx + 1 }}</td>
                     <td class="text-center">{{ $it->kode_brng }}</td>
-                    <td>{{ $it->nama_brng }}</td>
+                    <td>
+                        <strong>{{ $it->nama_brng }}</strong>
+                        @if($isNarkotika)
+                            <span style="color: #b00; font-weight: bold; font-size: 9px; margin-left: 4px; border: 1px solid #b00; padding: 1px 3px; border-radius: 2px;">[NARKOTIKA]</span>
+                        @elseif($isPsikotropika)
+                            <span style="color: #6f42c1; font-weight: bold; font-size: 9px; margin-left: 4px; border: 1px solid #6f42c1; padding: 1px 3px; border-radius: 2px;">[PSIKOTROPIKA]</span>
+                        @elseif($isPrekursor)
+                            <span style="color: #856404; font-weight: bold; font-size: 9px; margin-left: 4px; border: 1px solid #ffeeba; background-color: #fff3cd; padding: 1px 3px; border-radius: 2px;">[PREKURSOR]</span>
+                        @endif
+                    </td>
                     <td class="text-center">{{ $it->satuan ?? '-' }}</td>
                     <td class="text-center">{{ !empty($it->no_batch) ? $it->no_batch : '-' }}</td>
                     <td class="text-end"><strong>{{ number_format($it->jml, 0, ',', '.') }}</strong></td>

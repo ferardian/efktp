@@ -264,14 +264,23 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-3">
-                <div class="row g-2 mb-3">
-                    <div class="col-md-8">
+                <div class="row g-2 mb-3 align-items-center">
+                    <div class="col-md-5">
                         <div class="input-group">
                             <span class="input-group-text"><i class="ti ti-search"></i></span>
                             <input type="text" class="form-control" id="modal_search_input" placeholder="Ketik nama obat, kode barang, atau no batch..." autocomplete="off">
                         </div>
                     </div>
                     <div class="col-md-4">
+                        <select class="form-select" id="modal_filter_golongan" onchange="applyFilterGolonganLookup()">
+                            <option value="">Semua Golongan Obat</option>
+                            <option value="narkotika">🔴 Khusus Narkotika</option>
+                            <option value="psikotropika">🟣 Khusus Psikotropika</option>
+                            <option value="narkotik_psiko">⚠️ Narkotika & Psikotropika</option>
+                            <option value="prekursor">🟡 Khusus Prekursor</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
                         <button type="button" class="btn btn-primary w-100 d-inline-flex align-items-center justify-content-center gap-1" onclick="loadObatGudangAsal()">
                             <i class="ti ti-search"></i><span>Cari Barang</span>
                         </button>
@@ -408,6 +417,70 @@
         loadObatGudangAsal();
     }
 
+    let cachedLookupItems = [];
+
+    function getBadgeGolonganObat(it) {
+        if (it.is_narkotika) {
+            return '<span class="badge bg-danger text-white rounded-pill px-2 py-0 ms-1 fw-bold" style="font-size: 0.68rem;" title="Golongan Narkotika"><i class="ti ti-alert-triangle me-1"></i>Narkotika</span>';
+        } else if (it.is_psikotropika) {
+            return '<span class="badge text-white rounded-pill px-2 py-0 ms-1 fw-bold" style="background-color: #6f42c1 !important; font-size: 0.68rem;" title="Golongan Psikotropika"><i class="ti ti-pill me-1"></i>Psikotropika</span>';
+        } else if (it.is_prekursor) {
+            return '<span class="badge bg-warning text-dark rounded-pill px-2 py-0 ms-1 fw-bold" style="font-size: 0.68rem;" title="Golongan Prekursor"><i class="ti ti-flask me-1"></i>Prekursor</span>';
+        }
+        return '';
+    }
+
+    function renderLookupObatTable(items) {
+        if (!items || items.length === 0) {
+            $('#tbLookupObatBody').html('<tr><td colspan="6" class="text-center py-4 text-muted">Tidak ada obat dengan stok > 0 di gudang asal</td></tr>');
+            return;
+        }
+
+        let html = '';
+        items.forEach((it) => {
+            const encodedItem = encodeURIComponent(JSON.stringify(it));
+            const badgeGol = getBadgeGolonganObat(it);
+            html += `
+                <tr>
+                    <td class="font-monospace text-muted">${it.kode_brng}</td>
+                    <td>
+                        <div class="d-flex align-items-center flex-wrap gap-1">
+                            <span class="fw-bold text-dark">${it.nama_brng}</span>
+                            ${badgeGol}
+                        </div>
+                    </td>
+                    <td class="text-center">${it.satuan || '-'}</td>
+                    <td class="text-muted small">${it.no_batch ? it.no_batch : '<span class="text-secondary">-</span>'}</td>
+                    <td class="text-end fw-bold text-danger">${numberFormat(it.stok_asal)}</td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-xs btn-primary d-inline-flex align-items-center gap-1" onclick="pilihObatLookup('${encodedItem}')">
+                            <i class="ti ti-plus"></i><span>Pilih</span>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+        $('#tbLookupObatBody').html(html);
+    }
+
+    function applyFilterGolonganLookup() {
+        const filter = $('#modal_filter_golongan').val();
+        if (!filter) {
+            renderLookupObatTable(cachedLookupItems);
+            return;
+        }
+
+        let filtered = cachedLookupItems.filter(it => {
+            if (filter === 'narkotika') return it.is_narkotika;
+            if (filter === 'psikotropika') return it.is_psikotropika;
+            if (filter === 'narkotik_psiko') return it.is_narkotika || it.is_psikotropika;
+            if (filter === 'prekursor') return it.is_prekursor;
+            return true;
+        });
+
+        renderLookupObatTable(filtered);
+    }
+
     function loadObatGudangAsal() {
         const dari = $('#kd_bangsaldari').val();
         const ke = $('#kd_bangsalke').val();
@@ -420,30 +493,8 @@
             kd_bangsalke: ke,
             q: q
         }).done((items) => {
-            if (!items || items.length === 0) {
-                $('#tbLookupObatBody').html('<tr><td colspan="6" class="text-center py-4 text-muted">Tidak ada obat dengan stok > 0 di gudang asal</td></tr>');
-                return;
-            }
-
-            let html = '';
-            items.forEach((it) => {
-                const encodedItem = encodeURIComponent(JSON.stringify(it));
-                html += `
-                    <tr>
-                        <td class="font-monospace text-muted">${it.kode_brng}</td>
-                        <td class="fw-bold text-dark">${it.nama_brng}</td>
-                        <td class="text-center">${it.satuan || '-'}</td>
-                        <td class="text-muted small">${it.no_batch ? it.no_batch : '<span class="text-secondary">-</span>'}</td>
-                        <td class="text-end fw-bold text-danger">${numberFormat(it.stok_asal)}</td>
-                        <td class="text-center">
-                            <button type="button" class="btn btn-xs btn-primary d-inline-flex align-items-center gap-1" onclick="pilihObatLookup('${encodedItem}')">
-                                <i class="ti ti-plus"></i><span>Pilih</span>
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            });
-            $('#tbLookupObatBody').html(html);
+            cachedLookupItems = items || [];
+            applyFilterGolonganLookup();
         }).fail((err) => {
             $('#tbLookupObatBody').html('<tr><td colspan="6" class="text-center text-danger py-4">Gagal memuat data obat</td></tr>');
         });
@@ -473,6 +524,9 @@
             stok_asal: parseFloat(item.stok_asal || 0),
             stok_tujuan: parseFloat(item.stok_tujuan || 0),
             h_beli: parseFloat(item.h_beli || 0),
+            is_narkotika: item.is_narkotika,
+            is_psikotropika: item.is_psikotropika,
+            is_prekursor: item.is_prekursor,
             jml: 1
         });
 
@@ -523,8 +577,11 @@
                     <td class="text-center text-muted">${index + 1}</td>
                     <td class="font-monospace text-muted small">${item.kode_brng}</td>
                     <td>
-                        <div class="fw-bold text-dark">${item.nama_brng}</div>
-                        ${item.no_faktur ? `<small class="text-muted">Faktur: ${item.no_faktur}</small>` : ''}
+                        <div class="d-flex align-items-center flex-wrap gap-1">
+                            <span class="fw-bold text-dark">${item.nama_brng}</span>
+                            ${getBadgeGolonganObat(item)}
+                        </div>
+                        ${item.no_faktur ? `<small class="text-muted d-block">Faktur: ${item.no_faktur}</small>` : ''}
                     </td>
                     <td class="text-center">${item.satuan}</td>
                     <td class="text-muted small">${item.no_batch ? item.no_batch : '<span class="text-secondary">-</span>'}</td>
