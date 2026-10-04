@@ -629,7 +629,7 @@
         // Populate Dropdown Dokter
         function populateDokterSelect(selectedKd) {
             $.ajax({
-                url: '/dokter/all',
+                url: '/dokter/get',
                 type: 'GET',
                 success: function (res) {
                     const sel = $('#pr_kd_dokter');

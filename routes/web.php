@@ -187,6 +187,7 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::post('/poliklinik/deactivate-all', [PoliklinikController::class, 'deactivateAll']);
 	// DOKTER
 	Route::get('/dokter/get', [DokterController::class, 'get']);
+	Route::get('/dokter/all', [DokterController::class, 'get']);
 	Route::post('/dokter', [DokterController::class, 'store']);
 	Route::put('/dokter/{kd_dokter}', [DokterController::class, 'update']);
 	Route::delete('/dokter/{kd_dokter}', [DokterController::class, 'destroy']);
