@@ -255,7 +255,18 @@ $(document).ready(function() {
         serverSide: false,
         pageLength: 25,
         language: {
-            url: "{{ asset('js/dataTable/indonesian.json') }}"
+            search: "Cari:",
+            lengthMenu: "Tampil _MENU_ data",
+            info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+            infoEmpty: "Menampilkan 0 sampai 0 dari 0 data",
+            emptyTable: "Tidak ada data transaksi pembayaran",
+            zeroRecords: "Tidak ditemukan data yang sesuai",
+            paginate: {
+                first: "Awal",
+                last: "Akhir",
+                next: "›",
+                previous: "‹"
+            }
         },
         columns: [
             { data: 'tgl_registrasi', className: 'text-center' },
