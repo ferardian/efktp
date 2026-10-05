@@ -467,8 +467,18 @@ class BillingController extends Controller
 
             $reg = DB::table('reg_periksa')
                 ->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
+                ->leftJoin('poliklinik', 'reg_periksa.kd_poli', '=', 'poliklinik.kd_poli')
+                ->leftJoin('dokter', 'reg_periksa.kd_dokter', '=', 'dokter.kd_dokter')
                 ->where('reg_periksa.no_rawat', $no_rawat)
-                ->select('reg_periksa.biaya_reg', 'pasien.nm_pasien', 'reg_periksa.no_rkm_medis', 'reg_periksa.almt_pj')
+                ->select(
+                    'reg_periksa.biaya_reg',
+                    'pasien.nm_pasien',
+                    'pasien.alamat',
+                    'reg_periksa.no_rkm_medis',
+                    'reg_periksa.almt_pj',
+                    'poliklinik.nm_poli',
+                    'dokter.nm_dokter'
+                )
                 ->first();
 
             if (!$reg) {
@@ -615,6 +625,112 @@ class BillingController extends Controller
 
             $billingRows = [];
             $noIdx = 0;
+
+            // Header Standar Khanza (No.Nota di index 0 wajib agar Khanza Desktop tidak menganggap billing parsial)
+            $billingRows[] = [
+                'noindex'      => $noIdx++,
+                'no_rawat'     => $no_rawat,
+                'tgl_byr'      => $tgl_bayar,
+                'no'           => 'No.Nota',
+                'nm_perawatan' => ': ' . $no_nota,
+                'pemisah'      => '',
+                'biaya'        => 0,
+                'jumlah'       => 0,
+                'tambahan'     => 0,
+                'totalbiaya'   => 0,
+                'status'       => '-',
+            ];
+            $billingRows[] = [
+                'noindex'      => $noIdx++,
+                'no_rawat'     => $no_rawat,
+                'tgl_byr'      => $tgl_bayar,
+                'no'           => 'Unit/Instansi',
+                'nm_perawatan' => ': ' . ($reg->nm_poli ?? '-'),
+                'pemisah'      => '',
+                'biaya'        => 0,
+                'jumlah'       => 0,
+                'tambahan'     => 0,
+                'totalbiaya'   => 0,
+                'status'       => '-',
+            ];
+            $billingRows[] = [
+                'noindex'      => $noIdx++,
+                'no_rawat'     => $no_rawat,
+                'tgl_byr'      => $tgl_bayar,
+                'no'           => 'Tanggal & Jam',
+                'nm_perawatan' => ': ' . $tgl_bayar . ' ' . $jam_bayar,
+                'pemisah'      => '',
+                'biaya'        => 0,
+                'jumlah'       => 0,
+                'tambahan'     => 0,
+                'totalbiaya'   => 0,
+                'status'       => '-',
+            ];
+            $billingRows[] = [
+                'noindex'      => $noIdx++,
+                'no_rawat'     => $no_rawat,
+                'tgl_byr'      => $tgl_bayar,
+                'no'           => 'No.RM',
+                'nm_perawatan' => ': ' . $reg->no_rkm_medis,
+                'pemisah'      => '',
+                'biaya'        => 0,
+                'jumlah'       => 0,
+                'tambahan'     => 0,
+                'totalbiaya'   => 0,
+                'status'       => '-',
+            ];
+            $billingRows[] = [
+                'noindex'      => $noIdx++,
+                'no_rawat'     => $no_rawat,
+                'tgl_byr'      => $tgl_bayar,
+                'no'           => 'Nama Pasien',
+                'nm_perawatan' => ': ' . $reg->nm_pasien,
+                'pemisah'      => '',
+                'biaya'        => 0,
+                'jumlah'       => 0,
+                'tambahan'     => 0,
+                'totalbiaya'   => 0,
+                'status'       => '-',
+            ];
+            $billingRows[] = [
+                'noindex'      => $noIdx++,
+                'no_rawat'     => $no_rawat,
+                'tgl_byr'      => $tgl_bayar,
+                'no'           => 'Alamat Pasien',
+                'nm_perawatan' => ': ' . ($reg->alamat ?? $reg->almt_pj ?? '-'),
+                'pemisah'      => '',
+                'biaya'        => 0,
+                'jumlah'       => 0,
+                'tambahan'     => 0,
+                'totalbiaya'   => 0,
+                'status'       => '-',
+            ];
+            $billingRows[] = [
+                'noindex'      => $noIdx++,
+                'no_rawat'     => $no_rawat,
+                'tgl_byr'      => $tgl_bayar,
+                'no'           => 'Dokter ',
+                'nm_perawatan' => ':',
+                'pemisah'      => '',
+                'biaya'        => 0,
+                'jumlah'       => 0,
+                'tambahan'     => 0,
+                'totalbiaya'   => 0,
+                'status'       => '-',
+            ];
+            $billingRows[] = [
+                'noindex'      => $noIdx++,
+                'no_rawat'     => $no_rawat,
+                'tgl_byr'      => $tgl_bayar,
+                'no'           => '',
+                'nm_perawatan' => ($reg->nm_dokter ?? '-'),
+                'pemisah'      => '',
+                'biaya'        => 0,
+                'jumlah'       => 0,
+                'tambahan'     => 0,
+                'totalbiaya'   => 0,
+                'status'       => 'Dokter',
+            ];
 
             // Baris: Registrasi
             if ($biaya_reg > 0) {

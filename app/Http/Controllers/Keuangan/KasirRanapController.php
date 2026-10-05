@@ -233,7 +233,7 @@ class KasirRanapController extends Controller
             $reg = DB::table('reg_periksa')
                 ->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
                 ->where('reg_periksa.no_rawat', $no_rawat)
-                ->select('reg_periksa.biaya_reg', 'pasien.nm_pasien', 'reg_periksa.no_rkm_medis', 'reg_periksa.almt_pj', 'reg_periksa.kd_pj')
+                ->select('reg_periksa.biaya_reg', 'pasien.nm_pasien', 'pasien.alamat', 'reg_periksa.no_rkm_medis', 'reg_periksa.almt_pj', 'reg_periksa.kd_pj')
                 ->first();
 
             if (!$reg) {
@@ -244,7 +244,10 @@ class KasirRanapController extends Controller
 
             // 1. Kamar & Inap
             $kamar_inap = DB::table('kamar_inap')
-                ->where('no_rawat', $no_rawat)
+                ->leftJoin('kamar', 'kamar_inap.kd_kamar', '=', 'kamar.kd_kamar')
+                ->leftJoin('bangsal', 'kamar.kd_bangsal', '=', 'bangsal.kd_bangsal')
+                ->where('kamar_inap.no_rawat', $no_rawat)
+                ->select('kamar_inap.*', 'bangsal.nm_bangsal')
                 ->get();
 
             if ($kamar_inap->isEmpty()) {
@@ -417,6 +420,89 @@ class KasirRanapController extends Controller
             DB::table('billing')->where('no_rawat', $no_rawat)->delete();
             $billingRows = [];
             $noIdx = 0;
+
+            // Baris 0: No.Nota (Standar Wajib Khanza Desktop agar tidak dianggap billing parsial)
+            $billingRows[] = [
+                'noindex'      => $noIdx++,
+                'no_rawat'     => $no_rawat,
+                'tgl_byr'      => $tgl_bayar,
+                'no'           => 'No.Nota',
+                'nm_perawatan' => ': ' . $no_nota,
+                'pemisah'      => '',
+                'biaya'        => 0,
+                'jumlah'       => 0,
+                'tambahan'     => 0,
+                'totalbiaya'   => 0,
+                'status'       => '-',
+            ];
+
+            $lastKamar = $kamar_inap->last();
+            $nmBangsal = $lastKamar ? ($lastKamar->kd_kamar . ', ' . ($lastKamar->nm_bangsal ?? '')) : '-';
+            $billingRows[] = [
+                'noindex'      => $noIdx++,
+                'no_rawat'     => $no_rawat,
+                'tgl_byr'      => $tgl_bayar,
+                'no'           => 'Bangsal/Kamar',
+                'nm_perawatan' => ': ' . $nmBangsal,
+                'pemisah'      => '',
+                'biaya'        => 0,
+                'jumlah'       => 0,
+                'tambahan'     => 0,
+                'totalbiaya'   => 0,
+                'status'       => '-',
+            ];
+            $billingRows[] = [
+                'noindex'      => $noIdx++,
+                'no_rawat'     => $no_rawat,
+                'tgl_byr'      => $tgl_bayar,
+                'no'           => 'Tgl.Perawatan',
+                'nm_perawatan' => ': ' . $tgl_bayar . ' ' . $jam_bayar,
+                'pemisah'      => '',
+                'biaya'        => 0,
+                'jumlah'       => 0,
+                'tambahan'     => 0,
+                'totalbiaya'   => 0,
+                'status'       => '-',
+            ];
+            $billingRows[] = [
+                'noindex'      => $noIdx++,
+                'no_rawat'     => $no_rawat,
+                'tgl_byr'      => $tgl_bayar,
+                'no'           => 'No.R.M.',
+                'nm_perawatan' => ': ' . $reg->no_rkm_medis,
+                'pemisah'      => '',
+                'biaya'        => 0,
+                'jumlah'       => 0,
+                'tambahan'     => 0,
+                'totalbiaya'   => 0,
+                'status'       => '-',
+            ];
+            $billingRows[] = [
+                'noindex'      => $noIdx++,
+                'no_rawat'     => $no_rawat,
+                'tgl_byr'      => $tgl_bayar,
+                'no'           => 'Nama Pasien',
+                'nm_perawatan' => ': ' . $reg->nm_pasien,
+                'pemisah'      => '',
+                'biaya'        => 0,
+                'jumlah'       => 0,
+                'tambahan'     => 0,
+                'totalbiaya'   => 0,
+                'status'       => '-',
+            ];
+            $billingRows[] = [
+                'noindex'      => $noIdx++,
+                'no_rawat'     => $no_rawat,
+                'tgl_byr'      => $tgl_bayar,
+                'no'           => 'Alamat Pasien',
+                'nm_perawatan' => ': ' . ($reg->alamat ?? $reg->almt_pj ?? '-'),
+                'pemisah'      => '',
+                'biaya'        => 0,
+                'jumlah'       => 0,
+                'tambahan'     => 0,
+                'totalbiaya'   => 0,
+                'status'       => '-',
+            ];
 
             // Registrasi
             if ($biaya_reg > 0) {
