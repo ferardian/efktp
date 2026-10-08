@@ -312,26 +312,37 @@
                     </div>
                 </td>
                 <td style="width: 45%; vertical-align: top;">
+                    @php
+                        $totalBiayaKotor = $data['total_biaya'] ?? ($data['grand_total'] + ($data['potongan'] ?? 0));
+                        $potonganBiaya = $data['potongan'] ?? 0;
+                        $grandTotalBersih = $data['grand_total'] ?? ($totalBiayaKotor - $potonganBiaya);
+                        $depositBiaya = $data['deposit'] ?? 0;
+                        $netTagihan = $data['net_total'] ?? max(0, $grandTotalBersih - $depositBiaya);
+                    @endphp
                     <table style="width: 100%; border-collapse: collapse; font-size: {{ $size == 'a5' ? '8pt' : '9pt' }};">
                         <tr>
-                            <td style="padding: 2px 4px; font-weight: bold;">TOTAL TAGIHAN</td>
-                            <td style="padding: 2px 4px; text-align: right; font-weight: bold;">Rp. {{ number_format($data['grand_total'], 0, ',', '.') }}</td>
+                            <td style="padding: 2px 4px; font-weight: bold;">JUMLAH TOTAL BIAYA</td>
+                            <td style="padding: 2px 4px; text-align: right; font-weight: bold;">Rp. {{ number_format($totalBiayaKotor, 0, ',', '.') }}</td>
                         </tr>
-                        @if(!empty($data['deposit']) && $data['deposit'] > 0)
+                        @if($potonganBiaya > 0)
                             <tr>
-                                <td style="padding: 2px 4px; color: #555;">Titipan Uang Muka / Deposit</td>
-                                <td style="padding: 2px 4px; text-align: right; color: #555;">- Rp. {{ number_format($data['deposit'], 0, ',', '.') }}</td>
+                                <td style="padding: 2px 4px; color: #dc3545;">Potongan Biaya (Diskon)</td>
+                                <td style="padding: 2px 4px; text-align: right; color: #dc3545;">- Rp. {{ number_format($potonganBiaya, 0, ',', '.') }}</td>
+                            </tr>
+                            <tr style="border-top: 1px solid #ccc;">
+                                <td style="padding: 2px 4px; font-weight: bold;">TOTAL SETELAH POTONGAN</td>
+                                <td style="padding: 2px 4px; text-align: right; font-weight: bold;">Rp. {{ number_format($grandTotalBersih, 0, ',', '.') }}</td>
                             </tr>
                         @endif
-                        @if(!empty($data['potongan']) && $data['potongan'] > 0)
+                        @if($depositBiaya > 0)
                             <tr>
-                                <td style="padding: 2px 4px; color: #555;">Potongan / Diskon</td>
-                                <td style="padding: 2px 4px; text-align: right; color: #555;">- Rp. {{ number_format($data['potongan'], 0, ',', '.') }}</td>
+                                <td style="padding: 2px 4px; color: #555;">Titipan Uang Muka / Deposit</td>
+                                <td style="padding: 2px 4px; text-align: right; color: #555;">- Rp. {{ number_format($depositBiaya, 0, ',', '.') }}</td>
                             </tr>
                         @endif
                         <tr class="grand-total-box">
-                            <td style="padding: 4px;">SISA TAGIHAN</td>
-                            <td style="padding: 4px; text-align: right;">Rp. {{ number_format($data['net_total'] ?? max(0, $data['grand_total'] - ($data['deposit'] ?? 0)), 0, ',', '.') }}</td>
+                            <td style="padding: 4px;">{{ $depositBiaya > 0 ? 'SISA TAGIHAN BERSIH' : ($potonganBiaya > 0 ? 'TOTAL AKHIR (JADINYA)' : 'TOTAL TAGIHAN') }}</td>
+                            <td style="padding: 4px; text-align: right;">Rp. {{ number_format($netTagihan, 0, ',', '.') }}</td>
                         </tr>
                         @if(!empty($data['saved_payments']) && count($data['saved_payments']) > 0)
                             @foreach($data['saved_payments'] as $sp)
@@ -577,19 +588,36 @@
 
         <div class="double-divider"></div>
 
+        @php
+            $totalBiayaKotor = $data['total_biaya'] ?? ($data['grand_total'] + ($data['potongan'] ?? 0));
+            $potonganBiaya = $data['potongan'] ?? 0;
+            $grandTotalBersih = $data['grand_total'] ?? ($totalBiayaKotor - $potonganBiaya);
+            $depositBiaya = $data['deposit'] ?? 0;
+            $netTagihan = $data['net_total'] ?? max(0, $grandTotalBersih - $depositBiaya);
+        @endphp
         <table class="info-table grand-total-row">
-            <tr>
-                <td style="white-space: nowrap;">TOTAL TAGIHAN</td>
-                <td class="text-right">Rp. {{ number_format($data['grand_total'], 0, ',', '.') }}</td>
+            <tr style="font-size: {{ ($size == '58') ? '8.5px' : '11px' }}; font-weight: bold;">
+                <td style="white-space: nowrap;">JUMLAH TOTAL</td>
+                <td class="text-right">Rp. {{ number_format($totalBiayaKotor, 0, ',', '.') }}</td>
             </tr>
-            @if(!empty($data['deposit']) && $data['deposit'] > 0)
+            @if($potonganBiaya > 0)
                 <tr style="font-size: {{ ($size == '58') ? '8px' : '10px' }}; font-weight: normal; color: #333;">
-                    <td style="white-space: nowrap;">Titipan Uang Muka / Deposit</td>
-                    <td class="text-right">- Rp. {{ number_format($data['deposit'], 0, ',', '.') }}</td>
+                    <td style="white-space: nowrap;">Potongan Biaya</td>
+                    <td class="text-right">- Rp. {{ number_format($potonganBiaya, 0, ',', '.') }}</td>
+                </tr>
+                <tr style="font-size: {{ ($size == '58') ? '9px' : '11.5px' }}; font-weight: bold; border-top: 1px dashed #000;">
+                    <td style="white-space: nowrap;">TOTAL AKHIR</td>
+                    <td class="text-right">Rp. {{ number_format($grandTotalBersih, 0, ',', '.') }}</td>
+                </tr>
+            @endif
+            @if($depositBiaya > 0)
+                <tr style="font-size: {{ ($size == '58') ? '8px' : '10px' }}; font-weight: normal; color: #333;">
+                    <td style="white-space: nowrap;">Uang Muka / Deposit</td>
+                    <td class="text-right">- Rp. {{ number_format($depositBiaya, 0, ',', '.') }}</td>
                 </tr>
                 <tr style="font-size: {{ ($size == '58') ? '9px' : '11px' }}; font-weight: bold;">
                     <td style="white-space: nowrap;">SISA TAGIHAN</td>
-                    <td class="text-right">Rp. {{ number_format($data['net_total'] ?? max(0, $data['grand_total'] - ($data['deposit'] ?? 0)), 0, ',', '.') }}</td>
+                    <td class="text-right">Rp. {{ number_format($netTagihan, 0, ',', '.') }}</td>
                 </tr>
             @endif
             @if(!empty($data['saved_payments']) && count($data['saved_payments']) > 0)

@@ -317,10 +317,34 @@
                                     <tbody id="tbodyBillingRanap">
                                         <tr><td colspan="4" class="text-center p-3 text-muted">Memuat data rincian billing...</td></tr>
                                     </tbody>
-                                    <tfoot>
-                                        <tr class="bg-light fw-bold">
-                                            <th colspan="3" class="py-2 px-3 text-uppercase text-dark">SUBTOTAL BIAYA RAWAT INAP</th>
-                                            <th class="py-2 px-3 text-end text-dark fs-4" id="tableSubtotalBiaya">Rp 0</th>
+                                    <tfoot id="tfootBillingRanap">
+                                        <tr class="bg-light fw-bold" id="rowTotalBiayaLayanan">
+                                            <th colspan="3" class="py-2 px-3 text-uppercase text-dark">JUMLAH TOTAL BIAYA LAYANAN</th>
+                                            <th class="py-2 px-3 text-end text-dark fs-3" id="tableTotalBiayaLayanan">Rp 0</th>
+                                        </tr>
+                                        <tr class="bg-light fw-bold text-danger d-none" id="rowPotonganBiaya">
+                                            <th colspan="3" class="py-2 px-3 text-uppercase text-danger">
+                                                <i class="ti ti-discount-2 me-1"></i> POTONGAN BIAYA (DISKON)
+                                            </th>
+                                            <th class="py-2 px-3 text-end text-danger fs-3" id="tablePotonganBiaya">- Rp 0</th>
+                                        </tr>
+                                        <tr class="bg-primary-lt fw-bold text-primary" id="rowGrandTotalBiaya">
+                                            <th colspan="3" class="py-2 px-3 text-uppercase text-primary fs-3">
+                                                TOTAL AKHIR (JADINYA)
+                                            </th>
+                                            <th class="py-2 px-3 text-end text-primary fs-2" id="tableSubtotalBiaya">Rp 0</th>
+                                        </tr>
+                                        <tr class="bg-light fw-bold text-azure d-none" id="rowDepositBiaya">
+                                            <th colspan="3" class="py-2 px-3 text-uppercase text-azure">
+                                                <i class="ti ti-coin me-1"></i> TITIPAN UANG MUKA / DEPOSIT
+                                            </th>
+                                            <th class="py-2 px-3 text-end text-azure fs-4" id="tableDepositBiaya">- Rp 0</th>
+                                        </tr>
+                                        <tr class="bg-success-lt fw-bold text-success d-none" id="rowNetTotalBiaya">
+                                            <th colspan="3" class="py-2 px-3 text-uppercase text-success fs-3">
+                                                SISA TAGIHAN BERSIH (YANG HARUS DIBAYAR)
+                                            </th>
+                                            <th class="py-2 px-3 text-end text-success fs-2" id="tableNetTotalBiaya">Rp 0</th>
                                         </tr>
                                     </tfoot>
                                 </table>
@@ -341,13 +365,13 @@
                                     {{-- Kolom Kiri Form: Potongan, Tambahan & Deposit --}}
                                     <div class="col-md-6 border-end">
                                         <div class="mb-3">
-                                            <label class="form-label small fw-bold">Total Tagihan Kumulatif</label>
+                                            <label class="form-label small fw-bold">Jumlah Total Biaya (Sebelum Potongan)</label>
                                             <input type="text" class="form-control form-control-lg bg-light fw-bold text-dark fs-3" id="co_grand_total" readonly value="Rp 0">
                                         </div>
 
                                         <div class="row g-2 mb-2">
                                             <div class="col-6">
-                                                <label class="form-label small fw-bold text-success">Potongan / Diskon (Rp)</label>
+                                                <label class="form-label small fw-bold text-danger">Potongan / Diskon (Rp)</label>
                                                 <input type="number" class="form-control form-control-sm" id="co_potongan" value="0" min="0" oninput="hitungTotalKasirRanap()">
                                             </div>
                                             <div class="col-6">
@@ -444,6 +468,7 @@
     let selectedRanapNoRawat = null;
     let billingRanapCurrentData = null;
     let accountsDataCache = null;
+    let currentTotalLayanan = 0;
     let currentRawGrandTotal = 0;
     let currentDeposit = 0;
 
@@ -687,16 +712,46 @@
         }
 
         $('#tbodyBillingRanap').html(html);
-        $('#tableSubtotalBiaya').text('Rp ' + new Intl.NumberFormat('id-ID').format(data.grand_total));
+
+        const totalBiaya = parseFloat(data.total_biaya) || (parseFloat(data.grand_total) + parseFloat(data.potongan || 0));
+        const potongan = parseFloat(data.potongan) || 0;
+        const grandTotal = parseFloat(data.grand_total) || 0;
+        const deposit = parseFloat(data.deposit) || 0;
+        const netTotal = parseFloat(data.net_total) || Math.max(0, grandTotal - deposit);
+
+        $('#tableTotalBiayaLayanan').text('Rp ' + new Intl.NumberFormat('id-ID').format(totalBiaya));
+
+        if (potongan > 0) {
+            $('#rowPotonganBiaya').removeClass('d-none');
+            $('#tablePotonganBiaya').text('- Rp ' + new Intl.NumberFormat('id-ID').format(potongan));
+        } else {
+            $('#rowPotonganBiaya').addClass('d-none');
+        }
+
+        $('#tableSubtotalBiaya').text('Rp ' + new Intl.NumberFormat('id-ID').format(grandTotal));
+
+        if (deposit > 0) {
+            $('#rowDepositBiaya').removeClass('d-none');
+            $('#tableDepositBiaya').text('- Rp ' + new Intl.NumberFormat('id-ID').format(deposit));
+            $('#rowNetTotalBiaya').removeClass('d-none');
+            $('#tableNetTotalBiaya').text('Rp ' + new Intl.NumberFormat('id-ID').format(netTotal));
+        } else {
+            $('#rowDepositBiaya').addClass('d-none');
+            $('#rowNetTotalBiaya').addClass('d-none');
+        }
     }
 
     function setupPaymentDesk(data) {
-        currentRawGrandTotal = parseFloat(data.grand_total) || 0;
+        currentTotalLayanan = parseFloat(data.total_layanan) || (parseFloat(data.total_biaya) - parseFloat(data.tambahan || 0)) || 0;
         currentDeposit = parseFloat(data.deposit) || 0;
 
-        $('#co_grand_total').val('Rp ' + new Intl.NumberFormat('id-ID').format(currentRawGrandTotal));
-        $('#co_potongan').val(data.potongan || 0);
-        $('#co_tambahan').val(data.tambahan || 0);
+        const tambahanInit = parseFloat(data.tambahan) || 0;
+        const potonganInit = parseFloat(data.potongan) || 0;
+        const jumlahTotalInit = currentTotalLayanan + tambahanInit;
+
+        $('#co_grand_total').val('Rp ' + new Intl.NumberFormat('id-ID').format(jumlahTotalInit));
+        $('#co_potongan').val(potonganInit);
+        $('#co_tambahan').val(tambahanInit);
         $('#co_deposit_text').text('Rp ' + new Intl.NumberFormat('id-ID').format(currentDeposit));
 
         // Setup Akun Piutang dropdown
@@ -733,7 +788,7 @@
                 const foundCash = accountsDataCache.akun_bayar.find(a => a.nama_bayar.toLowerCase().includes('cash') || a.nama_bayar.toLowerCase().includes('kas'));
                 defAkun = foundCash ? foundCash.nama_bayar : accountsDataCache.akun_bayar[0].nama_bayar;
             }
-            const defaultNominal = Math.max(0, currentRawGrandTotal - currentDeposit);
+            const defaultNominal = Math.max(0, (currentTotalLayanan + (parseFloat(data.tambahan) || 0) - (parseFloat(data.potongan) || 0)) - currentDeposit);
             tambahBarisBayarRanap(defAkun, defaultNominal, false);
         }
     }
@@ -782,10 +837,32 @@
         const potongan = parseFloat($('#co_potongan').val()) || 0;
         const tambahan = parseFloat($('#co_tambahan').val()) || 0;
 
-        const adjustedGrandTotal = Math.max(0, (currentRawGrandTotal + tambahan) - potongan);
-        const netTotal = Math.max(0, adjustedGrandTotal - currentDeposit);
+        const jumlahTotal = currentTotalLayanan + tambahan;
+        const grandTotal = Math.max(0, jumlahTotal - potongan);
+        const netTotal = Math.max(0, grandTotal - currentDeposit);
 
+        $('#co_grand_total').val('Rp ' + new Intl.NumberFormat('id-ID').format(jumlahTotal));
         $('#co_net_total').text('Rp ' + new Intl.NumberFormat('id-ID').format(netTotal));
+
+        // Sinkronisasi update tfoot tabel rincian secara real-time
+        $('#tableTotalBiayaLayanan').text('Rp ' + new Intl.NumberFormat('id-ID').format(jumlahTotal));
+        if (potongan > 0) {
+            $('#rowPotonganBiaya').removeClass('d-none');
+            $('#tablePotonganBiaya').text('- Rp ' + new Intl.NumberFormat('id-ID').format(potongan));
+        } else {
+            $('#rowPotonganBiaya').addClass('d-none');
+        }
+        $('#tableSubtotalBiaya').text('Rp ' + new Intl.NumberFormat('id-ID').format(grandTotal));
+
+        if (currentDeposit > 0) {
+            $('#rowDepositBiaya').removeClass('d-none');
+            $('#tableDepositBiaya').text('- Rp ' + new Intl.NumberFormat('id-ID').format(currentDeposit));
+            $('#rowNetTotalBiaya').removeClass('d-none');
+            $('#tableNetTotalBiaya').text('Rp ' + new Intl.NumberFormat('id-ID').format(netTotal));
+        } else {
+            $('#rowDepositBiaya').addClass('d-none');
+            $('#rowNetTotalBiaya').addClass('d-none');
+        }
 
         let totalBayar = 0;
         $('.pay-besar-bayar').each(function() {
@@ -827,7 +904,7 @@
         const kdRekPiutang = $('#co_kd_rek_piutang').val();
         const tglBayar = $('#co_tgl_bayar').val();
 
-        const netTotal = Math.max(0, (currentRawGrandTotal + tambahan - potongan) - currentDeposit);
+        const netTotal = Math.max(0, (currentTotalLayanan + tambahan - potongan) - currentDeposit);
         let totalBayar = 0;
         payments.forEach(p => totalBayar += p.besar_bayar);
 

@@ -94,6 +94,13 @@ class BillingController extends Controller
                 }
             }
             
+            if (!empty($billingData['potongan']) && $billingData['potongan'] > 0) {
+                $itemCount += 2;
+            }
+            if (!empty($billingData['deposit']) && $billingData['deposit'] > 0) {
+                $itemCount += 2;
+            }
+
             $baseHeight = ($size == '58') ? 370 : 420;
             $itemHeight = ($size == '58') ? 18 : 22;
             $height = $baseHeight + ($itemCount * $itemHeight);
@@ -216,7 +223,9 @@ class BillingController extends Controller
             $uang_deposit = floatval($nota_inap->Uang_Muka);
         }
 
-        $grand_total = ($biaya_reg + $total_kamar + $total_tindakan + $total_obat + $total_lab + $total_rad + $tambahan) - $potongan;
+        $total_layanan = $biaya_reg + $total_kamar + $total_tindakan + $total_obat + $total_lab + $total_rad;
+        $total_biaya = $total_layanan + $tambahan;
+        $grand_total = max(0, $total_biaya - $potongan);
         $net_total = max(0, $grand_total - $uang_deposit);
 
         // Header Info & Room status
@@ -255,11 +264,12 @@ class BillingController extends Controller
             ['label' => 'Radiologi', 'total' => $total_rad, 'items' => $detail_rad],
         ];
 
-        if ($tambahan > 0 || $potongan > 0) {
-            $itemsTP = [];
-            if ($tambahan > 0) $itemsTP[] = ['item' => 'Tambahan Biaya', 'qty' => 1, 'tarif' => $tambahan, 'subtotal' => $tambahan];
-            if ($potongan > 0) $itemsTP[] = ['item' => 'Potongan Biaya', 'qty' => 1, 'tarif' => -$potongan, 'subtotal' => -$potongan];
-            $categories[] = ['label' => 'Tambahan/Potongan', 'total' => $tambahan - $potongan, 'items' => $itemsTP];
+        if ($tambahan > 0) {
+            $categories[] = [
+                'label' => 'Tambahan Biaya',
+                'total' => $tambahan,
+                'items' => [['item' => 'Tambahan Biaya', 'qty' => 1, 'tarif' => $tambahan, 'subtotal' => $tambahan]]
+            ];
         }
 
         // Saved payments from detail_nota_inap
@@ -291,6 +301,8 @@ class BillingController extends Controller
             'total_hari' => $total_hari,
             'status_bayar' => $reg ? $reg->status_bayar : 'Belum Bayar',
             'categories' => $categories,
+            'total_layanan' => $total_layanan,
+            'total_biaya' => $total_biaya,
             'grand_total' => $grand_total,
             'deposit' => $uang_deposit,
             'net_total' => $net_total,
@@ -368,10 +380,12 @@ class BillingController extends Controller
             ->get()->map(fn($item) => ['item' => $item->nm_perawatan, 'tgl' => $item->tgl_periksa, 'qty' => 1, 'tarif' => $item->biaya, 'subtotal' => $item->biaya]);
         $total_rad = $detail_rad->sum('subtotal');
 
-        $tambahan = DB::table('tambahan_biaya')->where('no_rawat', $no_rawat)->sum('besar_biaya');
-        $potongan = DB::table('pengurangan_biaya')->where('no_rawat', $no_rawat)->sum('besar_pengurangan');
+        $tambahan = floatval(DB::table('tambahan_biaya')->where('no_rawat', $no_rawat)->sum('besar_biaya'));
+        $potongan = floatval(DB::table('pengurangan_biaya')->where('no_rawat', $no_rawat)->sum('besar_pengurangan'));
 
-        $grand_total = ($biaya_reg + $total_tindakan + $total_obat + $total_lab + $total_rad + $tambahan) - $potongan;
+        $total_layanan = $biaya_reg + $total_tindakan + $total_obat + $total_lab + $total_rad;
+        $total_biaya = $total_layanan + $tambahan;
+        $grand_total = max(0, $total_biaya - $potongan);
 
         $categories = [
             ['label' => 'Registrasi', 'total' => $biaya_reg, 'items' => [['item' => 'Biaya Registrasi', 'qty' => 1, 'tarif' => $biaya_reg, 'subtotal' => $biaya_reg]]],
@@ -381,11 +395,12 @@ class BillingController extends Controller
             ['label' => 'Radiologi', 'total' => $total_rad, 'items' => $detail_rad],
         ];
 
-        if ($tambahan > 0 || $potongan > 0) {
-            $itemsTP = [];
-            if ($tambahan > 0) $itemsTP[] = ['item' => 'Tambahan Biaya', 'qty' => 1, 'tarif' => $tambahan, 'subtotal' => $tambahan];
-            if ($potongan > 0) $itemsTP[] = ['item' => 'Potongan Biaya', 'qty' => 1, 'tarif' => -$potongan, 'subtotal' => -$potongan];
-            $categories[] = ['label' => 'Tambahan/Potongan', 'total' => $tambahan - $potongan, 'items' => $itemsTP];
+        if ($tambahan > 0) {
+            $categories[] = [
+                'label' => 'Tambahan Biaya',
+                'total' => $tambahan,
+                'items' => [['item' => 'Tambahan Biaya', 'qty' => 1, 'tarif' => $tambahan, 'subtotal' => $tambahan]]
+            ];
         }
 
         $isSudahPeriksa = $reg && ($reg->stts === 'Sudah' || DB::table('pemeriksaan_ralan')->where('no_rawat', $no_rawat)->exists() || $detail_tindakan->count() > 0);
@@ -395,7 +410,7 @@ class BillingController extends Controller
             ->get();
 
         $deposit = 0; // ralan tidak punya deposit, set 0
-        $net_total = max(0, $grand_total - $potongan);
+        $net_total = $grand_total;
 
         return [
             'no_rawat' => $no_rawat,
@@ -410,6 +425,8 @@ class BillingController extends Controller
             'stts' => $reg ? $reg->stts : 'Belum',
             'is_sudah_periksa' => $isSudahPeriksa,
             'categories' => $categories,
+            'total_layanan' => $total_layanan,
+            'total_biaya' => $total_biaya,
             'grand_total' => $grand_total,
             'potongan' => $potongan,
             'tambahan' => $tambahan,
