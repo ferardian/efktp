@@ -107,9 +107,13 @@
                                     <button type="button" class="btn btn-sm btn-success" onclick="cetakSuratSakit('${data}')" title="Cetak Surat"><i class="ti ti-printer"></i></button>
                                     <button type="button" class="btn btn-sm btn-success dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false" title="Pilih Opsi Cetak"></button>
                                     <ul class="dropdown-menu dropdown-menu-end shadow">
-                                        <li><h6 class="dropdown-header py-1 text-muted">Opsi Cetak:</h6></li>
-                                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="cetakSuratSakit('${data}', 'manual')"><i class="ti ti-pencil text-warning me-2"></i>Kosongkan Diagnosa (Manual)</a></li>
-                                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="cetakSuratSakit('${data}', 'ada')"><i class="ti ti-file-text text-primary me-2"></i>Dengan Diagnosa</a></li>
+                                        <li><h6 class="dropdown-header py-1 text-muted">Cetak dengan QR Barcode:</h6></li>
+                                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="cetakSuratSakit('${data}', 'manual', '1')"><i class="ti ti-qrcode text-success me-2"></i>QR Barcode + Diagnosa Manual</a></li>
+                                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="cetakSuratSakit('${data}', 'ada', '1')"><i class="ti ti-qrcode text-primary me-2"></i>QR Barcode + Dengan Diagnosa</a></li>
+                                        <li><hr class="dropdown-divider my-1"></li>
+                                        <li><h6 class="dropdown-header py-1 text-muted">Cetak Tanpa Barcode (Manual):</h6></li>
+                                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="cetakSuratSakit('${data}', 'manual', '0')"><i class="ti ti-signature text-secondary me-2"></i>Tanpa Barcode + Diagnosa Manual</a></li>
+                                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="cetakSuratSakit('${data}', 'ada', '0')"><i class="ti ti-signature text-secondary me-2"></i>Tanpa Barcode + Dengan Diagnosa</a></li>
                                     </ul>
                                 </div>
                             </div>`;

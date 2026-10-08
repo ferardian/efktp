@@ -56,13 +56,26 @@ class SuratSehatController extends Controller
     }
 
 
-    function print($noSurat)
+    public function print(Request $request, $noSurat = null)
     {
+        $noSurat = $request->query('no_surat') ?: $noSurat;
+        if (!$noSurat) {
+            abort(404, 'Nomor Surat Sehat tidak disertakan');
+        }
         $noSurat = urldecode($noSurat);
         $surat = SuratSehat::where('no_surat', $noSurat)->with(['regPeriksa' => function ($q) {
             return $q->with('pasien', 'pemeriksaanDokter', 'dokter.pegawai');
         }])->first();
         $setting = Setting::first();
+
+        if (!$surat) {
+            abort(404, 'Surat Sehat tidak ditemukan');
+        }
+
+        // Opsi Barcode QR: '1' (default / dengan QR) atau '0' (tanpa barcode)
+        $optBarcode = $request->query('barcode', '1');
+        $useBarcode = ($optBarcode !== '0' && $optBarcode !== 'false');
+
         $data = [
             'no_surat' => $surat->no_surat,
             'nm_pasien' => $surat->regPeriksa->pasien->nm_pasien,
@@ -71,7 +84,7 @@ class SuratSehatController extends Controller
             'alamat' => "{$surat->regPeriksa->pasien->alamat}, {$surat->regPeriksa->pasien->kel->nm_kel}, {$surat->regPeriksa->pasien->kec->nm_kec}, {$surat->regPeriksa->pasien->kab->nm_kab}",
             'tanggal' => $surat->tanggalsurat,
             'dokter' => $surat->regPeriksa->dokter->nm_dokter,
-            'jabatan' => $surat->regPeriksa->dokter->pegawai->jbtn,
+            'jabatan' => $surat->regPeriksa->dokter->pegawai->jbtn ?? '-',
             'sip' => $surat->regPeriksa->dokter->no_ijn_praktek,
             'berat' => $surat->berat,
             'tinggi' => $surat->tinggi,
@@ -86,6 +99,7 @@ class SuratSehatController extends Controller
             'kontak' => $setting->kontak,
             'email' => $setting->email,
             'logo' => base64_encode($setting->logo),
+            'use_barcode' => $useBarcode,
         ];
 
         $pdf = Pdf::loadView('content.print.suratSehat', ['data' => $data])

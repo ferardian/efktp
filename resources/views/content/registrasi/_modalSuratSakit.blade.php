@@ -37,25 +37,45 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-2">
-                <!-- Toolbar Opsi Diagnosa -->
+                <!-- Toolbar Opsi Diagnosa & Barcode -->
                 <div class="bg-light p-2 mb-2 rounded border d-flex flex-wrap align-items-center justify-content-between gap-2">
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="fw-bold small text-muted"><i class="ti ti-settings me-1"></i>Opsi Diagnosa:</span>
-                        <div class="btn-group btn-group-sm" role="group">
-                            <input type="radio" class="btn-check" name="opt_diagnosa_surat" id="opt_diag_manual" value="manual" autocomplete="off" checked>
-                            <label class="btn btn-outline-warning" for="opt_diag_manual" title="Kosongkan keterangan diagnosa untuk ditulis manual oleh dokter">
-                                <i class="ti ti-pencil me-1"></i> Kosongkan (Manual Dokter)
-                            </label>
+                    <div class="d-flex flex-wrap align-items-center gap-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="fw-bold small text-muted"><i class="ti ti-settings me-1"></i>Diagnosa:</span>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <input type="radio" class="btn-check" name="opt_diagnosa_surat" id="opt_diag_manual" value="manual" autocomplete="off" checked>
+                                <label class="btn btn-outline-warning" for="opt_diag_manual" title="Kosongkan keterangan diagnosa untuk ditulis manual oleh dokter">
+                                    <i class="ti ti-pencil me-1"></i> Kosongkan (Manual)
+                                </label>
 
-                            <input type="radio" class="btn-check" name="opt_diagnosa_surat" id="opt_diag_ada" value="ada" autocomplete="off">
-                            <label class="btn btn-outline-primary" for="opt_diag_ada" title="Cetak dengan teks diagnosa">
-                                <i class="ti ti-file-text me-1"></i> Dengan Diagnosa
-                            </label>
+                                <input type="radio" class="btn-check" name="opt_diagnosa_surat" id="opt_diag_ada" value="ada" autocomplete="off">
+                                <label class="btn btn-outline-primary" for="opt_diag_ada" title="Cetak dengan teks diagnosa">
+                                    <i class="ti ti-file-text me-1"></i> Dengan Diagnosa
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="fw-bold small text-muted"><i class="ti ti-qrcode me-1"></i>Ttd. Dokter:</span>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <input type="radio" class="btn-check" name="opt_barcode_surat_sakit" id="opt_barcode_sakit_qr" value="1" autocomplete="off" checked>
+                                <label class="btn btn-outline-success" for="opt_barcode_sakit_qr" title="Gunakan Tanda Tangan Barcode QR">
+                                    <i class="ti ti-qrcode me-1"></i> Dengan Barcode QR
+                                </label>
+
+                                <input type="radio" class="btn-check" name="opt_barcode_surat_sakit" id="opt_barcode_sakit_manual" value="0" autocomplete="off">
+                                <label class="btn btn-outline-secondary" for="opt_barcode_sakit_manual" title="Tanda tangan basah manual tanpa barcode">
+                                    <i class="ti ti-signature me-1"></i> Tanpa Barcode
+                                </label>
+                            </div>
                         </div>
                     </div>
                     <div class="text-muted small">
                         <span id="labelKetDiagnosa" class="badge bg-warning-lt py-1 px-2">
-                            <i class="ti ti-pencil me-1"></i>Diagnosa dikosongkan untuk diisi manual dokter
+                            <i class="ti ti-pencil me-1"></i>Diagnosa manual
+                        </span>
+                        <span id="labelKetBarcodeSakit" class="badge bg-success-lt py-1 px-2 ms-1">
+                            <i class="ti ti-qrcode me-1"></i>QR Code Aktif
                         </span>
                     </div>
                 </div>
@@ -134,9 +154,18 @@
         function updateLabelKetDiagnosa(mode) {
             const label = $('#labelKetDiagnosa');
             if (mode === 'manual' || mode === '0') {
-                label.attr('class', 'badge bg-warning-lt py-1 px-2').html('<i class="ti ti-pencil me-1"></i>Diagnosa dikosongkan untuk diisi manual dokter');
+                label.attr('class', 'badge bg-warning-lt py-1 px-2').html('<i class="ti ti-pencil me-1"></i>Diagnosa manual dokter');
             } else if (mode === 'ada' || mode === '1') {
-                label.attr('class', 'badge bg-primary-lt py-1 px-2').html('<i class="ti ti-file-text me-1"></i>Mencetak nama diagnosa pada surat');
+                label.attr('class', 'badge bg-primary-lt py-1 px-2').html('<i class="ti ti-file-text me-1"></i>Dengan diagnosa');
+            }
+        }
+
+        function updateLabelKetBarcodeSakit(barcode) {
+            const label = $('#labelKetBarcodeSakit');
+            if (barcode === '1' || barcode === 1) {
+                label.attr('class', 'badge bg-success-lt py-1 px-2 ms-1').html('<i class="ti ti-qrcode me-1"></i>Barcode QR Aktif');
+            } else {
+                label.attr('class', 'badge bg-secondary-lt py-1 px-2 ms-1').html('<i class="ti ti-signature me-1"></i>Tanpa Barcode');
             }
         }
 
@@ -144,24 +173,40 @@
             const mode = $(this).val();
             updateLabelKetDiagnosa(mode);
             if (activeNoSuratSakit) {
-                loadIframeSuratSakit(activeNoSuratSakit, mode);
+                const barcode = $('input[name="opt_barcode_surat_sakit"]:checked').val() || '1';
+                loadIframeSuratSakit(activeNoSuratSakit, mode, barcode);
             }
         });
 
-        function loadIframeSuratSakit(no_surat, mode) {
-            const url = `{{ url('/surat/sakit/print') }}?no_surat=${encodeURIComponent(no_surat)}&diagnosa=${mode}`;
+        $('input[name="opt_barcode_surat_sakit"]').on('change', function() {
+            const barcode = $(this).val();
+            updateLabelKetBarcodeSakit(barcode);
+            if (activeNoSuratSakit) {
+                const mode = $('input[name="opt_diagnosa_surat"]:checked').val() || 'manual';
+                loadIframeSuratSakit(activeNoSuratSakit, mode, barcode);
+            }
+        });
+
+        function loadIframeSuratSakit(no_surat, mode, barcode = '1') {
+            const url = `{{ url('/surat/sakit/print') }}?no_surat=${encodeURIComponent(no_surat)}&diagnosa=${mode}&barcode=${barcode}`;
             modalCetakSuratSakit.find('#print').removeAttr('src').attr('src', url);
         }
 
-        function cetakSuratSakit(no_surat, defaultMode = '') {
+        function cetakSuratSakit(no_surat, defaultMode = '', defaultBarcode = '') {
             activeNoSuratSakit = no_surat;
 
             // Jika mode ditentukan dari klik (misal dari menu dropdown), set radio button
             if (defaultMode) {
                 $(`input[name="opt_diagnosa_surat"][value="${defaultMode}"]`).prop('checked', true);
             }
+            if (defaultBarcode !== '') {
+                $(`input[name="opt_barcode_surat_sakit"][value="${defaultBarcode}"]`).prop('checked', true);
+            }
+
             const mode = $('input[name="opt_diagnosa_surat"]:checked').val() || 'manual';
+            const barcode = $('input[name="opt_barcode_surat_sakit"]:checked').val() || '1';
             updateLabelKetDiagnosa(mode);
+            updateLabelKetBarcodeSakit(barcode);
 
             Swal.fire({
                 title: "Tunggu",
@@ -178,7 +223,7 @@
                 }
             });
             modalCetakSuratSakit.modal('show');
-            loadIframeSuratSakit(no_surat, mode);
+            loadIframeSuratSakit(no_surat, mode, barcode);
         }
     </script>
 @endpush

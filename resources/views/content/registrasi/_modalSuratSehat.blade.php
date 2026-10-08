@@ -48,8 +48,31 @@
                 <h5 class="modal-title m-0">Cetak :: Surat Sehat</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <iframe id="print" type="" width="100%" height="500"></iframe>
+            <div class="modal-body p-2">
+                <!-- Toolbar Opsi Barcode QR -->
+                <div class="bg-light p-2 mb-2 rounded border d-flex flex-wrap align-items-center justify-content-between gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="fw-bold small text-muted"><i class="ti ti-qrcode me-1"></i>Ttd. Dokter:</span>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <input type="radio" class="btn-check" name="opt_barcode_surat_sehat" id="opt_barcode_sehat_qr" value="1" autocomplete="off" checked>
+                            <label class="btn btn-outline-success" for="opt_barcode_sehat_qr" title="Gunakan Tanda Tangan Barcode QR">
+                                <i class="ti ti-qrcode me-1"></i> Dengan Barcode QR
+                            </label>
+
+                            <input type="radio" class="btn-check" name="opt_barcode_surat_sehat" id="opt_barcode_sehat_manual" value="0" autocomplete="off">
+                            <label class="btn btn-outline-secondary" for="opt_barcode_sehat_manual" title="Tanda tangan basah manual tanpa barcode">
+                                <i class="ti ti-signature me-1"></i> Tanpa Barcode
+                            </label>
+                        </div>
+                    </div>
+                    <div class="text-muted small">
+                        <span id="labelKetBarcodeSehat" class="badge bg-success-lt py-1 px-2">
+                            <i class="ti ti-qrcode me-1"></i>Barcode QR Aktif
+                        </span>
+                    </div>
+                </div>
+
+                <iframe id="print" type="" width="100%" height="600"></iframe>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-danger" data-bs-dismiss="modal"><i class="ti ti-x me-2"></i>Keluar</button>
@@ -156,9 +179,18 @@
                         title: '',
                         data: 'no_surat',
                         render: (data, type, row, meta) => {
-                            return `<button type="button" class="btn btn-sm btn-danger" onclick="deleteSuratSehat('${data}')"><i class="ti ti-trash"></i></button>
-                        <button type="button" class="btn btn-sm btn-success" onclick="cetakSuratSehat('${data}')"><i class="ti ti-printer"></i></button>
-                        `;
+                            return `<div class="d-inline-flex align-items-center gap-1">
+                                <button type="button" class="btn btn-sm btn-danger" onclick="deleteSuratSehat('${data}')" title="Hapus"><i class="ti ti-trash"></i></button>
+                                <div class="btn-group btn-group-sm">
+                                    <button type="button" class="btn btn-sm btn-success" onclick="cetakSuratSehat('${data}')" title="Cetak Surat"><i class="ti ti-printer"></i></button>
+                                    <button type="button" class="btn btn-sm btn-success dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false" title="Pilih Opsi Cetak"></button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow">
+                                        <li><h6 class="dropdown-header py-1 text-muted">Opsi Tanda Tangan:</h6></li>
+                                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="cetakSuratSehat('${data}', '1')"><i class="ti ti-qrcode text-success me-2"></i>Dengan Barcode QR</a></li>
+                                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="cetakSuratSehat('${data}', '0')"><i class="ti ti-signature text-secondary me-2"></i>Tanpa Barcode (Manual)</a></li>
+                                    </ul>
+                                </div>
+                            </div>`;
                         },
                     },
 
@@ -191,7 +223,38 @@
             loadSuratSehat(tglAwal, tglAkhir);
         }
 
-        function cetakSuratSehat(no_surat) {
+        let activeNoSuratSehat = '';
+
+        function updateLabelKetBarcodeSehat(barcode) {
+            const label = $('#labelKetBarcodeSehat');
+            if (barcode === '1' || barcode === 1) {
+                label.attr('class', 'badge bg-success-lt py-1 px-2').html('<i class="ti ti-qrcode me-1"></i>Barcode QR Aktif');
+            } else {
+                label.attr('class', 'badge bg-secondary-lt py-1 px-2').html('<i class="ti ti-signature me-1"></i>Tanpa Barcode');
+            }
+        }
+
+        $('input[name="opt_barcode_surat_sehat"]').on('change', function() {
+            const barcode = $(this).val();
+            updateLabelKetBarcodeSehat(barcode);
+            if (activeNoSuratSehat) {
+                loadIframeSuratSehat(activeNoSuratSehat, barcode);
+            }
+        });
+
+        function loadIframeSuratSehat(no_surat, barcode = '1') {
+            const url = `{{ url('/surat/sehat/print') }}?no_surat=${encodeURIComponent(no_surat)}&barcode=${barcode}`;
+            modalCetakSuratSehat.find('#print').removeAttr('src').attr('src', url);
+        }
+
+        function cetakSuratSehat(no_surat, defaultBarcode = '') {
+            activeNoSuratSehat = no_surat;
+            if (defaultBarcode !== '') {
+                $(`input[name="opt_barcode_surat_sehat"][value="${defaultBarcode}"]`).prop('checked', true);
+            }
+            const barcode = $('input[name="opt_barcode_surat_sehat"]:checked').val() || '1';
+            updateLabelKetBarcodeSehat(barcode);
+
             Swal.fire({
                 title: "Tunggu",
                 html: "Sedang mengambil data...",
@@ -200,14 +263,14 @@
                     Swal.showLoading();
                 },
             });
-            modalCetakSuratSehat.find('#print').on('load', (e) => {
+            modalCetakSuratSehat.find('#print').off('load').on('load', (e) => {
+                Swal.close();
                 if (e.currentTarget.src) {
                     toast('Berhasil');
                 }
-
-            })
+            });
             modalCetakSuratSehat.modal('show');
-            modalCetakSuratSehat.find('#print').removeAttr('src').attr('src', `{{ url('/surat/sehat/print') }}/${no_surat}`)
+            loadIframeSuratSehat(no_surat, barcode);
         }
 
         function setNoSuratSehat(tgl_surat = '') {

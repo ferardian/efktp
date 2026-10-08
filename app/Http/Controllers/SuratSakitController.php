@@ -176,6 +176,12 @@ class SuratSakitController extends Controller
 			}
 		}
 
+		// Opsi Barcode QR:
+		// '1' / 'true' => dengan barcode QR
+		// '0' / 'false' => tanpa barcode (tanda tangan basah manual)
+		$optBarcode = $request->query('barcode', '1');
+		$useBarcode = ($optBarcode !== '0' && $optBarcode !== 'false');
+
 		$data = [
 			'no_surat' => $surat->no_surat,
 			'nm_pasien' => $surat->regPeriksa->pasien->nm_pasien,
@@ -197,6 +203,7 @@ class SuratSakitController extends Controller
 			'kontak' => $setting->kontak,
 			'email' => $setting->email,
 			'logo' => base64_encode($setting->logo),
+			'use_barcode' => $useBarcode,
 		];
 		$pdf = Pdf::loadView('content.print.suratSakit', ['data' => $data])
 			->setPaper('a5', 'potrait')->setOptions(['defaultFont' => 'sherif', 'isRemoteEnabled' => true]);

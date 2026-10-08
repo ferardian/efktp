@@ -92,9 +92,13 @@
         <p style="margin-top: 10px">Demikian surat ini kami buat dan digunakan untuk keperluan : <b><u>{{ $data['keperluan'] }}</u></b>, Terimakasih.</p>
 
         <div style="margin-top:20px;text-align: center;left:0px">
-            <p class="m-0">{{ $data['kabupaten'] }}
-                , {{ Carbon\Carbon::parse($data['tanggal'])->translatedFormat('d F Y') }}</p>
-            <p style="margin-bottom:75px">Ttd. Dokter</p>
+            <p class="m-0">{{ $data['kabupaten'] }}, {{ Carbon\Carbon::parse($data['tanggal'])->translatedFormat('d F Y') }}</p>
+            <p class="m-0" style="margin-bottom: {{ !empty($data['use_barcode']) ? '5px' : '75px' }}">Ttd. Dokter</p>
+            @if(!empty($data['use_barcode']))
+                <div style="margin: 4px auto 6px auto;">
+                    <img src="data:image/png;base64,{{ DNS2D::getBarcodePNG('Dikeluarkan oleh: ' . ($data['nama_instansi'] ?? '') . ' | Surat Keterangan Sehat No: ' . $data['no_surat'] . ' | Dokter: ' . $data['dokter'] . ' (SIP: ' . $data['sip'] . ') | Pasien: ' . $data['nm_pasien'], 'QRCODE') }}" height="60" width="60" />
+                </div>
+            @endif
             <p class="m-0"><u>{{ $data['dokter'] }}</u></p>
             <p class="m-0">SIP : {{ $data['sip'] }}</p>
         </div>

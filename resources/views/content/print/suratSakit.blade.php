@@ -58,7 +58,12 @@
         </table>
 
         <div style="margin-top:20px;text-align: center;left:0px">
-            <p style="margin-bottom:75px">Ttd. Dokter</p>
+            <p class="m-0" style="margin-bottom: {{ !empty($data['use_barcode']) ? '5px' : '75px' }}">Ttd. Dokter</p>
+            @if(!empty($data['use_barcode']))
+                <div style="margin: 4px auto 6px auto;">
+                    <img src="data:image/png;base64,{{ DNS2D::getBarcodePNG('Dikeluarkan oleh: ' . ($data['nama_instansi'] ?? '') . ' | Surat Keterangan Sakit No: ' . $data['no_surat'] . ' | Dokter: ' . $data['dokter'] . ' (SIP: ' . $data['sip'] . ') | Pasien: ' . $data['nm_pasien'], 'QRCODE') }}" height="60" width="60" />
+                </div>
+            @endif
             <p class="m-0"><u>{{ $data['dokter'] }}</u></p>
             <p class="m-0">SIP : {{ $data['sip'] }}</p>
         </div>
