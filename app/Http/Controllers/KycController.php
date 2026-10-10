@@ -13,7 +13,22 @@ class KycController extends Controller
 
         // Nama dan NIK Petugas / Operator
         $agentName = $request->query('nama') ?: ($pegawai ? $pegawai->nama : 'Petugas Faskes');
-        $agentNik  = $request->query('nik') ?: ($pegawai ? ($pegawai->nik ?: $pegawai->no_ktp ?? '') : '');
+        $rawNik    = $request->query('nik') ?: ($pegawai ? ($pegawai->no_ktp ?: $pegawai->nik ?? '') : '');
+        $agentNik  = $rawNik;
+
+        // Jika NIK yang dikirim adalah ID/Kode Pegawai (misal D0000005), cari No. KTP asli di database
+        if (!empty($agentNik) && (!is_numeric($agentNik) || strlen((string) $agentNik) !== 16)) {
+            try {
+                $ktpFromDb = \Illuminate\Support\Facades\DB::table('pegawai')
+                    ->where('nik', $agentNik)
+                    ->value('no_ktp');
+                if (!empty($ktpFromDb) && is_numeric($ktpFromDb) && strlen(trim($ktpFromDb)) === 16) {
+                    $agentNik = trim($ktpFromDb);
+                }
+            } catch (\Throwable $e) {
+                // Abaikan error koneksi database
+            }
+        }
 
         // 1. Prioritaskan konfigurasi dari .env (config/satusehat.php)
         $clientId     = config('satusehat.client_id');
@@ -39,14 +54,14 @@ class KycController extends Controller
         if (empty($clientId) || empty($clientSecret)) {
             return response()->view('error.kyc', [
                 'title'   => 'Konfigurasi SatuSehat Belum Lengkap',
-                'message' => 'Client ID dan Client Secret SatuSehat belum diatur pada kyc/satusehat.ini atau .env.',
+                'message' => 'Client ID dan Client Secret SatuSehat belum diatur pada .env atau kyc/satusehat.ini.',
             ], 500);
         }
 
-        if (empty($agentNik)) {
+        if (empty($agentNik) || !is_numeric($agentNik) || strlen((string) $agentNik) !== 16) {
             return response()->view('error.kyc', [
-                'title'   => 'NIK Petugas Tidak Ditemukan',
-                'message' => 'NIK petugas/operator belum terisi pada profil pegawai atau parameter URL (?nik=...). Harap lengkapi NIK pegawai terlebih dahulu.',
+                'title'   => 'NIK Petugas Tidak Valid',
+                'message' => 'NIK petugas/operator (' . e($rawNik) . ') bukan 16 digit angka KTP. SatuSehat KYC mewajibkan NIK KTP yang valid. Harap lengkapi kolom No. KTP pada data pegawai di Master Pegawai.',
             ], 400);
         }
 
