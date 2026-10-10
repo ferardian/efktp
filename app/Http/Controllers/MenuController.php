@@ -359,6 +359,45 @@ class MenuController extends Controller
                 }
             }
 
+            // Ensure SATU SEHAT Lab menus exist
+            $satusehatParent = Menu::where(function($q) {
+                $q->where('name', 'SATU SEHAT')->orWhere('name', 'Satu Sehat');
+            })->whereNull('parent_id')->first();
+
+            if ($satusehatParent) {
+                $existingMapLab = Menu::where('url', 'satusehat/mapping/lab')->first();
+                if (!$existingMapLab) {
+                    $newMapLab = Menu::create([
+                        'name'      => 'Mapping Laborat (LOINC)',
+                        'url'       => 'satusehat/mapping/lab',
+                        'icon'      => null,
+                        'parent_id' => $satusehatParent->id,
+                        'order_num' => 8,
+                        'target'    => '_self',
+                        'position'  => 'sidebar',
+                    ]);
+                    foreach (['admin', 'petugas', 'owner', 'dokter', 'laborat'] as $r) {
+                        MenuRole::firstOrCreate(['menu_id' => $newMapLab->id, 'role' => $r]);
+                    }
+                }
+
+                $existingSRLab = Menu::where('url', 'satusehat/servicerequest-lab')->first();
+                if (!$existingSRLab) {
+                    $newSRLab = Menu::create([
+                        'name'      => 'ServiceRequest Lab',
+                        'url'       => 'satusehat/servicerequest-lab',
+                        'icon'      => null,
+                        'parent_id' => $satusehatParent->id,
+                        'order_num' => 9,
+                        'target'    => '_self',
+                        'position'  => 'sidebar',
+                    ]);
+                    foreach (['admin', 'petugas', 'owner', 'dokter', 'laborat'] as $r) {
+                        MenuRole::firstOrCreate(['menu_id' => $newSRLab->id, 'role' => $r]);
+                    }
+                }
+            }
+
             $newRolesDefaults = [
                 'perawat' => [
                     Menu::where('url', '/')->value('id'),
