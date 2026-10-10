@@ -26,17 +26,23 @@
             }).done((response) => {
                 if (response.resep_dokter.length) {
                     const obatDokter = response.resep_dokter.map((items) => {
+                        const parts = (items.aturan_pakai || '3 x 1').split(/[xX]/);
+                        const s1 = parseInt(parts[0]) || 3;
+                        const s2 = parseInt(parts[1]) || 1;
+                        const jml = parseInt(items.jml) || 1;
+                        const hari = (s1 * s2 > 0) ? Math.ceil(jml / (s1 * s2)) : 1;
                         return {
                             'noKunjungan': noKunjungan,
-                            'kdObat': items.obat.mapping_obat.kode_brng_pcare,
-                            'signa1': items.aturan_pakai.split(' x ')[0],
-                            'signa2': items.aturan_pakai.split(' x ')[1],
+                            'kdObat': items.obat?.mapping_obat?.kode_brng_pcare || '',
+                            'signa1': s1,
+                            'signa2': s2,
                             'racikan': 0,
                             'kdRacikan': null,
-                            'obatDPHO': 1,
-                            'jmlObat': items.jml,
-                            'jmlPermintaan': 0,
-                            'nmObatNonDPHO': items.obat.nama_brng,
+                            'obatDPHO': items.obat?.mapping_obat?.kode_brng_pcare ? 1 : 0,
+                            'jmlObat': jml,
+                            'jmlHari': hari > 0 ? hari : 1,
+                            'jmlPermintaan': jml,
+                            'nmObatNonDPHO': items.obat?.nama_brng || '',
                         };
                     });
                     console.log('OBAT ===', obatDokter);

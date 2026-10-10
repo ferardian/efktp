@@ -36,6 +36,11 @@ class PembayaranRalanController extends Controller
             ->leftJoin('nota_jalan', 'reg_periksa.no_rawat', '=', 'nota_jalan.no_rawat')
             ->leftJoin('rujuk_masuk', 'reg_periksa.no_rawat', '=', 'rujuk_masuk.no_rawat')
             ->where('reg_periksa.status_lanjut', 'Ralan')
+            ->whereNotExists(function ($sub) {
+                $sub->select(DB::raw(1))
+                    ->from('kamar_inap')
+                    ->whereColumn('kamar_inap.no_rawat', 'reg_periksa.no_rawat');
+            })
             ->whereBetween('reg_periksa.tgl_registrasi', [$tglAwal, $tglAkhir]);
 
         if ($kdDokter) {
@@ -116,7 +121,7 @@ class PembayaranRalanController extends Controller
 
             $totalBiaya = ($biayaReg + $biayaObat + $biayaTindakan + $biayaOperasi + $biayaLab + $biayaRad + $biayaTambahan) - $biayaPotongan;
 
-            $sttsBayar = ($totalBiaya > 0 || $reg->no_nota || $reg->status_bayar_reg === 'Sudah Bayar') ? 'Sudah Bayar' : 'Belum Bayar';
+            $sttsBayar = (!empty($reg->no_nota) || $reg->status_bayar_reg === 'Sudah Bayar') ? 'Sudah Bayar' : 'Belum Bayar';
 
             if ($statusBayar !== 'Semua' && $sttsBayar !== $statusBayar) {
                 continue;

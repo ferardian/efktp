@@ -37,6 +37,11 @@ class KasirRalanController extends Controller
             ->join('penjab', 'reg_periksa.kd_pj', '=', 'penjab.kd_pj')
             ->leftJoin('nota_jalan', 'reg_periksa.no_rawat', '=', 'nota_jalan.no_rawat')
             ->where('reg_periksa.status_lanjut', 'Ralan')
+            ->whereNotExists(function ($sub) {
+                $sub->select(DB::raw(1))
+                    ->from('kamar_inap')
+                    ->whereColumn('kamar_inap.no_rawat', 'reg_periksa.no_rawat');
+            })
             ->whereBetween('reg_periksa.tgl_registrasi', [$tglAwal, $tglAkhir]);
 
         if ($kdDokter) {

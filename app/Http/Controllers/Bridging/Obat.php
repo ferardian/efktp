@@ -46,7 +46,8 @@ class Obat extends Controller
                 'signa1'        => (int) ($item['signa1'] ?? 3),
                 'signa2'        => (int) ($item['signa2'] ?? 1),
                 'jmlObat'       => (int) ($item['jmlObat'] ?? 1),
-                'jmlPermintaan'  => (int) ($item['jmlPermintaan'] ?? 1),
+                'jmlHari'       => (int) ($item['jmlHari'] ?? ($item['hari'] ?? 1)),
+                'jmlPermintaan' => (int) ($item['jmlPermintaan'] ?? 1),
                 'nmObatNonDPHO' => (string) ($item['nmObatNonDPHO'] ?? ''),
             ];
 
@@ -137,6 +138,10 @@ class Obat extends Controller
                 $isDpho  = ($kdObat !== '130199999' && !empty($mapping?->kode_brng_pcare));
                 $nmObat  = $mapping?->nama_brng_pcare ?? $item->obat?->nama_brng ?? 'Obat Non DPHO';
                 $signa   = $this->parseSigna($item->aturan_pakai);
+                $jmlObat = (int) $item->jml;
+                $dosisPerHari = ($signa['signa1'] > 0 && $signa['signa2'] > 0) ? ($signa['signa1'] * $signa['signa2']) : 3;
+                $jmlHari = $dosisPerHari > 0 ? (int) ceil($jmlObat / $dosisPerHari) : 1;
+                if ($jmlHari <= 0) $jmlHari = 1;
 
                 $payload = [
                     'kdObatSK'      => 0,
@@ -147,8 +152,9 @@ class Obat extends Controller
                     'kdObat'        => $kdObat,
                     'signa1'        => $signa['signa1'],
                     'signa2'        => $signa['signa2'],
-                    'jmlObat'       => (int) $item->jml,
-                    'jmlPermintaan' => (int) $item->jml,
+                    'jmlObat'       => $jmlObat,
+                    'jmlHari'       => $jmlHari,
+                    'jmlPermintaan' => $jmlObat,
                     'nmObatNonDPHO' => $nmObat,
                 ];
 
@@ -197,6 +203,11 @@ class Obat extends Controller
                         $isDpho  = ($kdObat !== '130199999' && !empty($mapping?->kode_brng_pcare));
                         $nmObat  = $mapping?->nama_brng_pcare ?? $detail->obat?->nama_brng ?? 'Racikan Non DPHO';
 
+                        $jmlObatRacik = (int) ($detail->jml ?? $racik->jml_dr);
+                        $dosisPerHariRacik = ($signa['signa1'] > 0 && $signa['signa2'] > 0) ? ($signa['signa1'] * $signa['signa2']) : 3;
+                        $jmlHariRacik = $dosisPerHariRacik > 0 ? (int) ceil($jmlObatRacik / $dosisPerHariRacik) : 1;
+                        if ($jmlHariRacik <= 0) $jmlHariRacik = 1;
+
                         $payload = [
                             'kdObatSK'      => 0,
                             'noKunjungan'   => $noKunjungan,
@@ -206,7 +217,8 @@ class Obat extends Controller
                             'kdObat'        => $kdObat,
                             'signa1'        => $signa['signa1'],
                             'signa2'        => $signa['signa2'],
-                            'jmlObat'       => (int) ($detail->jml ?? $racik->jml_dr),
+                            'jmlObat'       => $jmlObatRacik,
+                            'jmlHari'       => $jmlHariRacik,
                             'jmlPermintaan' => (int) $racik->jml_dr,
                             'nmObatNonDPHO' => $nmObat,
                         ];
