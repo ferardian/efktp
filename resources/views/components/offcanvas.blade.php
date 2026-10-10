@@ -7,6 +7,7 @@
         <div class="navbar-collapse" id="sidebar-menu">
             @if(config('app.enable_menu_role'))
                 @php
+                    \App\Http\Controllers\MenuController::ensureMenusExist();
                     $userRole = session('role');
                     $menus = \App\Models\Menu::whereNull('parent_id')
                                 ->where('position', 'sidebar')
@@ -288,6 +289,9 @@
                                 </a>
                                 <a class="dropdown-item" href="{{ url('master/tarif-ralan') }}">
                                     Tarif Rawat Jalan
+                                </a>
+                                <a class="dropdown-item" href="{{ url('master/tarif-lab') }}">
+                                    Tarif & Tindakan Lab
                                 </a>
                                 <a class="dropdown-item" href="{{ url('master/poliklinik') }}">
                                     Poliklinik

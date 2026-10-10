@@ -338,14 +338,23 @@ class MenuController extends Controller
                         'url'       => 'master/tarif-lab',
                         'icon'      => '<i class="ti ti-test-pipe me-1"></i>',
                         'parent_id' => $masterParent->id,
-                        'order_num' => 5,
+                        'order_num' => 6,
                         'target'    => '_self',
-                        'position'  => 'navbar',
+                        'position'  => 'sidebar',
                     ]);
 
                     $roles = ['admin', 'owner', 'petugas', 'dokter', 'laborat'];
                     foreach ($roles as $r) {
                         MenuRole::firstOrCreate(['menu_id' => $newTarifLab->id, 'role' => $r]);
+                    }
+                } else {
+                    $existingTarifLab->update([
+                        'parent_id' => $masterParent->id,
+                        'position'  => 'sidebar',
+                    ]);
+                    $roles = ['admin', 'owner', 'petugas', 'dokter', 'laborat'];
+                    foreach ($roles as $r) {
+                        MenuRole::firstOrCreate(['menu_id' => $existingTarifLab->id, 'role' => $r]);
                     }
                 }
             }

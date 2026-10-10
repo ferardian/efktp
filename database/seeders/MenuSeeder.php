@@ -141,9 +141,10 @@ class MenuSeeder extends Seeder
             ['id' => 38, 'name' => 'Data Dokter', 'url' => 'master/dokter', 'icon' => null, 'parent_id' => 23, 'order_num' => 3, 'target' => '_self', 'position' => 'sidebar', 'roles' => ['admin', 'petugas', 'owner']],
             ['id' => 39, 'name' => 'Data Petugas', 'url' => 'master/petugas', 'icon' => null, 'parent_id' => 23, 'order_num' => 4, 'target' => '_self', 'position' => 'sidebar', 'roles' => ['admin', 'petugas', 'owner']],
             ['id' => 40, 'name' => 'Tarif Rawat Jalan', 'url' => 'master/tarif-ralan', 'icon' => null, 'parent_id' => 23, 'order_num' => 5, 'target' => '_self', 'position' => 'sidebar', 'roles' => ['admin', 'petugas', 'owner']],
-            ['id' => 41, 'name' => 'Poliklinik', 'url' => 'master/poliklinik', 'icon' => null, 'parent_id' => 23, 'order_num' => 6, 'target' => '_self', 'position' => 'sidebar', 'roles' => ['admin', 'petugas', 'owner']],
-            ['id' => 42, 'name' => 'Set User', 'url' => 'master/user', 'icon' => null, 'parent_id' => 23, 'order_num' => 7, 'target' => '_self', 'position' => 'sidebar', 'roles' => ['admin', 'owner']],
-            ['id' => 43, 'name' => 'Hak Akses Menu', 'url' => 'master/menu', 'icon' => null, 'parent_id' => 23, 'order_num' => 8, 'target' => '_self', 'position' => 'sidebar', 'roles' => ['admin', 'owner']],
+            ['id' => 58, 'name' => 'Tarif & Tindakan Lab', 'url' => 'master/tarif-lab', 'icon' => null, 'parent_id' => 23, 'order_num' => 6, 'target' => '_self', 'position' => 'sidebar', 'roles' => ['admin', 'petugas', 'owner', 'dokter', 'laborat']],
+            ['id' => 41, 'name' => 'Poliklinik', 'url' => 'master/poliklinik', 'icon' => null, 'parent_id' => 23, 'order_num' => 7, 'target' => '_self', 'position' => 'sidebar', 'roles' => ['admin', 'petugas', 'owner']],
+            ['id' => 42, 'name' => 'Set User', 'url' => 'master/user', 'icon' => null, 'parent_id' => 23, 'order_num' => 8, 'target' => '_self', 'position' => 'sidebar', 'roles' => ['admin', 'owner']],
+            ['id' => 43, 'name' => 'Hak Akses Menu', 'url' => 'master/menu', 'icon' => null, 'parent_id' => 23, 'order_num' => 9, 'target' => '_self', 'position' => 'sidebar', 'roles' => ['admin', 'owner']],
         ];
 
         // Seed menus and menu_role relations
