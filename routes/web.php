@@ -828,6 +828,8 @@ Route::middleware('auth:web,admin')->group(function () {
 
 Route::get('/pcare/kelompok', [Bridging\Kelompok::class, 'index']);
 
+Route::get('/kyc', [\App\Http\Controllers\KycController::class, 'index']);
+
 Route::get('/test/{no_resep}', [ResepObatController::class, 'copyResep']);
 
 require 'Extras/web.php';

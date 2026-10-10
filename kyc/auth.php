@@ -10,7 +10,7 @@ function authenticateWithOAuth2($clientId, $clientSecret, $tokenUrl) {
   ];
   
   curl_setopt_array($curl, array(
-    CURLOPT_URL => "${tokenUrl}/accesstoken?grant_type=client_credentials",
+    CURLOPT_URL => "{$tokenUrl}/accesstoken?grant_type=client_credentials",
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_ENCODING => '',
     CURLOPT_MAXREDIRS => 10,
