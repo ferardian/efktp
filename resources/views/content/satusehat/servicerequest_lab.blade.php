@@ -27,6 +27,125 @@
             </div>
         </div>
 
+@push('style')
+    <style>
+        .filter-segmented-group {
+            background-color: #f1f5f9;
+            padding: 3px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .filter-segmented-group .btn-filter-status {
+            border: none;
+            background: transparent;
+            color: #64748b;
+            font-size: 11.5px;
+            font-weight: 500;
+            padding: 4px 11px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease-in-out;
+            display: inline-flex;
+            align-items: center;
+            line-height: 1.4;
+            white-space: nowrap;
+        }
+
+        .filter-segmented-group .btn-filter-status:hover {
+            color: #1e293b;
+            background-color: rgba(255, 255, 255, 0.7);
+        }
+
+        .filter-segmented-group .btn-filter-status.active {
+            background-color: #ffffff;
+            color: #0f172a;
+            font-weight: 600;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+        }
+
+        .filter-date-box {
+            display: inline-flex;
+            align-items: center;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0 8px;
+            height: 32px;
+            font-size: 11.5px;
+            color: #334155;
+            transition: all 0.2s ease;
+        }
+
+        .filter-date-box:focus-within {
+            border-color: #206bc4;
+            box-shadow: 0 0 0 3px rgba(32, 107, 196, 0.12);
+        }
+
+        .filter-date-box input[type="date"] {
+            border: none;
+            background: transparent;
+            font-size: 11.5px;
+            color: #1e293b;
+            padding: 2px 4px;
+            outline: none;
+            box-shadow: none;
+            cursor: pointer;
+        }
+
+        .search-box-filter {
+            position: relative;
+            min-width: 250px;
+            max-width: 320px;
+        }
+
+        .search-box-filter .form-control {
+            border-radius: 8px;
+            font-size: 11.5px;
+            padding-left: 32px;
+            padding-right: 30px;
+            height: 32px;
+            background-color: #ffffff;
+            border-color: #e2e8f0;
+            transition: all 0.2s ease;
+        }
+
+        .search-box-filter .form-control:focus {
+            border-color: #206bc4;
+            box-shadow: 0 0 0 3px rgba(32, 107, 196, 0.12);
+        }
+
+        .search-box-filter .search-icon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            pointer-events: none;
+            font-size: 13px;
+        }
+
+        .search-box-filter .clear-icon {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 13px;
+            padding: 2px;
+            display: none;
+        }
+
+        .search-box-filter .clear-icon:hover {
+            color: #475569;
+        }
+    </style>
+@endpush
+
         <!-- Metric Counter Cards -->
         <div class="row g-2 mb-3">
             <div class="col-6 col-md-3">
@@ -85,32 +204,43 @@
 
         <!-- Filter & Table Card -->
         <div class="card shadow-sm border-0">
-            <div class="card-header bg-white py-3 border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <div class="card-header bg-white py-2 px-3 border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2">
                 <div class="d-flex flex-wrap align-items-center gap-2">
-                    <div class="input-group input-group-sm" style="width: 290px;">
-                        <span class="input-group-text bg-light text-muted"><i class="ti ti-calendar me-1"></i> Tgl</span>
-                        <input type="date" class="form-control" id="filterTglAwal" value="{{ date('Y-m-d') }}">
-                        <span class="input-group-text bg-light text-muted">s/d</span>
-                        <input type="date" class="form-control" id="filterTglAkhir" value="{{ date('Y-m-d') }}">
+                    <!-- Date Range Box -->
+                    <div class="filter-date-box shadow-xs" title="Filter Rentang Tanggal Permintaan">
+                        <i class="ti ti-calendar text-muted me-1"></i>
+                        <input type="date" id="filterTglAwal" value="{{ date('Y-m-d') }}">
+                        <span class="text-muted small px-1">s/d</span>
+                        <input type="date" id="filterTglAkhir" value="{{ date('Y-m-d') }}">
                     </div>
 
-                    <select id="filterStatus" class="form-select form-select-sm" style="width: 150px;">
-                        <option value="">Semua Status</option>
-                        <option value="unsent" selected>Belum Dikirim</option>
-                        <option value="sent">Sudah Terkirim</option>
-                    </select>
-
-                    <div class="input-group input-group-sm" style="width: 260px;">
-                        <input type="text" id="searchKeyword" class="form-control" placeholder="No.Order / RM / Pasien / Parameter...">
-                        <button class="btn btn-primary" id="btnFilterSearch">
-                            <i class="ti ti-search"></i>
+                    <!-- Segmented Status Tabs -->
+                    <div class="filter-segmented-group shadow-xs">
+                        <button type="button" class="btn-filter-status active" data-status="unsent" onclick="setStatusFilter('unsent')">
+                            <i class="ti ti-clock-pause text-warning me-1"></i> Belum Dikirim
                         </button>
+                        <button type="button" class="btn-filter-status" data-status="sent" onclick="setStatusFilter('sent')">
+                            <i class="ti ti-circle-check text-success me-1"></i> Terkirim
+                        </button>
+                        <button type="button" class="btn-filter-status" data-status="" onclick="setStatusFilter('')">
+                            Semua
+                        </button>
+                    </div>
+
+                    <input type="hidden" id="filterStatus" value="unsent">
+
+                    <!-- Modern Search Box with Live Search & Clear Icon -->
+                    <div class="search-box-filter shadow-xs">
+                        <i class="ti ti-search search-icon"></i>
+                        <input type="text" id="searchKeyword" class="form-control" placeholder="Cari No. Order, Pasien, RM, Parameter..." autocomplete="off">
+                        <i class="ti ti-x clear-icon" id="btnClearSearch" onclick="clearSearch()" title="Hapus pencarian"></i>
                     </div>
                 </div>
 
                 <div class="d-flex align-items-center gap-2">
+                    <span class="text-muted small d-none d-md-inline" id="labelRowCount">Memuat data...</span>
                     <button type="button" class="btn btn-outline-secondary btn-sm" id="btnRefresh" title="Refresh Data">
-                        <i class="ti ti-refresh"></i>
+                        <i class="ti ti-refresh me-1"></i> Refresh
                     </button>
                 </div>
             </div>
@@ -172,23 +302,39 @@
 @push('script')
     <script>
         let labDataStore = [];
+        let searchTimeout = null;
 
         $(document).ready(function() {
             loadServiceRequestData();
-
-            $('#btnFilterSearch').on('click', function() {
-                loadServiceRequestData();
-            });
 
             $('#btnRefresh').on('click', function() {
                 loadServiceRequestData();
             });
 
-            $('#searchKeyword').on('keypress', function(e) {
-                if (e.which === 13) loadServiceRequestData();
+            // Live search with debounce
+            $('#searchKeyword').on('input', function() {
+                const val = $(this).val();
+                if (val.length > 0) {
+                    $('#btnClearSearch').show();
+                } else {
+                    $('#btnClearSearch').hide();
+                }
+
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(function() {
+                    loadServiceRequestData();
+                }, 350);
             });
 
-            $('#filterStatus').on('change', function() {
+            $('#searchKeyword').on('keypress', function(e) {
+                if (e.which === 13) {
+                    clearTimeout(searchTimeout);
+                    loadServiceRequestData();
+                }
+            });
+
+            // Auto reload when date changed
+            $('#filterTglAwal, #filterTglAkhir').on('change', function() {
                 loadServiceRequestData();
             });
 
@@ -202,12 +348,26 @@
             });
         });
 
+        function setStatusFilter(status) {
+            $('#filterStatus').val(status);
+            $('.btn-filter-status').removeClass('active');
+            $(`.btn-filter-status[data-status="${status}"]`).addClass('active');
+            loadServiceRequestData();
+        }
+
+        function clearSearch() {
+            $('#searchKeyword').val('');
+            $('#btnClearSearch').hide();
+            loadServiceRequestData();
+        }
+
         function loadServiceRequestData() {
             const tglAwal = $('#filterTglAwal').val();
             const tglAkhir = $('#filterTglAkhir').val();
             const status = $('#filterStatus').val();
             const search = $('#searchKeyword').val();
 
+            $('#labelRowCount').text('Memuat data...');
             $('#tbodyServiceRequestLab').html('<tr><td colspan="9" class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Memuat data permintaan lab...</td></tr>');
             $('#checkAll').prop('checked', false);
 
@@ -221,9 +381,11 @@
                     labDataStore = res.data;
                     renderTable(res.data);
                 } else {
+                    $('#labelRowCount').text('0 parameter');
                     $('#tbodyServiceRequestLab').html(`<tr><td colspan="9" class="text-center py-4 text-danger">${res.message}</td></tr>`);
                 }
             }).fail(function(err) {
+                $('#labelRowCount').text('0 parameter');
                 $('#tbodyServiceRequestLab').html('<tr><td colspan="9" class="text-center py-4 text-danger">Gagal memuat data dari server</td></tr>');
             });
         }
@@ -236,10 +398,13 @@
             let countUnmapped = 0;
 
             if (!data || data.length === 0) {
+                $('#labelRowCount').text('0 parameter');
                 $('#tbodyServiceRequestLab').html('<tr><td colspan="9" class="text-center py-4 text-muted">Tidak ada data permintaan laboratorium ditemukan pada periode ini</td></tr>');
                 updateCounters(0, 0, 0, 0);
                 return;
             }
+
+            $('#labelRowCount').html(`Menampilkan <strong>${data.length}</strong> parameter`);
 
             data.forEach(function(item, idx) {
                 const isSent = !!item.id_servicerequest;
