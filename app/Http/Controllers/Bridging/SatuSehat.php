@@ -263,6 +263,27 @@ class SatuSehat extends Controller
                 else $errors[] = "TTV {$t->no_rawat}: " . $res['message'];
             }
 
+            // Sync ServiceRequest Lab (if encounter & LOINC mapping ready)
+            try {
+                $labService = app(\App\Services\SatuSehat\SatuSehatServiceRequestLabService::class);
+                $pendingLabs = $labService->getListServiceRequestLab([
+                    'tgl_awal'  => $today,
+                    'tgl_akhir' => $today,
+                    'status'    => 'unsent'
+                ]);
+                $readyLabs = array_filter($pendingLabs, fn($item) => !empty($item->id_encounter) && !empty($item->no_ktp) && !empty($item->ktp_dokter) && !empty($item->code));
+                foreach (array_slice($readyLabs, 0, 2) as $lab) {
+                    $res = $labService->send((array)$lab);
+                    if ($res['success']) {
+                        $synced[] = "Lab: {$lab->noorder} ({$lab->Pemeriksaan})";
+                    } else {
+                        $errors[] = "Lab {$lab->noorder}: " . ($res['message'] ?? 'Error');
+                    }
+                }
+            } catch (\Throwable $eLab) {
+                // Jangan gagalkan sync utama jika lab service terkendala
+            }
+
             return response()->json([
                 'status' => true,
                 'synced' => $synced,
