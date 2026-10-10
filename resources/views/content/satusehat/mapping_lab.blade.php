@@ -23,28 +23,126 @@
             </div>
         </div>
 
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-white py-3 border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2">
-                <div class="d-flex flex-wrap align-items-center gap-2">
-                    <select id="filterStatus" class="form-select form-select-sm" style="width: 160px;" onchange="loadMappingData()">
-                        <option value="all">Semua Status</option>
-                        <option value="mapped">Sudah Mapping</option>
-                        <option value="unmapped">Belum Mapping</option>
-                    </select>
+@push('style')
+    <style>
+        .filter-segmented-group {
+            background-color: #f1f5f9;
+            padding: 3px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            border: 1px solid #e2e8f0;
+        }
 
-                    <div class="input-group input-group-sm" style="width: 280px;">
-                        <input type="text" id="searchKeyword" class="form-control" placeholder="Cari nama/paket/kode..." onkeyup="if(event.keyCode == 13) loadMappingData()">
-                        <button class="btn btn-primary" onclick="loadMappingData()">
-                            <i class="ti ti-search"></i>
+        .filter-segmented-group .btn-filter-status {
+            border: none;
+            background: transparent;
+            color: #64748b;
+            font-size: 11.5px;
+            font-weight: 500;
+            padding: 4px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease-in-out;
+            display: inline-flex;
+            align-items: center;
+            line-height: 1.4;
+            white-space: nowrap;
+        }
+
+        .filter-segmented-group .btn-filter-status:hover {
+            color: #1e293b;
+            background-color: rgba(255, 255, 255, 0.7);
+        }
+
+        .filter-segmented-group .btn-filter-status.active {
+            background-color: #ffffff;
+            color: #0f172a;
+            font-weight: 600;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+        }
+
+        .search-box-filter {
+            position: relative;
+            min-width: 260px;
+            max-width: 340px;
+        }
+
+        .search-box-filter .form-control {
+            border-radius: 6px;
+            font-size: 11.5px;
+            padding-left: 32px;
+            padding-right: 30px;
+            height: 31px;
+            background-color: #ffffff;
+            border-color: #e2e8f0;
+            transition: all 0.2s ease;
+        }
+
+        .search-box-filter .form-control:focus {
+            border-color: #206bc4;
+            box-shadow: 0 0 0 3px rgba(32, 107, 196, 0.12);
+        }
+
+        .search-box-filter .search-icon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            pointer-events: none;
+            font-size: 13px;
+        }
+
+        .search-box-filter .clear-icon {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 13px;
+            padding: 2px;
+            display: none;
+        }
+
+        .search-box-filter .clear-icon:hover {
+            color: #475569;
+        }
+    </style>
+@endpush
+
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-2 px-3 border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2">
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <!-- Segmented Status Tabs -->
+                    <div class="filter-segmented-group">
+                        <button type="button" class="btn-filter-status active" data-status="all" onclick="setStatusFilter('all')">
+                            Semua <span class="badge bg-secondary-lt ms-1" id="badgeCountAll">0</span>
                         </button>
+                        <button type="button" class="btn-filter-status" data-status="mapped" onclick="setStatusFilter('mapped')">
+                            <i class="ti ti-circle-check text-success me-1"></i> Termapping <span class="badge bg-success-lt ms-1" id="badgeCountMapped">0</span>
+                        </button>
+                        <button type="button" class="btn-filter-status" data-status="unmapped" onclick="setStatusFilter('unmapped')">
+                            <i class="ti ti-alert-triangle text-warning me-1"></i> Belum <span class="badge bg-warning-lt ms-1" id="badgeCountUnmapped">0</span>
+                        </button>
+                    </div>
+
+                    <input type="hidden" id="filterStatus" value="all">
+
+                    <!-- Modern Search Input with Icon -->
+                    <div class="search-box-filter">
+                        <i class="ti ti-search search-icon"></i>
+                        <input type="text" id="searchKeyword" class="form-control" placeholder="Cari nama parameter, paket, kode..." autocomplete="off">
+                        <i class="ti ti-x clear-icon" id="btnClearSearch" onclick="clearSearch()" title="Hapus pencarian"></i>
                     </div>
                 </div>
 
                 <div class="d-flex align-items-center gap-2">
-                    <span class="badge bg-green-lt" id="badgeCountMapped">0 Termapping</span>
-                    <span class="badge bg-red-lt" id="badgeCountUnmapped">0 Belum</span>
-                    <button class="btn btn-outline-secondary btn-sm" onclick="loadMappingData()" title="Refresh Data">
-                        <i class="ti ti-refresh"></i>
+                    <span class="text-muted" style="font-size: 11px;" id="labelSummaryCount"></span>
+                    <button class="btn btn-outline-secondary btn-sm shadow-xs" onclick="loadMappingData()" title="Segarkan Data Mapping">
+                        <i class="ti ti-refresh me-1"></i> Refresh
                     </button>
                 </div>
             </div>
@@ -162,15 +260,49 @@
 @push('script')
     <script>
         let mappingDataStore = [];
+        let searchTimer = null;
 
         $(document).ready(function() {
             loadMappingData();
+
+            $('#searchKeyword').on('input', function() {
+                const val = $(this).val();
+                if (val.length > 0) {
+                    $('#btnClearSearch').show();
+                } else {
+                    $('#btnClearSearch').hide();
+                }
+                clearTimeout(searchTimer);
+                searchTimer = setTimeout(function() {
+                    loadMappingData();
+                }, 350);
+            });
+
+            $('#searchKeyword').on('keydown', function(e) {
+                if (e.which === 13) {
+                    clearTimeout(searchTimer);
+                    loadMappingData();
+                }
+            });
 
             $('#formMappingLab').on('submit', function(e) {
                 e.preventDefault();
                 simpanMapping();
             });
         });
+
+        function setStatusFilter(status) {
+            $('#filterStatus').val(status);
+            $('.filter-segmented-group .btn-filter-status').removeClass('active');
+            $(`.filter-segmented-group .btn-filter-status[data-status="${status}"]`).addClass('active');
+            loadMappingData();
+        }
+
+        function clearSearch() {
+            $('#searchKeyword').val('');
+            $('#btnClearSearch').hide();
+            loadMappingData();
+        }
 
         function loadMappingData() {
             const status = $('#filterStatus').val();
@@ -184,6 +316,11 @@
             }).done(function(res) {
                 if (res.success) {
                     mappingDataStore = res.data;
+                    if (res.counts) {
+                        $('#badgeCountAll').text(res.counts.all);
+                        $('#badgeCountMapped').text(res.counts.mapped);
+                        $('#badgeCountUnmapped').text(res.counts.unmapped);
+                    }
                     renderMappingTable(res.data);
                 } else {
                     $('#tbodyMappingLab').html(`<tr><td colspan="8" class="text-center py-4 text-danger">${res.message}</td></tr>`);
@@ -199,11 +336,12 @@
             let unmappedCount = 0;
 
             if (!data || data.length === 0) {
-                $('#tbodyMappingLab').html('<tr><td colspan="8" class="text-center py-4 text-muted">Tidak ada data ditemukan</td></tr>');
-                $('#badgeCountMapped').text('0 Termapping');
-                $('#badgeCountUnmapped').text('0 Belum');
+                $('#tbodyMappingLab').html('<tr><td colspan="8" class="text-center py-4 text-muted"><i class="ti ti-info-circle me-1"></i> Tidak ada data parameter lab yang sesuai</td></tr>');
+                $('#labelSummaryCount').text('0 parameter');
                 return;
             }
+
+            $('#labelSummaryCount').text(`${data.length} parameter ditemukan`);
 
             data.forEach(function(item) {
                 const isMapped = item.satu_sehat_mapping_lab && item.satu_sehat_mapping_lab.code;
@@ -258,8 +396,6 @@
             });
 
             $('#tbodyMappingLab').html(html);
-            $('#badgeCountMapped').text(`${mappedCount} Termapping`);
-            $('#badgeCountUnmapped').text(`${unmappedCount} Belum`);
         }
 
         function openModalMapping(id_template) {

@@ -154,9 +154,18 @@ class SatuSehatServiceRequestLabController extends Controller
 
             $data = $query->orderBy('kd_jenis_prw')->orderBy('urut')->get();
 
+            $totalMapped = TemplateLaboratorium::has('satuSehatMappingLab')->count();
+            $totalUnmapped = TemplateLaboratorium::doesntHave('satuSehatMappingLab')->count();
+            $totalAll = $totalMapped + $totalUnmapped;
+
             return response()->json([
                 'success' => true,
-                'data'    => $data
+                'data'    => $data,
+                'counts'  => [
+                    'all'      => $totalAll,
+                    'mapped'   => $totalMapped,
+                    'unmapped' => $totalUnmapped,
+                ]
             ]);
         } catch (\Exception $e) {
             Log::error("SatuSehatServiceRequestLabController getMappingData error: " . $e->getMessage());
