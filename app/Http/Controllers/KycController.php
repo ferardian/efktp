@@ -15,22 +15,25 @@ class KycController extends Controller
         $agentName = $request->query('nama') ?: ($pegawai ? $pegawai->nama : 'Petugas Faskes');
         $agentNik  = $request->query('nik') ?: ($pegawai ? ($pegawai->nik ?: $pegawai->no_ktp ?? '') : '');
 
-        // Baca konfigurasi SatuSehat
-        $iniPath = base_path('kyc/satusehat.ini');
-        if (file_exists($iniPath)) {
-            $init = parse_ini_file($iniPath);
-            $clientId     = $init['client_id'] ?? config('satusehat.client_id');
-            $clientSecret = $init['client_secret'] ?? config('satusehat.client_secret');
-            $authUrl      = $init['auth_url'] ?? config('satusehat.auth_url', 'https://api-satusehat.kemkes.go.id/oauth2/v1');
-            $apiUrl       = $init['api_url'] ?? 'https://api-satusehat.kemkes.go.id/kyc/v1/generate-url';
-            $environment  = $init['environment'] ?? 'production';
-        } else {
-            $clientId     = config('satusehat.client_id');
-            $clientSecret = config('satusehat.client_secret');
-            $authUrl      = config('satusehat.auth_url', 'https://api-satusehat.kemkes.go.id/oauth2/v1');
-            $isDev        = str_contains((string) $authUrl, '-dev');
-            $apiUrl       = $isDev ? 'https://api-satusehat-dev.dto.kemkes.go.id/kyc/v1/generate-url' : 'https://api-satusehat.kemkes.go.id/kyc/v1/generate-url';
-            $environment  = $isDev ? 'development' : 'production';
+        // 1. Prioritaskan konfigurasi dari .env (config/satusehat.php)
+        $clientId     = config('satusehat.client_id');
+        $clientSecret = config('satusehat.client_secret');
+        $authUrl      = config('satusehat.auth_url') ?: 'https://api-satusehat.kemkes.go.id/oauth2/v1';
+        $isDev        = str_contains((string) $authUrl, '-dev');
+        $apiUrl       = $isDev ? 'https://api-satusehat-dev.dto.kemkes.go.id/kyc/v1/generate-url' : 'https://api-satusehat.kemkes.go.id/kyc/v1/generate-url';
+        $environment  = $isDev ? 'development' : 'production';
+
+        // 2. Fallback ke kyc/satusehat.ini jika di .env belum disetting
+        if (empty($clientId) || empty($clientSecret)) {
+            $iniPath = base_path('kyc/satusehat.ini');
+            if (file_exists($iniPath)) {
+                $init = parse_ini_file($iniPath);
+                $clientId     = $clientId ?: ($init['client_id'] ?? null);
+                $clientSecret = $clientSecret ?: ($init['client_secret'] ?? null);
+                $authUrl      = $init['auth_url'] ?? $authUrl;
+                $apiUrl       = $init['api_url'] ?? $apiUrl;
+                $environment  = $init['environment'] ?? $environment;
+            }
         }
 
         if (empty($clientId) || empty($clientSecret)) {
