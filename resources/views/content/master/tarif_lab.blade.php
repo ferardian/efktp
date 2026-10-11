@@ -20,7 +20,7 @@
                     <div class="card-body">
                         <!-- Filters -->
                         <div class="row g-2 mb-3 bg-light p-2 rounded-2">
-                            <div class="col-md-4">
+                            <div class="col-md-3 col-6">
                                 <label class="form-label small text-muted mb-1">Kategori Lab</label>
                                 <select class="form-select form-select-sm" id="filter_kategori" onchange="$('#tbTarifLab').DataTable().ajax.reload()">
                                     <option value="">Semua Kategori</option>
@@ -29,7 +29,7 @@
                                     <option value="MB">MB (Mikrobiologi)</option>
                                 </select>
                             </div>
-                            <div class="col-md-5">
+                            <div class="col-md-3 col-6">
                                 <label class="form-label small text-muted mb-1">Penjamin / Cara Bayar</label>
                                 <select class="form-select form-select-sm" id="filter_pj" onchange="$('#tbTarifLab').DataTable().ajax.reload()">
                                     <option value="">Semua Penjamin</option>
@@ -38,7 +38,22 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-3 col-6">
+                                <label class="form-label small text-muted mb-1">Kelas Pelayanan</label>
+                                <select class="form-select form-select-sm" id="filter_kelas" onchange="$('#tbTarifLab').DataTable().ajax.reload()">
+                                    <option value="">Semua Kelas</option>
+                                    <option value="NOT_RAWAT_JALAN">⚠️ Bukan Rawat Jalan (&lt;&gt; Rawat Jalan)</option>
+                                    <option value="Rawat Jalan">Rawat Jalan</option>
+                                    <option value="-">-</option>
+                                    <option value="Kelas 1">Kelas 1</option>
+                                    <option value="Kelas 2">Kelas 2</option>
+                                    <option value="Kelas 3">Kelas 3</option>
+                                    <option value="Kelas Utama">Kelas Utama</option>
+                                    <option value="Kelas VIP">Kelas VIP</option>
+                                    <option value="Kelas VVIP">Kelas VVIP</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 col-6">
                                 <label class="form-label small text-muted mb-1">Status</label>
                                 <select class="form-select form-select-sm" id="filter_status" onchange="$('#tbTarifLab').DataTable().ajax.reload()">
                                     <option value="">Semua</option>
@@ -60,6 +75,9 @@
                                 </button>
                                 <button type="button" class="btn btn-sm btn-success" onclick="batchSetStatus('1')" title="Aktifkan kembali pemeriksaan terpilih">
                                     <i class="ti ti-check me-1"></i> Aktifkan Terpilih
+                                </button>
+                                <button type="button" class="btn btn-sm btn-danger" onclick="batchDeleteLab()" title="Hapus pemeriksaan terpilih">
+                                    <i class="ti ti-trash me-1"></i> Hapus Terpilih
                                 </button>
                             </div>
                         </div>
@@ -439,6 +457,7 @@
                 data: function(d) {
                     d.kategori = $('#filter_kategori').val();
                     d.kd_pj    = $('#filter_pj').val();
+                    d.kelas    = $('#filter_kelas').val();
                     d.status   = $('#filter_status').val();
                 }
             },
@@ -808,6 +827,55 @@
                 .fail(function(xhr) {
                     Swal.close();
                     let msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Gagal memproses batch status.';
+                    Swal.fire('Error', msg, 'error');
+                });
+            }
+        });
+    }
+
+    function batchDeleteLab() {
+        let selected = [];
+        $('.check-item-lab:checked').each(function() {
+            selected.push($(this).val());
+        });
+
+        if (selected.length === 0) {
+            Swal.fire('Info', 'Silakan centang minimal 1 pemeriksaan lab yang ingin dihapus.', 'info');
+            return;
+        }
+
+        Swal.fire({
+            title: 'Hapus Pemeriksaan Terpilih?',
+            html: `Apakah Anda yakin ingin menghapus <strong>${selected.length}</strong> data pemeriksaan lab terpilih secara permanen?<br><br>
+                   <div class="alert alert-warning text-start mb-0 py-2 small">
+                       <i class="ti ti-alert-triangle me-1"></i>
+                       <strong>Peringatan Integritas:</strong> Data yang belum pernah digunakan dalam transaksi pasien akan dihapus secara permanen. Data yang sudah pernah memiliki histori transaksi pasien akan otomatis dilindungi dari penghapusan permanen.
+                   </div>`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: '<i class="ti ti-trash me-1"></i> Ya, Hapus Terpilih',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                loadingAjax();
+                $.post("{{ route('master.tarif-lab.batch-delete') }}", {
+                    _token: "{{ csrf_token() }}",
+                    kode: selected
+                })
+                .done(function(res) {
+                    Swal.close();
+                    $('#tbTarifLab').DataTable().ajax.reload(null, false);
+                    if (res.deleted_count > 0) {
+                        Swal.fire('Selesai', res.message, 'success');
+                    } else {
+                        Swal.fire('Perhatian', res.message, 'warning');
+                    }
+                })
+                .fail(function(xhr) {
+                    Swal.close();
+                    let msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Gagal menghapus batch data.';
                     Swal.fire('Error', msg, 'error');
                 });
             }

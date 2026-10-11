@@ -49,6 +49,16 @@ class JnsPerawatanLabController extends Controller
         if ($request->filled('kd_pj')) {
             $query->where('kd_pj', $request->kd_pj);
         }
+        if ($request->filled('kelas')) {
+            if ($request->kelas === 'NOT_RAWAT_JALAN') {
+                $query->where(function ($q) {
+                    $q->where('kelas', '!=', 'Rawat Jalan')
+                      ->orWhereNull('kelas');
+                });
+            } else {
+                $query->where('kelas', $request->kelas);
+            }
+        }
 
         return datatables()->of($query)
             ->addColumn('template_count', function ($row) {
@@ -312,6 +322,48 @@ class JnsPerawatanLabController extends Controller
             'success' => true,
             'count'   => $updated,
             'message' => "Sebanyak {$updated} pemeriksaan lab berhasil {$label}."
+        ]);
+    }
+
+    /**
+     * Hapus beberapa pemeriksaan lab sekaligus (Batch Delete)
+     * Mengamankan data yang sudah pernah dipakai transaksi
+     */
+    public function batchDestroy(Request $request): JsonResponse
+    {
+        $request->validate([
+            'kode' => 'required|array',
+        ]);
+
+        $deletedCount = 0;
+        $failedUsed = [];
+
+        foreach ($request->kode as $kd) {
+            $isUsedInPeriksa = DB::table('periksa_lab')->where('kd_jenis_prw', $kd)->exists();
+            $isUsedInPermintaan = DB::table('permintaan_pemeriksaan_lab')->where('kd_jenis_prw', $kd)->exists();
+
+            if ($isUsedInPeriksa || $isUsedInPermintaan) {
+                $failedUsed[] = $kd;
+            } else {
+                $lab = JnsPerawatanLab::where('kd_jenis_prw', $kd)->first();
+                if ($lab) {
+                    $lab->delete();
+                    $deletedCount++;
+                }
+            }
+        }
+
+        $message = "Sebanyak {$deletedCount} data tarif lab berhasil dihapus permanen.";
+        if (count($failedUsed) > 0) {
+            $message .= " Namun " . count($failedUsed) . " data gagal dihapus karena sudah memiliki histori transaksi pasien (disarankan dinonaktifkan).";
+        }
+
+        return response()->json([
+            'success'       => $deletedCount > 0,
+            'deleted_count' => $deletedCount,
+            'failed_count'  => count($failedUsed),
+            'failed_kode'   => $failedUsed,
+            'message'       => $message
         ]);
     }
 
