@@ -159,9 +159,9 @@
                                     </select>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label required">Kelas Pelayanan</label>
+                                    <label class="form-label required">Kelas Tarif (Rawat Jalan / Inap)</label>
                                     <select class="form-select" id="kelas" name="kelas" required>
-                                        <option value="Rawat Jalan" selected>Rawat Jalan</option>
+                                        <option value="Rawat Jalan">Rawat Jalan</option>
                                         <option value="-">-</option>
                                         <option value="Kelas 1">Kelas 1</option>
                                         <option value="Kelas 2">Kelas 2</option>
