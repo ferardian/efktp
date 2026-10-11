@@ -294,6 +294,21 @@ class SatuSehatServiceRequestLabService
 
             $serviceRequestId = data_get($response, 'data.id');
 
+            // Fallback: Jika gagal karena duplicate (RuleNumber 20002), cari ID ServiceRequest yang sudah ada di SatuSehat
+            if (!$serviceRequestId) {
+                $issueCode = data_get($response, 'data.issue.0.code');
+                $issueText = data_get($response, 'data.issue.0.details.text', '');
+                if ($issueCode === 'duplicate' || str_contains(strtolower((string) $issueText), 'duplicate')) {
+                    $identifierVal = "http://sys-ids.kemkes.go.id/servicerequest/{$this->orgId}|" . $data['noorder'] . '.' . $data['id_template'];
+                    $lookup = $this->ss->get('ServiceRequest', ['identifier' => $identifierVal]);
+                    $existingId = data_get($lookup, 'data.entry.0.resource.id');
+                    if ($existingId) {
+                        $serviceRequestId = $existingId;
+                        Log::channel('satusehat')->info("{$logId} Recovered duplicate ServiceRequest ID from SatuSehat: {$existingId}");
+                    }
+                }
+            }
+
             if ($serviceRequestId) {
                 DB::table('satu_sehat_servicerequest_lab')->updateOrInsert(
                     [
