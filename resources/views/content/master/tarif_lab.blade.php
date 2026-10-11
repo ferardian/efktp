@@ -48,19 +48,38 @@
                             </div>
                         </div>
 
+                        <!-- Batch Action Toolbar (muncul jika ada yang dicentang) -->
+                        <div id="batchActionToolbar" class="alert alert-info py-2 px-3 mb-2 d-flex justify-content-between align-items-center" style="display: none;">
+                            <div class="small fw-bold">
+                                <i class="ti ti-checks me-1"></i>
+                                <span id="selectedLabCount">0</span> pemeriksaan dipilih
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-sm btn-warning" onclick="batchSetStatus('0')" title="Nonaktifkan pemeriksaan terpilih">
+                                    <i class="ti ti-ban me-1"></i> Nonaktifkan Terpilih
+                                </button>
+                                <button type="button" class="btn btn-sm btn-success" onclick="batchSetStatus('1')" title="Aktifkan kembali pemeriksaan terpilih">
+                                    <i class="ti ti-check me-1"></i> Aktifkan Terpilih
+                                </button>
+                            </div>
+                        </div>
+
                         <!-- Data Table -->
                         <div class="table-responsive">
                             <table class="table table-hover table-striped w-100 fs-5 align-middle" id="tbTarifLab">
                                 <thead class="table-light">
                                     <tr>
+                                        <th width="35px" class="text-center">
+                                            <input type="checkbox" class="form-check-input" id="checkAllLab" onchange="toggleSelectAllLab(this)" title="Pilih Semua">
+                                        </th>
                                         <th width="80px">Kode</th>
                                         <th>Nama Pemeriksaan</th>
                                         <th width="70px" class="text-center">Kategori</th>
                                         <th>Penjamin</th>
-                                        <th width="100px" class="text-center">Sub-Item</th>
+                                        <th width="95px" class="text-center">Sub-Item</th>
                                         <th class="text-end">Total Tarif</th>
-                                        <th width="70px" class="text-center">Status</th>
-                                        <th width="110px" class="text-center">Aksi</th>
+                                        <th width="80px" class="text-center">Status</th>
+                                        <th width="125px" class="text-center">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
@@ -138,16 +157,19 @@
 
                             <div class="mb-3">
                                 <label class="form-label">Status Aktif</label>
-                                <div class="d-flex gap-3">
-                                    <label class="form-check form-check-inline">
+                                <div class="d-flex gap-3 align-items-center">
+                                    <label class="form-check form-check-inline mb-0">
                                         <input class="form-check-input" type="radio" name="status" id="status_1" value="1" checked>
                                         <span class="form-check-label text-success fw-bold"><i class="ti ti-check me-1"></i> Aktif</span>
                                     </label>
-                                    <label class="form-check form-check-inline">
+                                    <label class="form-check form-check-inline mb-0">
                                         <input class="form-check-input" type="radio" name="status" id="status_0" value="0">
-                                        <span class="form-check-label text-danger fw-bold"><i class="ti ti-x me-1"></i> Non-Aktif</span>
+                                        <span class="form-check-label text-danger fw-bold"><i class="ti ti-ban me-1"></i> Non-Aktif</span>
                                     </label>
                                 </div>
+                                <small class="text-muted d-block mt-1">
+                                    <i class="ti ti-info-circle me-1"></i>Pemeriksaan non-aktif diarsipkan dan tidak muncul di form order lab baru, namun histori pasien tetap aman.
+                                </small>
                             </div>
 
                             <!-- Tarif Breakdown Section -->
@@ -421,6 +443,16 @@
                 }
             },
             columns: [
+                {
+                    data: 'kd_jenis_prw',
+                    name: 'checkbox',
+                    orderable: false,
+                    searchable: false,
+                    className: 'text-center',
+                    render: function(data) {
+                        return `<input type="checkbox" class="form-check-input check-item-lab" value="${data}" onchange="updateSelectedLabCount()">`;
+                    }
+                },
                 { 
                     data: 'kd_jenis_prw',
                     name: 'kd_jenis_prw',
@@ -475,10 +507,11 @@
                     name: 'status',
                     className: 'text-center',
                     render: function(data, type, row) {
+                        const namaEscaped = escapeHtml(row.nm_perawatan);
                         if (data == '1') {
-                            return `<span class="badge bg-success-lt cursor-pointer" onclick="toggleStatusLab('${row.kd_jenis_prw}')" title="Klik untuk nonaktifkan"><i class="ti ti-check me-1"></i>Aktif</span>`;
+                            return `<span class="badge bg-success-lt cursor-pointer py-1 px-2" onclick="confirmToggleStatus('${row.kd_jenis_prw}', '${namaEscaped}', '1')" title="Klik untuk nonaktifkan"><i class="ti ti-check me-1"></i>Aktif</span>`;
                         } else {
-                            return `<span class="badge bg-danger-lt cursor-pointer" onclick="toggleStatusLab('${row.kd_jenis_prw}')" title="Klik untuk aktifkan"><i class="ti ti-x me-1"></i>Non-Aktif</span>`;
+                            return `<span class="badge bg-danger-lt cursor-pointer py-1 px-2" onclick="confirmToggleStatus('${row.kd_jenis_prw}', '${namaEscaped}', '0')" title="Klik untuk aktifkan"><i class="ti ti-ban me-1"></i>Non-Aktif</span>`;
                         }
                     }
                 },
@@ -489,6 +522,11 @@
                     searchable: false,
                     className: 'text-center',
                     render: function(data, type, row) {
+                        const namaEscaped = escapeHtml(row.nm_perawatan);
+                        const btnStatus = (row.status == '1')
+                            ? `<button type="button" class="btn btn-outline-warning" onclick="confirmToggleStatus('${data}', '${namaEscaped}', '1')" title="Nonaktifkan Pemeriksaan (Sesuai Khanza)"><i class="ti ti-ban"></i></button>`
+                            : `<button type="button" class="btn btn-outline-success" onclick="confirmToggleStatus('${data}', '${namaEscaped}', '0')" title="Aktifkan Kembali Pemeriksaan"><i class="ti ti-check"></i></button>`;
+
                         return `
                             <div class="btn-group btn-group-sm">
                                 <button type="button" class="btn btn-outline-primary" onclick="editTarifLab('${data}')" title="Edit Tarif">
@@ -497,7 +535,8 @@
                                 <button type="button" class="btn btn-outline-indigo" onclick="openTemplateModal('${data}')" title="Kelola Sub-Pemeriksaan">
                                     <i class="ti ti-list-details"></i>
                                 </button>
-                                <button type="button" class="btn btn-outline-danger" onclick="deleteTarifLab('${data}', '${row.nm_perawatan}')" title="Hapus">
+                                ${btnStatus}
+                                <button type="button" class="btn btn-outline-danger" onclick="deleteTarifLab('${data}', '${namaEscaped}')" title="Hapus / Opsi">
                                     <i class="ti ti-trash"></i>
                                 </button>
                             </div>
@@ -505,7 +544,11 @@
                     }
                 }
             ],
-            order: [[0, 'asc']],
+            order: [[1, 'asc']],
+            drawCallback: function() {
+                $('#checkAllLab').prop('checked', false);
+                updateSelectedLabCount();
+            },
             language: {
                 search: "Cari:",
                 lengthMenu: "Tampil _MENU_ data",
@@ -691,6 +734,157 @@
         });
     }
 
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function toggleSelectAllLab(elem) {
+        let isChecked = $(elem).is(':checked');
+        $('.check-item-lab').prop('checked', isChecked);
+        updateSelectedLabCount();
+    }
+
+    function updateSelectedLabCount() {
+        let checkedCount = $('.check-item-lab:checked').length;
+        $('#selectedLabCount').text(checkedCount);
+        if (checkedCount > 0) {
+            $('#batchActionToolbar').show();
+        } else {
+            $('#batchActionToolbar').hide();
+        }
+    }
+
+    function batchSetStatus(targetStatus) {
+        let selected = [];
+        $('.check-item-lab:checked').each(function() {
+            selected.push($(this).val());
+        });
+
+        if (selected.length === 0) {
+            Swal.fire('Info', 'Silakan centang minimal 1 pemeriksaan lab yang ingin diubah.', 'info');
+            return;
+        }
+
+        let actionText  = targetStatus === '1' ? 'mengaktifkan kembali' : 'menonaktifkan';
+        let actionColor = targetStatus === '1' ? '#2fb344' : '#f59f00';
+        let actionIcon  = targetStatus === '1' ? 'ti-check' : 'ti-ban';
+
+        Swal.fire({
+            title: targetStatus === '1' ? 'Aktifkan Terpilih?' : 'Nonaktifkan Terpilih?',
+            html: `Apakah Anda yakin ingin <strong>${actionText}</strong> <strong>${selected.length}</strong> pemeriksaan lab terpilih?<br><br>
+                   <div class="alert alert-info text-start mb-0 py-2 small">
+                       <i class="ti ti-info-circle me-1"></i>
+                       <strong>Sesuai Referensi Khanza HMS:</strong> Pemeriksaan non-aktif tidak akan muncul di form order lab baru pasien, namun seluruh histori rekam medis dan transaksi lama tetap aman tersimpan.
+                   </div>`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: actionColor,
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: `<i class="ti ${actionIcon} me-1"></i> Ya, ${targetStatus === '1' ? 'Aktifkan' : 'Nonaktifkan'}`,
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                loadingAjax();
+                $.post("{{ route('master.tarif-lab.batch-status') }}", {
+                    _token: "{{ csrf_token() }}",
+                    kode: selected,
+                    status: targetStatus
+                })
+                .done(function(res) {
+                    Swal.close();
+                    if (res.success) {
+                        toast(res.message);
+                        $('#tbTarifLab').DataTable().ajax.reload(null, false);
+                    } else {
+                        Swal.fire('Perhatian', res.message, 'warning');
+                    }
+                })
+                .fail(function(xhr) {
+                    Swal.close();
+                    let msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Gagal memproses batch status.';
+                    Swal.fire('Error', msg, 'error');
+                });
+            }
+        });
+    }
+
+    function confirmToggleStatus(kd, nama, currentStatus) {
+        if (currentStatus === '1') {
+            Swal.fire({
+                title: 'Nonaktifkan Pemeriksaan Lab?',
+                html: `Apakah Anda yakin ingin menonaktifkan pemeriksaan:<br><strong class="text-primary fs-4">${nama}</strong> <span class="badge bg-secondary-lt">(${kd})</span>?<br><br>
+                       <div class="alert alert-warning text-start mb-0 py-2 small">
+                           <i class="ti ti-info-circle me-1"></i>
+                           <strong>Sesuai Referensi Khanza HMS:</strong> Pemeriksaan yang dinonaktifkan tidak akan muncul pada daftar permintaan lab pasien baru, namun seluruh histori transaksi dan rekam medis pasien yang sudah ada tetap aman tersimpan.
+                       </div>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#f59f00',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="ti ti-ban me-1"></i> Ya, Nonaktifkan',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    executeSetStatus(kd, '0', nama);
+                }
+            });
+        } else {
+            Swal.fire({
+                title: 'Aktifkan Kembali Pemeriksaan Lab?',
+                html: `Pemeriksaan lab <strong class="text-primary fs-4">${nama}</strong> <span class="badge bg-secondary-lt">(${kd})</span> akan diaktifkan kembali sehingga dapat dipilih pada form permintaan lab pasien baru.`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#2fb344',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="ti ti-check me-1"></i> Ya, Aktifkan Kembali',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    executeSetStatus(kd, '1', nama);
+                }
+            });
+        }
+    }
+
+    function executeSetStatus(kd, targetStatus, nama) {
+        loadingAjax();
+        $.post("{{ url('/master/tarif-lab/toggle-status') }}/" + kd, {
+            _token: "{{ csrf_token() }}",
+            status: targetStatus
+        })
+        .done(function(res) {
+            Swal.close();
+            if (res.success) {
+                $('#tbTarifLab').DataTable().ajax.reload(null, false);
+                const msg = targetStatus === '1'
+                    ? `Pemeriksaan "${nama}" berhasil diaktifkan kembali.`
+                    : `Pemeriksaan "${nama}" berhasil dinonaktifkan.`;
+                toast(msg);
+
+                // Jika form saat ini sedang mengedit kode tersebut, sesuaikan radio statusnya
+                if ($('#kd_jenis_prw').val() === kd) {
+                    if (targetStatus === '1') {
+                        $('#status_1').prop('checked', true);
+                    } else {
+                        $('#status_0').prop('checked', true);
+                    }
+                }
+            } else {
+                Swal.fire('Gagal', res.message, 'warning');
+            }
+        })
+        .fail(function(xhr) {
+            Swal.close();
+            Swal.fire('Error', 'Gagal memperbarui status pemeriksaan lab.', 'error');
+        });
+    }
+
     function toggleStatusLab(kd) {
         loadingAjax();
         $.post("{{ url('/master/tarif-lab/toggle-status') }}/" + kd, { _token: "{{ csrf_token() }}" })
@@ -698,6 +892,7 @@
                 Swal.close();
                 if (res.success) {
                     $('#tbTarifLab').DataTable().ajax.reload(null, false);
+                    toast(res.message);
                 }
             })
             .fail(function() {
@@ -708,16 +903,27 @@
 
     function deleteTarifLab(kd, nama) {
         Swal.fire({
-            title: 'Hapus Pemeriksaan Lab?',
-            html: `Apakah Anda yakin ingin menghapus <strong>${nama}</strong> (${kd}) beserta seluruh template sub-pemeriksaannya?`,
-            icon: 'warning',
+            title: 'Hapus / Nonaktifkan Tarif Lab?',
+            html: `Pilih tindakan untuk pemeriksaan <strong>${nama}</strong> (${kd}):<br><br>
+                   <div class="alert alert-info text-start mb-0 py-2 small">
+                       <i class="ti ti-shield-check me-1"></i>
+                       <strong>Rekomendasi SIMKES Khanza:</strong> Pilih <b>Nonaktifkan</b> agar integritas data transaksi dan rekam medis pasien masa lalu tetap terjaga dan tidak terjadi error data referensi.
+                   </div>`,
+            icon: 'question',
             showCancelButton: true,
-            confirmButtonColor: '#d33',
+            showDenyButton: true,
+            confirmButtonColor: '#f59f00',
+            denyButtonColor: '#d33',
             cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Ya, Hapus Data',
+            confirmButtonText: '<i class="ti ti-ban me-1"></i> Nonaktifkan (Disarankan)',
+            denyButtonText: '<i class="ti ti-trash me-1"></i> Hapus Permanen',
             cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {
+                // Nonaktifkan Sesuai Standar Khanza
+                executeSetStatus(kd, '0', nama);
+            } else if (result.isDenied) {
+                // Coba Hapus Permanen
                 loadingAjax();
                 $.ajax({
                     url: "{{ url('/master/tarif-lab') }}/" + kd,
@@ -737,11 +943,27 @@
                     },
                     error: function(xhr) {
                         Swal.close();
-                        let msg = 'Gagal menghapus data.';
-                        if (xhr.responseJSON && xhr.responseJSON.message) {
-                            msg = xhr.responseJSON.message;
+                        let isUsed = xhr.responseJSON && xhr.responseJSON.is_used;
+                        let msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Gagal menghapus data.';
+
+                        if (isUsed) {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Tidak Dapat Dihapus Permanen',
+                                html: `${msg}<br><br>Apakah Anda ingin <strong>menonaktifkannya sekarang</strong>?`,
+                                showCancelButton: true,
+                                confirmButtonColor: '#f59f00',
+                                cancelButtonColor: '#6c757d',
+                                confirmButtonText: '<i class="ti ti-ban me-1"></i> Ya, Nonaktifkan Sekarang',
+                                cancelButtonText: 'Batal'
+                            }).then((resConfirm) => {
+                                if (resConfirm.isConfirmed) {
+                                    executeSetStatus(kd, '0', nama);
+                                }
+                            });
+                        } else {
+                            Swal.fire('Tidak Dapat Dihapus', msg, 'warning');
                         }
-                        Swal.fire('Tidak Dapat Dihapus', msg, 'warning');
                     }
                 });
             }

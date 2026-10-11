@@ -12,6 +12,7 @@ Route::middleware('auth:web,admin')->group(function () {
     Route::put('/master/tarif-lab/{kd_jenis_prw}', [JnsPerawatanLabController::class, 'update'])->name('master.tarif-lab.update');
     Route::delete('/master/tarif-lab/{kd_jenis_prw}', [JnsPerawatanLabController::class, 'destroy'])->name('master.tarif-lab.destroy');
     Route::post('/master/tarif-lab/toggle-status/{kd_jenis_prw}', [JnsPerawatanLabController::class, 'toggleStatus'])->name('master.tarif-lab.toggle-status');
+    Route::post('/master/tarif-lab/batch-status', [JnsPerawatanLabController::class, 'batchStatus'])->name('master.tarif-lab.batch-status');
 
     // Sub-pemeriksaan & Template Laboratorium
     Route::get('/master/tarif-lab/{kd_jenis_prw}/template', [JnsPerawatanLabController::class, 'getTemplates'])->name('master.tarif-lab.template.get');

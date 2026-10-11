@@ -260,22 +260,58 @@ class JnsPerawatanLabController extends Controller
     }
 
     /**
-     * Toggle status aktif / non-aktif
+     * Toggle atau set status aktif / non-aktif
+     * Sesuai referensi SIMKES Khanza (DlgJnsPerawatanLab.java):
+     * Nonaktifkan = status='0', Aktif = status='1'
      */
-    public function toggleStatus($kd_jenis_prw): JsonResponse
+    public function toggleStatus(Request $request, $kd_jenis_prw): JsonResponse
     {
         $lab = JnsPerawatanLab::where('kd_jenis_prw', $kd_jenis_prw)->first();
         if (!$lab) {
             return response()->json(['success' => false, 'message' => 'Data tidak ditemukan'], 404);
         }
 
-        $newStatus = $lab->status === '1' ? '0' : '1';
+        if ($request->has('status') && in_array((string)$request->input('status'), ['0', '1'], true)) {
+            $newStatus = (string) $request->input('status');
+        } else {
+            $newStatus = $lab->status === '1' ? '0' : '1';
+        }
+
         $lab->update(['status' => $newStatus]);
 
         return response()->json([
             'success' => true,
             'status'  => $newStatus,
-            'message' => $newStatus === '1' ? 'Tindakan lab berhasil diaktifkan.' : 'Tindakan lab berhasil dinonaktifkan.'
+            'message' => $newStatus === '1' ? 'Pemeriksaan lab berhasil diaktifkan kembali.' : 'Pemeriksaan lab berhasil dinonaktifkan.'
+        ]);
+    }
+
+    /**
+     * Nonaktifkan / Aktifkan beberapa pemeriksaan lab sekaligus (Batch)
+     * Mengikuti pola referensi Khanza:
+     * for(i=0;i<tbJnsPerawatan.getRowCount();i++){ 
+     *     if(tbJnsPerawatan.getValueAt(i,0).toString().equals("true")){
+     *         Sequel.mengedit("jns_perawatan_lab","kd_jenis_prw=...","status='0'");
+     *     }
+     * }
+     */
+    public function batchStatus(Request $request): JsonResponse
+    {
+        $request->validate([
+            'kode'   => 'required|array',
+            'status' => 'required|in:0,1',
+        ]);
+
+        $status = (string) $request->status;
+        $updated = JnsPerawatanLab::whereIn('kd_jenis_prw', $request->kode)
+            ->update(['status' => $status]);
+
+        $label = $status === '1' ? 'diaktifkan kembali' : 'dinonaktifkan';
+
+        return response()->json([
+            'success' => true,
+            'count'   => $updated,
+            'message' => "Sebanyak {$updated} pemeriksaan lab berhasil {$label}."
         ]);
     }
 
