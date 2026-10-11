@@ -420,7 +420,7 @@
             },
             {
                 name: 'Gula Darah Puasa (GDP)',
-                keywords: ['gula darah puasa', 'gdp', 'glukosa puasa'],
+                keywords: ['gula darah puasa', 'gdp', 'glukosa puasa', 'gdp - prb'],
                 code: '1558-6',
                 display: 'Fasting glucose [Mass/volume] in Blood',
                 specimen: { code: '119297000', display: 'Blood specimen' }
@@ -448,21 +448,21 @@
             },
             {
                 name: 'Trigliserida',
-                keywords: ['trigliserida', 'trigliserid', 'triglyceride', 'tg'],
+                keywords: ['trigliserida', 'trigliserid', 'triglyceride', 'tg', 'kolesterol trigliserida'],
                 code: '2571-8',
                 display: 'Triglyceride [Mass/volume] in Serum or Plasma',
                 specimen: { code: '119364003', display: 'Serum specimen' }
             },
             {
                 name: 'HDL Kolesterol',
-                keywords: ['hdl', 'kolesterol hdl'],
+                keywords: ['hdl', 'kolesterol hdl', 'cholesterol in hdl'],
                 code: '2085-9',
                 display: 'Cholesterol in HDL [Mass/volume] in Serum or Plasma',
                 specimen: { code: '119364003', display: 'Serum specimen' }
             },
             {
                 name: 'LDL Kolesterol',
-                keywords: ['ldl', 'kolesterol ldl'],
+                keywords: ['ldl', 'kolesterol ldl', 'cholesterol in ldl'],
                 code: '2089-1',
                 display: 'Cholesterol in LDL [Mass/volume] in Serum or Plasma',
                 specimen: { code: '119364003', display: 'Serum specimen' }
@@ -504,6 +504,20 @@
             },
 
             // --- Urinalisis ---
+            {
+                name: 'Mikroalbumin Urin (Microalbuminuria)',
+                keywords: ['microalbuminaria', 'microalbuminuria', 'mikroalbumin', 'mikroalbuminuria', 'microalbumin', 'albuminaria'],
+                code: '14957-5',
+                display: 'Microalbumin [Mass/volume] in Urine',
+                specimen: { code: '122575003', display: 'Urine specimen' }
+            },
+            {
+                name: 'Rasio Albumin Kreatinin Urin (UACR)',
+                keywords: ['uacr', 'albumin kreatinin rasio', 'acr'],
+                code: '9318-7',
+                display: 'Albumin/Creatinine [Mass Ratio] in Urine',
+                specimen: { code: '122575003', display: 'Urine specimen' }
+            },
             {
                 name: 'Protein Urin (Albumin Urin)',
                 keywords: ['protein urin', 'albumin urin', 'proteinuria'],
