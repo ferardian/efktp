@@ -189,6 +189,46 @@ class BillingController extends Controller
         $detail_tindakan = $tindakan_dr->concat($tindakan_pr)->concat($tindakan_drpr);
         $total_tindakan = $detail_tindakan->sum('subtotal');
 
+        // 3b. Biaya Tindakan Rawat Jalan (jika belum close billing / belum lunas di nota jalan)
+        $hasNotaJalan = DB::table('nota_jalan')->where('no_rawat', $no_rawat)->exists();
+        $detail_tindakan_ralan = collect();
+        $total_tindakan_ralan = 0;
+
+        if (!$hasNotaJalan) {
+            $tindakan_ralan_dr = DB::table('rawat_jl_dr')
+                ->join('jns_perawatan', 'rawat_jl_dr.kd_jenis_prw', '=', 'jns_perawatan.kd_jenis_prw')
+                ->where('rawat_jl_dr.no_rawat', $no_rawat)
+                ->where(function($q) {
+                    $q->where('rawat_jl_dr.stts_bayar', '!=', 'Sudah')
+                      ->orWhereNull('rawat_jl_dr.stts_bayar');
+                })
+                ->select('jns_perawatan.nm_perawatan', 'rawat_jl_dr.tgl_perawatan', 'rawat_jl_dr.biaya_rawat')
+                ->get()->map(fn($item) => ['item' => $item->nm_perawatan, 'tgl' => $item->tgl_perawatan, 'qty' => 1, 'tarif' => floatval($item->biaya_rawat), 'subtotal' => floatval($item->biaya_rawat)]);
+
+            $tindakan_ralan_pr = DB::table('rawat_jl_pr')
+                ->join('jns_perawatan', 'rawat_jl_pr.kd_jenis_prw', '=', 'jns_perawatan.kd_jenis_prw')
+                ->where('rawat_jl_pr.no_rawat', $no_rawat)
+                ->where(function($q) {
+                    $q->where('rawat_jl_pr.stts_bayar', '!=', 'Sudah')
+                      ->orWhereNull('rawat_jl_pr.stts_bayar');
+                })
+                ->select('jns_perawatan.nm_perawatan', 'rawat_jl_pr.tgl_perawatan', 'rawat_jl_pr.biaya_rawat')
+                ->get()->map(fn($item) => ['item' => $item->nm_perawatan, 'tgl' => $item->tgl_perawatan, 'qty' => 1, 'tarif' => floatval($item->biaya_rawat), 'subtotal' => floatval($item->biaya_rawat)]);
+
+            $tindakan_ralan_drpr = DB::table('rawat_jl_drpr')
+                ->join('jns_perawatan', 'rawat_jl_drpr.kd_jenis_prw', '=', 'jns_perawatan.kd_jenis_prw')
+                ->where('rawat_jl_drpr.no_rawat', $no_rawat)
+                ->where(function($q) {
+                    $q->where('rawat_jl_drpr.stts_bayar', '!=', 'Sudah')
+                      ->orWhereNull('rawat_jl_drpr.stts_bayar');
+                })
+                ->select('jns_perawatan.nm_perawatan', 'rawat_jl_drpr.tgl_perawatan', 'rawat_jl_drpr.biaya_rawat')
+                ->get()->map(fn($item) => ['item' => $item->nm_perawatan, 'tgl' => $item->tgl_perawatan, 'qty' => 1, 'tarif' => floatval($item->biaya_rawat), 'subtotal' => floatval($item->biaya_rawat)]);
+
+            $detail_tindakan_ralan = $tindakan_ralan_dr->concat($tindakan_ralan_pr)->concat($tindakan_ralan_drpr);
+            $total_tindakan_ralan = $detail_tindakan_ralan->sum('subtotal');
+        }
+
         // 4. Biaya Obat & Alkes
         $detail_obat = DB::table('detail_pemberian_obat')
             ->join('databarang', 'detail_pemberian_obat.kode_brng', '=', 'databarang.kode_brng')
@@ -223,7 +263,7 @@ class BillingController extends Controller
             $uang_deposit = floatval($nota_inap->Uang_Muka);
         }
 
-        $total_layanan = $biaya_reg + $total_kamar + $total_tindakan + $total_obat + $total_lab + $total_rad;
+        $total_layanan = $biaya_reg + $total_kamar + $total_tindakan + $total_tindakan_ralan + $total_obat + $total_lab + $total_rad;
         $total_biaya = $total_layanan + $tambahan;
         $grand_total = max(0, $total_biaya - $potongan);
         $net_total = max(0, $grand_total - $uang_deposit);
@@ -258,11 +298,20 @@ class BillingController extends Controller
         $categories = [
             ['label' => 'Registrasi', 'total' => $biaya_reg, 'items' => [['item' => 'Biaya Registrasi', 'qty' => 1, 'tarif' => $biaya_reg, 'subtotal' => $biaya_reg]]],
             ['label' => 'Kamar & Inap', 'total' => $total_kamar, 'items' => $detail_kamar],
-            ['label' => 'Tindakan & Perawatan', 'total' => $total_tindakan, 'items' => $detail_tindakan],
-            ['label' => 'Obat & Alkes', 'total' => $total_obat, 'items' => $detail_obat],
-            ['label' => 'Laboratorium', 'total' => $total_lab, 'items' => $detail_lab],
-            ['label' => 'Radiologi', 'total' => $total_rad, 'items' => $detail_rad],
         ];
+
+        if ($total_tindakan_ralan > 0) {
+            $categories[] = [
+                'label' => 'Tindakan Rawat Jalan',
+                'total' => $total_tindakan_ralan,
+                'items' => $detail_tindakan_ralan->toArray()
+            ];
+        }
+
+        $categories[] = ['label' => 'Tindakan & Perawatan', 'total' => $total_tindakan, 'items' => $detail_tindakan];
+        $categories[] = ['label' => 'Obat & Alkes', 'total' => $total_obat, 'items' => $detail_obat];
+        $categories[] = ['label' => 'Laboratorium', 'total' => $total_lab, 'items' => $detail_lab];
+        $categories[] = ['label' => 'Radiologi', 'total' => $total_rad, 'items' => $detail_rad];
 
         if ($tambahan > 0) {
             $categories[] = [

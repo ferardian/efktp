@@ -278,11 +278,21 @@ class KasirRanapController extends Controller
                     ]);
             }
 
-            // 2. Tindakan Ranap
-            $tindakan_dr = floatval(DB::table('rawat_inap_dr')->where('no_rawat', $no_rawat)->sum('biaya_rawat'));
-            $tindakan_pr = floatval(DB::table('rawat_inap_pr')->where('no_rawat', $no_rawat)->sum('biaya_rawat'));
-            $tindakan_drpr = floatval(DB::table('rawat_inap_drpr')->where('no_rawat', $no_rawat)->sum('biaya_rawat'));
-            $total_tindakan = $tindakan_dr + $tindakan_pr + $tindakan_drpr;
+            // 2. Tindakan Ranap & Ralan (jika belum close nota jalan)
+            $tindakan_ranap_dr = floatval(DB::table('rawat_inap_dr')->where('no_rawat', $no_rawat)->sum('biaya_rawat'));
+            $tindakan_ranap_pr = floatval(DB::table('rawat_inap_pr')->where('no_rawat', $no_rawat)->sum('biaya_rawat'));
+            $tindakan_ranap_drpr = floatval(DB::table('rawat_inap_drpr')->where('no_rawat', $no_rawat)->sum('biaya_rawat'));
+            $total_tindakan_ranap = $tindakan_ranap_dr + $tindakan_ranap_pr + $tindakan_ranap_drpr;
+
+            $hasNotaJalan = DB::table('nota_jalan')->where('no_rawat', $no_rawat)->exists();
+            $total_tindakan_ralan = 0;
+            if (!$hasNotaJalan) {
+                $tindakan_ralan_dr = floatval(DB::table('rawat_jl_dr')->where('no_rawat', $no_rawat)->where(function($q) { $q->where('stts_bayar', '!=', 'Sudah')->orWhereNull('stts_bayar'); })->sum('biaya_rawat'));
+                $tindakan_ralan_pr = floatval(DB::table('rawat_jl_pr')->where('no_rawat', $no_rawat)->where(function($q) { $q->where('stts_bayar', '!=', 'Sudah')->orWhereNull('stts_bayar'); })->sum('biaya_rawat'));
+                $tindakan_ralan_drpr = floatval(DB::table('rawat_jl_drpr')->where('no_rawat', $no_rawat)->where(function($q) { $q->where('stts_bayar', '!=', 'Sudah')->orWhereNull('stts_bayar'); })->sum('biaya_rawat'));
+                $total_tindakan_ralan = $tindakan_ralan_dr + $tindakan_ralan_pr + $tindakan_ralan_drpr;
+            }
+            $total_tindakan = $total_tindakan_ranap + $total_tindakan_ralan;
 
             // 3. Obat & Alkes Ranap
             $total_obat = floatval(DB::table('detail_pemberian_obat')->where('no_rawat', $no_rawat)->sum('total'));
@@ -539,7 +549,49 @@ class KasirRanapController extends Controller
                 ];
             }
 
-            // Tindakan Dokter & Paramedis
+            // Tindakan Rawat Jalan (jika belum close nota jalan)
+            if (!$hasNotaJalan) {
+                $ralan_sources = [
+                    ['table' => 'rawat_jl_dr',   'status' => 'Ralan Dokter'],
+                    ['table' => 'rawat_jl_pr',   'status' => 'Ralan Paramedis'],
+                    ['table' => 'rawat_jl_drpr', 'status' => 'Ralan Dokter Paramedis'],
+                ];
+
+                foreach ($ralan_sources as $src) {
+                    $rows = DB::table($src['table'])
+                        ->join('jns_perawatan', $src['table'] . '.kd_jenis_prw', '=', 'jns_perawatan.kd_jenis_prw')
+                        ->where($src['table'] . '.no_rawat', $no_rawat)
+                        ->where(function($q) use ($src) {
+                            $q->where($src['table'] . '.stts_bayar', '!=', 'Sudah')
+                              ->orWhereNull($src['table'] . '.stts_bayar');
+                        })
+                        ->select('jns_perawatan.nm_perawatan', $src['table'] . '.biaya_rawat')
+                        ->get();
+
+                    foreach ($rows as $tr) {
+                        $billingRows[] = [
+                            'noindex'      => $noIdx++,
+                            'no_rawat'     => $no_rawat,
+                            'tgl_byr'      => $tgl_bayar,
+                            'no'           => 'Tindakan',
+                            'nm_perawatan' => $tr->nm_perawatan,
+                            'pemisah'      => ':',
+                            'biaya'        => $tr->biaya_rawat,
+                            'jumlah'       => 1,
+                            'tambahan'     => 0,
+                            'totalbiaya'   => $tr->biaya_rawat,
+                            'status'       => $src['status'],
+                        ];
+                    }
+                }
+
+                // Update stts_bayar ralan menjadi 'Sudah'
+                DB::table('rawat_jl_dr')->where('no_rawat', $no_rawat)->where(function($q) { $q->where('stts_bayar', '!=', 'Sudah')->orWhereNull('stts_bayar'); })->update(['stts_bayar' => 'Sudah']);
+                DB::table('rawat_jl_pr')->where('no_rawat', $no_rawat)->where(function($q) { $q->where('stts_bayar', '!=', 'Sudah')->orWhereNull('stts_bayar'); })->update(['stts_bayar' => 'Sudah']);
+                DB::table('rawat_jl_drpr')->where('no_rawat', $no_rawat)->where(function($q) { $q->where('stts_bayar', '!=', 'Sudah')->orWhereNull('stts_bayar'); })->update(['stts_bayar' => 'Sudah']);
+            }
+
+            // Tindakan Dokter & Paramedis Ranap
             $tindakan_sources = [
                 ['table' => 'rawat_inap_dr',   'status' => 'Ranap Dokter'],
                 ['table' => 'rawat_inap_pr',   'status' => 'Ranap Paramedis'],
@@ -748,9 +800,16 @@ class KasirRanapController extends Controller
                 $addJurnal($setAkunRanap->Kamar_Inap, 'Pendapatan Kamar Inap', 0, $total_kamar);
             }
 
-            // 6. Credits: Tindakan Ranap
-            if ($total_tindakan > 0) {
-                $addJurnal($setAkunRanap->Suspen_Piutang_Tindakan_Ranap, 'Suspen Piutang Tindakan Ranap', 0, $total_tindakan);
+            // 6. Credits: Tindakan Ranap & Ralan
+            if ($total_tindakan_ranap > 0) {
+                $addJurnal($setAkunRanap->Suspen_Piutang_Tindakan_Ranap, 'Suspen Piutang Tindakan Ranap', 0, $total_tindakan_ranap);
+            }
+            if ($total_tindakan_ralan > 0) {
+                $setAkunRalan = DB::table('set_akun_ralan')->first();
+                $rekSuspenRalan = ($setAkunRalan && !empty($setAkunRalan->Suspen_Piutang_Tindakan_Ralan))
+                    ? $setAkunRalan->Suspen_Piutang_Tindakan_Ralan
+                    : $setAkunRanap->Suspen_Piutang_Tindakan_Ranap;
+                $addJurnal($rekSuspenRalan, 'Suspen Piutang Tindakan Ralan', 0, $total_tindakan_ralan);
             }
 
             // 7. Credits: Laborat
@@ -939,6 +998,13 @@ class KasirRanapController extends Controller
             DB::table('billing')->where('no_rawat', $no_rawat)->delete();
             DB::table('piutang_pasien')->where('no_rawat', $no_rawat)->delete();
             DB::table('tagihan_sadewa')->where('no_nota', $no_rawat)->delete();
+
+            // Kembalikan status bayar tindakan ralan jika tidak memiliki nota_jalan
+            if (!DB::table('nota_jalan')->where('no_rawat', $no_rawat)->exists()) {
+                DB::table('rawat_jl_dr')->where('no_rawat', $no_rawat)->update(['stts_bayar' => 'Belum']);
+                DB::table('rawat_jl_pr')->where('no_rawat', $no_rawat)->update(['stts_bayar' => 'Belum']);
+                DB::table('rawat_jl_drpr')->where('no_rawat', $no_rawat)->update(['stts_bayar' => 'Belum']);
+            }
 
             // Set back status_bayar to Belum Bayar
             DB::table('reg_periksa')->where('no_rawat', $no_rawat)->update(['status_bayar' => 'Belum Bayar']);
