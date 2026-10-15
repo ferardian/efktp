@@ -87,46 +87,54 @@
 
         function getPeserta(no_peserta) {
             loadingAjax();
-            $.get(`{{ url('/') }}/bridging/pcare/peserta/${no_peserta}`).done((response) => {
-                if (response.metaData.code == 200) {
-                    const result = response.response;
-                    const umur = hitungUmur(splitTanggal(result.tglLahir));
-                    const textUmur = `${umur.split(';')[0]} Th ${umur.split(';')[1]} Bl ${umur.split(';')[2]} Hr`
-                    const isActive = result.aktif ? 'is-valid' : '';
-                    formPesrta.find('#aktif').val(result.ketAktif).addClass(isActive);
-                    formPesrta.find('#noKartu').val(result.noKartu);
-                    formPesrta.find('#noKTP').val(result.noKTP);
-                    formPesrta.find('#nama').val(`${result.nama} (${result.sex})`);
-                    formPesrta.find('#tglLahir').val(result.tglLahir);
-                    formPesrta.find('#umur').val(textUmur);
-                    formPesrta.find('#noHP').val(result.noHP);
-                    const nmProvider = result.kdProviderPst ? (result.kdProviderPst.nmProvider || '-') : '-';
-                    const nmProviderGigi = result.kdProviderGigi ? (result.kdProviderGigi.nmProvider || '-') : '-';
-                    const jnsKelasKode = result.jnsKelas ? (result.jnsKelas.kode || '-') : '-';
-                    const jnsKelasNama = result.jnsKelas ? (result.jnsKelas.nama || '-') : '-';
-                    const jnsPesertaKode = result.jnsPeserta ? (result.jnsPeserta.kode || '-') : '-';
-                    const jnsPesertaNama = result.jnsPeserta ? (result.jnsPeserta.nama || '-') : '-';
-
-                    formPesrta.find('#nmProvider').val(nmProvider);
-                    formPesrta.find('#nmProviderGigi').val(nmProviderGigi);
-                    formPesrta.find('#hubunganKeluarga').val(result.hubunganKeluarga || '-');
-                    formPesrta.find('#kodeKelas').val(jnsKelasKode);
-                    formPesrta.find('#nmKelas').val(jnsKelasNama);
-                    formPesrta.find('#kodeJenis').val(jnsPesertaKode);
-                    formPesrta.find('#nmJenis').val(jnsPesertaNama);
-                    formPesrta.find('#tglAkhirBerlaku').val(result.tglAkhirBerlaku || '-');
-                    formPesrta.find('#tglMulaiAktif').val(result.tglMulaiAktif || '-');
-                    modalPesertaBpjs.modal('show');
+            $.get(`{{ url('/') }}/bridging/pcare/peserta/${no_peserta}`)
+                .done((response) => {
                     loadingAjax().close();
-                } else {
-                    const error = {
-                        status: response.metaData.code,
-                        statusText: 'Nomor peserta tidak ditemukan',
-                        responseJSON: response.metaData.message,
+                    if (response && response.metaData && response.metaData.code == 200) {
+                        const result = response.response;
+                        const umur = hitungUmur(splitTanggal(result.tglLahir));
+                        const textUmur = `${umur.split(';')[0]} Th ${umur.split(';')[1]} Bl ${umur.split(';')[2]} Hr`
+                        const isActive = result.aktif ? 'is-valid' : '';
+                        formPesrta.find('#aktif').val(result.ketAktif).addClass(isActive);
+                        formPesrta.find('#noKartu').val(result.noKartu);
+                        formPesrta.find('#noKTP').val(result.noKTP);
+                        formPesrta.find('#nama').val(`${result.nama} (${result.sex})`);
+                        formPesrta.find('#tglLahir').val(result.tglLahir);
+                        formPesrta.find('#umur').val(textUmur);
+                        formPesrta.find('#noHP').val(result.noHP);
+                        const nmProvider = result.kdProviderPst ? (result.kdProviderPst.nmProvider || '-') : '-';
+                        const nmProviderGigi = result.kdProviderGigi ? (result.kdProviderGigi.nmProvider || '-') : '-';
+                        const jnsKelasKode = result.jnsKelas ? (result.jnsKelas.kode || '-') : '-';
+                        const jnsKelasNama = result.jnsKelas ? (result.jnsKelas.nama || '-') : '-';
+                        const jnsPesertaKode = result.jnsPeserta ? (result.jnsPeserta.kode || '-') : '-';
+                        const jnsPesertaNama = result.jnsPeserta ? (result.jnsPeserta.nama || '-') : '-';
+
+                        formPesrta.find('#nmProvider').val(nmProvider);
+                        formPesrta.find('#nmProviderGigi').val(nmProviderGigi);
+                        formPesrta.find('#hubunganKeluarga').val(result.hubunganKeluarga || '-');
+                        formPesrta.find('#kodeKelas').val(jnsKelasKode);
+                        formPesrta.find('#nmKelas').val(jnsKelasNama);
+                        formPesrta.find('#kodeJenis').val(jnsPesertaKode);
+                        formPesrta.find('#nmJenis').val(jnsPesertaNama);
+                        formPesrta.find('#tglAkhirBerlaku').val(result.tglAkhirBerlaku || '-');
+                        formPesrta.find('#tglMulaiAktif').val(result.tglMulaiAktif || '-');
+                        modalPesertaBpjs.modal('show');
+                    } else {
+                        const errorMsg = (response && response.metaData && response.metaData.message)
+                            ? response.metaData.message
+                            : 'Nomor peserta tidak ditemukan atau koneksi BPJS bermasalah';
+                        const error = {
+                            status: response?.metaData?.code || 500,
+                            statusText: 'Gagal Bridging Peserta',
+                            responseJSON: errorMsg,
+                        };
+                        alertErrorAjax(error);
                     }
-                    alertErrorAjax(error);
-                }
-            })
+                })
+                .fail((err) => {
+                    loadingAjax().close();
+                    alertErrorAjax(err);
+                });
         }
     </script>
 @endpush

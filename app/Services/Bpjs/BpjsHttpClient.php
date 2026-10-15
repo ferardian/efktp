@@ -72,10 +72,16 @@ class BpjsHttpClient
                 ->get($url, $params);
 
             $body = $response->json() ?? [];
-            return $this->handleResponse($body);
+            return $this->handleResponse($body, $response->body());
         } catch (\Exception $e) {
             Log::error("[BPJS GET Error] {$e->getMessage()}");
-            return [];
+            return [
+                'metaData' => [
+                    'code' => 500,
+                    'message' => 'Gagal menghubungi BPJS: ' . $e->getMessage()
+                ],
+                'response' => null
+            ];
         }
     }
 
