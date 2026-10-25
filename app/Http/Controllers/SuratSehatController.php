@@ -111,10 +111,16 @@ class SuratSehatController extends Controller
 
     function create(Request $request)
     {
+        $tglSurat = date('Y-m-d', strtotime($request->tanggalsurat));
+        $noSurat = $request->no_surat;
+        if (empty($noSurat) || SuratSehat::where('no_surat', $noSurat)->where('no_rawat', '!=', $request->no_rawat)->exists()) {
+            $noSurat = \App\Services\NomorSuratService::generate('sehat', $tglSurat);
+        }
+
         $data = [
-            'no_surat' => $request->no_surat,
+            'no_surat' => $noSurat,
             'no_rawat' => $request->no_rawat,
-            'tanggalsurat' => date('Y-m-d', strtotime($request->tanggalsurat)),
+            'tanggalsurat' => $tglSurat,
             'berat' => $request->berat,
             'tinggi' => $request->tinggi,
             'tensi' => $request->tensi,
@@ -123,7 +129,7 @@ class SuratSehatController extends Controller
             'keperluan' => $request->keperluan,
             'kesimpulan' => $request->kesimpulan,
         ];
-        $surat = SuratSehat::where('no_surat', $request->no_surat)
+        $surat = SuratSehat::where('no_surat', $noSurat)
             ->orWhere('no_rawat', $request->no_rawat)->first();
         if ($surat) {
             return $this->update($request);

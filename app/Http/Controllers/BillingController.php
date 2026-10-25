@@ -147,15 +147,13 @@ class BillingController extends Controller
         $detail_kamar = [];
         $total_kamar = 0;
         foreach ($kamar_inap as $ki) {
-            $tgl_masuk = Carbon::parse($ki->tgl_masuk);
-            $is_current_room_pulang = ($ki->stts_pulang != '-' && $ki->stts_pulang != 'Pindah Kamar' && $ki->tgl_keluar != '0000-00-00' && !empty($ki->tgl_keluar));
-            $tgl_keluar = ($ki->stts_pulang != 'Pindah Kamar' && ($ki->tgl_keluar == '0000-00-00' || !$ki->tgl_keluar)) 
-                ? Carbon::now() 
-                : Carbon::parse($ki->tgl_keluar);
-            
-            $durasi = $tgl_masuk->diffInDays($tgl_keluar);
-            if ($durasi == 0) $durasi = 1;
-            
+            $is_current_room_pulang = ($ki->stts_pulang != '-' && $ki->stts_pulang != 'Pindah Kamar' && !empty($ki->tgl_keluar) && $ki->tgl_keluar != '0000-00-00');
+            $durasi = \App\Models\SetJamMinimal::hitungLama(
+                $ki->tgl_masuk,
+                $ki->jam_masuk,
+                $is_current_room_pulang ? $ki->tgl_keluar : null,
+                $is_current_room_pulang ? $ki->jam_keluar : null
+            );
             $subtotal = ($durasi * floatval($ki->trf_kamar));
             $total_kamar += $subtotal;
             $detail_kamar[] = [

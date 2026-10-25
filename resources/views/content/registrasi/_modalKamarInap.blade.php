@@ -70,8 +70,9 @@
                         </div>
                         <div class="col-lg-4">
                             <div class="mb-3">
-                                <label class="form-label">Lama (Hari)</label>
-                                 <input type="number" class="form-control" name="lama" value="1" min="1">
+                                <label class="form-label">Lama Awal (Hari)</label>
+                                 <input type="number" class="form-control" name="lama" value="0" min="0" placeholder="0">
+                                 <small class="text-muted" style="font-size: 0.72rem;">*Dihitung dinamis setelah jam minimal</small>
                             </div>
                         </div>
                     </div>

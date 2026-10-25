@@ -331,6 +331,87 @@ class MenuController extends Controller
             // Ensure Master Tarif Lab menu exists
             $masterParent = Menu::where('name', 'Master')->whereNull('parent_id')->first();
             if ($masterParent) {
+                $existingTarifRanap = Menu::where('url', 'master/tarif-ranap')->first();
+                if (!$existingTarifRanap) {
+                    $newTarifRanap = Menu::create([
+                        'name'      => 'Tarif Rawat Inap',
+                        'url'       => 'master/tarif-ranap',
+                        'icon'      => '<i class="ti ti-bed me-1"></i>',
+                        'parent_id' => $masterParent->id,
+                        'order_num' => 6,
+                        'target'    => '_self',
+                        'position'  => 'sidebar',
+                    ]);
+
+                    $roles = ['admin', 'owner', 'petugas', 'dokter'];
+                    foreach ($roles as $r) {
+                        MenuRole::firstOrCreate(['menu_id' => $newTarifRanap->id, 'role' => $r]);
+                    }
+                } else {
+                    $existingTarifRanap->update([
+                        'parent_id' => $masterParent->id,
+                        'position'  => 'sidebar',
+                    ]);
+                    $roles = ['admin', 'owner', 'petugas', 'dokter'];
+                    foreach ($roles as $r) {
+                        MenuRole::firstOrCreate(['menu_id' => $existingTarifRanap->id, 'role' => $r]);
+                    }
+                }
+
+                $existingSetJam = Menu::where('url', 'setting/jam-ranap')->first();
+                if (!$existingSetJam) {
+                    $newSetJam = Menu::create([
+                        'name'      => 'Set Jam Minimal Ranap',
+                        'url'       => 'setting/jam-ranap',
+                        'icon'      => '<i class="ti ti-clock-cog me-1"></i>',
+                        'parent_id' => $masterParent->id,
+                        'order_num' => 7,
+                        'target'    => '_self',
+                        'position'  => 'sidebar',
+                    ]);
+
+                    $roles = ['admin', 'owner', 'petugas'];
+                    foreach ($roles as $r) {
+                        MenuRole::firstOrCreate(['menu_id' => $newSetJam->id, 'role' => $r]);
+                    }
+                } else {
+                    $existingSetJam->update([
+                        'parent_id' => $masterParent->id,
+                        'position'  => 'sidebar',
+                    ]);
+                    $roles = ['admin', 'owner', 'petugas'];
+                    foreach ($roles as $r) {
+                        MenuRole::firstOrCreate(['menu_id' => $existingSetJam->id, 'role' => $r]);
+                    }
+                }
+
+                $existingSetNomorSurat = Menu::where('url', 'setting/nomor-surat')->first();
+                if (!$existingSetNomorSurat) {
+                    $newSetNomorSurat = Menu::create([
+                        'name'      => 'Set Nomor Surat',
+                        'url'       => 'setting/nomor-surat',
+                        'icon'      => '<i class="ti ti-file-text-ai me-1"></i>',
+                        'parent_id' => $masterParent->id,
+                        'order_num' => 8,
+                        'target'    => '_self',
+                        'position'  => 'sidebar',
+                    ]);
+
+                    $roles = ['admin', 'owner', 'petugas'];
+                    foreach ($roles as $r) {
+                        MenuRole::firstOrCreate(['menu_id' => $newSetNomorSurat->id, 'role' => $r]);
+                    }
+                } else {
+                    $existingSetNomorSurat->update([
+                        'parent_id' => $masterParent->id,
+                        'position'  => 'sidebar',
+                    ]);
+                    $roles = ['admin', 'owner', 'petugas'];
+                    foreach ($roles as $r) {
+                        MenuRole::firstOrCreate(['menu_id' => $existingSetNomorSurat->id, 'role' => $r]);
+                    }
+                }
+
                 $existingTarifLab = Menu::where('url', 'master/tarif-lab')->first();
                 if (!$existingTarifLab) {
                     $newTarifLab = Menu::create([
@@ -338,7 +419,7 @@ class MenuController extends Controller
                         'url'       => 'master/tarif-lab',
                         'icon'      => '<i class="ti ti-test-pipe me-1"></i>',
                         'parent_id' => $masterParent->id,
-                        'order_num' => 6,
+                        'order_num' => 7,
                         'target'    => '_self',
                         'position'  => 'sidebar',
                     ]);

@@ -73,19 +73,7 @@ class SuratSakitController extends Controller
 		$noSurat = $request->no_surat;
 
 		if (empty($noSurat) || SuratSakit::where('no_surat', $noSurat)->exists()) {
-			$surat = SuratSakit::select('no_surat')
-				->where('no_surat', 'like', "{$prefix}%")
-				->orderBy('no_surat', 'DESC')
-				->first();
-
-			if (!$surat) {
-				$no = '001';
-			} else {
-				$noAkhir = substr($surat->no_surat, -3);
-				$no = (int) $noAkhir + 1;
-				$no = sprintf('%03d', $no);
-			}
-			$noSurat = "{$prefix}{$no}";
+			$noSurat = \App\Services\NomorSuratService::generate('sakit', $tglAwal);
 		}
 
 		$data = [

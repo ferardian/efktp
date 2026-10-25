@@ -155,11 +155,13 @@ class KasirRanapController extends Controller
 
             $sttsPulangLabel = $isPulang ? $item->stts_pulang : 'Masih Dirawat';
 
-            // Calculate duration
-            $tglMasuk = Carbon::parse($item->tgl_masuk);
-            $tglKeluar = $isPulang ? Carbon::parse($item->tgl_keluar) : Carbon::now();
-            $durasiHari = $tglMasuk->diffInDays($tglKeluar);
-            if ($durasiHari == 0) $durasiHari = 1;
+            // Calculate duration using SetJamMinimal
+            $durasiHari = \App\Models\SetJamMinimal::hitungLama(
+                $item->tgl_masuk,
+                $item->jam_masuk,
+                $isPulang ? $item->tgl_keluar : null,
+                $isPulang ? $item->jam_keluar : null
+            );
 
             $hasUnvalidated = false;
             $unvalidatedCount = 0;
@@ -256,13 +258,13 @@ class KasirRanapController extends Controller
 
             $total_kamar = 0;
             foreach ($kamar_inap as $ki) {
-                $tgl_masuk = Carbon::parse($ki->tgl_masuk);
-                $tgl_keluar = ($ki->stts_pulang != 'Pindah Kamar' && ($ki->tgl_keluar == '0000-00-00' || !$ki->tgl_keluar)) 
-                    ? Carbon::now() 
-                    : Carbon::parse($ki->tgl_keluar);
-                
-                $durasi = $tgl_masuk->diffInDays($tgl_keluar);
-                if ($durasi == 0) $durasi = 1;
+                $isKiPulang = ($ki->stts_pulang != 'Pindah Kamar' && !empty($ki->tgl_keluar) && $ki->tgl_keluar != '0000-00-00');
+                $durasi = \App\Models\SetJamMinimal::hitungLama(
+                    $ki->tgl_masuk,
+                    $ki->jam_masuk,
+                    $isKiPulang ? $ki->tgl_keluar : null,
+                    $isKiPulang ? $ki->jam_keluar : null
+                );
                 $subtotal = ($durasi * floatval($ki->trf_kamar));
                 $total_kamar += $subtotal;
 

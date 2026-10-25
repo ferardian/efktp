@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\KamarInap;
+use App\Models\SetJamMinimal;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
 
@@ -58,7 +59,14 @@ class KamarInapController extends Controller
                     'data' => []
                 ]);
             }
-            return DataTables::of($kamarInap)->make(true);
+            return DataTables::of($kamarInap)
+                ->editColumn('lama', function ($row) {
+                    if ($row->stts_pulang == '-' || empty($row->tgl_keluar) || $row->tgl_keluar == '0000-00-00') {
+                        return SetJamMinimal::hitungLama($row->tgl_masuk, $row->jam_masuk);
+                    }
+                    return (int) $row->lama;
+                })
+                ->make(true);
         }
         return response()->json($kamarInap->get());
     }
@@ -164,12 +172,13 @@ class KamarInapController extends Controller
                 return response()->json(['message' => 'Data Kamar Inap tidak ditemukan'], 404);
             }
 
-            // Calculate lama (length of stay)
-            $tglMasuk = new \DateTime($request->tgl_masuk);
-            $tglKeluar = new \DateTime($request->tgl_keluar);
-            $interval = $tglMasuk->diff($tglKeluar);
-            $lama = $interval->days;
-            if ($lama == 0) $lama = 1; // Stayed for less than a day counts as 1 day
+            // Calculate lama (length of stay) using SetJamMinimal
+            $lama = SetJamMinimal::hitungLama(
+                $request->tgl_masuk,
+                $request->jam_masuk,
+                $request->tgl_keluar,
+                $request->jam_keluar
+            );
 
             // Update Kamar Inap
             $kamarInap->update([
@@ -178,6 +187,7 @@ class KamarInapController extends Controller
                 'stts_pulang' => $request->stts_pulang,
                 'diagnosa_akhir' => $request->diagnosa_akhir,
                 'lama' => $lama,
+                'ttl_biaya' => $lama * floatval($kamarInap->trf_kamar),
             ]);
 
             // Update Kamar Status to KOSONG

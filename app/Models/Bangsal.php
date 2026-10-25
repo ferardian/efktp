@@ -9,6 +9,9 @@ class Bangsal extends Model
 {
     use HasFactory;
     protected $table = 'bangsal';
+    protected $primaryKey = 'kd_bangsal';
+    protected $keyType = 'string';
+    public $incrementing = false;
     protected $guarded = [];
     public $timestamps = false;
 }

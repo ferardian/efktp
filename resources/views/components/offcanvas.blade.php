@@ -287,8 +287,17 @@
                                 <a class="dropdown-item" href="{{ url('master/petugas') }}">
                                     Data Petugas
                                 </a>
-                                <a class="dropdown-item" href="{{ url('master/tarif-ralan') }}">
+                                <a class="dropdown-item {{ Request::is('master/tarif-ralan*') ? 'active' : '' }}" href="{{ url('master/tarif-ralan') }}">
                                     Tarif Rawat Jalan
+                                </a>
+                                <a class="dropdown-item {{ Request::is('master/tarif-ranap*') ? 'active' : '' }}" href="{{ url('master/tarif-ranap') }}">
+                                    Tarif Rawat Inap
+                                </a>
+                                <a class="dropdown-item {{ Request::is('setting/jam-ranap*') ? 'active' : '' }}" href="{{ url('setting/jam-ranap') }}">
+                                    Set Jam Minimal Ranap
+                                </a>
+                                <a class="dropdown-item {{ Request::is('setting/nomor-surat*') ? 'active' : '' }}" href="{{ url('setting/nomor-surat') }}">
+                                    Set Nomor Surat
                                 </a>
                                 <a class="dropdown-item" href="{{ url('master/tarif-lab') }}">
                                     Tarif & Tindakan Lab

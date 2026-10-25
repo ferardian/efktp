@@ -13,6 +13,7 @@ class JenisPerawatanInap extends Model
     protected $table = 'jns_perawatan_inap';
     protected $primaryKey = 'kd_jenis_prw';
     protected $keyType = 'string';
+    public $incrementing = false;
     public $timestamps = false;
     protected $guarded = [];
 

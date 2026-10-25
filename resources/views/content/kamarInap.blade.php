@@ -15,7 +15,13 @@
 
 @section('body')
     <div class="container-xl h-100">
-        <div class="card">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-2 d-flex justify-content-between align-items-center">
+                <h4 class="card-title mb-0"><i class="ti ti-bed me-2 text-primary"></i> Data Pasien Rawat Inap</h4>
+                <a href="{{ url('setting/jam-ranap') }}" class="btn btn-sm btn-outline-secondary" title="Atur Jam Minimal & Pengakuan Hari Rawat Inap">
+                    <i class="ti ti-clock-cog me-1"></i> Set Jam Ranap
+                </a>
+            </div>
             <div class="card-body">
                 <div id="table-default" class="table-responsive">
                     <table class="table table-sm table-striped table-hover nowrap" id="tabelKamarInap" width="100%">
@@ -337,7 +343,11 @@
                         data: 'lama',
                         defaultContent: '0',
                         render: (data, type, row, meta) => {
-                            return `${data || 0} Hari`;
+                            const hari = parseInt(data) || 0;
+                            if (hari === 0) {
+                                return `<span class="badge bg-secondary-lt text-secondary" title="Belum mencapai batas jam minimal rawat inap">0 Hari</span>`;
+                            }
+                            return `<span class="fw-bold text-primary">${hari} Hari</span>`;
                         }
                     },
                     {

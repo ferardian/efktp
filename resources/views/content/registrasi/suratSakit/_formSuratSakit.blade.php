@@ -6,6 +6,7 @@
                 <div class="input-group">
                     <input type="text" class="form-control" name="no_surat" id="no_surat" />
                     <button class="btn btn-secondary" type="button" id="btnNoSurat" title="Generate Ulang Nomor Surat"><i class="ti ti-reload"></i></button>
+                    <a href="{{ url('setting/nomor-surat') }}" target="_blank" class="btn btn-outline-secondary" title="Pengaturan Format Penomoran Surat"><i class="ti ti-settings"></i></a>
                 </div>
             </div>
             <div class="col-xl-2 col-md-6 col-sm-12">
