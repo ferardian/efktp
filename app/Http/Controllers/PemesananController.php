@@ -367,6 +367,10 @@ class PemesananController extends Controller
                     'kadaluarsa' => $kadaluarsa
                 ]);
 
+                $gantiHarga = isset($item['ganti_harga']) 
+                    ? filter_var($item['ganti_harga'], FILTER_VALIDATE_BOOLEAN) 
+                    : true;
+
                 // 3. Save Data Batch
                 DataBatch::create([
                     'no_batch'       => $no_batch,
@@ -377,36 +381,49 @@ class PemesananController extends Controller
                     'no_faktur'      => $request->no_faktur,
                     'dasar'          => $item['h_beli'],
                     'h_beli'         => $item['h_beli'],
-                    'ralan'          => $item['ralan'] ?? 0,
-                    'kelas1'         => $item['kelas1'] ?? 0,
-                    'kelas2'         => $item['kelas2'] ?? 0,
-                    'kelas3'         => $item['kelas3'] ?? 0,
-                    'utama'          => $item['utama'] ?? 0,
-                    'vip'            => $item['vip'] ?? 0,
-                    'vvip'           => $item['vvip'] ?? 0,
-                    'beliluar'       => $item['beliluar'] ?? 0,
-                    'jualbebas'      => $item['jualbebas'] ?? 0,
-                    'karyawan'       => $item['karyawan'] ?? 0,
+                    'ralan'          => $gantiHarga ? ($item['ralan'] ?? ($barang->ralan ?? 0)) : ($barang->ralan ?? 0),
+                    'kelas1'         => $gantiHarga ? ($item['kelas1'] ?? ($barang->kelas1 ?? 0)) : ($barang->kelas1 ?? 0),
+                    'kelas2'         => $gantiHarga ? ($item['kelas2'] ?? ($barang->kelas2 ?? 0)) : ($barang->kelas2 ?? 0),
+                    'kelas3'         => $gantiHarga ? ($item['kelas3'] ?? ($barang->kelas3 ?? 0)) : ($barang->kelas3 ?? 0),
+                    'utama'          => $gantiHarga ? ($item['utama'] ?? ($barang->utama ?? 0)) : ($barang->utama ?? 0),
+                    'vip'            => $gantiHarga ? ($item['vip'] ?? ($barang->vip ?? 0)) : ($barang->vip ?? 0),
+                    'vvip'           => $gantiHarga ? ($item['vvip'] ?? ($barang->vvip ?? 0)) : ($barang->vvip ?? 0),
+                    'beliluar'       => $gantiHarga ? ($item['beliluar'] ?? ($barang->beliluar ?? 0)) : ($barang->beliluar ?? 0),
+                    'jualbebas'      => $gantiHarga ? ($item['jualbebas'] ?? ($barang->jualbebas ?? 0)) : ($barang->jualbebas ?? 0),
+                    'karyawan'       => $gantiHarga ? ($item['karyawan'] ?? ($barang->karyawan ?? 0)) : ($barang->karyawan ?? 0),
                     'jumlahbeli'     => $jumlah2,
                     'sisa'           => $jumlah2
                 ]);
 
                 // 4. Update prices in databarang
-                DataBarang::where('kode_brng', $item['kode_brng'])->update([
-                    'h_beli'    => $item['h_beli'],
-                    'dasar'     => $item['h_beli'],
-                    'ralan'     => $item['ralan'] ?? 0,
-                    'kelas1'    => $item['kelas1'] ?? 0,
-                    'kelas2'    => $item['kelas2'] ?? 0,
-                    'kelas3'    => $item['kelas3'] ?? 0,
-                    'utama'     => $item['utama'] ?? 0,
-                    'vip'       => $item['vip'] ?? 0,
-                    'vvip'      => $item['vvip'] ?? 0,
-                    'beliluar'  => $item['beliluar'] ?? 0,
-                    'jualbebas' => $item['jualbebas'] ?? 0,
-                    'karyawan'  => $item['karyawan'] ?? 0,
-                    'expire'    => $kadaluarsa
-                ]);
+                if ($gantiHarga) {
+                    // JIKA GANTI HARGA DICENTANG:
+                    // Update harga beli, harga dasar, dan seluruh harga jual di master databarang
+                    DataBarang::where('kode_brng', $item['kode_brng'])->update([
+                        'h_beli'    => $item['h_beli'],
+                        'dasar'     => $item['h_beli'],
+                        'ralan'     => $item['ralan'] ?? 0,
+                        'kelas1'    => $item['kelas1'] ?? 0,
+                        'kelas2'    => $item['kelas2'] ?? 0,
+                        'kelas3'    => $item['kelas3'] ?? 0,
+                        'utama'     => $item['utama'] ?? 0,
+                        'vip'       => $item['vip'] ?? 0,
+                        'vvip'      => $item['vvip'] ?? 0,
+                        'beliluar'  => $item['beliluar'] ?? 0,
+                        'jualbebas' => $item['jualbebas'] ?? 0,
+                        'karyawan'  => $item['karyawan'] ?? 0,
+                        'expire'    => $kadaluarsa
+                    ]);
+                } else {
+                    // JIKA TIDAK GANTI HARGA:
+                    // Harga di master databarang (h_beli, dasar, ralan, dll) TETAP PAKAI HARGA LAMA (TIDAK DIUBAH)
+                    // Hanya update tanggal expire jika diisi
+                    if (!empty($kadaluarsa) && $kadaluarsa !== '1900-01-01') {
+                        DataBarang::where('kode_brng', $item['kode_brng'])->update([
+                            'expire' => $kadaluarsa
+                        ]);
+                    }
+                }
 
                 // 5. Audit Trail: Record in riwayat_barang_medis BEFORE incrementing stock
                 $this->recordRiwayatMedis(

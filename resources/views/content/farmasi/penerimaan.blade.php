@@ -148,17 +148,26 @@
                                                 <table class="table table-hover table-striped table-bordered align-middle mb-0" id="tableCart">
                                                     <thead>
                                                         <tr>
-                                                            <th style="width: 8%">Kode</th>
-                                                            <th style="width: 20%">Nama Obat/BHP</th>
-                                                            <th style="width: 8%">Satuan Beli</th>
-                                                            <th style="width: 12%">No. Batch</th>
-                                                            <th style="width: 12%">Expired</th>
-                                                            <th class="text-end" style="width: 11%">Harga Beli</th>
-                                                            <th class="text-center" style="width: 9%">Qty Beli</th>
-                                                            <th class="text-end" style="width: 7%">Disc %</th>
-                                                            <th class="text-end" style="width: 10%">Total Netto</th>
-                                                            <th class="text-center" style="width: 10%">Harga Jual</th>
-                                                            <th class="text-center" style="width: 5%">Aksi</th>
+                                                            <th style="width: 7%">Kode</th>
+                                                            <th style="width: 19%">Nama Obat/BHP</th>
+                                                            <th style="width: 7%">Satuan Beli</th>
+                                                            <th style="width: 11%">No. Batch</th>
+                                                            <th style="width: 11%">Expired</th>
+                                                            <th class="text-end" style="width: 10%">Harga Beli</th>
+                                                            <th class="text-center" style="width: 8%">Qty Beli</th>
+                                                            <th class="text-end" style="width: 6%">Disc %</th>
+                                                            <th class="text-end" style="width: 9%">Total Netto</th>
+                                                            <th class="text-center" style="width: 9%">
+                                                                <div class="d-flex flex-column align-items-center">
+                                                                    <span class="text-nowrap"><i class="ti ti-check-double me-1"></i>Ganti Harga</span>
+                                                                    <label class="form-check form-check-inline m-0 mt-1 cursor-pointer" title="Centang / Batal Semua">
+                                                                        <input class="form-check-input" type="checkbox" id="check_all_ganti_harga" checked onchange="toggleAllGantiHarga(this.checked)">
+                                                                        <span class="small fw-normal" style="font-size: 10px;">Semua</span>
+                                                                    </label>
+                                                                </div>
+                                                            </th>
+                                                            <th class="text-center" style="width: 9%">Harga Jual</th>
+                                                            <th class="text-center" style="width: 4%">Aksi</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -263,13 +272,16 @@
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="modal_item_index">
-                    <div class="alert alert-info py-2 mb-3 small d-flex justify-content-between align-items-center">
+                    <div class="alert alert-info py-2 mb-2 small d-flex justify-content-between align-items-center">
                         <div>
                             <i class="ti ti-info-circle me-1"></i> Harga Beli per Unit: <strong id="modal_harga_beli_label">Rp 0</strong>
                         </div>
                         <button type="button" class="btn btn-sm btn-outline-primary" onclick="autoCalculatePricesModal()">
                             <i class="ti ti-calculator me-1"></i> Auto Margin
                         </button>
+                    </div>
+                    <div class="alert alert-warning py-1 px-2 mb-3 small d-none" id="modal_warning_ganti_harga">
+                        <i class="ti ti-lock me-1"></i> Saat ini item ini diset <b>Tetap Pakai Harga Lama</b>. Jika Anda menyimpan perubahan harga di modal ini, centang <b>Ganti Harga</b> akan otomatis diaktifkan untuk item ini.
                     </div>
                     <div class="row row-cards">
                         <div class="col-6 mb-2">
@@ -482,6 +494,19 @@
                     dis: 0,
                     no_batch: '',
                     kadaluarsa: "{{ date('Y-m-d', strtotime('+2 years')) }}",
+                    // Referensi harga master lama untuk fallback jika ganti_harga dinonaktifkan
+                    master_h_beli: hBeli,
+                    master_ralan: detail.ralan || 0,
+                    master_jualbebas: detail.jualbebas || 0,
+                    master_kelas1: detail.kelas1 || 0,
+                    master_kelas2: detail.kelas2 || 0,
+                    master_kelas3: detail.kelas3 || 0,
+                    master_utama: detail.utama || 0,
+                    master_vip: detail.vip || 0,
+                    master_vvip: detail.vvip || 0,
+                    master_karyawan: detail.karyawan || 0,
+                    master_beliluar: detail.beliluar || 0,
+                    // Harga jual aktif
                     ralan: detail.ralan || 0,
                     jualbebas: detail.jualbebas || 0,
                     kelas1: detail.kelas1 || 0,
@@ -491,12 +516,14 @@
                     vip: detail.vip || 0,
                     vvip: detail.vvip || 0,
                     karyawan: detail.karyawan || 0,
-                    beliluar: detail.beliluar || 0
+                    beliluar: detail.beliluar || 0,
+                    ganti_harga: true
                 };
 
                 cartItems.push(newItem);
                 const newIndex = cartItems.length - 1;
                 renderCartTable();
+                syncHeaderCheckAll();
 
                 // Auto calculate prices for new item
                 autoCalculateItemPrices(newIndex, hBeli, ppn_percent);
@@ -636,6 +663,17 @@
                                 dis: parseFloat(d.dis) || 0,
                                 no_batch: '',
                                 kadaluarsa: "{{ date('Y-m-d', strtotime('+2 years')) }}",
+                                master_h_beli: parseFloat(barang.h_beli) || 0,
+                                master_ralan: parseFloat(barang.ralan) || 0,
+                                master_jualbebas: parseFloat(barang.jualbebas) || 0,
+                                master_kelas1: parseFloat(barang.kelas1) || 0,
+                                master_kelas2: parseFloat(barang.kelas2) || 0,
+                                master_kelas3: parseFloat(barang.kelas3) || 0,
+                                master_utama: parseFloat(barang.utama) || 0,
+                                master_vip: parseFloat(barang.vip) || 0,
+                                master_vvip: parseFloat(barang.vvip) || 0,
+                                master_karyawan: parseFloat(barang.karyawan) || 0,
+                                master_beliluar: parseFloat(barang.beliluar) || 0,
                                 ralan: barang.ralan || 0,
                                 jualbebas: barang.jualbebas || 0,
                                 kelas1: barang.kelas1 || 0,
@@ -645,12 +683,14 @@
                                 vip: barang.vip || 0,
                                 vvip: barang.vvip || 0,
                                 karyawan: barang.karyawan || 0,
-                                beliluar: barang.beliluar || 0
+                                beliluar: barang.beliluar || 0,
+                                ganti_harga: true
                             });
                         });
                     }
 
                     renderCartTable();
+                    syncHeaderCheckAll();
                     $('#modalSp').modal('hide');
                     showToast('Berhasil menarik item dari SP Order ' + noOrder);
                 })
@@ -665,13 +705,16 @@
             const item = cartItems[index];
             if (!item) return;
 
+            // Jika user memilih untuk TIDAK ganti harga master, lewati kalkulasi harga baru
+            if (item.ganti_harga === false) return;
+
             $.post("{{ url('/penerimaan/calculate-prices') }}", {
                 _token: "{{ csrf_token() }}",
                 kode_brng: item.kode_brng,
                 h_beli: hBeli,
                 ppn_percent: ppnPercent
             }).done((res) => {
-                if (res && res.prices) {
+                if (res && res.prices && cartItems[index] && cartItems[index].ganti_harga !== false) {
                     const p = res.prices;
                     cartItems[index].ralan = p.ralan;
                     cartItems[index].jualbebas = p.jualbebas;
@@ -687,17 +730,82 @@
             });
         }
 
+        // Toggle semua item untuk ganti harga sekaligus dari header tabel
+        function toggleAllGantiHarga(checked) {
+            const ppnPercent = parseFloat($('#ppn_percent').val()) || 0;
+            cartItems.forEach((item, index) => {
+                item.ganti_harga = checked;
+                if (checked) {
+                    autoCalculateItemPrices(index, item.h_beli, ppnPercent);
+                } else if (item.master_ralan !== undefined) {
+                    item.ralan = item.master_ralan;
+                    item.jualbebas = item.master_jualbebas;
+                    item.kelas1 = item.master_kelas1;
+                    item.kelas2 = item.master_kelas2;
+                    item.kelas3 = item.master_kelas3;
+                    item.utama = item.master_utama;
+                    item.vip = item.master_vip;
+                    item.vvip = item.master_vvip;
+                    item.karyawan = item.master_karyawan;
+                    item.beliluar = item.master_beliluar;
+                }
+            });
+            renderCartTable();
+            syncHeaderCheckAll();
+        }
+
+        // Sinkronisasi status checkbox master di header
+        function syncHeaderCheckAll() {
+            if (cartItems.length === 0) {
+                $('#check_all_ganti_harga').prop('checked', true).prop('indeterminate', false);
+                return;
+            }
+            const allChecked = cartItems.every(i => i.ganti_harga !== false);
+            const someChecked = cartItems.some(i => i.ganti_harga !== false);
+            $('#check_all_ganti_harga').prop('checked', allChecked);
+            $('#check_all_ganti_harga').prop('indeterminate', !allChecked && someChecked);
+        }
+
         // Update cart item property dynamically
         function updateCartItem(index, key, val) {
             if (key === 'jumlah') {
                 cartItems[index].jumlah = parseFloat(val) || 0;
             } else if (key === 'h_beli') {
                 cartItems[index].h_beli = parseFloat(val) || 0;
-                // Auto calculate prices on h_beli change
-                const ppnPercent = parseFloat($('#ppn_percent').val()) || 0;
-                autoCalculateItemPrices(index, cartItems[index].h_beli, ppnPercent);
+                // Auto calculate prices on h_beli change jika ganti_harga aktif
+                if (cartItems[index].ganti_harga !== false) {
+                    const ppnPercent = parseFloat($('#ppn_percent').val()) || 0;
+                    autoCalculateItemPrices(index, cartItems[index].h_beli, ppnPercent);
+                }
             } else if (key === 'dis') {
                 cartItems[index].dis = parseFloat(val) || 0;
+            } else if (key === 'ganti_harga') {
+                const isChecked = Boolean(val);
+                cartItems[index].ganti_harga = isChecked;
+
+                if (isChecked) {
+                    // Jika diaktifkan kembali, hitung margin harga jual terbaru
+                    const ppnPercent = parseFloat($('#ppn_percent').val()) || 0;
+                    autoCalculateItemPrices(index, cartItems[index].h_beli, ppnPercent);
+                } else {
+                    // Jika dinonaktifkan, kembalikan ke harga master lama
+                    if (cartItems[index].master_ralan !== undefined) {
+                        cartItems[index].ralan = cartItems[index].master_ralan;
+                        cartItems[index].jualbebas = cartItems[index].master_jualbebas;
+                        cartItems[index].kelas1 = cartItems[index].master_kelas1;
+                        cartItems[index].kelas2 = cartItems[index].master_kelas2;
+                        cartItems[index].kelas3 = cartItems[index].master_kelas3;
+                        cartItems[index].utama = cartItems[index].master_utama;
+                        cartItems[index].vip = cartItems[index].master_vip;
+                        cartItems[index].vvip = cartItems[index].master_vvip;
+                        cartItems[index].karyawan = cartItems[index].master_karyawan;
+                        cartItems[index].beliluar = cartItems[index].master_beliluar;
+                    }
+                }
+
+                renderCartTable();
+                syncHeaderCheckAll();
+                return;
             } else {
                 cartItems[index][key] = val;
             }
@@ -717,6 +825,13 @@
             $('#modal_item_index').val(index);
             $('#modal_nama_brng_title').text(item.nama_brng);
             $('#modal_harga_beli_label').text('Rp ' + formatRupiah(item.h_beli));
+            
+            if (item.ganti_harga === false) {
+                $('#modal_warning_ganti_harga').removeClass('d-none');
+            } else {
+                $('#modal_warning_ganti_harga').addClass('d-none');
+            }
+
             $('#modal_ralan').val(item.ralan);
             $('#modal_jualbebas').val(item.jualbebas);
             $('#modal_kelas1').val(item.kelas1);
@@ -781,15 +896,20 @@
             cartItems[index].vvip = parseFloat($('#modal_vvip').val()) || 0;
             cartItems[index].karyawan = parseFloat($('#modal_karyawan').val()) || 0;
             cartItems[index].beliluar = parseFloat($('#modal_beliluar').val()) || 0;
+            // Jika user sengaja mengatur harga jual di modal, aktifkan opsi ganti harga
+            cartItems[index].ganti_harga = true;
 
             $('#modalHargaJual').modal('hide');
-            showToast('Harga jual berhasil disesuaikan untuk item ini');
+            renderCartTable();
+            syncHeaderCheckAll();
+            showToast('Harga jual berhasil disesuaikan & opsi Ganti Harga diaktifkan untuk item ini');
         }
 
         // Remove item from cart array
         function removeItemFromCart(index) {
             cartItems.splice(index, 1);
             renderCartTable();
+            syncHeaderCheckAll();
         }
 
         // Render the shopping cart table content and calculate values
@@ -798,7 +918,7 @@
             tbody.empty();
 
             if (cartItems.length === 0) {
-                tbody.append('<tr><td colspan="11" class="text-center text-secondary py-3">Belum ada item obat di keranjang</td></tr>');
+                tbody.append('<tr><td colspan="12" class="text-center text-secondary py-3">Belum ada item obat di keranjang</td></tr>');
                 calculateSummary();
                 return;
             }
@@ -808,39 +928,56 @@
                 const discAmt = (item.dis / 100) * subtotal;
                 const total = subtotal - discAmt;
                 const totalStokKecil = item.jumlah * (item.isi || 1);
+                const isGantiHarga = item.ganti_harga !== false;
 
                 tbody.append(`
-                    <tr>
+                    <tr class="${!isGantiHarga ? 'table-light' : ''}">
                         <td>${item.kode_brng}</td>
                         <td>
                             <div class="fw-bold text-dark">${item.nama_brng}</div>
                             ${item.isi > 1 ? `<span class="badge bg-blue-lt small">1 ${item.satuan_nama} = ${item.isi} unit kecil (Total +${totalStokKecil} stok)</span>` : ''}
                         </td>
                         <td>${item.satuan_nama}</td>
-                        <td style="width: 140px;">
+                        <td style="width: 130px;">
                             <input type="text" class="form-control form-control-sm" value="${item.no_batch || ''}" placeholder="No. Batch" oninput="updateCartItem(${index}, 'no_batch', this.value)">
                         </td>
-                        <td style="width: 150px;">
+                        <td style="width: 140px;">
                             <input type="date" class="form-control form-control-sm" value="${item.kadaluarsa}" onchange="updateCartItem(${index}, 'kadaluarsa', this.value)">
                         </td>
                         <td style="width: 130px;">
                             <input type="number" class="form-control form-control-sm text-end" value="${item.h_beli}" min="0" oninput="updateCartItem(${index}, 'h_beli', this.value)">
                         </td>
-                        <td style="width: 110px;">
+                        <td style="width: 100px;">
                             <input type="number" class="form-control form-control-sm text-center" value="${item.jumlah}" min="0.01" step="any" oninput="updateCartItem(${index}, 'jumlah', this.value)">
                         </td>
-                        <td style="width: 90px;">
+                        <td style="width: 85px;">
                             <input type="number" class="form-control form-control-sm text-end" value="${item.dis}" min="0" max="100" oninput="updateCartItem(${index}, 'dis', this.value)">
                         </td>
-                        <td class="text-end fw-bold text-dark text-nowrap" id="total_item_${index}" style="width: 120px;">
+                        <td class="text-end fw-bold text-dark text-nowrap" id="total_item_${index}" style="width: 110px;">
                             Rp ${formatRupiah(total)}
                         </td>
-                        <td class="text-center" style="width: 130px;">
-                            <button type="button" class="btn btn-sm btn-ghost-primary" onclick="editSellingPrices(${index})">
-                                <i class="ti ti-coin me-1"></i> Harga Jual
-                            </button>
+                        <td class="text-center" style="width: 95px;">
+                            <div class="form-check form-switch d-inline-block m-0">
+                                <input class="form-check-input cursor-pointer" type="checkbox" id="ganti_harga_${index}" ${isGantiHarga ? 'checked' : ''} onchange="updateCartItem(${index}, 'ganti_harga', this.checked)">
+                            </div>
+                            <div>
+                                <span class="badge ${isGantiHarga ? 'bg-success-lt' : 'bg-secondary-lt'}" style="font-size: 10px;">
+                                    ${isGantiHarga ? '<i class="ti ti-check me-1"></i>Update' : '<i class="ti ti-lock me-1"></i>Tetap'}
+                                </span>
+                            </div>
                         </td>
-                        <td class="text-center" style="width: 50px;">
+                        <td class="text-center" style="width: 115px;">
+                            ${isGantiHarga ? `
+                                <button type="button" class="btn btn-sm btn-ghost-primary" onclick="editSellingPrices(${index})" title="Sesuaikan harga jual di master">
+                                    <i class="ti ti-coin me-1"></i> Harga Jual
+                                </button>
+                            ` : `
+                                <button type="button" class="btn btn-sm btn-ghost-secondary" onclick="editSellingPrices(${index})" title="Lihat harga master (tidak akan diubah saat simpan)">
+                                    <i class="ti ti-lock me-1"></i> Harga Lama
+                                </button>
+                            `}
+                        </td>
+                        <td class="text-center" style="width: 45px;">
                             <button type="button" class="btn btn-sm btn-ghost-danger" onclick="removeItemFromCart(${index})">
                                 <i class="ti ti-trash"></i>
                             </button>
@@ -1094,6 +1231,17 @@
                                 dis: parseFloat(d.dis) || 0,
                                 no_batch: d.no_batch || '',
                                 kadaluarsa: d.kadaluarsa || "{{ date('Y-m-d', strtotime('+2 years')) }}",
+                                master_h_beli: parseFloat(barang.h_beli) || 0,
+                                master_ralan: parseFloat(barang.ralan) || 0,
+                                master_jualbebas: parseFloat(barang.jualbebas) || 0,
+                                master_kelas1: parseFloat(barang.kelas1) || 0,
+                                master_kelas2: parseFloat(barang.kelas2) || 0,
+                                master_kelas3: parseFloat(barang.kelas3) || 0,
+                                master_utama: parseFloat(barang.utama) || 0,
+                                master_vip: parseFloat(barang.vip) || 0,
+                                master_vvip: parseFloat(barang.vvip) || 0,
+                                master_karyawan: parseFloat(barang.karyawan) || 0,
+                                master_beliluar: parseFloat(barang.beliluar) || 0,
                                 ralan: parseFloat(d.ralan || barang.ralan || 0),
                                 jualbebas: parseFloat(d.jualbebas || barang.jualbebas || 0),
                                 kelas1: parseFloat(d.kelas1 || barang.kelas1 || 0),
@@ -1103,12 +1251,14 @@
                                 vip: parseFloat(d.vip || barang.vip || 0),
                                 vvip: parseFloat(d.vvip || barang.vvip || 0),
                                 karyawan: parseFloat(d.karyawan || barang.karyawan || 0),
-                                beliluar: parseFloat(d.beliluar || barang.beliluar || 0)
+                                beliluar: parseFloat(d.beliluar || barang.beliluar || 0),
+                                ganti_harga: true
                             });
                         });
                     }
 
                     renderCartTable();
+                    syncHeaderCheckAll();
 
                     // Display alert and switch tab
                     $('#lbl_edit_faktur').text(data.no_faktur);
