@@ -392,6 +392,7 @@
                         data: 'pasien',
                         render: (data, type, row, meta) => {
                             let badgeProlanis = '';
+                            const noPeserta = (data?.no_peserta && data.no_peserta !== '-' && data.no_peserta.trim() !== '') ? data.no_peserta : '';
                             if (data?.prolanis_prb) {
                                 if (data.prolanis_prb.is_prolanis) {
                                     const titleProl = data.prolanis_prb.prolanis && data.prolanis_prb.prolanis !== '1' ? ` (${data.prolanis_prb.prolanis})` : '';
@@ -401,8 +402,8 @@
                                     const titlePrb = data.prolanis_prb.prb && data.prolanis_prb.prb !== '1' ? ` (${data.prolanis_prb.prb})` : '';
                                     badgeProlanis += `<span class="badge bg-orange text-white ms-1" style="font-size: 0.65rem; padding: 2px 5px;" title="Peserta PRB${titlePrb}">PRB</span>`;
                                 }
-                            } else if (data?.no_peserta && (row.penjab?.png_jawab?.includes('BPJS') || row.kd_pj === 'BPJ')) {
-                                badgeProlanis += `<a href="javascript:void(0)" class="badge bg-secondary-lt text-secondary ms-1" style="font-size: 0.65rem; padding: 2px 4px; text-decoration: none;" onclick="syncProlanisSingle(event, '${data.no_peserta}', '${row.no_rawat}')" title="Klik untuk cek status Prolanis/PRB pasien ini"><i class="ti ti-refresh me-1"></i>Cek BPJS</a>`;
+                            } else if (noPeserta) {
+                                badgeProlanis += `<a href="javascript:void(0)" class="badge bg-secondary-lt text-secondary ms-1" style="font-size: 0.65rem; padding: 2px 4px; text-decoration: none;" onclick="syncProlanisSingle(event, '${noPeserta}', '${row.no_rawat}')" title="Klik untuk cek status Prolanis/PRB pasien ini"><i class="ti ti-refresh me-1"></i>Cek BPJS</a>`;
                             }
                             return `<span class="text-muted" style="font-style:italic">${row.no_rawat}</span> <br/> ${data?.nm_pasien} (${data?.jk}) ${badgeProlanis}`;
                         }

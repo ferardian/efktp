@@ -357,10 +357,11 @@
                     $('#badgeCpptProlanisPrb').html(badges);
                 }
 
+                const noPesertaPasien = (pasien.no_peserta && pasien.no_peserta !== '-' && pasien.no_peserta.trim() !== '') ? pasien.no_peserta : '';
                 if (pasien.prolanis_prb) {
                     renderBadgeCppt(pasien.prolanis_prb);
-                } else if (pasien.no_peserta && (response.penjab?.png_jawab?.includes('BPJS') || response.kd_pj === 'BPJ')) {
-                    $.get(`{{ url('/bridging/pcare/peserta') }}/${pasien.no_peserta}`).done((resPeserta) => {
+                } else if (noPesertaPasien) {
+                    $.get(`{{ url('/bridging/pcare/peserta') }}/${noPesertaPasien}`).done((resPeserta) => {
                         if (resPeserta?.metaData?.code == 200 && resPeserta.response) {
                             const pstProl = resPeserta.response.pstProl;
                             const pstPrb = resPeserta.response.pstPrb;
