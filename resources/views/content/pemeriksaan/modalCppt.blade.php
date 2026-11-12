@@ -354,6 +354,9 @@
                         const titlePrb = prolanisPrb.prb && prolanisPrb.prb !== '1' ? ` (${prolanisPrb.prb})` : '';
                         badges += `<span class="badge bg-orange text-white ms-1" style="font-size: 0.65rem; padding: 2px 5px;" title="Peserta PRB${titlePrb}">PRB</span>`;
                     }
+                    if (!prolanisPrb?.is_prolanis && !prolanisPrb?.is_prb) {
+                        badges += `<span class="badge bg-secondary-lt text-secondary ms-1" style="font-size: 0.65rem; padding: 2px 5px;" title="Bukan peserta Prolanis/PRB"><i class="ti ti-check me-1 text-success"></i>Non-Prolanis</span>`;
+                    }
                     $('#badgeCpptProlanisPrb').html(badges);
                 }
 
@@ -367,14 +370,12 @@
                             const pstPrb = resPeserta.response.pstPrb;
                             const isProl = pstProl && pstProl !== '-' && pstProl !== '0';
                             const isPrb = pstPrb && pstPrb !== '-' && pstPrb !== '0';
-                            if (isProl || isPrb) {
-                                renderBadgeCppt({
-                                    is_prolanis: !!isProl,
-                                    is_prb: !!isPrb,
-                                    prolanis: pstProl,
-                                    prb: pstPrb
-                                });
-                            }
+                            renderBadgeCppt({
+                                is_prolanis: !!isProl,
+                                is_prb: !!isPrb,
+                                prolanis: pstProl,
+                                prb: pstPrb
+                            });
                         }
                     });
                 }

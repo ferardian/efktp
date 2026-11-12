@@ -396,14 +396,17 @@
                             if (data?.prolanis_prb) {
                                 if (data.prolanis_prb.is_prolanis) {
                                     const titleProl = data.prolanis_prb.prolanis && data.prolanis_prb.prolanis !== '1' ? ` (${data.prolanis_prb.prolanis})` : '';
-                                    badgeProlanis += `<span class="badge bg-danger text-white ms-1" style="font-size: 0.65rem; padding: 2px 5px;" title="Peserta Prolanis${titleProl}">Prolanis</span>`;
+                                    badgeProlanis += `<span class="badge bg-danger text-white ms-1 cursor-pointer" style="font-size: 0.65rem; padding: 2px 5px;" title="Peserta Prolanis${titleProl}. Klik untuk cek ulang" onclick="syncProlanisSingle(event, '${noPeserta}', '${row.no_rawat}')">Prolanis</span>`;
                                 }
                                 if (data.prolanis_prb.is_prb) {
                                     const titlePrb = data.prolanis_prb.prb && data.prolanis_prb.prb !== '1' ? ` (${data.prolanis_prb.prb})` : '';
-                                    badgeProlanis += `<span class="badge bg-orange text-white ms-1" style="font-size: 0.65rem; padding: 2px 5px;" title="Peserta PRB${titlePrb}">PRB</span>`;
+                                    badgeProlanis += `<span class="badge bg-orange text-white ms-1 cursor-pointer" style="font-size: 0.65rem; padding: 2px 5px;" title="Peserta PRB${titlePrb}. Klik untuk cek ulang" onclick="syncProlanisSingle(event, '${noPeserta}', '${row.no_rawat}')">PRB</span>`;
+                                }
+                                if (!data.prolanis_prb.is_prolanis && !data.prolanis_prb.is_prb) {
+                                    badgeProlanis += `<a href="javascript:void(0)" class="badge bg-secondary-lt text-secondary ms-1" style="font-size: 0.65rem; padding: 2px 5px; text-decoration: none;" title="Terverifikasi BPJS: Bukan peserta Prolanis/PRB. Klik untuk cek ulang" onclick="syncProlanisSingle(event, '${noPeserta}', '${row.no_rawat}')"><i class="ti ti-check me-1 text-success"></i>Non-Prolanis</a>`;
                                 }
                             } else if (noPeserta) {
-                                badgeProlanis += `<a href="javascript:void(0)" class="badge bg-secondary-lt text-secondary ms-1" style="font-size: 0.65rem; padding: 2px 4px; text-decoration: none;" onclick="syncProlanisSingle(event, '${noPeserta}', '${row.no_rawat}')" title="Klik untuk cek status Prolanis/PRB pasien ini"><i class="ti ti-refresh me-1"></i>Cek BPJS</a>`;
+                                badgeProlanis += `<a href="javascript:void(0)" class="badge bg-primary-lt text-primary ms-1" style="font-size: 0.65rem; padding: 2px 5px; text-decoration: none;" onclick="syncProlanisSingle(event, '${noPeserta}', '${row.no_rawat}')" title="Klik untuk cek status Prolanis/PRB pasien ini"><i class="ti ti-refresh me-1"></i>Cek BPJS</a>`;
                             }
                             return `<span class="text-muted" style="font-style:italic">${row.no_rawat}</span> <br/> ${data?.nm_pasien} (${data?.jk}) ${badgeProlanis}`;
                         }
