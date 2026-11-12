@@ -194,7 +194,7 @@ class PcareKunjunganController extends Controller
         $key = [
             'noKunjungan' => $request->noKunjungan,
         ];
-        $pcare = PcareKunjungan::where($key)->first();
+        $pcare = PcareKunjungan::where($key)->with(['regPeriksa', 'pasien'])->first();
         $setting = Setting::first();
         $pdf = PDF::loadView('content.print.rujukanVertikal', ['data' => $pcare, 'setting' => $setting])
             ->setPaper("a5", 'landscape')->setOptions(['defaultFont' => 'sherif', 'isRemoteEnabled' => true]);

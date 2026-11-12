@@ -9,6 +9,7 @@ use App\Models\KamarInap;
 use App\Models\PemeriksaanRalan;
 use Awobaz\Compoships\Compoships;
 use App\Models\PcareRujukSubspesialis;
+use App\Models\PcareKunjungan;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -89,6 +90,11 @@ class RegPeriksa extends Model
 	function pcareRujukSubspesialis()
 	{
 		return $this->belongsTo(PcareRujukSubspesialis::class, 'no_rawat', 'no_rawat');
+	}
+
+	function pcareKunjungan()
+	{
+		return $this->hasOne(PcareKunjungan::class, 'no_rawat', 'no_rawat');
 	}
 
 	function gigi()

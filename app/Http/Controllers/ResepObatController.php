@@ -180,16 +180,40 @@ class ResepObatController extends Controller
 	public function print(Request $request)
 	{
 		$data = $this->get($request);
-		$resepObat = ResepObat::where(['no_rawat' => $request->no_rawat])->with([
+		$query = ResepObat::query();
+		if ($request->no_resep) {
+			$query->where('no_resep', $request->no_resep);
+		} else if ($request->no_rawat) {
+			$query->where('no_rawat', $request->no_rawat);
+		}
+		$resepObat = $query->with([
 			'regPeriksa.pasien' => function ($query) {
 				return $query->with(['kel', 'kec', 'kab', 'prop']);
 			},
+			'regPeriksa.penjab',
+			'regPeriksa.pcareKunjungan',
+			'regPeriksa.pcareRujukSubspesialis',
 			'resepDokter.obat',
 			'resepRacikan.detail.obat.satuan',
 			'dokter'
 		])->first();
+
+		if (!$resepObat) {
+			return response('Data resep tidak ditemukan', 404);
+		}
+
+		$noKunjungan = $resepObat->regPeriksa->pcareKunjungan->noKunjungan
+			?? $resepObat->regPeriksa->pcareRujukSubspesialis->noKunjungan
+			?? \App\Models\PcareKunjungan::where('no_rawat', $resepObat->no_rawat)->whereNotNull('noKunjungan')->where('noKunjungan', '!=', '')->value('noKunjungan')
+			?? \App\Models\PcareRujukSubspesialis::where('no_rawat', $resepObat->no_rawat)->whereNotNull('noKunjungan')->where('noKunjungan', '!=', '')->value('noKunjungan')
+			?? \App\Models\PcareObatDiberikan::where('no_rawat', $resepObat->no_rawat)->whereNotNull('noKunjungan')->where('noKunjungan', '!=', '')->value('noKunjungan');
+
 		$setting = Setting::first();
-		$pdf = PDF::loadView('content.print.resep', ['data' => $resepObat, 'setting' => $setting])
+		$pdf = PDF::loadView('content.print.resep', [
+			'data' => $resepObat,
+			'setting' => $setting,
+			'noKunjungan' => $noKunjungan,
+		])
 			->setPaper(array(0, 0, 283, 567.00))
 			->setOptions(['defaultFont' => 'serif', 'isRemoteEnabled' => true]);
 		return $pdf->stream('cetak resep.pdf');

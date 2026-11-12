@@ -1,4 +1,14 @@
 @extends('content.print.main')
+@php
+    $noKunjungan = $noKunjungan 
+        ?? data_get($data, 'regPeriksa.pcareKunjungan.noKunjungan') 
+        ?? data_get($data, 'regPeriksa.pcareRujukSubspesialis.noKunjungan')
+        ?? (!empty($data->no_rawat) ? (
+            \App\Models\PcareKunjungan::where('no_rawat', $data->no_rawat)->whereNotNull('noKunjungan')->where('noKunjungan', '!=', '')->value('noKunjungan')
+            ?? \App\Models\PcareRujukSubspesialis::where('no_rawat', $data->no_rawat)->whereNotNull('noKunjungan')->where('noKunjungan', '!=', '')->value('noKunjungan')
+            ?? \App\Models\PcareObatDiberikan::where('no_rawat', $data->no_rawat)->whereNotNull('noKunjungan')->where('noKunjungan', '!=', '')->value('noKunjungan')
+        ) : null);
+@endphp
 
 @section('content')
     {{-- {{ $setting->logo }} --}}
@@ -55,7 +65,7 @@
                         :
                     </td>
                     <td>
-                        {{ $data->no_resep }}
+                        {{ $data->no_resep }}{{ !empty($noKunjungan) ? ' / ' . $noKunjungan : '' }}
                     </td>
                 </tr>
                 <tr>

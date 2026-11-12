@@ -1,4 +1,46 @@
 @extends('content.print.main')
+@php
+    Carbon\Carbon::setLocale('id');
+
+    $satuanMap = [
+        'Th' => 'Tahun',
+        'Bl' => 'Bulan',
+        'Hr' => 'Hari',
+        'th' => 'Tahun',
+        'bl' => 'Bulan',
+        'hr' => 'Hari',
+    ];
+    $sttsUmur = data_get($data, 'reg_periksa.sttsumur') ?? data_get($data, 'regPeriksa.sttsumur');
+    $umurDaftar = data_get($data, 'reg_periksa.umurdaftar') ?? data_get($data, 'regPeriksa.umurdaftar');
+    $tglLahir = data_get($data, 'pasien.tgl_lahir');
+
+    if ($tglLahir) {
+        $birthDate = \Carbon\Carbon::parse($tglLahir);
+        $refDate = !empty($data['tglEstRujuk']) ? \Carbon\Carbon::parse($data['tglEstRujuk']) : \Carbon\Carbon::now();
+        $diffYears = $birthDate->diffInYears($refDate);
+        $diffMonths = $birthDate->diffInMonths($refDate);
+        $diffDays = $birthDate->diffInDays($refDate);
+
+        if (!$sttsUmur || $umurDaftar === null || $umurDaftar === '') {
+            if ($diffYears > 0) {
+                $sttsUmur = 'Th';
+                $umurDaftar = $diffYears;
+            } elseif ($diffMonths > 0) {
+                $sttsUmur = 'Bl';
+                $umurDaftar = $diffMonths;
+            } else {
+                $sttsUmur = 'Hr';
+                $umurDaftar = $diffDays;
+            }
+        } elseif ($diffYears == 0 && ($sttsUmur === 'Th' || $sttsUmur === 'Tahun') && $diffMonths > 0) {
+            $sttsUmur = 'Bl';
+            $umurDaftar = $diffMonths;
+        }
+    }
+
+    $satuanUmur = $satuanMap[$sttsUmur] ?? ($sttsUmur ?: 'Tahun');
+    $labelUmur = ($umurDaftar !== null && $umurDaftar !== '') ? "{$umurDaftar} {$satuanUmur}" : '-';
+@endphp
 
 @section('content')
     <div width="100%" style="font-size: 11px; margin: 5px 15px;">
@@ -48,7 +90,7 @@
             <tr>
                 <td>Umur</td>
                 <td>:</td>
-                <td>{{ $data['reg_periksa']['umurdaftar'] ?? '-' }} Tahun : {{ !empty($data['pasien']['tgl_lahir']) ? date('d-M-Y', strtotime($data['pasien']['tgl_lahir'])) : '-' }}</td>
+                <td>{{ $labelUmur }} : {{ !empty($data['pasien']['tgl_lahir']) ? date('d-M-Y', strtotime($data['pasien']['tgl_lahir'])) : '-' }}</td>
             </tr>
             <tr>
                 <td>No. Kartu BPJS</td>
