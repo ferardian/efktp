@@ -391,7 +391,20 @@
                         title: 'Pasien',
                         data: 'pasien',
                         render: (data, type, row, meta) => {
-                            return `<span class="text-muted" style="font-style:italic">${row.no_rawat}</span> <br/> ${data?.nm_pasien} (${data?.jk})`;
+                            let badgeProlanis = '';
+                            if (data?.prolanis_prb) {
+                                if (data.prolanis_prb.is_prolanis) {
+                                    const titleProl = data.prolanis_prb.prolanis && data.prolanis_prb.prolanis !== '1' ? ` (${data.prolanis_prb.prolanis})` : '';
+                                    badgeProlanis += `<span class="badge bg-danger text-white ms-1" style="font-size: 0.65rem; padding: 2px 5px;" title="Peserta Prolanis${titleProl}">Prolanis</span>`;
+                                }
+                                if (data.prolanis_prb.is_prb) {
+                                    const titlePrb = data.prolanis_prb.prb && data.prolanis_prb.prb !== '1' ? ` (${data.prolanis_prb.prb})` : '';
+                                    badgeProlanis += `<span class="badge bg-orange text-white ms-1" style="font-size: 0.65rem; padding: 2px 5px;" title="Peserta PRB${titlePrb}">PRB</span>`;
+                                }
+                            } else if (data?.no_peserta && (row.penjab?.png_jawab?.includes('BPJS') || row.kd_pj === 'BPJ')) {
+                                badgeProlanis += `<a href="javascript:void(0)" class="badge bg-secondary-lt text-secondary ms-1" style="font-size: 0.65rem; padding: 2px 4px; text-decoration: none;" onclick="syncProlanisSingle(event, '${data.no_peserta}', '${row.no_rawat}')" title="Klik untuk cek status Prolanis/PRB pasien ini"><i class="ti ti-refresh me-1"></i>Cek BPJS</a>`;
+                            }
+                            return `<span class="text-muted" style="font-style:italic">${row.no_rawat}</span> <br/> ${data?.nm_pasien} (${data?.jk}) ${badgeProlanis}`;
                         }
                     },
                     {
@@ -481,6 +494,71 @@
                     $(element).removeClass('btn-purple').addClass('btn-primary').text('BELUM').attr('onclick', `setPanggil('${no_rawat}', this)`);
                 }
             });
+        }
+
+        function syncProlanisSingle(event, noPeserta, noRawat) {
+            if (event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+            if (!noPeserta) return;
+
+            const btn = $(event.currentTarget);
+            const originalHtml = btn.html();
+            btn.html('<span class="spinner-border spinner-border-sm" role="status" style="width: 0.7rem; height: 0.7rem;"></span>');
+            btn.css('pointer-events', 'none');
+
+            $.get(`{{ url('/bridging/pcare/peserta') }}/${noPeserta}`)
+                .done((res) => {
+                    let isProlanis = false;
+                    let isPrb = false;
+                    let pstProl = null;
+                    let pstPrb = null;
+
+                    if (res && res.metaData && res.metaData.code == 200 && res.response) {
+                        pstProl = res.response.pstProl;
+                        pstPrb = res.response.pstPrb;
+                        isProlanis = pstProl && pstProl !== '-' && pstProl !== '0';
+                        isPrb = pstPrb && pstPrb !== '-' && pstPrb !== '0';
+
+                        let newBadges = '';
+                        if (isProlanis) {
+                            const titleProl = typeof pstProl === 'string' && pstProl !== '1' ? ` (${pstProl})` : '';
+                            newBadges += `<span class="badge bg-danger text-white ms-1" style="font-size: 0.65rem; padding: 2px 5px;" title="Peserta Prolanis${titleProl}">Prolanis</span>`;
+                        }
+                        if (isPrb) {
+                            const titlePrb = typeof pstPrb === 'string' && pstPrb !== '1' ? ` (${pstPrb})` : '';
+                            newBadges += `<span class="badge bg-orange text-white ms-1" style="font-size: 0.65rem; padding: 2px 5px;" title="Peserta PRB${titlePrb}">PRB</span>`;
+                        }
+                        if (!isProlanis && !isPrb) {
+                            newBadges = `<span class="badge bg-secondary-lt text-secondary ms-1" style="font-size: 0.65rem; padding: 2px 5px;" title="Bukan peserta Prolanis / PRB">Non-Prolanis</span>`;
+                        }
+
+                        btn.replaceWith(newBadges);
+
+                        let message = 'Status program BPJS berhasil diperbarui.';
+                        if (isProlanis && isPrb) message = 'Pasien terdaftar sebagai peserta Prolanis & PRB!';
+                        else if (isProlanis) message = 'Pasien terdaftar sebagai peserta Prolanis!';
+                        else if (isPrb) message = 'Pasien terdaftar sebagai peserta PRB!';
+                        else message = 'Pasien bukan peserta Prolanis atau PRB.';
+
+                        if (typeof alertSuccessAjax === 'function') {
+                            alertSuccessAjax(message);
+                        }
+                    } else {
+                        btn.html(originalHtml).css('pointer-events', 'auto');
+                        const errMsg = (res && res.metaData && res.metaData.message) ? res.metaData.message : 'Gagal cek data peserta ke BPJS.';
+                        if (typeof alertErrorAjax === 'function') {
+                            alertErrorAjax(errMsg);
+                        }
+                    }
+                })
+                .fail((xhr) => {
+                    btn.html(originalHtml).css('pointer-events', 'auto');
+                    if (typeof alertErrorAjax === 'function') {
+                        alertErrorAjax('Gagal menghubungi WS BPJS');
+                    }
+                });
         }
     </script>
 @endpush()

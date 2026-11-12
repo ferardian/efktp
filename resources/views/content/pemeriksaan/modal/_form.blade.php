@@ -21,7 +21,10 @@
         </div>
         <div class="col-md-6 col-xl-4 col-lg-3">
             <div class="mb-1">
-                <label class="form-label">Pembiayaan</label>
+                <label class="form-label d-flex justify-content-between align-items-center">
+                    <span>Pembiayaan</span>
+                    <span id="badgeCpptProlanisPrb"></span>
+                </label>
                 <div class="input-group mb-2">
                     <input value="-" type="text" class="form-control" name="pembiayaan" readonly>
                     <input value="-" type="text" class="form-control w-50" name="no_peserta" readonly>

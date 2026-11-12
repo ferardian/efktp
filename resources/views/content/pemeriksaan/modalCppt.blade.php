@@ -341,6 +341,42 @@
                 $('#btnTindakanPasien').attr('onclick', `tindakanPasien('${no_rawat}')`);
                 setRiwayat(response.no_rkm_medis)
                 setResepPasien(no_rawat)
+
+                // Render / Auto-cek Prolanis & PRB untuk pasien ini
+                $('#badgeCpptProlanisPrb').empty();
+                function renderBadgeCppt(prolanisPrb) {
+                    let badges = '';
+                    if (prolanisPrb?.is_prolanis) {
+                        const titleProl = prolanisPrb.prolanis && prolanisPrb.prolanis !== '1' ? ` (${prolanisPrb.prolanis})` : '';
+                        badges += `<span class="badge bg-danger text-white ms-1" style="font-size: 0.65rem; padding: 2px 5px;" title="Peserta Prolanis${titleProl}">Prolanis</span>`;
+                    }
+                    if (prolanisPrb?.is_prb) {
+                        const titlePrb = prolanisPrb.prb && prolanisPrb.prb !== '1' ? ` (${prolanisPrb.prb})` : '';
+                        badges += `<span class="badge bg-orange text-white ms-1" style="font-size: 0.65rem; padding: 2px 5px;" title="Peserta PRB${titlePrb}">PRB</span>`;
+                    }
+                    $('#badgeCpptProlanisPrb').html(badges);
+                }
+
+                if (pasien.prolanis_prb) {
+                    renderBadgeCppt(pasien.prolanis_prb);
+                } else if (pasien.no_peserta && (response.penjab?.png_jawab?.includes('BPJS') || response.kd_pj === 'BPJ')) {
+                    $.get(`{{ url('/bridging/pcare/peserta') }}/${pasien.no_peserta}`).done((resPeserta) => {
+                        if (resPeserta?.metaData?.code == 200 && resPeserta.response) {
+                            const pstProl = resPeserta.response.pstProl;
+                            const pstPrb = resPeserta.response.pstPrb;
+                            const isProl = pstProl && pstProl !== '-' && pstProl !== '0';
+                            const isPrb = pstPrb && pstPrb !== '-' && pstPrb !== '0';
+                            if (isProl || isPrb) {
+                                renderBadgeCppt({
+                                    is_prolanis: !!isProl,
+                                    is_prb: !!isPrb,
+                                    prolanis: pstProl,
+                                    prb: pstPrb
+                                });
+                            }
+                        }
+                    });
+                }
                 if (pasien.alergi.length) {
                     const alergi = pasien.alergi;
                     inputAlergi.empty()

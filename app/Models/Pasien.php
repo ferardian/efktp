@@ -9,6 +9,7 @@ use App\Models\Kecamatan;
 use App\Models\Kelurahan;
 use App\Models\RegPeriksa;
 use App\Models\EfktpPcareAlergi;
+use App\Models\EfktpPasienProlanisPrb;
 use Awobaz\Compoships\Compoships;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -34,6 +35,10 @@ class Pasien extends Model
     function alergi()
     {
         return $this->hasMany(EfktpPcareAlergi::class, 'no_rkm_medis', 'no_rkm_medis');
+    }
+    function prolanisPrb()
+    {
+        return $this->hasOne(EfktpPasienProlanisPrb::class, 'no_peserta', 'no_peserta');
     }
     function kel()
     {

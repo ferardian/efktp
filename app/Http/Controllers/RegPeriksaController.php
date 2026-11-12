@@ -42,6 +42,7 @@ class RegPeriksaController extends Controller
 			'dokter.maping',
 			'pcarePendaftaran',
 			'pasien.alergi',
+			'pasien.prolanisPrb',
 			'pcareRujukSubspesialis',
 			'pasien.cacatFisik',
 			'kamarInap' => function ($q) {

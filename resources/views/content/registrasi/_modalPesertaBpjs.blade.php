@@ -24,6 +24,10 @@
                             <label for="nama" class="form-label">Nama</label>
                             <input type="text" class="form-control" name="nama" id="nama" readonly />
                         </div>
+                        <div class="col-xl-4 col-md-12 col-sm-12" id="wrapperProlanisPrb" style="display:none;">
+                            <label class="form-label">Program Khusus BPJS</label>
+                            <div id="badgeProlanisPrb" class="pt-1"></div>
+                        </div>
                         <div class="col-xl-4 col-md-12 col-sm-12">
                             <label for="tglLahir" class="form-label">Tgl. Lahir</label>
                             <input type="text" class="form-control" name="tglLahir" id="tglLahir" readonly />
@@ -118,6 +122,25 @@
                         formPesrta.find('#nmJenis').val(jnsPesertaNama);
                         formPesrta.find('#tglAkhirBerlaku').val(result.tglAkhirBerlaku || '-');
                         formPesrta.find('#tglMulaiAktif').val(result.tglMulaiAktif || '-');
+
+                        const pstProl = result.pstProl;
+                        const pstPrb = result.pstPrb;
+                        let prolanisBadges = '';
+                        if (pstProl && pstProl !== '-' && pstProl !== '0') {
+                            const descProl = pstProl !== '1' ? ` (${pstProl})` : '';
+                            prolanisBadges += `<span class="badge bg-danger text-white me-2 fs-5 py-1 px-2"><i class="ti ti-heart-rate-monitor me-1"></i>Prolanis${descProl}</span>`;
+                        }
+                        if (pstPrb && pstPrb !== '-' && pstPrb !== '0') {
+                            const descPrb = pstPrb !== '1' ? ` (${pstPrb})` : '';
+                            prolanisBadges += `<span class="badge bg-orange text-white me-2 fs-5 py-1 px-2"><i class="ti ti-pill me-1"></i>PRB${descPrb}</span>`;
+                        }
+                        if (prolanisBadges) {
+                            formPesrta.find('#badgeProlanisPrb').html(prolanisBadges);
+                            formPesrta.find('#wrapperProlanisPrb').show();
+                        } else {
+                            formPesrta.find('#wrapperProlanisPrb').hide();
+                        }
+
                         modalPesertaBpjs.modal('show');
                     } else {
                         const errorMsg = (response && response.metaData && response.metaData.message)
