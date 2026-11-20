@@ -293,6 +293,9 @@
                                 <a class="dropdown-item {{ Request::is('master/tarif-ranap*') ? 'active' : '' }}" href="{{ url('master/tarif-ranap') }}">
                                     Tarif Rawat Inap
                                 </a>
+                                <a class="dropdown-item {{ Request::is('kamar*') ? 'active' : '' }}" href="{{ url('kamar') }}">
+                                    Data Kamar & Bed
+                                </a>
                                 <a class="dropdown-item {{ Request::is('setting/jam-ranap*') ? 'active' : '' }}" href="{{ url('setting/jam-ranap') }}">
                                     Set Jam Minimal Ranap
                                 </a>

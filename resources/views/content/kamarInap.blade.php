@@ -18,9 +18,14 @@
         <div class="card shadow-sm border-0">
             <div class="card-header bg-white py-2 d-flex justify-content-between align-items-center">
                 <h4 class="card-title mb-0"><i class="ti ti-bed me-2 text-primary"></i> Data Pasien Rawat Inap</h4>
-                <a href="{{ url('setting/jam-ranap') }}" class="btn btn-sm btn-outline-secondary" title="Atur Jam Minimal & Pengakuan Hari Rawat Inap">
-                    <i class="ti ti-clock-cog me-1"></i> Set Jam Ranap
-                </a>
+                <div class="d-flex gap-2">
+                    <a href="{{ url('kamar') }}" class="btn btn-sm btn-outline-primary" title="Manajemen Master Kamar & Bed">
+                        <i class="ti ti-bed me-1"></i> Data Kamar & Bed
+                    </a>
+                    <a href="{{ url('setting/jam-ranap') }}" class="btn btn-sm btn-outline-secondary" title="Atur Jam Minimal & Pengakuan Hari Rawat Inap">
+                        <i class="ti ti-clock-cog me-1"></i> Set Jam Ranap
+                    </a>
+                </div>
             </div>
             <div class="card-body">
                 <div id="table-default" class="table-responsive">

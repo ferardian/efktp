@@ -358,6 +358,33 @@ class MenuController extends Controller
                     }
                 }
 
+                $existingKamar = Menu::where('url', 'kamar')->first();
+                if (!$existingKamar) {
+                    $newKamar = Menu::create([
+                        'name'      => 'Data Kamar & Bed',
+                        'url'       => 'kamar',
+                        'icon'      => '<i class="ti ti-bed-filled me-1"></i>',
+                        'parent_id' => $masterParent->id,
+                        'order_num' => 6,
+                        'target'    => '_self',
+                        'position'  => 'sidebar',
+                    ]);
+
+                    $roles = ['admin', 'owner', 'petugas', 'dokter', 'perawat'];
+                    foreach ($roles as $r) {
+                        MenuRole::firstOrCreate(['menu_id' => $newKamar->id, 'role' => $r]);
+                    }
+                } else {
+                    $existingKamar->update([
+                        'parent_id' => $masterParent->id,
+                        'position'  => 'sidebar',
+                    ]);
+                    $roles = ['admin', 'owner', 'petugas', 'dokter', 'perawat'];
+                    foreach ($roles as $r) {
+                        MenuRole::firstOrCreate(['menu_id' => $existingKamar->id, 'role' => $r]);
+                    }
+                }
+
                 $existingSetJam = Menu::where('url', 'setting/jam-ranap')->first();
                 if (!$existingSetJam) {
                     $newSetJam = Menu::create([

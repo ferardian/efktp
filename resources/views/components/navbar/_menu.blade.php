@@ -118,8 +118,9 @@
              </span>
         </a>
     </li>
-    <li class="nav-item {{ Request::is('ranap') ? 'active' : '' }}">
-        <a class="nav-link" href="{{ url('/ranap') }}">
+    <li class="nav-item dropdown {{ Request::is('ranap*') || Request::is('kamar*') ? 'active' : '' }}">
+        <a class="nav-link dropdown-toggle" href="javascript:void(0)" data-bs-toggle="dropdown"
+           data-bs-auto-close="outside" role="button" aria-expanded="false">
              <span class="nav-link-icon d-md-none d-lg-inline-block">
                  <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bed-filled" width="24"
                       height="24" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" fill="none"
@@ -135,6 +136,14 @@
                  Rawat Inap
              </span>
         </a>
+        <div class="dropdown-menu" data-bs-popper="static">
+            <a class="dropdown-item {{ Request::is('ranap*') ? 'active' : '' }}" href="{{ url('/ranap') }}">
+                Pasien Rawat Inap
+            </a>
+            <a class="dropdown-item {{ Request::is('kamar*') ? 'active' : '' }}" href="{{ url('/kamar') }}">
+                Data Kamar & Bed
+            </a>
+        </div>
     </li>
     <li class="nav-item  {{ Request::segment(1) == 'farmasi' ? 'active' : '' }} dropdown">
         <a class="nav-link dropdown-toggle" href="javascript:void(0)" data-bs-toggle="dropdown"

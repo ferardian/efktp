@@ -618,6 +618,18 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::post('kamar/inap/create', [KamarInapController::class, 'create']);
 	Route::get('kamar/ketersediaan', [KamarInapController::class, 'getKamarKosong']);
 
+	// MASTER KAMAR & BED (DlgKamar SIMRS Khanza)
+	Route::get('kamar', [\App\Http\Controllers\KamarController::class, 'index']);
+	Route::get('kamar/data', [\App\Http\Controllers\KamarController::class, 'data']);
+	Route::get('kamar/stats', [\App\Http\Controllers\KamarController::class, 'stats']);
+	Route::get('kamar/auto-kode', [\App\Http\Controllers\KamarController::class, 'autoKode']);
+	Route::post('kamar/store', [\App\Http\Controllers\KamarController::class, 'store']);
+	Route::put('kamar/update/{kd_kamar}', [\App\Http\Controllers\KamarController::class, 'update']);
+	Route::post('kamar/update-status', [\App\Http\Controllers\KamarController::class, 'updateStatus']);
+	Route::delete('kamar/destroy/{kd_kamar}', [\App\Http\Controllers\KamarController::class, 'destroy']);
+	Route::post('kamar/restore/{kd_kamar}', [\App\Http\Controllers\KamarController::class, 'restore']);
+	Route::get('kamar/bangsal', [\App\Http\Controllers\KamarController::class, 'getBangsal']);
+
 	Route::get('pemeriksaan/ranap', [PemeriksaanRanapController::class, 'get']);
 	Route::get('pemeriksaan/ranap/print/{no_rawat?}', [PemeriksaanRanapController::class, 'printCppt'])->where('no_rawat', '.*');
 	Route::post('pemeriksaan/ranap', [PemeriksaanRanapController::class, 'create']);
