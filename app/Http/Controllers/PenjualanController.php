@@ -286,7 +286,62 @@ class PenjualanController extends Controller
                 $totalObat += $itemTotal;
                 $totalHpp += ($jumlah * $hBeli);
 
-                // Insert detailjual
+                // Cari baris gudangbarang yang akan dipotong
+                $targetBatch = $noBatch;
+                $targetFaktur = $noFaktur;
+                $gudangRow = null;
+
+                if (!empty($targetBatch) || !empty($targetFaktur)) {
+                    $gQuery = DB::table('gudangbarang')
+                        ->where('kode_brng', $kodeBrng)
+                        ->where('kd_bangsal', $request->kd_bangsal);
+                    if (!empty($targetBatch)) $gQuery->where('no_batch', $targetBatch);
+                    if (!empty($targetFaktur)) $gQuery->where('no_faktur', $targetFaktur);
+                    $gudangRow = $gQuery->first();
+                } else {
+                    // Cari baris dengan stok > 0 secara FIFO
+                    $gudangRow = DB::table('gudangbarang')
+                        ->where('kode_brng', $kodeBrng)
+                        ->where('kd_bangsal', $request->kd_bangsal)
+                        ->where('stok', '>', 0)
+                        ->orderByRaw("CASE WHEN no_batch = '' OR no_batch IS NULL THEN 0 ELSE 1 END ASC")
+                        ->orderBy('no_batch', 'ASC')
+                        ->first();
+
+                    // Jika tidak ada baris ber-stok positif, ambil baris pertama yang ada di bangsal tersebut
+                    if (!$gudangRow) {
+                        $gudangRow = DB::table('gudangbarang')
+                            ->where('kode_brng', $kodeBrng)
+                            ->where('kd_bangsal', $request->kd_bangsal)
+                            ->first();
+                    }
+                }
+
+                if ($gudangRow) {
+                    $targetBatch = $gudangRow->no_batch;
+                    $targetFaktur = $gudangRow->no_faktur;
+                    $stokAwal = (float) $gudangRow->stok;
+                    $stokAkhir = $stokAwal - $jumlah;
+
+                    DB::table('gudangbarang')
+                        ->where('kode_brng', $kodeBrng)
+                        ->where('kd_bangsal', $request->kd_bangsal)
+                        ->where('no_batch', $targetBatch)
+                        ->where('no_faktur', $targetFaktur)
+                        ->decrement('stok', $jumlah);
+                } else {
+                    $stokAwal = 0;
+                    $stokAkhir = -$jumlah;
+                    DB::table('gudangbarang')->insert([
+                        'kode_brng'  => $kodeBrng,
+                        'kd_bangsal' => $request->kd_bangsal,
+                        'stok'       => -$jumlah,
+                        'no_batch'   => $targetBatch ?: '',
+                        'no_faktur'  => $targetFaktur ?: '',
+                    ]);
+                }
+
+                // Insert detailjual dengan batch & faktur yang sebenarnya dipotong
                 DetailJual::create([
                     'nota_jual'    => $notaJual,
                     'kode_brng'    => $kodeBrng,
@@ -302,47 +357,24 @@ class PenjualanController extends Controller
                     'tuslah'       => $tuslah,
                     'aturan_pakai' => $aturanPakai,
                     'total'        => $itemTotal,
-                    'no_batch'     => $noBatch,
-                    'no_faktur'    => $noFaktur,
+                    'no_batch'     => $targetBatch ?: '',
+                    'no_faktur'    => $targetFaktur ?: '',
                 ]);
-
-                // Kurangi stok di gudangbarang
-                $gudangQuery = DB::table('gudangbarang')
-                    ->where('kode_brng', $kodeBrng)
-                    ->where('kd_bangsal', $request->kd_bangsal);
-
-                if (!empty($noBatch)) {
-                    $gudangQuery->where('no_batch', $noBatch);
-                }
-                if (!empty($noFaktur)) {
-                    $gudangQuery->where('no_faktur', $noFaktur);
-                }
-
-                $gudang = $gudangQuery->first();
-                if ($gudang) {
-                    $gudangQuery->decrement('stok', $jumlah);
-                } else {
-                    DB::table('gudangbarang')->insert([
-                        'kode_brng'  => $kodeBrng,
-                        'kd_bangsal' => $request->kd_bangsal,
-                        'stok'       => -$jumlah,
-                        'no_batch'   => $noBatch,
-                        'no_faktur'  => $noFaktur,
-                    ]);
-                }
 
                 // Catat Riwayat Barang Medis (Audit Trail)
                 $this->recordRiwayatMedis(
                     $kodeBrng,
+                    $stokAwal,
                     0,
                     $jumlah,
+                    $stokAkhir,
                     'Penjualan',
                     $tglJual,
                     $nip,
                     $request->kd_bangsal,
                     'Simpan',
-                    $noBatch,
-                    $noFaktur,
+                    $targetBatch ?: '',
+                    $targetFaktur ?: '',
                     $notaJual . ' ' . ($request->no_rkm_medis ?: '-') . ' ' . ($request->nm_pasien ?: 'UMUM')
                 );
             }
@@ -413,41 +445,61 @@ class PenjualanController extends Controller
 
             // Reversal Stok & Catat Riwayat Pembatalan
             foreach ($details as $detail) {
-                $gudangQuery = DB::table('gudangbarang')
+                $targetBatch = $detail->no_batch ?? '';
+                $targetFaktur = $detail->no_faktur ?? '';
+
+                $gudangRow = DB::table('gudangbarang')
                     ->where('kode_brng', $detail->kode_brng)
-                    ->where('kd_bangsal', $penjualan->kd_bangsal);
+                    ->where('kd_bangsal', $penjualan->kd_bangsal)
+                    ->where('no_batch', $targetBatch)
+                    ->where('no_faktur', $targetFaktur)
+                    ->first();
 
-                if (!empty($detail->no_batch)) {
-                    $gudangQuery->where('no_batch', $detail->no_batch);
-                }
-                if (!empty($detail->no_faktur)) {
-                    $gudangQuery->where('no_faktur', $detail->no_faktur);
+                // Jika tidak ditemukan baris persis, gunakan baris yang sudah ada di bangsal tersebut agar tidak menciptakan baris duplikat
+                if (!$gudangRow) {
+                    $gudangRow = DB::table('gudangbarang')
+                        ->where('kode_brng', $detail->kode_brng)
+                        ->where('kd_bangsal', $penjualan->kd_bangsal)
+                        ->first();
+                    if ($gudangRow) {
+                        $targetBatch = $gudangRow->no_batch;
+                        $targetFaktur = $gudangRow->no_faktur;
+                    }
                 }
 
-                $gudang = $gudangQuery->first();
-                if ($gudang) {
-                    $gudangQuery->increment('stok', $detail->jumlah);
+                $stokAwal = $gudangRow ? (float) $gudangRow->stok : 0;
+                $stokAkhir = $stokAwal + $detail->jumlah;
+
+                if ($gudangRow) {
+                    DB::table('gudangbarang')
+                        ->where('kode_brng', $detail->kode_brng)
+                        ->where('kd_bangsal', $penjualan->kd_bangsal)
+                        ->where('no_batch', $targetBatch)
+                        ->where('no_faktur', $targetFaktur)
+                        ->increment('stok', $detail->jumlah);
                 } else {
                     DB::table('gudangbarang')->insert([
                         'kode_brng'  => $detail->kode_brng,
                         'kd_bangsal' => $penjualan->kd_bangsal,
                         'stok'       => $detail->jumlah,
-                        'no_batch'   => $detail->no_batch ?? '',
-                        'no_faktur'  => $detail->no_faktur ?? '',
+                        'no_batch'   => $targetBatch,
+                        'no_faktur'  => $targetFaktur,
                     ]);
                 }
 
                 $this->recordRiwayatMedis(
                     $detail->kode_brng,
+                    $stokAwal,
                     $detail->jumlah,
                     0,
+                    $stokAkhir,
                     'Penjualan',
                     date('Y-m-d'),
                     $nip,
                     $penjualan->kd_bangsal,
                     'Hapus',
-                    $detail->no_batch ?? '',
-                    $detail->no_faktur ?? '',
+                    $targetBatch,
+                    $targetFaktur,
                     'Batal Penjualan ' . $nota_jual
                 );
             }
@@ -618,30 +670,15 @@ class PenjualanController extends Controller
         return $prefix . str_pad($nextNum, 6, '0', STR_PAD_LEFT);
     }
 
-    private function recordRiwayatMedis($kodeBrng, $masuk, $keluar, $posisi, $tgl, $petugas, $kdBangsal, $status, $noBatch, $noFaktur, $keterangan)
+    private function recordRiwayatMedis($kodeBrng, $stokAwal, $masuk, $keluar, $stokAkhir, $posisi, $tgl, $petugas, $kdBangsal, $status, $noBatch, $noFaktur, $keterangan)
     {
         try {
-            $gudang = DB::table('gudangbarang')
-                ->where('kode_brng', $kodeBrng)
-                ->where('kd_bangsal', $kdBangsal);
-
-            if (!empty($noBatch)) {
-                $gudang->where('no_batch', $noBatch);
-            }
-            if (!empty($noFaktur)) {
-                $gudang->where('no_faktur', $noFaktur);
-            }
-
-            $firstGudang = $gudang->first();
-            $stokAwal = $firstGudang ? floatval($firstGudang->stok) : 0;
-            $stokAkhir = ($status === 'Simpan') ? ($stokAwal - $keluar) : ($stokAwal + $masuk);
-
             DB::table('riwayat_barang_medis')->insert([
                 'kode_brng'  => $kodeBrng,
                 'stok_awal'  => $stokAwal,
                 'masuk'      => $masuk,
                 'keluar'     => $keluar,
-                'stok_akhir' => max(0, $stokAkhir),
+                'stok_akhir' => $stokAkhir,
                 'posisi'     => $posisi,
                 'tanggal'    => $tgl,
                 'jam'        => date('H:i:s'),

@@ -421,12 +421,28 @@
                             let total = 0;
                             let details = [];
                             if (data && Array.isArray(data)) {
+                                // Kelompokkan stok berdasarkan bangsal / lokasi agar tidak duplikat
+                                const bangsalMap = {};
                                 data.forEach(g => {
-                                    const nm = g.lokasi ? g.lokasi.nm_bangsal : g.kd_bangsal;
+                                    const nm = g.lokasi ? g.lokasi.nm_bangsal : (g.kd_bangsal || 'Gudang');
                                     const stokVal = parseFloat(g.stok) || 0;
                                     total += stokVal;
                                     if (stokVal > 0) {
-                                        details.push(`${nm}: ${g.stok}`);
+                                        if (!bangsalMap[nm]) {
+                                            bangsalMap[nm] = { total: 0, batches: [] };
+                                        }
+                                        bangsalMap[nm].total += stokVal;
+                                        const batchInfo = g.no_batch ? `Batch ${g.no_batch}: ${g.stok}` : (g.no_faktur ? `Faktur ${g.no_faktur}: ${g.stok}` : `${g.stok}`);
+                                        bangsalMap[nm].batches.push(batchInfo);
+                                    }
+                                });
+
+                                Object.keys(bangsalMap).forEach(nm => {
+                                    const info = bangsalMap[nm];
+                                    if (info.batches.length > 1) {
+                                        details.push(`<b>${nm}: ${info.total}</b> (${info.batches.join(', ')})`);
+                                    } else {
+                                        details.push(`<b>${nm}:</b> ${info.total}`);
                                     }
                                 });
                             }

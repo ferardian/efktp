@@ -450,12 +450,27 @@ class PemberianObatRanapController extends Controller
         DB::beginTransaction();
         try {
             // 1. Kembalikan stok ke gudangbarang
+            $targetBatch = $no_batch;
+            $targetFaktur = $no_faktur;
+
             $gudang = DB::table('gudangbarang')
                 ->where('kode_brng', $kode_brng)
                 ->where('kd_bangsal', $kdBangsal)
-                ->where('no_batch', $no_batch)
-                ->where('no_faktur', $no_faktur)
+                ->where('no_batch', $targetBatch)
+                ->where('no_faktur', $targetFaktur)
                 ->first();
+
+            // Fallback ke baris lain di bangsal tersebut jika tidak cocok persis
+            if (!$gudang) {
+                $gudang = DB::table('gudangbarang')
+                    ->where('kode_brng', $kode_brng)
+                    ->where('kd_bangsal', $kdBangsal)
+                    ->first();
+                if ($gudang) {
+                    $targetBatch = $gudang->no_batch;
+                    $targetFaktur = $gudang->no_faktur;
+                }
+            }
 
             $stokAwal = $gudang ? floatval($gudang->stok) : 0;
 
@@ -463,16 +478,16 @@ class PemberianObatRanapController extends Controller
                 DB::table('gudangbarang')
                     ->where('kode_brng', $kode_brng)
                     ->where('kd_bangsal', $kdBangsal)
-                    ->where('no_batch', $no_batch)
-                    ->where('no_faktur', $no_faktur)
+                    ->where('no_batch', $targetBatch)
+                    ->where('no_faktur', $targetFaktur)
                     ->increment('stok', $qty);
             } else {
                 DB::table('gudangbarang')->insert([
                     'kode_brng'  => $kode_brng,
                     'kd_bangsal' => $kdBangsal,
                     'stok'       => $qty,
-                    'no_batch'   => $no_batch,
-                    'no_faktur'  => $no_faktur,
+                    'no_batch'   => $targetBatch,
+                    'no_faktur'  => $targetFaktur,
                 ]);
             }
 
@@ -489,8 +504,8 @@ class PemberianObatRanapController extends Controller
                 'petugas'    => $petugas,
                 'kd_bangsal' => $kdBangsal,
                 'status'     => 'Hapus',
-                'no_batch'   => $no_batch,
-                'no_faktur'  => $no_faktur,
+                'no_batch'   => $targetBatch,
+                'no_faktur'  => $targetFaktur,
                 'keterangan' => substr("Batal Pemberian BHP/Obat Ranap: {$no_rawat}", 0, 150),
             ]);
 

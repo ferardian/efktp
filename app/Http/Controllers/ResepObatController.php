@@ -539,12 +539,26 @@ class ResepObatController extends Controller
 			$stokAwal = (float) $row->stok;
 			$stokAkhir = $stokAwal - $take;
 
-			DB::table('gudangbarang')
+			$qUpdate = DB::table('gudangbarang')
 				->where('kode_brng', $kode_brng)
-				->where('kd_bangsal', $kd_bangsal)
-				->where('no_batch', $row->no_batch ?? '')
-				->where('no_faktur', $row->no_faktur ?? '')
-				->decrement('stok', $take);
+				->where('kd_bangsal', $kd_bangsal);
+
+			$bVal = $row->no_batch ?? '';
+			$fVal = $row->no_faktur ?? '';
+
+			if ($bVal === '') {
+				$qUpdate->where(function ($q) { $q->where('no_batch', '')->orWhereNull('no_batch'); });
+			} else {
+				$qUpdate->where('no_batch', $bVal);
+			}
+
+			if ($fVal === '') {
+				$qUpdate->where(function ($q) { $q->where('no_faktur', '')->orWhereNull('no_faktur'); });
+			} else {
+				$qUpdate->where('no_faktur', $fVal);
+			}
+
+			$qUpdate->decrement('stok', $take);
 
 			DB::table('riwayat_barang_medis')->insert([
 				'kode_brng'  => $kode_brng,
@@ -558,14 +572,14 @@ class ResepObatController extends Controller
 				'petugas'    => $petugas,
 				'kd_bangsal' => $kd_bangsal,
 				'status'     => 'Simpan',
-				'no_batch'   => $row->no_batch ?? '',
-				'no_faktur'  => $row->no_faktur ?? '',
+				'no_batch'   => $bVal,
+				'no_faktur'  => $fVal,
 				'keterangan' => substr($keterangan ?: "Validasi Resep: {$kode_brng}", 0, 150),
 			]);
 
 			$deductions[] = [
-				'no_batch'  => $row->no_batch ?? '',
-				'no_faktur' => $row->no_faktur ?? '',
+				'no_batch'  => $bVal,
+				'no_faktur' => $fVal,
 				'jml'       => $take,
 			];
 
@@ -576,19 +590,20 @@ class ResepObatController extends Controller
 			$defaultRow = DB::table('gudangbarang')
 				->where('kode_brng', $kode_brng)
 				->where('kd_bangsal', $kd_bangsal)
-				->where('no_batch', '')
-				->where('no_faktur', '')
+				->orderByRaw("CASE WHEN no_batch = '' OR no_batch IS NULL THEN 0 ELSE 1 END ASC")
 				->first();
 
 			$stokAwal = $defaultRow ? (float) $defaultRow->stok : 0;
 			$stokAkhir = $stokAwal - $remaining;
+			$useBatch = $defaultRow ? ($defaultRow->no_batch ?? '') : '';
+			$useFaktur = $defaultRow ? ($defaultRow->no_faktur ?? '') : '';
 
 			if ($defaultRow) {
 				DB::table('gudangbarang')
 					->where('kode_brng', $kode_brng)
 					->where('kd_bangsal', $kd_bangsal)
-					->where('no_batch', '')
-					->where('no_faktur', '')
+					->where('no_batch', $useBatch)
+					->where('no_faktur', $useFaktur)
 					->decrement('stok', $remaining);
 			} else {
 				DB::table('gudangbarang')->insert([
@@ -612,14 +627,14 @@ class ResepObatController extends Controller
 				'petugas'    => $petugas,
 				'kd_bangsal' => $kd_bangsal,
 				'status'     => 'Simpan',
-				'no_batch'   => '',
-				'no_faktur'  => '',
+				'no_batch'   => $useBatch,
+				'no_faktur'  => $useFaktur,
 				'keterangan' => substr($keterangan ?: "Validasi Resep: {$kode_brng}", 0, 150),
 			]);
 
 			$deductions[] = [
-				'no_batch'  => '',
-				'no_faktur' => '',
+				'no_batch'  => $useBatch,
+				'no_faktur' => $useFaktur,
 				'jml'       => $remaining,
 			];
 		}
@@ -1771,24 +1786,45 @@ class ResepObatController extends Controller
 				// 2. Kembalikan stok ke gudangbarang & catat riwayat_barang_medis
 				foreach ($detailObat as $item) {
 					$targetBangsal = $item->kd_bangsal ?: $bangsal;
-					$gbQuery = DB::table('gudangbarang')
+					$targetBatch = $item->no_batch ?? '';
+					$targetFaktur = $item->no_faktur ?? '';
+
+					$gudangRow = DB::table('gudangbarang')
 						->where('kode_brng', $item->kode_brng)
 						->where('kd_bangsal', $targetBangsal)
-						->where('no_batch', $item->no_batch ?? '')
-						->where('no_faktur', $item->no_faktur ?? '');
+						->where('no_batch', $targetBatch)
+						->where('no_faktur', $targetFaktur)
+						->first();
 
-					$currentStock = (float) ($gbQuery->value('stok') ?? 0);
+					// Fallback: jika tidak cocok persis (misal batch/faktur kosong atau beda), cari baris yang ada di bangsal tersebut
+					if (!$gudangRow) {
+						$gudangRow = DB::table('gudangbarang')
+							->where('kode_brng', $item->kode_brng)
+							->where('kd_bangsal', $targetBangsal)
+							->first();
+						if ($gudangRow) {
+							$targetBatch = $gudangRow->no_batch;
+							$targetFaktur = $gudangRow->no_faktur;
+						}
+					}
+
+					$currentStock = $gudangRow ? (float) $gudangRow->stok : 0;
 					$qty = floatval($item->jml);
 
-					if ($gbQuery->exists()) {
-						$gbQuery->increment('stok', $qty);
+					if ($gudangRow) {
+						DB::table('gudangbarang')
+							->where('kode_brng', $item->kode_brng)
+							->where('kd_bangsal', $targetBangsal)
+							->where('no_batch', $targetBatch)
+							->where('no_faktur', $targetFaktur)
+							->increment('stok', $qty);
 					} else {
 						DB::table('gudangbarang')->insert([
 							'kode_brng'  => $item->kode_brng,
 							'kd_bangsal' => $targetBangsal,
 							'stok'       => $qty,
-							'no_batch'   => $item->no_batch ?? '',
-							'no_faktur'  => $item->no_faktur ?? '',
+							'no_batch'   => $targetBatch,
+							'no_faktur'  => $targetFaktur,
 						]);
 					}
 
@@ -1804,8 +1840,8 @@ class ResepObatController extends Controller
 						'petugas'    => $petugas,
 						'kd_bangsal' => $targetBangsal,
 						'status'     => 'Hapus',
-						'no_batch'   => $item->no_batch ?? '',
-						'no_faktur'  => $item->no_faktur ?? '',
+						'no_batch'   => $targetBatch,
+						'no_faktur'  => $targetFaktur,
 						'keterangan' => substr("Batal Validasi Resep {$no_resep}: {$no_rawat}", 0, 150),
 					]);
 				}
