@@ -1136,6 +1136,7 @@ class SatuSehatService extends SatuSehatClient
                 'display' => 'Pemeriksaan ' . $def['display'] . ' Pasien ' . $patientName . ' pada ' . $tgl . ' ' . $jam
             ],
             'effectiveDateTime' => $tgl . 'T' . $jam . '+07:00',
+            'issued' => $tgl . 'T' . $jam . '+07:00',
             'valueQuantity' => [
                 'value' => (float)str_replace(',', '.', $value),
                 'unit' => $def['unit'],
