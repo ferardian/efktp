@@ -20,36 +20,43 @@ class KasirHelper
             return false;
         }
 
-        // Role utama kasir, keuangan, dan administrator faskes selalu diizinkan
+        // 1. Role utama kasir, keuangan, dan administrator faskes selalu diizinkan
         if (in_array($role, ['admin', 'owner', 'kasir', 'keuangan'])) {
             return true;
         }
 
-        // Jika faskes adalah praktek mandiri / dokter merangkap kasir
+        // 2. Jika faskes adalah praktek mandiri dokter / dokter merangkap kasir
         if ($role === 'dokter' && config('app.dokter_bisa_kasir', false)) {
             return true;
         }
 
-        // Jika fitur pembatasan menu role aktif, periksa tabel mapping menu_role
+        // 3. Jika fitur pembatasan menu role aktif, periksa apakah role user benar-benar
+        // memiliki hak akses ke menu kasir DAN parent menu Keuangan (jika ada parent)
         if (config('app.enable_menu_role')) {
             try {
                 if (Schema::hasTable('menu_role') && Schema::hasTable('menus')) {
-                    $hasMenuAccess = DB::table('menu_role')
-                        ->join('menus', 'menu_role.menu_id', '=', 'menus.id')
-                        ->where('menu_role.role', $role)
+                    $hasMenuAccess = DB::table('menus as sub')
+                        ->join('menu_role as mr_sub', 'sub.id', '=', 'mr_sub.menu_id')
+                        ->leftJoin('menus as parent', 'sub.parent_id', '=', 'parent.id')
+                        ->leftJoin('menu_role as mr_parent', function ($join) use ($role) {
+                            $join->on('parent.id', '=', 'mr_parent.menu_id')
+                                 ->where('mr_parent.role', '=', $role);
+                        })
+                        ->where('mr_sub.role', $role)
                         ->where(function ($q) {
-                            $q->where('menus.url', 'kasir/ralan')
-                              ->orWhere('menus.url', '/kasir/ralan')
-                              ->orWhere('menus.url', 'kasir/ranap')
-                              ->orWhere('menus.url', '/kasir/ranap')
-                              ->orWhere('menus.url', 'keuangan/pembayaran-ralan')
-                              ->orWhere('menus.url', '/keuangan/pembayaran-ralan');
+                            $q->where('sub.url', 'kasir/ralan')
+                              ->orWhere('sub.url', '/kasir/ralan')
+                              ->orWhere('sub.url', 'kasir/ranap')
+                              ->orWhere('sub.url', '/kasir/ranap');
+                        })
+                        ->where(function ($q) {
+                            // Submenu tidak memiliki parent ATAU parentnya juga diizinkan untuk role ini
+                            $q->whereNull('sub.parent_id')
+                              ->orWhereNotNull('mr_parent.menu_id');
                         })
                         ->exists();
 
-                    if ($hasMenuAccess) {
-                        return true;
-                    }
+                    return $hasMenuAccess;
                 }
             } catch (\Exception $e) {
                 // Fallback jika database mapping terkendala
@@ -58,14 +65,7 @@ class KasirHelper
             return false;
         }
 
-        // Jika enable_menu_role non-aktif:
-        // Role 'petugas' diizinkan (misal petugas kasir/front office di faskes kecil)
-        if ($role === 'petugas') {
-            return true;
-        }
-
-        // Role klinis & penunjang (dokter, perawat, apoteker, laborat, rekam_medis) ditolak
+        // 4. Jika enable_menu_role non-aktif, hanya kasir/keuangan/admin/owner (atau dokter praktek mandiri)
         return false;
     }
 }
-
