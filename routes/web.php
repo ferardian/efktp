@@ -222,19 +222,22 @@ Route::middleware('auth:web,admin')->group(function () {
     Route::get('/billing/ralan', [\App\Http\Controllers\BillingController::class, 'getBillingRalan']);
     Route::get('/billing/print', [\App\Http\Controllers\BillingController::class, 'printBilling']);
     Route::get('/billing/accounts', [\App\Http\Controllers\BillingController::class, 'getBillingAccounts']);
-    Route::post('/billing/close', [\App\Http\Controllers\BillingController::class, 'closeBilling']);
 
-    // KEUANGAN & KASIR
-    Route::get('/kasir/ralan', [\App\Http\Controllers\Keuangan\KasirRalanController::class, 'index']);
-    Route::get('/kasir/ralan/antrean', [\App\Http\Controllers\Keuangan\KasirRalanController::class, 'getAntrean']);
-    Route::get('/kasir/ranap', [\App\Http\Controllers\Keuangan\KasirRanapController::class, 'index']);
-    Route::get('/kasir/ranap/antrean', [\App\Http\Controllers\Keuangan\KasirRanapController::class, 'getAntrean']);
-    Route::post('/billing/ranap/close', [\App\Http\Controllers\Keuangan\KasirRanapController::class, 'closeBillingRanap']);
-    Route::post('/billing/ranap/batal', [\App\Http\Controllers\Keuangan\KasirRanapController::class, 'batalBillingRanap']);
-    Route::get('/keuangan/pembayaran-ralan', [\App\Http\Controllers\Keuangan\PembayaranRalanController::class, 'index']);
-    Route::get('/keuangan/pembayaran-ralan/data', [\App\Http\Controllers\Keuangan\PembayaranRalanController::class, 'getData']);
-    Route::get('/keuangan/pembayaran-ralan/export-pdf', [\App\Http\Controllers\Keuangan\PembayaranRalanController::class, 'exportPdf']);
-    Route::get('/keuangan/pembayaran-ralan/export-excel', [\App\Http\Controllers\Keuangan\PembayaranRalanController::class, 'exportExcel']);
+    // KEUANGAN & KASIR (DIPROTEKSI HAK AKSES KASIR & KEUANGAN)
+    Route::middleware('kasir')->group(function () {
+        Route::post('/billing/close', [\App\Http\Controllers\BillingController::class, 'closeBilling']);
+        Route::get('/kasir/ralan', [\App\Http\Controllers\Keuangan\KasirRalanController::class, 'index']);
+        Route::get('/kasir/ralan/antrean', [\App\Http\Controllers\Keuangan\KasirRalanController::class, 'getAntrean']);
+        Route::get('/kasir/ranap', [\App\Http\Controllers\Keuangan\KasirRanapController::class, 'index']);
+        Route::get('/kasir/ranap/antrean', [\App\Http\Controllers\Keuangan\KasirRanapController::class, 'getAntrean']);
+        Route::post('/billing/ranap/close', [\App\Http\Controllers\Keuangan\KasirRanapController::class, 'closeBillingRanap']);
+        Route::post('/billing/ranap/batal', [\App\Http\Controllers\Keuangan\KasirRanapController::class, 'batalBillingRanap']);
+        Route::get('/keuangan/pembayaran-ralan', [\App\Http\Controllers\Keuangan\PembayaranRalanController::class, 'index']);
+        Route::get('/keuangan/pembayaran-ralan/data', [\App\Http\Controllers\Keuangan\PembayaranRalanController::class, 'getData']);
+        Route::get('/keuangan/pembayaran-ralan/export-pdf', [\App\Http\Controllers\Keuangan\PembayaranRalanController::class, 'exportPdf']);
+        Route::get('/keuangan/pembayaran-ralan/export-excel', [\App\Http\Controllers\Keuangan\PembayaranRalanController::class, 'exportExcel']);
+    });
+
     Route::get('/notifikasi/ralan-selesai', [\App\Http\Controllers\NotifikasiRalanController::class, 'getAntreanSelesai']);
 
 	// JADWAL PRAKTEK

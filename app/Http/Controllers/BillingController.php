@@ -511,6 +511,13 @@ class BillingController extends Controller
 
     public function closeBilling(Request $request)
     {
+        if (!\App\Helpers\KasirHelper::canAccessKasir()) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Akses ditolak: Anda tidak memiliki wewenang kasir/keuangan untuk menutup billing.'
+            ], 403);
+        }
+
         $request->validate([
             'no_rawat' => 'required|string',
             'payments' => 'required|array',

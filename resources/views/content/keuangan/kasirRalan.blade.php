@@ -374,9 +374,15 @@
                                             <span class="fs-2 fw-bold text-success" id="co_net_total_text">Rp 0</span>
                                         </div>
                                         <div class="d-flex gap-2">
-                                            <button type="button" class="btn btn-success fw-bold px-4" id="btnSubmitCloseBilling" onclick="submitKasirCloseBilling()">
-                                                <i class="ti ti-device-floppy me-1"></i> Bayar & Tutup Billing
-                                            </button>
+                                            @if (\App\Helpers\KasirHelper::canAccessKasir())
+                                                <button type="button" class="btn btn-success fw-bold px-4" id="btnSubmitCloseBilling" onclick="submitKasirCloseBilling()">
+                                                    <i class="ti ti-device-floppy me-1"></i> Bayar & Tutup Billing
+                                                </button>
+                                            @else
+                                                <button type="button" class="btn btn-secondary fw-bold px-4" disabled title="Hanya role kasir / keuangan yang berhak menutup billing">
+                                                    <i class="ti ti-lock me-1"></i> Tutup Billing (Terkunci)
+                                                </button>
+                                            @endif
                                         </div>
                                     </div>
                                 </form>

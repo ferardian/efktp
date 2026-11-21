@@ -13,7 +13,7 @@ class NotifikasiRalanController extends Controller
      */
     public function getAntreanSelesai(Request $request)
     {
-        if (!config('app.notifikasi_selesai_ralan', true)) {
+        if (!config('app.notifikasi_selesai_ralan', true) || !\App\Helpers\KasirHelper::canAccessKasir()) {
             return response()->json([
                 'enabled' => false,
                 'count'   => 0,

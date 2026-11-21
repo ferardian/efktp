@@ -214,6 +214,13 @@ class KasirRanapController extends Controller
 
     public function closeBillingRanap(Request $request)
     {
+        if (!\App\Helpers\KasirHelper::canAccessKasir()) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Akses ditolak: Anda tidak memiliki wewenang kasir/keuangan untuk menutup billing rawat inap.'
+            ], 403);
+        }
+
         $request->validate([
             'no_rawat' => 'required|string',
             'payments' => 'required|array',
@@ -937,6 +944,13 @@ class KasirRanapController extends Controller
 
     public function batalBillingRanap(Request $request)
     {
+        if (!\App\Helpers\KasirHelper::canAccessKasir()) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Akses ditolak: Anda tidak memiliki wewenang kasir/keuangan untuk membatalkan billing rawat inap.'
+            ], 403);
+        }
+
         $request->validate(['no_rawat' => 'required|string']);
         $no_rawat = $request->no_rawat;
 

@@ -284,13 +284,13 @@ class MenuController extends Controller
                     'position'  => 'navbar',
                 ]);
 
-                $roles = ['admin', 'petugas', 'owner', 'dokter', 'kasir'];
+                $roles = ['admin', 'petugas', 'owner', 'kasir'];
                 foreach ($roles as $r) {
                     MenuRole::firstOrCreate(['menu_id' => $newKasirRalan->id, 'role' => $r]);
                 }
             } else if ($existingKasirRalan) {
                 $existingKasirRalan->update(['order_num' => 1]);
-                $roles = ['admin', 'petugas', 'owner', 'dokter', 'kasir'];
+                $roles = ['admin', 'petugas', 'owner', 'kasir'];
                 foreach ($roles as $r) {
                     MenuRole::firstOrCreate(['menu_id' => $existingKasirRalan->id, 'role' => $r]);
                 }
@@ -308,13 +308,13 @@ class MenuController extends Controller
                     'position'  => 'navbar',
                 ]);
 
-                $roles = ['admin', 'petugas', 'owner', 'dokter', 'kasir'];
+                $roles = ['admin', 'petugas', 'owner', 'kasir'];
                 foreach ($roles as $r) {
                     MenuRole::firstOrCreate(['menu_id' => $newKasirRanap->id, 'role' => $r]);
                 }
             } else if ($existingKasirRanap) {
                 $existingKasirRanap->update(['order_num' => 2]);
-                $roles = ['admin', 'petugas', 'owner', 'dokter', 'kasir'];
+                $roles = ['admin', 'petugas', 'owner', 'kasir'];
                 foreach ($roles as $r) {
                     MenuRole::firstOrCreate(['menu_id' => $existingKasirRanap->id, 'role' => $r]);
                 }

@@ -445,9 +445,15 @@
                                                 <input type="date" class="form-control form-control-sm" id="co_tgl_bayar" value="{{ date('Y-m-d') }}">
                                             </div>
                                             <div class="col-md-6">
-                                                <button type="button" class="btn btn-success fw-bold w-100 py-2 d-inline-flex" id="btnSubmitCloseBillingRanap" onclick="submitCloseBillingRanap()">
-                                                    <i class="ti ti-device-floppy"></i><span>Simpan & Tutup Billing</span>
-                                                </button>
+                                                @if (\App\Helpers\KasirHelper::canAccessKasir())
+                                                    <button type="button" class="btn btn-success fw-bold w-100 py-2 d-inline-flex align-items-center justify-content-center" id="btnSubmitCloseBillingRanap" onclick="submitCloseBillingRanap()">
+                                                        <i class="ti ti-device-floppy me-1"></i><span>Simpan & Tutup Billing</span>
+                                                    </button>
+                                                @else
+                                                    <button type="button" class="btn btn-secondary fw-bold w-100 py-2 d-inline-flex align-items-center justify-content-center" disabled title="Hanya role kasir / keuangan yang berhak menutup billing">
+                                                        <i class="ti ti-lock me-1"></i><span>Tutup Billing (Terkunci)</span>
+                                                    </button>
+                                                @endif
                                             </div>
                                         </div>
                                     </div>
