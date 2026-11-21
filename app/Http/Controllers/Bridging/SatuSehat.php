@@ -254,10 +254,23 @@ class SatuSehat extends Controller
                 else $errors[] = "Condition {$c->no_rawat}: " . $res['message'];
             }
 
-            // Sync Observations TTV (if encounter is already synced)
+            // Sync Observations TTV (if encounter is already synced and any TTV parameter is pending)
             $ttvs = $this->service->getObservationTTVList($today, $today);
-            $pendingTtvs = array_filter($ttvs, fn($t) => empty($t->id_suhu) && !empty($t->id_encounter));
-            foreach (array_slice($pendingTtvs, 0, 2) as $t) {
+            $pendingTtvs = array_filter($ttvs, function ($t) {
+                if (empty($t->id_encounter)) {
+                    return false;
+                }
+                if (!empty($t->suhu_tubuh) && $t->suhu_tubuh != '-' && empty($t->id_suhu)) return true;
+                if (!empty($t->tensi) && $t->tensi != '-' && empty($t->id_tensi)) return true;
+                if (!empty($t->nadi) && $t->nadi != '-' && empty($t->id_nadi)) return true;
+                if (!empty($t->respirasi) && $t->respirasi != '-' && empty($t->id_respirasi)) return true;
+                if (!empty($t->tinggi) && $t->tinggi != '-' && empty($t->id_tb)) return true;
+                if (!empty($t->berat) && $t->berat != '-' && empty($t->id_bb)) return true;
+                if (!empty($t->spo2) && $t->spo2 != '-' && empty($t->id_spo2)) return true;
+                if (!empty($t->gcs) && $t->gcs != '-' && empty($t->id_gcs)) return true;
+                return false;
+            });
+            foreach (array_slice($pendingTtvs, 0, 3) as $t) {
                 $res = $this->service->syncObservationTTV($t->no_rawat, $t->tgl_perawatan, $t->jam_rawat);
                 if ($res['status']) $synced[] = "TTV: {$t->no_rawat}";
                 else $errors[] = "TTV {$t->no_rawat}: " . $res['message'];
