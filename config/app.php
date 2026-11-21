@@ -203,4 +203,5 @@ return [
 	'billing_note' => env('BILLING_NOTE'),
 	'enable_menu_role' => env('ENABLE_MENU_ROLE', false),
 	'notifikasi_selesai_ralan' => env('NOTIFIKASI_SELESAI_RALAN', true),
+	'dokter_bisa_kasir' => env('DOKTER_BISA_KASIR', false),
 ];

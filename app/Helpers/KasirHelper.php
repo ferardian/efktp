@@ -25,6 +25,11 @@ class KasirHelper
             return true;
         }
 
+        // Jika faskes adalah praktek mandiri / dokter merangkap kasir
+        if ($role === 'dokter' && config('app.dokter_bisa_kasir', false)) {
+            return true;
+        }
+
         // Jika fitur pembatasan menu role aktif, periksa tabel mapping menu_role
         if (config('app.enable_menu_role')) {
             try {
@@ -63,3 +68,4 @@ class KasirHelper
         return false;
     }
 }
+
