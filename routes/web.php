@@ -741,6 +741,18 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::delete('satusehat/medication/mapping/{kode_brng}', [Bridging\SatuSehat::class, 'deleteMappingObat'])->name('satusehat.medication.mapping.delete');
 	Route::post('satusehat/medication/sync', [Bridging\SatuSehat::class, 'sendMedication'])->name('satusehat.medication.sync');
 
+	// SatuSehat Medication Request
+	Route::get('satusehat/medication-request', [Bridging\SatuSehatMedicationController::class, 'medicationRequestIndex'])->name('satusehat.medication-request.index');
+	Route::get('satusehat/medication-request/data', [Bridging\SatuSehatMedicationController::class, 'getMedicationRequestData'])->name('satusehat.medication-request.data');
+	Route::post('satusehat/medication-request/sync', [Bridging\SatuSehatMedicationController::class, 'syncMedicationRequest'])->name('satusehat.medication-request.sync');
+	Route::post('satusehat/medication-request/sync-batch', [Bridging\SatuSehatMedicationController::class, 'syncBatchMedicationRequest'])->name('satusehat.medication-request.sync-batch');
+
+	// SatuSehat Medication Dispense
+	Route::get('satusehat/medication-dispense', [Bridging\SatuSehatMedicationController::class, 'medicationDispenseIndex'])->name('satusehat.medication-dispense.index');
+	Route::get('satusehat/medication-dispense/data', [Bridging\SatuSehatMedicationController::class, 'getMedicationDispenseData'])->name('satusehat.medication-dispense.data');
+	Route::post('satusehat/medication-dispense/sync', [Bridging\SatuSehatMedicationController::class, 'syncMedicationDispense'])->name('satusehat.medication-dispense.sync');
+	Route::post('satusehat/medication-dispense/sync-batch', [Bridging\SatuSehatMedicationController::class, 'syncBatchMedicationDispense'])->name('satusehat.medication-dispense.sync-batch');
+
 	// SatuSehat ServiceRequest Lab
 	Route::get('satusehat/servicerequest-lab', [Bridging\SatuSehatServiceRequestLabController::class, 'index'])->name('satusehat.servicerequest-lab.index');
 	Route::get('satusehat/servicerequest-lab/data', [Bridging\SatuSehatServiceRequestLabController::class, 'getData'])->name('satusehat.servicerequest-lab.data');

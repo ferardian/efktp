@@ -28,3 +28,4 @@ class EnsureKasirAccess
         return $next($request);
     }
 }
+

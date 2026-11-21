@@ -297,6 +297,52 @@ class SatuSehat extends Controller
                 // Jangan gagalkan sync utama jika lab service terkendala
             }
 
+            // Sync MedicationRequest (Resep Obat) & MedicationDispense (Penyerahan Obat)
+            try {
+                $medService = app(\App\Services\SatuSehat\SatuSehatMedicationService::class);
+
+                // Auto-sync pending MedicationRequest (max 2 per cycle)
+                $pendingMedRequests = $medService->getMedicationRequestList([
+                    'tgl_awal'  => $today,
+                    'tgl_akhir' => $today,
+                    'status'    => 'unsent'
+                ]);
+                $readyMedRequests = array_filter($pendingMedRequests, fn($item) => !empty($item->id_encounter) && !empty($item->id_medication) && !empty($item->ktp_pasien) && !empty($item->ktp_dokter));
+                foreach (array_slice($readyMedRequests, 0, 2) as $mr) {
+                    $res = $medService->syncMedicationRequest($mr->no_resep, $mr->kode_brng, $mr->no_racik);
+                    if ($res['success']) {
+                        $synced[] = "MedRequest: {$mr->no_resep} ({$mr->nama_brng})";
+                    } else {
+                        $errors[] = "MedRequest {$mr->no_resep} ({$mr->nama_brng}): " . ($res['message'] ?? 'Error');
+                    }
+                }
+
+                // Auto-sync pending MedicationDispense (max 2 per cycle)
+                $pendingMedDispenses = $medService->getMedicationDispenseList([
+                    'tgl_awal'  => $today,
+                    'tgl_akhir' => $today,
+                    'status'    => 'unsent'
+                ]);
+                $readyMedDispenses = array_filter($pendingMedDispenses, fn($item) => !empty($item->id_encounter) && !empty($item->id_medication) && !empty($item->ktp_pasien) && !empty($item->ktp_dokter));
+                foreach (array_slice($readyMedDispenses, 0, 2) as $md) {
+                    $res = $medService->syncMedicationDispense(
+                        $md->no_rawat,
+                        $md->tgl_perawatan,
+                        $md->jam,
+                        $md->kode_brng,
+                        (string)($md->no_batch ?? ''),
+                        (string)($md->no_faktur ?? '')
+                    );
+                    if ($res['success']) {
+                        $synced[] = "MedDispense: {$md->no_rawat} ({$md->nama_brng})";
+                    } else {
+                        $errors[] = "MedDispense {$md->no_rawat} ({$md->nama_brng}): " . ($res['message'] ?? 'Error');
+                    }
+                }
+            } catch (\Throwable $eMed) {
+                // Jangan gagalkan sync utama jika medication service terkendala
+            }
+
             return response()->json([
                 'status' => true,
                 'synced' => $synced,

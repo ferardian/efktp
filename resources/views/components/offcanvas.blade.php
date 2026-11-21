@@ -205,6 +205,12 @@
                                 <a class="dropdown-item {{ Request::is('satusehat/medication') ? 'active' : '' }}" href="{{ url('satusehat/medication') }}">
                                     Medication
                                 </a>
+                                <a class="dropdown-item {{ Request::is('satusehat/medication-request*') ? 'active' : '' }}" href="{{ url('satusehat/medication-request') }}">
+                                    Medication Request
+                                </a>
+                                <a class="dropdown-item {{ Request::is('satusehat/medication-dispense*') ? 'active' : '' }}" href="{{ url('satusehat/medication-dispense') }}">
+                                    Medication Dispense
+                                </a>
                                 <a class="dropdown-item {{ Request::is('satusehat/encounter') ? 'active' : '' }}" href="{{ url('satusehat/encounter') }}">
                                     Encounter
                                 </a>
