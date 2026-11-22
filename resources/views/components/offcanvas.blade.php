@@ -220,6 +220,9 @@
                                 <a class="dropdown-item {{ Request::is('satusehat/procedure*') ? 'active' : '' }}" href="{{ url('satusehat/procedure') }}">
                                     Procedure
                                 </a>
+                                <a class="dropdown-item {{ Request::is('satusehat/immunization*') ? 'active' : '' }}" href="{{ url('satusehat/immunization') }}">
+                                    Imunisasi
+                                </a>
                                 <a class="dropdown-item {{ Request::is('satusehat/observation-ttv') ? 'active' : '' }}" href="{{ url('satusehat/observation-ttv') }}">
                                     Observation TTV
                                 </a>

@@ -428,6 +428,34 @@ class SatuSehat extends Controller
                 // Jangan gagalkan sync utama jika medication service terkendala
             }
 
+            // Sync Immunization (Pemberian Vaksin)
+            try {
+                $immService = app(\App\Services\SatuSehat\SatuSehatImmunizationService::class);
+                $pendingImms = $immService->getImmunizationList([
+                    'tgl_awal'  => $today,
+                    'tgl_akhir' => $today,
+                    'status'    => 'unsent'
+                ]);
+                $readyImms = array_filter($pendingImms, fn($item) => !empty($item->id_encounter) && !empty($item->ktp_pasien) && !empty($item->ktp_dokter));
+                foreach (array_slice($readyImms, 0, 2) as $imm) {
+                    $res = $immService->syncImmunization(
+                        $imm->no_rawat,
+                        $imm->tgl_perawatan,
+                        $imm->jam,
+                        $imm->kode_brng,
+                        $imm->no_batch ?? '',
+                        $imm->no_faktur ?? ''
+                    );
+                    if ($res['success']) {
+                        $synced[] = "Immunization: {$imm->no_rawat} ({$imm->nama_brng})";
+                    } else {
+                        $errors[] = "Immunization {$imm->no_rawat} ({$imm->nama_brng}): " . ($res['message'] ?? 'Error');
+                    }
+                }
+            } catch (\Throwable $eImm) {
+                // Jangan gagalkan sync utama jika immunization service terkendala
+            }
+
             return response()->json([
                 'status' => true,
                 'synced' => $synced,
