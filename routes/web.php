@@ -741,6 +741,15 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::post('satusehat/immunization/sync', [Bridging\SatuSehatImmunizationController::class, 'syncImmunization'])->name('satusehat.immunization.sync');
 	Route::post('satusehat/immunization/sync-batch', [Bridging\SatuSehatImmunizationController::class, 'syncBatchImmunization'])->name('satusehat.immunization.sync-batch');
 
+	// SatuSehat AllergyIntolerance (Alergi Pasien)
+	Route::get('satusehat/allergy', [Bridging\SatuSehatAllergyController::class, 'allergyIndex'])->name('satusehat.allergy.index');
+	Route::get('satusehat/allergy/data', [Bridging\SatuSehatAllergyController::class, 'getAllergyData'])->name('satusehat.allergy.data');
+	Route::post('satusehat/allergy/sync', [Bridging\SatuSehatAllergyController::class, 'syncSingle'])->name('satusehat.allergy.sync');
+	Route::post('satusehat/allergy/sync-batch', [Bridging\SatuSehatAllergyController::class, 'syncBatch'])->name('satusehat.allergy.sync-batch');
+	Route::get('satusehat/allergy/mapping', [Bridging\SatuSehatAllergyController::class, 'getMappings'])->name('satusehat.allergy.mapping');
+	Route::post('satusehat/allergy/mapping/save', [Bridging\SatuSehatAllergyController::class, 'saveMapping'])->name('satusehat.allergy.mapping.save');
+	Route::delete('satusehat/allergy/mapping/{id}', [Bridging\SatuSehatAllergyController::class, 'deleteMapping'])->name('satusehat.allergy.mapping.delete');
+
 	Route::get('satusehat/observation-ttv', [Bridging\SatuSehat::class, 'observationTTVIndex'])->name('satusehat.observation-ttv.index');
 	Route::get('satusehat/observation-ttv/data', [Bridging\SatuSehat::class, 'getObservationTTVData'])->name('satusehat.observation-ttv.data');
 	Route::post('satusehat/observation-ttv/sync', [Bridging\SatuSehat::class, 'syncObservationTTV'])->name('satusehat.observation-ttv.sync');

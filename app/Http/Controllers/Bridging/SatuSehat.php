@@ -456,6 +456,32 @@ class SatuSehat extends Controller
                 // Jangan gagalkan sync utama jika immunization service terkendala
             }
 
+            // Sync AllergyIntolerance (Alergi Pasien)
+            try {
+                $allergyService = app(\App\Services\SatuSehat\SatuSehatAllergyService::class);
+                $pendingAllergies = $allergyService->getAllergyList([
+                    'tgl_awal'  => $today,
+                    'tgl_akhir' => $today,
+                    'status'    => 'unsent'
+                ]);
+                $readyAllergies = array_filter($pendingAllergies, fn($item) => !empty($item['id_encounter']) && !empty($item['no_ktp']));
+                foreach (array_slice($readyAllergies, 0, 2) as $alg) {
+                    $res = $allergyService->syncSingleAllergy(
+                        $alg['no_rawat'],
+                        $alg['tgl_perawatan'],
+                        $alg['jam_rawat'],
+                        $alg['alergi_text']
+                    );
+                    if ($res['success']) {
+                        $synced[] = "Allergy: {$alg['no_rawat']} ({$alg['alergi_text']})";
+                    } else {
+                        $errors[] = "Allergy {$alg['no_rawat']} ({$alg['alergi_text']}): " . ($res['message'] ?? 'Error');
+                    }
+                }
+            } catch (\Throwable $eAlg) {
+                // Jangan gagalkan sync utama jika allergy service terkendala
+            }
+
             return response()->json([
                 'status' => true,
                 'synced' => $synced,

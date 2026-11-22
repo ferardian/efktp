@@ -588,6 +588,27 @@ class MenuController extends Controller
                         MenuRole::firstOrCreate(['menu_id' => $existingImmunization->id, 'role' => $r]);
                     }
                 }
+
+                // Ensure Allergy menu exists
+                $existingAllergy = Menu::where('url', 'satusehat/allergy')->first();
+                if (!$existingAllergy) {
+                    $newAllergy = Menu::create([
+                        'name'      => 'Alergi (AllergyIntolerance)',
+                        'url'       => 'satusehat/allergy',
+                        'icon'      => null,
+                        'parent_id' => $satusehatParent->id,
+                        'order_num' => 14,
+                        'target'    => '_self',
+                        'position'  => 'sidebar',
+                    ]);
+                    foreach (['admin', 'petugas', 'owner', 'dokter'] as $r) {
+                        MenuRole::firstOrCreate(['menu_id' => $newAllergy->id, 'role' => $r]);
+                    }
+                } else {
+                    foreach (['admin', 'petugas', 'owner', 'dokter'] as $r) {
+                        MenuRole::firstOrCreate(['menu_id' => $existingAllergy->id, 'role' => $r]);
+                    }
+                }
             }
 
             $newRolesDefaults = [
