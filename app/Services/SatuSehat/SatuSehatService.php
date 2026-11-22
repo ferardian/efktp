@@ -482,6 +482,25 @@ class SatuSehatService extends SatuSehatClient
             ]
         ];
 
+        // Tautkan ke EpisodeOfCare aktif (jika pasien memiliki program aktif misal ANC, TB, DM, HT)
+        try {
+            $activeEpisode = DB::table('satu_sehat_episode_of_care')
+                ->where('no_rkm_medis', $data->no_rkm_medis)
+                ->where('status', 'active')
+                ->whereNotNull('id_episode_of_care')
+                ->first();
+
+            if ($activeEpisode && !empty($activeEpisode->id_episode_of_care)) {
+                $payload['episodeOfCare'] = [
+                    [
+                        'reference' => 'EpisodeOfCare/' . $activeEpisode->id_episode_of_care
+                    ]
+                ];
+            }
+        } catch (\Throwable $eEoc) {
+            // Ignore if table not yet migrated
+        }
+
         if ($data->id_encounter) {
             $idEncounter = trim($data->id_encounter);
             $payload['id'] = $idEncounter;
