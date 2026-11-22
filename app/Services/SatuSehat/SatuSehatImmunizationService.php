@@ -16,6 +16,50 @@ class SatuSehatImmunizationService
     {
         $this->ss    = $ss ?? app(SatuSehatService::class);
         $this->orgId = (string) config('satusehat.org_id');
+        $this->ensureTablesExist();
+    }
+
+    /**
+     * Memastikan tabel satu_sehat_mapping_vaksin dan satu_sehat_immunization sudah ada
+     */
+    public function ensureTablesExist(): void
+    {
+        try {
+            $schema = DB::getSchemaBuilder();
+
+            if (!$schema->hasTable('satu_sehat_mapping_vaksin')) {
+                $schema->create('satu_sehat_mapping_vaksin', function ($table) {
+                    $table->string('kode_brng', 15)->primary();
+                    $table->string('vaksin_code', 50)->nullable();
+                    $table->string('vaksin_system', 150)->nullable();
+                    $table->string('vaksin_display', 200)->nullable();
+                    $table->string('route_code', 50)->nullable();
+                    $table->string('route_system', 150)->nullable();
+                    $table->string('route_display', 100)->nullable();
+                    $table->string('dose_quantity_code', 20)->nullable();
+                    $table->string('dose_quantity_system', 150)->nullable();
+                    $table->string('dose_quantity_unit', 50)->nullable();
+                    $table->timestamps();
+                });
+            }
+
+            if (!$schema->hasTable('satu_sehat_immunization')) {
+                $schema->create('satu_sehat_immunization', function ($table) {
+                    $table->string('no_rawat', 17);
+                    $table->date('tgl_perawatan');
+                    $table->time('jam');
+                    $table->string('kode_brng', 15);
+                    $table->string('no_batch', 50)->default('');
+                    $table->string('no_faktur', 50)->default('');
+                    $table->string('id_immunization', 64)->nullable();
+                    $table->timestamps();
+
+                    $table->primary(['no_rawat', 'tgl_perawatan', 'jam', 'kode_brng', 'no_batch', 'no_faktur'], 'ss_immunization_primary');
+                });
+            }
+        } catch (\Throwable $e) {
+            Log::channel('satusehat')->warning("[SatuSehat] Auto ensure table immunization failed: " . $e->getMessage());
+        }
     }
 
     public function getOrgId(): string

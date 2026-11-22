@@ -16,6 +16,70 @@ class SatuSehatAllergyService
     {
         $this->ss    = $ss ?? app(SatuSehatService::class);
         $this->orgId = (string) config('satusehat.org_id');
+        $this->ensureTablesExist();
+    }
+
+    /**
+     * Memastikan tabel satu_sehat_allergy dan satu_sehat_mapping_alergi sudah ada di database
+     */
+    public function ensureTablesExist(): void
+    {
+        try {
+            $schema = DB::getSchemaBuilder();
+
+            if (!$schema->hasTable('satu_sehat_mapping_alergi')) {
+                $schema->create('satu_sehat_mapping_alergi', function ($table) {
+                    $table->bigIncrements('id');
+                    $table->string('keyword', 100)->unique();
+                    $table->enum('category', ['food', 'medication', 'environment', 'biologic'])->default('food');
+                    $table->string('code', 50);
+                    $table->string('system', 150)->default('http://snomed.info/sct');
+                    $table->string('display', 200);
+                    $table->timestamps();
+                });
+
+                $defaults = [
+                    ['keyword' => 'udang', 'category' => 'food', 'code' => '227037002', 'system' => 'http://snomed.info/sct', 'display' => 'Fish and seafood (substance)'],
+                    ['keyword' => 'seafood', 'category' => 'food', 'code' => '227037002', 'system' => 'http://snomed.info/sct', 'display' => 'Fish and seafood (substance)'],
+                    ['keyword' => 'ikan', 'category' => 'food', 'code' => '227037002', 'system' => 'http://snomed.info/sct', 'display' => 'Fish and seafood (substance)'],
+                    ['keyword' => 'telur', 'category' => 'food', 'code' => '91930004', 'system' => 'http://snomed.info/sct', 'display' => 'Allergy to eggs (finding)'],
+                    ['keyword' => 'susu', 'category' => 'food', 'code' => '3718001', 'system' => 'http://snomed.info/sct', 'display' => "Cow's milk (substance)"],
+                    ['keyword' => 'kacang', 'category' => 'food', 'code' => '91935009', 'system' => 'http://snomed.info/sct', 'display' => 'Allergy to peanut (finding)'],
+                    ['keyword' => 'amoxicillin', 'category' => 'medication', 'code' => '372687004', 'system' => 'http://snomed.info/sct', 'display' => 'Amoxicillin (substance)'],
+                    ['keyword' => 'amoksisilin', 'category' => 'medication', 'code' => '372687004', 'system' => 'http://snomed.info/sct', 'display' => 'Amoxicillin (substance)'],
+                    ['keyword' => 'penisilin', 'category' => 'medication', 'code' => '764146007', 'system' => 'http://snomed.info/sct', 'display' => 'Penicillin (substance)'],
+                    ['keyword' => 'penicillin', 'category' => 'medication', 'code' => '764146007', 'system' => 'http://snomed.info/sct', 'display' => 'Penicillin (substance)'],
+                    ['keyword' => 'ampicillin', 'category' => 'medication', 'code' => '372688009', 'system' => 'http://snomed.info/sct', 'display' => 'Ampicillin (substance)'],
+                    ['keyword' => 'paracetamol', 'category' => 'medication', 'code' => '387517004', 'system' => 'http://snomed.info/sct', 'display' => 'Paracetamol (substance)'],
+                    ['keyword' => 'ibuprofen', 'category' => 'medication', 'code' => '387207008', 'system' => 'http://snomed.info/sct', 'display' => 'Ibuprofen (substance)'],
+                    ['keyword' => 'asam mefenamat', 'category' => 'medication', 'code' => '387207008', 'system' => 'http://snomed.info/sct', 'display' => 'Mefenamic acid (substance)'],
+                    ['keyword' => 'sulfa', 'category' => 'medication', 'code' => '91936005', 'system' => 'http://snomed.info/sct', 'display' => 'Allergy to sulfonamide (finding)'],
+                    ['keyword' => 'debu', 'category' => 'environment', 'code' => '390952000', 'system' => 'http://snomed.info/sct', 'display' => 'House dust mite allergy (finding)'],
+                    ['keyword' => 'dingin', 'category' => 'environment', 'code' => '282140000', 'system' => 'http://snomed.info/sct', 'display' => 'Cold urticaria (disorder)'],
+                ];
+                foreach ($defaults as $d) {
+                    DB::table('satu_sehat_mapping_alergi')->insertOrIgnore(array_merge($d, [
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]));
+                }
+            }
+
+            if (!$schema->hasTable('satu_sehat_allergy')) {
+                $schema->create('satu_sehat_allergy', function ($table) {
+                    $table->string('no_rawat', 17);
+                    $table->date('tgl_perawatan');
+                    $table->time('jam_rawat');
+                    $table->string('alergi_text', 255);
+                    $table->string('id_allergy', 64)->nullable();
+                    $table->timestamps();
+
+                    $table->primary(['no_rawat', 'tgl_perawatan', 'jam_rawat', 'alergi_text'], 'ss_allergy_primary');
+                });
+            }
+        } catch (\Throwable $e) {
+            Log::channel('satusehat')->warning("[SatuSehat] Auto ensure table allergy failed: " . $e->getMessage());
+        }
     }
 
     public function getOrgId(): string
@@ -610,3 +674,4 @@ class SatuSehatAllergyService
         return $payload;
     }
 }
+
