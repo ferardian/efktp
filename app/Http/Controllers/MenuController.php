@@ -504,6 +504,48 @@ class MenuController extends Controller
                         MenuRole::firstOrCreate(['menu_id' => $newSRLab->id, 'role' => $r]);
                     }
                 }
+
+                // Ensure Medication Request menu exists
+                $existingMedReq = Menu::where('url', 'satusehat/medication-request')->first();
+                if (!$existingMedReq) {
+                    $newMedReq = Menu::create([
+                        'name'      => 'Medication Request',
+                        'url'       => 'satusehat/medication-request',
+                        'icon'      => null,
+                        'parent_id' => $satusehatParent->id,
+                        'order_num' => 10,
+                        'target'    => '_self',
+                        'position'  => 'sidebar',
+                    ]);
+                    foreach (['admin', 'petugas', 'owner', 'dokter', 'apoteker'] as $r) {
+                        MenuRole::firstOrCreate(['menu_id' => $newMedReq->id, 'role' => $r]);
+                    }
+                } else {
+                    foreach (['admin', 'petugas', 'owner', 'dokter', 'apoteker'] as $r) {
+                        MenuRole::firstOrCreate(['menu_id' => $existingMedReq->id, 'role' => $r]);
+                    }
+                }
+
+                // Ensure Medication Dispense menu exists
+                $existingMedDisp = Menu::where('url', 'satusehat/medication-dispense')->first();
+                if (!$existingMedDisp) {
+                    $newMedDisp = Menu::create([
+                        'name'      => 'Medication Dispense',
+                        'url'       => 'satusehat/medication-dispense',
+                        'icon'      => null,
+                        'parent_id' => $satusehatParent->id,
+                        'order_num' => 11,
+                        'target'    => '_self',
+                        'position'  => 'sidebar',
+                    ]);
+                    foreach (['admin', 'petugas', 'owner', 'dokter', 'apoteker'] as $r) {
+                        MenuRole::firstOrCreate(['menu_id' => $newMedDisp->id, 'role' => $r]);
+                    }
+                } else {
+                    foreach (['admin', 'petugas', 'owner', 'dokter', 'apoteker'] as $r) {
+                        MenuRole::firstOrCreate(['menu_id' => $existingMedDisp->id, 'role' => $r]);
+                    }
+                }
             }
 
             $newRolesDefaults = [
