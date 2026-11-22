@@ -226,6 +226,9 @@
                                 <a class="dropdown-item {{ Request::is('satusehat/allergy*') ? 'active' : '' }}" href="{{ url('satusehat/allergy') }}">
                                     Alergi (AllergyIntolerance)
                                 </a>
+                                <a class="dropdown-item {{ Request::is('satusehat/episode-of-care*') ? 'active' : '' }}" href="{{ url('satusehat/episode-of-care') }}">
+                                    Episode Perawatan
+                                </a>
                                 <a class="dropdown-item {{ Request::is('satusehat/observation-ttv') ? 'active' : '' }}" href="{{ url('satusehat/observation-ttv') }}">
                                     Observation TTV
                                 </a>

@@ -139,6 +139,7 @@ class MenuSeeder extends Seeder
             ['id' => 64, 'name' => 'Procedure', 'url' => 'satusehat/procedure', 'icon' => null, 'parent_id' => 22, 'order_num' => 12, 'target' => '_self', 'position' => 'sidebar', 'roles' => ['admin', 'petugas', 'owner', 'dokter']],
             ['id' => 65, 'name' => 'Imunisasi', 'url' => 'satusehat/immunization', 'icon' => null, 'parent_id' => 22, 'order_num' => 13, 'target' => '_self', 'position' => 'sidebar', 'roles' => ['admin', 'petugas', 'owner', 'dokter']],
             ['id' => 66, 'name' => 'Alergi (AllergyIntolerance)', 'url' => 'satusehat/allergy', 'icon' => null, 'parent_id' => 22, 'order_num' => 14, 'target' => '_self', 'position' => 'sidebar', 'roles' => ['admin', 'petugas', 'owner', 'dokter']],
+            ['id' => 67, 'name' => 'Episode Perawatan', 'url' => 'satusehat/episode-of-care', 'icon' => null, 'parent_id' => 22, 'order_num' => 15, 'target' => '_self', 'position' => 'sidebar', 'roles' => ['admin', 'petugas', 'owner', 'dokter']],
 
             // submenus under Master (parent_id = 23)
             ['id' => 36, 'name' => 'Paket Obat', 'url' => 'master/paket-obat', 'icon' => null, 'parent_id' => 23, 'order_num' => 1, 'target' => '_self', 'position' => 'sidebar', 'roles' => ['admin', 'apoteker', 'owner']],

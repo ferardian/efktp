@@ -750,6 +750,12 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::post('satusehat/allergy/mapping/save', [Bridging\SatuSehatAllergyController::class, 'saveMapping'])->name('satusehat.allergy.mapping.save');
 	Route::delete('satusehat/allergy/mapping/{id}', [Bridging\SatuSehatAllergyController::class, 'deleteMapping'])->name('satusehat.allergy.mapping.delete');
 
+	// SatuSehat EpisodeOfCare (Episode Perawatan: ANC, TB, DM, HT)
+	Route::get('satusehat/episode-of-care', [Bridging\SatuSehatEpisodeOfCareController::class, 'episodeIndex'])->name('satusehat.episode-of-care.index');
+	Route::get('satusehat/episode-of-care/data', [Bridging\SatuSehatEpisodeOfCareController::class, 'getEpisodeData'])->name('satusehat.episode-of-care.data');
+	Route::post('satusehat/episode-of-care/sync', [Bridging\SatuSehatEpisodeOfCareController::class, 'syncSingle'])->name('satusehat.episode-of-care.sync');
+	Route::post('satusehat/episode-of-care/sync-batch', [Bridging\SatuSehatEpisodeOfCareController::class, 'syncBatch'])->name('satusehat.episode-of-care.sync-batch');
+
 	Route::get('satusehat/observation-ttv', [Bridging\SatuSehat::class, 'observationTTVIndex'])->name('satusehat.observation-ttv.index');
 	Route::get('satusehat/observation-ttv/data', [Bridging\SatuSehat::class, 'getObservationTTVData'])->name('satusehat.observation-ttv.data');
 	Route::post('satusehat/observation-ttv/sync', [Bridging\SatuSehat::class, 'syncObservationTTV'])->name('satusehat.observation-ttv.sync');

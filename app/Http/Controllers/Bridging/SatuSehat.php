@@ -482,6 +482,27 @@ class SatuSehat extends Controller
                 // Jangan gagalkan sync utama jika allergy service terkendala
             }
 
+            // Sync EpisodeOfCare (Episode Perawatan: ANC, TB, DM, HT)
+            try {
+                $eocService = app(\App\Services\SatuSehat\SatuSehatEpisodeOfCareService::class);
+                $pendingEpisodes = $eocService->getEpisodeOfCareList([
+                    'tgl_awal'  => $today,
+                    'tgl_akhir' => $today,
+                    'status'    => 'unsent'
+                ]);
+                $readyEpisodes = array_filter($pendingEpisodes, fn($item) => !empty($item['id_condition']) && !empty($item['ktp_pasien']) && !empty($item['ktp_dokter']));
+                foreach (array_slice($readyEpisodes, 0, 2) as $ep) {
+                    $res = $eocService->syncSingleEpisode($ep['no_rawat'], $ep['kd_penyakit']);
+                    if ($res['success']) {
+                        $synced[] = "EpisodeOfCare: {$ep['no_rawat']} ({$ep['tipe_program']})";
+                    } else {
+                        $errors[] = "EpisodeOfCare {$ep['no_rawat']} ({$ep['tipe_program']}): " . ($res['message'] ?? 'Error');
+                    }
+                }
+            } catch (\Throwable $eEoc) {
+                // Jangan gagalkan sync utama jika episode of care terkendala
+            }
+
             return response()->json([
                 'status' => true,
                 'synced' => $synced,

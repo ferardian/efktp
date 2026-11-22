@@ -609,6 +609,27 @@ class MenuController extends Controller
                         MenuRole::firstOrCreate(['menu_id' => $existingAllergy->id, 'role' => $r]);
                     }
                 }
+
+                // Ensure EpisodeOfCare menu exists
+                $existingEoc = Menu::where('url', 'satusehat/episode-of-care')->first();
+                if (!$existingEoc) {
+                    $newEoc = Menu::create([
+                        'name'      => 'Episode Perawatan',
+                        'url'       => 'satusehat/episode-of-care',
+                        'icon'      => null,
+                        'parent_id' => $satusehatParent->id,
+                        'order_num' => 15,
+                        'target'    => '_self',
+                        'position'  => 'sidebar',
+                    ]);
+                    foreach (['admin', 'petugas', 'owner', 'dokter'] as $r) {
+                        MenuRole::firstOrCreate(['menu_id' => $newEoc->id, 'role' => $r]);
+                    }
+                } else {
+                    foreach (['admin', 'petugas', 'owner', 'dokter'] as $r) {
+                        MenuRole::firstOrCreate(['menu_id' => $existingEoc->id, 'role' => $r]);
+                    }
+                }
             }
 
             $newRolesDefaults = [
