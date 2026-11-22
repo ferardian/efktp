@@ -136,6 +136,7 @@ class MenuSeeder extends Seeder
             ['id' => 57, 'name' => 'ServiceRequest Lab', 'url' => 'satusehat/servicerequest-lab', 'icon' => null, 'parent_id' => 22, 'order_num' => 9, 'target' => '_self', 'position' => 'sidebar', 'roles' => ['admin', 'petugas', 'owner', 'dokter']],
             ['id' => 62, 'name' => 'Medication Request', 'url' => 'satusehat/medication-request', 'icon' => null, 'parent_id' => 22, 'order_num' => 10, 'target' => '_self', 'position' => 'sidebar', 'roles' => ['admin', 'petugas', 'owner', 'dokter', 'apoteker']],
             ['id' => 63, 'name' => 'Medication Dispense', 'url' => 'satusehat/medication-dispense', 'icon' => null, 'parent_id' => 22, 'order_num' => 11, 'target' => '_self', 'position' => 'sidebar', 'roles' => ['admin', 'petugas', 'owner', 'dokter', 'apoteker']],
+            ['id' => 64, 'name' => 'Procedure', 'url' => 'satusehat/procedure', 'icon' => null, 'parent_id' => 22, 'order_num' => 12, 'target' => '_self', 'position' => 'sidebar', 'roles' => ['admin', 'petugas', 'owner', 'dokter']],
 
             // submenus under Master (parent_id = 23)
             ['id' => 36, 'name' => 'Paket Obat', 'url' => 'master/paket-obat', 'icon' => null, 'parent_id' => 23, 'order_num' => 1, 'target' => '_self', 'position' => 'sidebar', 'roles' => ['admin', 'apoteker', 'owner']],

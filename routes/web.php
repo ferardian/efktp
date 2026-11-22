@@ -729,6 +729,11 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::get('satusehat/condition/data', [Bridging\SatuSehat::class, 'getConditionData'])->name('satusehat.condition.data');
 	Route::post('satusehat/condition/sync', [Bridging\SatuSehat::class, 'syncCondition'])->name('satusehat.condition.sync');
 
+	Route::get('satusehat/procedure', [Bridging\SatuSehat::class, 'procedureIndex'])->name('satusehat.procedure.index');
+	Route::get('satusehat/procedure/data', [Bridging\SatuSehat::class, 'getProcedureData'])->name('satusehat.procedure.data');
+	Route::post('satusehat/procedure/sync', [Bridging\SatuSehat::class, 'syncProcedure'])->name('satusehat.procedure.sync');
+	Route::post('satusehat/procedure/sync-batch', [Bridging\SatuSehat::class, 'syncBatchProcedure'])->name('satusehat.procedure.sync-batch');
+
 	Route::get('satusehat/observation-ttv', [Bridging\SatuSehat::class, 'observationTTVIndex'])->name('satusehat.observation-ttv.index');
 	Route::get('satusehat/observation-ttv/data', [Bridging\SatuSehat::class, 'getObservationTTVData'])->name('satusehat.observation-ttv.data');
 	Route::post('satusehat/observation-ttv/sync', [Bridging\SatuSehat::class, 'syncObservationTTV'])->name('satusehat.observation-ttv.sync');

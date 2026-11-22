@@ -546,6 +546,27 @@ class MenuController extends Controller
                         MenuRole::firstOrCreate(['menu_id' => $existingMedDisp->id, 'role' => $r]);
                     }
                 }
+
+                // Ensure Procedure menu exists
+                $existingProcedure = Menu::where('url', 'satusehat/procedure')->first();
+                if (!$existingProcedure) {
+                    $newProcedure = Menu::create([
+                        'name'      => 'Procedure',
+                        'url'       => 'satusehat/procedure',
+                        'icon'      => null,
+                        'parent_id' => $satusehatParent->id,
+                        'order_num' => 12,
+                        'target'    => '_self',
+                        'position'  => 'sidebar',
+                    ]);
+                    foreach (['admin', 'petugas', 'owner', 'dokter'] as $r) {
+                        MenuRole::firstOrCreate(['menu_id' => $newProcedure->id, 'role' => $r]);
+                    }
+                } else {
+                    foreach (['admin', 'petugas', 'owner', 'dokter'] as $r) {
+                        MenuRole::firstOrCreate(['menu_id' => $existingProcedure->id, 'role' => $r]);
+                    }
+                }
             }
 
             $newRolesDefaults = [

@@ -762,6 +762,270 @@ class SatuSehatService extends SatuSehatClient
 
         return ['status' => true, 'message' => 'Sync Condition berhasil, tapi Gagal Finish Encounter: ' . ($encRes['message'] ?? 'Unknown error')];
     }
+
+    /**
+     * Get Procedure (Tindakan Pasien ICD-9-CM) List
+     */
+    public function getProcedureList($search = null, $startDate = null, $endDate = null, $status = 'all'): array
+    {
+        $query = DB::table('prosedur_pasien')
+            ->join('reg_periksa', 'prosedur_pasien.no_rawat', '=', 'reg_periksa.no_rawat')
+            ->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
+            ->join('icd9', 'prosedur_pasien.kode', '=', 'icd9.kode')
+            ->leftJoin('pegawai', 'reg_periksa.kd_dokter', '=', 'pegawai.nik')
+            ->leftJoin('satu_sehat_encounter', 'reg_periksa.no_rawat', '=', 'satu_sehat_encounter.no_rawat')
+            ->leftJoin('satu_sehat_procedure', function ($join) {
+                $join->on('prosedur_pasien.no_rawat', '=', 'satu_sehat_procedure.no_rawat')
+                     ->on('prosedur_pasien.kode', '=', 'satu_sehat_procedure.kode')
+                     ->on('prosedur_pasien.status', '=', 'satu_sehat_procedure.status');
+            })
+            ->select(
+                'prosedur_pasien.no_rawat',
+                'reg_periksa.tgl_registrasi',
+                'reg_periksa.jam_reg',
+                'reg_periksa.status_lanjut',
+                'pasien.nm_pasien',
+                'pasien.no_rkm_medis',
+                'pasien.no_ktp as ktp_pasien',
+                'pegawai.nama as nama_dokter',
+                'pegawai.no_ktp as ktp_dokter',
+                'prosedur_pasien.kode',
+                'icd9.deskripsi_panjang',
+                'prosedur_pasien.status as status_ralan_ranap',
+                'prosedur_pasien.prioritas',
+                'satu_sehat_encounter.id_encounter',
+                'satu_sehat_procedure.id_procedure'
+            );
+
+        if ($startDate && $endDate) {
+            $query->whereBetween('reg_periksa.tgl_registrasi', [$startDate, $endDate]);
+        }
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('prosedur_pasien.no_rawat', 'like', "%{$search}%")
+                  ->orWhere('pasien.nm_pasien', 'like', "%{$search}%")
+                  ->orWhere('prosedur_pasien.kode', 'like', "%{$search}%")
+                  ->orWhere('icd9.deskripsi_panjang', 'like', "%{$search}%");
+            });
+        }
+
+        if ($status === 'synced') {
+            $query->whereNotNull('satu_sehat_procedure.id_procedure');
+        } elseif ($status === 'unsent') {
+            $query->whereNull('satu_sehat_procedure.id_procedure');
+        }
+
+        return $query->orderBy('reg_periksa.tgl_registrasi', 'desc')
+            ->orderBy('reg_periksa.jam_reg', 'desc')
+            ->limit(200)
+            ->get()
+            ->toArray();
+    }
+
+    /**
+     * Sync single Procedure to SATU SEHAT
+     */
+    public function syncProcedure(string $no_rawat, string $kode, string $statusLanjut = 'Ralan'): array
+    {
+        $data = DB::table('prosedur_pasien')
+            ->join('reg_periksa', 'prosedur_pasien.no_rawat', '=', 'reg_periksa.no_rawat')
+            ->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
+            ->join('icd9', 'prosedur_pasien.kode', '=', 'icd9.kode')
+            ->leftJoin('pegawai', 'reg_periksa.kd_dokter', '=', 'pegawai.nik')
+            ->leftJoin('satu_sehat_encounter', 'reg_periksa.no_rawat', '=', 'satu_sehat_encounter.no_rawat')
+            ->leftJoin('satu_sehat_procedure', function ($join) {
+                $join->on('prosedur_pasien.no_rawat', '=', 'satu_sehat_procedure.no_rawat')
+                     ->on('prosedur_pasien.kode', '=', 'satu_sehat_procedure.kode')
+                     ->on('prosedur_pasien.status', '=', 'satu_sehat_procedure.status');
+            })
+            ->select(
+                'prosedur_pasien.no_rawat',
+                'prosedur_pasien.kode',
+                'prosedur_pasien.status',
+                'prosedur_pasien.prioritas',
+                'icd9.deskripsi_panjang',
+                'pasien.nm_pasien',
+                'pasien.no_ktp as ktp_pasien',
+                'pegawai.no_ktp as ktp_dokter',
+                'pegawai.nama as nama_dokter',
+                'reg_periksa.tgl_registrasi',
+                'reg_periksa.jam_reg',
+                'reg_periksa.status_lanjut',
+                'satu_sehat_encounter.id_encounter',
+                'satu_sehat_procedure.id_procedure'
+            )
+            ->where('prosedur_pasien.no_rawat', $no_rawat)
+            ->where('prosedur_pasien.kode', $kode)
+            ->where('prosedur_pasien.status', $statusLanjut)
+            ->first();
+
+        if (!$data) {
+            return ['status' => false, 'message' => "Data tindakan/prosedur {$no_rawat} ({$kode}) tidak ditemukan."];
+        }
+
+        if (empty($data->id_encounter)) {
+            return ['status' => false, 'message' => 'Encounter belum disinkronkan. Silakan sync Encounter terlebih dahulu.'];
+        }
+
+        if (empty($data->ktp_pasien)) {
+            return ['status' => false, 'message' => 'NIK Pasien masih kosong.'];
+        }
+
+        // 1. Get Patient ID from IHS
+        $patientIhsId = null;
+        try {
+            $patientIhsId = \Illuminate\Support\Facades\Cache::remember("satusehat_patient_{$data->ktp_pasien}", 86400, function () use ($data) {
+                $patientRes = $this->get('Patient', ['identifier' => 'https://fhir.kemkes.go.id/id/nik|' . $data->ktp_pasien]);
+                return data_get($patientRes, 'data.entry.0.resource.id');
+            });
+        } catch (\Throwable $e) {
+            // fallback
+        }
+        if (!$patientIhsId) {
+            return ['status' => false, 'message' => "ID IHS Pasien tidak ditemukan untuk NIK {$data->ktp_pasien}"];
+        }
+
+        // 2. Get Practitioner ID from IHS
+        $practitionerIhsId = null;
+        if (!empty($data->ktp_dokter)) {
+            try {
+                $practitionerIhsId = \Illuminate\Support\Facades\Cache::remember("satusehat_practitioner_{$data->ktp_dokter}", 86400, function () use ($data) {
+                    $practitionerRes = $this->get('Practitioner', ['identifier' => 'https://fhir.kemkes.go.id/id/nik|' . $data->ktp_dokter]);
+                    return data_get($practitionerRes, 'data.entry.0.resource.id');
+                });
+            } catch (\Throwable $e) {
+                // fallback
+            }
+        }
+
+        // 3. Waktu pelaksanaan
+        $start = "{$data->tgl_registrasi}T{$data->jam_reg}+07:00";
+        $end   = $start;
+        $pemeriksaan = DB::table('pemeriksaan_ralan')->where('no_rawat', $no_rawat)->first();
+        if ($pemeriksaan && !empty($pemeriksaan->tgl_perawatan) && !empty($pemeriksaan->jam_rawat)) {
+            $end = "{$pemeriksaan->tgl_perawatan}T{$pemeriksaan->jam_rawat}+07:00";
+        }
+
+        $payload = [
+            'resourceType' => 'Procedure',
+            'status'       => 'completed',
+            'category'     => [
+                'coding' => [
+                    [
+                        'system'  => 'http://snomed.info/sct',
+                        'code'    => '103693007',
+                        'display' => 'Diagnostic procedure'
+                    ]
+                ],
+                'text' => 'Diagnostic procedure'
+            ],
+            'code' => [
+                'coding' => [
+                    [
+                        'system'  => 'http://hl7.org/fhir/sid/icd-9-cm',
+                        'code'    => $data->kode,
+                        'display' => !empty($data->deskripsi_panjang) ? $data->deskripsi_panjang : $data->kode
+                    ]
+                ]
+            ],
+            'subject' => [
+                'reference' => 'Patient/' . $patientIhsId,
+                'display'   => $data->nm_pasien
+            ],
+            'encounter' => [
+                'reference' => 'Encounter/' . $data->id_encounter,
+                'display'   => "Tindakan {$data->deskripsi_panjang} kepada {$data->nm_pasien}"
+            ],
+            'performedPeriod' => [
+                'start' => $start,
+                'end'   => $end
+            ]
+        ];
+
+        if ($practitionerIhsId) {
+            $payload['performer'] = [
+                [
+                    'actor' => [
+                        'reference' => 'Practitioner/' . $practitionerIhsId,
+                        'display'   => $data->nama_dokter
+                    ]
+                ]
+            ];
+        }
+
+        if ($data->id_procedure) {
+            $idProcedure = trim($data->id_procedure);
+            $payload['id'] = $idProcedure;
+            $res = $this->put('Procedure/' . $idProcedure, $payload);
+        } else {
+            $res = $this->post('Procedure', $payload);
+        }
+
+        if (!$res['status']) {
+            return $res;
+        }
+
+        $idProcedure = $res['data']['id'];
+        DB::table('satu_sehat_procedure')->updateOrInsert(
+            [
+                'no_rawat' => $no_rawat,
+                'kode'     => $kode,
+                'status'   => $data->status
+            ],
+            ['id_procedure' => $idProcedure]
+        );
+
+        return [
+            'status'  => true,
+            'message' => 'Sync Procedure berhasil',
+            'id'      => $idProcedure
+        ];
+    }
+
+    /**
+     * Batch Sync Procedure to SATU SEHAT
+     */
+    public function syncBatchProcedure(string $startDate, string $endDate, array $keys = []): array
+    {
+        $list = $this->getProcedureList(null, $startDate, $endDate, 'unsent');
+
+        if (!empty($keys)) {
+            $list = array_filter($list, function ($item) use ($keys) {
+                $k = $item->no_rawat . '|' . $item->kode . '|' . $item->status_ralan_ranap;
+                return in_array($k, $keys);
+            });
+        }
+
+        $success = 0;
+        $error   = 0;
+        $skip    = 0;
+        $messages = [];
+
+        foreach ($list as $item) {
+            if (empty($item->id_encounter) || empty($item->ktp_pasien)) {
+                $skip++;
+                continue;
+            }
+
+            $res = $this->syncProcedure($item->no_rawat, $item->kode, $item->status_ralan_ranap);
+            if ($res['status']) {
+                $success++;
+            } else {
+                $error++;
+                $messages[] = "{$item->no_rawat} ({$item->kode}): " . ($res['message'] ?? 'Error');
+            }
+        }
+
+        return [
+            'total'    => count($list),
+            'success'  => $success,
+            'error'    => $error,
+            'skip'     => $skip,
+            'messages' => $messages
+        ];
+    }
+
     /**
      * Get Observation TTV List
      */

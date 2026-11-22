@@ -229,6 +229,75 @@ class SatuSehat extends Controller
         return response()->json($res);
     }
 
+    /**
+     * Show procedure sync page
+     */
+    public function procedureIndex()
+    {
+        return view('content.satusehat.procedure');
+    }
+
+    /**
+     * Get procedure data (JSON)
+     */
+    public function getProcedureData(Request $request): JsonResponse
+    {
+        $search = $request->get('search');
+        $startDate = $request->get('start_date', date('Y-m-d'));
+        $endDate = $request->get('end_date', date('Y-m-d'));
+        $status = $request->get('status', 'all');
+
+        $data = $this->service->getProcedureList($search, $startDate, $endDate, $status);
+        return response()->json([
+            'status' => true,
+            'data'   => $data
+        ]);
+    }
+
+    /**
+     * Sync procedure
+     */
+    public function syncProcedure(Request $request): JsonResponse
+    {
+        $request->validate([
+            'no_rawat' => 'required',
+            'kode'     => 'required',
+            'status'   => 'nullable'
+        ]);
+
+        $statusLanjut = $request->get('status', 'Ralan');
+        $result = $this->service->syncProcedure(
+            $request->no_rawat,
+            $request->kode,
+            $statusLanjut
+        );
+        return response()->json($result);
+    }
+
+    /**
+     * Batch sync procedure
+     */
+    public function syncBatchProcedure(Request $request): JsonResponse
+    {
+        $request->validate([
+            'start_date' => 'required|date',
+            'end_date'   => 'required|date',
+            'keys'       => 'nullable|array'
+        ]);
+
+        $res = $this->service->syncBatchProcedure(
+            $request->start_date,
+            $request->end_date,
+            $request->keys ?? []
+        );
+
+        return response()->json([
+            'status'  => true,
+            'message' => "Proses sinkronisasi Procedure selesai. Berhasil: {$res['success']}, Gagal: {$res['error']}, Dilewati: {$res['skip']}.",
+            'data'    => $res
+        ]);
+    }
+
     public function autoSync(): JsonResponse
     {
         try {
@@ -252,6 +321,22 @@ class SatuSehat extends Controller
                 $res = $this->service->syncCondition($c->no_rawat, $c->kd_penyakit, $c->status_diagnosa);
                 if ($res['status']) $synced[] = "Condition: {$c->no_rawat} ({$c->kd_penyakit})";
                 else $errors[] = "Condition {$c->no_rawat}: " . $res['message'];
+            }
+
+            // Sync Procedures (if encounter is already synced)
+            try {
+                $procedures = $this->service->getProcedureList(null, $today, $today, 'unsent');
+                $pendingProcedures = array_filter($procedures, fn($p) => empty($p->id_procedure) && !empty($p->id_encounter) && !empty($p->ktp_pasien));
+                foreach (array_slice($pendingProcedures, 0, 2) as $p) {
+                    $res = $this->service->syncProcedure($p->no_rawat, $p->kode, $p->status_ralan_ranap);
+                    if ($res['status']) {
+                        $synced[] = "Procedure: {$p->no_rawat} ({$p->kode})";
+                    } else {
+                        $errors[] = "Procedure {$p->no_rawat}: " . ($res['message'] ?? 'Error');
+                    }
+                }
+            } catch (\Throwable $eProc) {
+                // Jangan gagalkan sync utama jika procedure terkendala
             }
 
             // Sync Observations TTV (if encounter is already synced and any TTV parameter is pending)
