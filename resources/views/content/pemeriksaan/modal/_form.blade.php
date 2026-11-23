@@ -330,10 +330,9 @@
             const nm_pasien = $('#formCpptRajal input[name=nm_pasien]').val();
             data['kesadaran'] = selectKesadaran.find('option:selected').text();
 
-            const alergi = inputAlergi.val().map((val) => {
-                return val;
-            })
-            data['alergi'] = alergi.join(', ');
+            const rawValAlergi = inputAlergi.val() || [];
+            const alergi = (Array.isArray(rawValAlergi) ? rawValAlergi : [rawValAlergi]).filter(val => val && val.trim() !== '' && val.trim() !== '-');
+            data['alergi'] = alergi.length ? alergi.join(', ') : '-';
             $.post(`{{ url('/pemeriksaan/ralan/create') }}`, data).done((response) => {
                 if (response && response.antrian) {
                     if (response.antrian.code == 200) {

@@ -279,17 +279,17 @@
                 }
 
                 setRiwayat(regPeriksa.no_rkm_medis)
-                if (pasien.alergi.length) {
-                    const alergi = pasien.alergi;
-                    inputAlergi.empty()
-                    alergi.forEach((resAlergi) => {
-                        const optionAlergi = new Option(resAlergi.alergi, resAlergi.alergi, true, true);
-                        inputAlergi.append(optionAlergi).trigger('change');
+                inputAlergi.empty();
+                selectAlergi(inputAlergi, $('#formCpptRajal'));
+                if (pasien && Array.isArray(pasien.alergi) && pasien.alergi.length) {
+                    pasien.alergi.forEach((resAlergi) => {
+                        const txt = (resAlergi?.alergi || '').trim();
+                        if (txt && txt !== '-') {
+                            const optionAlergi = new Option(txt, txt, true, true);
+                            inputAlergi.append(optionAlergi);
+                        }
                     });
-                    selectAlergi(inputAlergi, $('#formCpptRajal'))
-                } else {
-                    inputAlergi.empty()
-                    selectAlergi(inputAlergi, $('#formCpptRajal'))
+                    inputAlergi.trigger('change');
                 }
             })
         }

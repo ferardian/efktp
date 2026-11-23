@@ -237,6 +237,43 @@ class RegPeriksaController extends Controller
 			->with($this->relation)
 			->with('riwayatPemeriksaan.pegawai.dokter', 'pemeriksaanRanap.pegawai.dokter')
 			->first();
+
+		if ($regPeriksa && $regPeriksa->pasien && (!$regPeriksa->pasien->relationLoaded('alergi') || $regPeriksa->pasien->alergi->isEmpty())) {
+			$lastAlergi = DB::table('pemeriksaan_ralan as pr')
+				->join('reg_periksa as rp', 'rp.no_rawat', '=', 'pr.no_rawat')
+				->where('rp.no_rkm_medis', $regPeriksa->no_rkm_medis)
+				->whereNotNull('pr.alergi')
+				->whereNotIn(DB::raw('TRIM(LOWER(pr.alergi))'), ['', '-', '--', 'tidak ada', 'tdk ada', 'disangkal', 'nihil', 'n', 'y', '0'])
+				->orderBy('pr.tgl_perawatan', 'desc')
+				->orderBy('pr.jam_rawat', 'desc')
+				->value('pr.alergi');
+
+			if (!$lastAlergi) {
+				$lastAlergi = DB::table('pemeriksaan_ranap as pr')
+					->join('reg_periksa as rp', 'rp.no_rawat', '=', 'pr.no_rawat')
+					->where('rp.no_rkm_medis', $regPeriksa->no_rkm_medis)
+					->whereNotNull('pr.alergi')
+					->whereNotIn(DB::raw('TRIM(LOWER(pr.alergi))'), ['', '-', '--', 'tidak ada', 'tdk ada', 'disangkal', 'nihil', 'n', 'y', '0'])
+					->orderBy('pr.tgl_perawatan', 'desc')
+					->orderBy('pr.jam_rawat', 'desc')
+					->value('pr.alergi');
+			}
+
+			if ($lastAlergi) {
+				$parts = array_filter(array_map('trim', explode(',', $lastAlergi)), function ($v) {
+					return $v !== '' && $v !== '-';
+				});
+				$alergiItems = [];
+				foreach ($parts as $p) {
+					$alergiItems[] = (object) [
+						'no_rkm_medis' => $regPeriksa->no_rkm_medis,
+						'alergi'       => $p,
+					];
+				}
+				$regPeriksa->pasien->setRelation('alergi', collect($alergiItems));
+			}
+		}
+
 		return response()->json($regPeriksa, 200);
 	}
 

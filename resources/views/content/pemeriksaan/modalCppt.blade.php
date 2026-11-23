@@ -379,17 +379,37 @@
                         }
                     });
                 }
-                if (pasien.alergi.length) {
-                    const alergi = pasien.alergi;
-                    inputAlergi.empty()
-                    alergi.forEach((resAlergi) => {
-                        const optionAlergi = new Option(resAlergi.alergi, resAlergi.alergi, true, true);
-                        inputAlergi.append(optionAlergi).trigger('change');
+                // Reset & Inisialisasi Alergi (Select2 multiple)
+                inputAlergi.empty();
+                selectAlergi(inputAlergi, formCpptRajal);
+
+                const listAlergi = [];
+                // 1. Ambil dari riwayat alergi pasien (efktp_alergi atau riwayat pemeriksaan sebelumnya)
+                if (pasien && Array.isArray(pasien.alergi) && pasien.alergi.length) {
+                    pasien.alergi.forEach((resAlergi) => {
+                        const txt = (resAlergi?.alergi || '').trim();
+                        if (txt && txt !== '-' && !listAlergi.includes(txt)) {
+                            listAlergi.push(txt);
+                        }
                     });
-                    selectAlergi(inputAlergi, formCpptRajal)
-                } else {
-                    inputAlergi.empty()
-                    selectAlergi(inputAlergi, formCpptRajal)
+                }
+                // 2. Ambil juga dari pemeriksaan_ralan.alergi untuk kunjungan ini (jika ada)
+                if (pemeriksaan_ralan && pemeriksaan_ralan.alergi && pemeriksaan_ralan.alergi.trim() !== '' && pemeriksaan_ralan.alergi.trim() !== '-') {
+                    const rawParts = pemeriksaan_ralan.alergi.split(',');
+                    rawParts.forEach((part) => {
+                        const txt = part.trim();
+                        if (txt && txt !== '-' && !listAlergi.includes(txt)) {
+                            listAlergi.push(txt);
+                        }
+                    });
+                }
+
+                if (listAlergi.length) {
+                    listAlergi.forEach((valAlergi) => {
+                        const optionAlergi = new Option(valAlergi, valAlergi, true, true);
+                        inputAlergi.append(optionAlergi);
+                    });
+                    inputAlergi.trigger('change');
                 }
 
                 // if (response.kd_dokter === "{{ session()->get('pegawai')->nik }}") {
@@ -399,6 +419,8 @@
 
                 if (pemeriksaan_ralan) {
                     Object.keys(pemeriksaan_ralan).forEach((key) => {
+                        if (key === 'alergi') return; // Lewati alergi agar tidak menimpa Select2 multi-select
+
                         const select = formCpptRajal.find(`select[name="${key}"]`);
                         const input = formCpptRajal.find(`input[name="${key}"]`);
                         const textarea = formCpptRajal.find(`textarea[name="${key}"]`);
