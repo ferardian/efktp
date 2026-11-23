@@ -531,6 +531,73 @@ class SatuSehatAllergyService
                 ?? data_get($response, 'message')
                 ?? 'Gagal mengirim AllergyIntolerance ke SatuSehat';
 
+            // Penanganan jika duplikat di SatuSehat (RuleNumber: 20002 / Duplicate Recovery)
+            $isDuplicate = (data_get($response, 'data.issue.0.code') === 'duplicate')
+                || str_contains(strtolower($msg), 'duplicate')
+                || str_contains(strtolower($msg), 'rulenumber: 20002')
+                || str_contains(strtolower($msg), 'already exists');
+
+            if ($isDuplicate) {
+                Log::channel('satusehat')->info("[SatuSehat] Duplicate detected for allergy: {$row->alergi_text} (Patient: {$idPasien}). Memulai auto-recovery...");
+
+                $search = $this->ss->get('AllergyIntolerance', [
+                    'patient' => "Patient/{$idPasien}"
+                ]);
+
+                $entries = data_get($search, 'data.entry') ?? data_get($search, 'entry') ?? [];
+                $recoveredId = null;
+
+                if (!empty($entries) && is_array($entries)) {
+                    // Cari entri dengan kode atau teks yang cocok
+                    foreach ($entries as $entry) {
+                        $res = $entry['resource'] ?? [];
+                        $codes = data_get($res, 'code.coding.*.code') ?? [];
+                        $text  = strtolower(trim((string) data_get($res, 'code.text')));
+                        
+                        if (in_array($mapping['code'], (array) $codes) || $text === strtolower(trim($row->alergi_text))) {
+                            $recoveredId = $res['id'] ?? null;
+                            break;
+                        }
+                    }
+
+                    // Fallback ke entri pertama jika tidak ada yang spesifik
+                    if (!$recoveredId && !empty($entries[0]['resource']['id'])) {
+                        $recoveredId = $entries[0]['resource']['id'];
+                    }
+                }
+
+                if ($recoveredId) {
+                    // Simpan ID yang dipulihkan ke database lokal
+                    DB::table('satu_sehat_allergy')->updateOrInsert(
+                        [
+                            'no_rawat'      => $row->no_rawat,
+                            'tgl_perawatan' => $row->tgl_perawatan,
+                            'jam_rawat'     => $row->jam_rawat,
+                            'alergi_text'   => $row->alergi_text,
+                        ],
+                        [
+                            'id_allergy' => $recoveredId,
+                            'updated_at' => now(),
+                        ]
+                    );
+
+                    // Coba perbarui data di SatuSehat menggunakan PUT dengan id yang dipulihkan
+                    try {
+                        $payload['id'] = $recoveredId;
+                        $this->ss->put("AllergyIntolerance/{$recoveredId}", $payload);
+                    } catch (\Throwable $putEx) {
+                        // Abaikan jika update PUT gagal, ID sudah tersimpan
+                    }
+
+                    return [
+                        'success'    => true,
+                        'id_allergy' => $recoveredId,
+                        'message'    => "Data Alergi sudah terdaftar di SatuSehat. Berhasil dipulihkan (ID: {$recoveredId})",
+                        'recovered'  => true
+                    ];
+                }
+            }
+
             return [
                 'success' => false,
                 'message' => $msg,
