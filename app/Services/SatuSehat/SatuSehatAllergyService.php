@@ -95,8 +95,58 @@ class SatuSehatAllergyService
         return [
             '', '-', '--', '---', '.', '..', 'tidak ada', 'tidak', 'tdk ada', 'tdk',
             'disangkal', 'disnagkal', 'nihil', 'belum tahu', 'belum ada', 'none', 'no',
-            'tidak ada alergi', 'tdk ada alergi', 'negatif', 'ta'
+            'tidak ada alergi', 'tdk ada alergi', 'negatif', 'ta', 'n', 'y', '0', 't.a',
+            'belum', 'belum nampak'
         ];
+    }
+
+    /**
+     * Deteksi apakah teks alergi merupakan nama panggilan anak / catatan non-alergi
+     */
+    public static function isNonAllergyNote(string $alergiText, string $nmPasien = ''): bool
+    {
+        $cleanText = trim($alergiText);
+        $lowerText = strtolower($cleanText);
+
+        // 1. Cek keyword penanda non-alergi (panggilan, alamat, orang tua)
+        $ignoreKeywords = ['panggilan:', 'panggilan ', 'tinggal di', 'ibu ', 'ayah ', 'bapak ', 'mama ', 'papa '];
+        foreach ($ignoreKeywords as $kw) {
+            if (str_contains($lowerText, $kw)) {
+                return true;
+            }
+        }
+
+        // 2. Cek apakah teks alergi merupakan bagian dari nama pasien (sering diisi nama panggilan anak oleh dokter anak)
+        if (!empty($nmPasien)) {
+            $cleanNama = strtolower(trim(preg_replace('/[^a-zA-Z0-9\s]/', ' ', $nmPasien)));
+            $wordsNama = array_filter(explode(' ', $cleanNama), fn($w) => strlen($w) >= 3);
+            
+            $cleanAlergi = strtolower(trim(preg_replace('/[^a-zA-Z0-9\s]/', ' ', $alergiText)));
+            $wordsAlergi = array_filter(explode(' ', $cleanAlergi), fn($w) => strlen($w) >= 3);
+
+            // Jika teks alergi hanya 1 atau 2 kata dan semua katanya ada di nama pasien
+            if (!empty($wordsAlergi) && count($wordsAlergi) <= 2) {
+                $allWordsInName = true;
+                foreach ($wordsAlergi as $wa) {
+                    $found = false;
+                    foreach ($wordsNama as $wn) {
+                        if (str_contains($wn, $wa) || str_contains($wa, $wn) || levenshtein($wa, $wn) <= 1) {
+                            $found = true;
+                            break;
+                        }
+                    }
+                    if (!$found) {
+                        $allWordsInName = false;
+                        break;
+                    }
+                }
+                if ($allWordsInName) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -186,16 +236,22 @@ class SatuSehatAllergyService
         $unionParts = [
             "SELECT no_rawat, tgl_perawatan, jam_rawat, 'Ralan (SOAP)' AS sumber, TRIM(alergi) AS alergi_text, nip
              FROM pemeriksaan_ralan
-             WHERE alergi IS NOT NULL AND TRIM(LOWER(alergi)) NOT IN ({$inNegatives})",
+             WHERE alergi IS NOT NULL 
+               AND LENGTH(TRIM(alergi)) > 1
+               AND TRIM(LOWER(alergi)) NOT IN ({$inNegatives})",
             "SELECT no_rawat, tgl_perawatan, jam_rawat, 'Ranap (SOAP)' AS sumber, TRIM(alergi) AS alergi_text, nip
              FROM pemeriksaan_ranap
-             WHERE alergi IS NOT NULL AND TRIM(LOWER(alergi)) NOT IN ({$inNegatives})"
+             WHERE alergi IS NOT NULL 
+               AND LENGTH(TRIM(alergi)) > 1
+               AND TRIM(LOWER(alergi)) NOT IN ({$inNegatives})"
         ];
 
         if ($hasIgd) {
             $unionParts[] = "SELECT no_rawat, DATE(tanggal) AS tgl_perawatan, TIME(tanggal) AS jam_rawat, 'IGD (Asesmen)' AS sumber, TRIM(alergi) AS alergi_text, kd_dokter AS nip
                              FROM penilaian_medis_igd
-                             WHERE alergi IS NOT NULL AND TRIM(LOWER(alergi)) NOT IN ({$inNegatives})";
+                             WHERE alergi IS NOT NULL 
+                               AND LENGTH(TRIM(alergi)) > 1
+                               AND TRIM(LOWER(alergi)) NOT IN ({$inNegatives})";
         }
 
         $unionSql = implode(" UNION ALL ", $unionParts);
@@ -254,8 +310,15 @@ class SatuSehatAllergyService
 
         // Ambil mapping untuk mencocokkan tiap record
         $allMappings = DB::table('satu_sehat_mapping_alergi')->get();
+        $showAll = !empty($params['show_all']) && $params['show_all'] === 'true';
 
-        return $rows->map(function ($item) use ($allMappings) {
+        return $rows->filter(function ($item) use ($showAll) {
+            // Saring catatan non-alergi (nama panggilan anak, ortu, alamat) kecuali jika diminta tampilkan semua
+            if (!$showAll && self::isNonAllergyNote($item->alergi_text, $item->nm_pasien)) {
+                return false;
+            }
+            return true;
+        })->map(function ($item) use ($allMappings) {
             $matched = $this->findMatchInCollection($item->alergi_text, $allMappings);
 
             if ($matched) {
@@ -277,7 +340,7 @@ class SatuSehatAllergyService
             }
 
             return (array) $item;
-        })->toArray();
+        })->values()->toArray();
     }
 
     /**
@@ -360,16 +423,22 @@ class SatuSehatAllergyService
         $unionParts = [
             "SELECT no_rawat, tgl_perawatan, jam_rawat, 'Ralan (SOAP)' AS sumber, TRIM(alergi) AS alergi_text, nip
              FROM pemeriksaan_ralan
-             WHERE alergi IS NOT NULL AND TRIM(LOWER(alergi)) NOT IN ({$inNegatives})",
+             WHERE alergi IS NOT NULL 
+               AND LENGTH(TRIM(alergi)) > 1
+               AND TRIM(LOWER(alergi)) NOT IN ({$inNegatives})",
             "SELECT no_rawat, tgl_perawatan, jam_rawat, 'Ranap (SOAP)' AS sumber, TRIM(alergi) AS alergi_text, nip
              FROM pemeriksaan_ranap
-             WHERE alergi IS NOT NULL AND TRIM(LOWER(alergi)) NOT IN ({$inNegatives})"
+             WHERE alergi IS NOT NULL 
+               AND LENGTH(TRIM(alergi)) > 1
+               AND TRIM(LOWER(alergi)) NOT IN ({$inNegatives})"
         ];
 
         if ($hasIgd) {
             $unionParts[] = "SELECT no_rawat, DATE(tanggal) AS tgl_perawatan, TIME(tanggal) AS jam_rawat, 'IGD (Asesmen)' AS sumber, TRIM(alergi) AS alergi_text, kd_dokter AS nip
                              FROM penilaian_medis_igd
-                             WHERE alergi IS NOT NULL AND TRIM(LOWER(alergi)) NOT IN ({$inNegatives})";
+                             WHERE alergi IS NOT NULL 
+                               AND LENGTH(TRIM(alergi)) > 1
+                               AND TRIM(LOWER(alergi)) NOT IN ({$inNegatives})";
         }
 
         $unionSql = implode(" UNION ALL ", $unionParts);
@@ -427,6 +496,13 @@ class SatuSehatAllergyService
             return [
                 'success' => false,
                 'message' => 'Encounter kunjungan ini belum tersinkronisasi ke SatuSehat'
+            ];
+        }
+
+        if (self::isNonAllergyNote($row->alergi_text, $row->nm_pasien)) {
+            return [
+                'success' => false,
+                'message' => "Teks '{$row->alergi_text}' terdeteksi sebagai nama panggilan/catatan identitas, bukan data riwayat alergi medis valid."
             ];
         }
 

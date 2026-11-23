@@ -239,6 +239,11 @@
                             <button type="button" class="btn-filter-status" data-status="unmapped">Belum Mapping</button>
                         </div>
 
+                        <div class="form-check form-switch m-0 d-flex align-items-center">
+                            <input class="form-check-input" type="checkbox" id="toggleFilterNonAllergy" checked>
+                            <label class="form-check-label small ms-2 text-muted" for="toggleFilterNonAllergy" title="Saring keluar teks nama panggilan anak/orang tua yang keliru diinput di kolom alergi">Saring Nama Panggilan / Non-Alergi</label>
+                        </div>
+
                         <button type="button" class="btn btn-outline-secondary btn-sm" id="btnRefresh" title="Refresh">
                             <i class="ti ti-refresh"></i>
                         </button>
@@ -401,7 +406,7 @@
             loadData();
 
             // Event filter tanggal
-            $('#start_date, #end_date').on('change', function() {
+            $('#start_date, #end_date, #toggleFilterNonAllergy').on('change', function() {
                 loadData();
             });
 
@@ -445,6 +450,7 @@
             function loadData() {
                 let startDate = $('#start_date').val();
                 let endDate = $('#end_date').val();
+                let showAll = !$('#toggleFilterNonAllergy').is(':checked');
 
                 $('#tbodyAllergy').html(`
                     <tr>
@@ -460,7 +466,8 @@
                     data: {
                         tgl_awal: startDate,
                         tgl_akhir: endDate,
-                        status: 'all'
+                        status: 'all',
+                        show_all: showAll
                     },
                     success: function(res) {
                         if (res.success) {

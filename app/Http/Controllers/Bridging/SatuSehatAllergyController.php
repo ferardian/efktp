@@ -31,7 +31,7 @@ class SatuSehatAllergyController extends Controller
      */
     public function getAllergyData(Request $request): JsonResponse
     {
-        $params = $request->only(['tgl_awal', 'tgl_akhir', 'search', 'status']);
+        $params = $request->only(['tgl_awal', 'tgl_akhir', 'search', 'status', 'show_all']);
         try {
             $data = $this->service->getAllergyList($params);
             return response()->json([
