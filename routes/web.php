@@ -792,6 +792,10 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::post('satusehat/mapping/lab', [Bridging\SatuSehatServiceRequestLabController::class, 'saveMapping'])->name('satusehat.mapping.lab.save');
 	Route::delete('satusehat/mapping/lab/{id_template}', [Bridging\SatuSehatServiceRequestLabController::class, 'deleteMapping'])->name('satusehat.mapping.lab.delete');
 
+	// SatuSehat RME (SSRME - National RME Viewer)
+	Route::get('satusehat/rme/open', [Bridging\SatuSehatRmeController::class, 'openRme'])->name('satusehat.rme.open');
+	Route::post('satusehat/rme/consent', [Bridging\SatuSehatRmeController::class, 'requestConsent'])->name('satusehat.rme.consent');
+
 
 	// SETTING
 

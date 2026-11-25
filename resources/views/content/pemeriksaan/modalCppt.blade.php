@@ -1,9 +1,34 @@
 <div class="modal modal-blur fade" id="modalCppt" tabindex="-1" aria-modal="true" role="dialog" aria-hidden="true">
     <div class="modal-dialog modalCppt modal-fullscreen modal-dialog-scrollable" role="document">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Pemeriksaan / CPPT</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-header d-flex align-items-center justify-content-between">
+                <h5 class="modal-title mb-0">Pemeriksaan / CPPT</h5>
+                <div class="d-flex align-items-center gap-2 ms-auto me-2">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-outline-teal fw-semibold d-inline-flex align-items-center gap-1" onclick="openSatuSehatRme(0)" title="Akses Rekam Medis Nasional SATUSEHAT (SSRME)">
+                            <i class="ti ti-shield-check"></i>
+                            <span>RME SATUSEHAT</span>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-teal dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false" title="Pilih Mode Akses RME SATUSEHAT">
+                            <span class="visually-hidden">Pilih Mode</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center gap-2" href="javascript:void(0)" onclick="openSatuSehatRme(0)">
+                                    <i class="ti ti-shield-check text-teal"></i>
+                                    <span>Akses Reguler (Consent Pasien)</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center gap-2 text-danger" href="javascript:void(0)" onclick="openSatuSehatRme(1)">
+                                    <i class="ti ti-alert-triangle text-danger"></i>
+                                    <span>Akses Emergency (Kedaruratan)</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <button type="button" class="btn-close m-0" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                  <ul class="nav nav-tabs " data-bs-toggle="tabs">

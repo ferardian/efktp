@@ -358,6 +358,7 @@
     </div>
 
     @yield('contents')
+    @include('content.satusehat.modal.modal_satusehat_rme')
 </div>
 <div class="offcanvas offcanvas-end offcanvas-dark w-25" tabindex="-1" id="otherMenu" aria-labelledby="otherMenuLabel"
      aria-modal="true" role="dialog">
@@ -377,6 +378,7 @@
 <script src="{{ asset('libs/tinymce/tinymce.js') }}" defer></script>
 <script src="{{ asset('js/contextMenu/jquery.contextMenu.min.js') }}" defer></script>
 <script src="{{ asset('js/contextMenu/jquery.ui.position.js') }}" defer></script>
+<script src="{{ asset('js/qrcode.min.js') }}" defer></script>
 <script>
     const baseUrl = "{{ url('/') }}";
 </script>
