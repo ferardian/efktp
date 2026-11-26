@@ -337,23 +337,23 @@
         <div class="dropdown-menu" data-bs-popper="static">
             <div class="dropdown-menu-columns">
                 <div class="dropdown-menu-column">
-                    <a href="{{ route('anjungan.index') }}" target="_blank" class="dropdown-item fw-bold text-teal">
+                    <a href="{{ route('anjungan.index') }}" target="_blank" class="dropdown-item">
                         <i class="ti ti-device-touch me-1"></i> Anjungan Mandiri (APM)
                     </a>
-                    <a href="{{ url('antrean/loket/panggil') }}" class="dropdown-item fw-semibold text-primary">
+                    <a href="{{ url('antrean/loket/panggil') }}" class="dropdown-item {{ Request::is('antrean/loket/panggil') ? 'active' : '' }}">
                         <i class="ti ti-speakerphone me-1"></i> Pemanggil Antrean Loket
                     </a>
                     <a href="{{ url('antrean/loket') }}" target="_blank" class="dropdown-item">
                         <i class="ti ti-device-tv me-1"></i> Display Antrean Loket
                     </a>
                     <a href="{{ url('antrean/poliklinik') }}" target="_blank" class="dropdown-item">
-                        Poliklinik
+                        <i class="ti ti-screen-share me-1"></i> Poliklinik
                     </a>
-                    <a href="{{ url('antrean/poliklinik/v2') }}" target="_blank" class="dropdown-item ">
-                        Poliklinik v2
+                    <a href="{{ url('antrean/poliklinik/v2') }}" target="_blank" class="dropdown-item">
+                        <i class="ti ti-screen-share me-1"></i> Poliklinik v2
                     </a>
                     <a href="{{ url('antrean/farmasi') }}" target="_blank" class="dropdown-item">
-                        Farmasi
+                        <i class="ti ti-pill me-1"></i> Farmasi
                     </a>
                 </div>
             </div>
