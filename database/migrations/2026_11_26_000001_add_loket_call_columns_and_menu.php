@@ -38,7 +38,7 @@ return new class extends Migration
                         'icon'      => 'ti ti-speakerphone',
                         'parent_id' => $parentId,
                         'order_num' => 4,
-                        'target'    => null,
+                        'target'    => '_self',
                         'position'  => 'navbar',
                     ],
                     [
