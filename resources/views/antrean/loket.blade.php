@@ -17,8 +17,8 @@
                             <p class="m-0 text-muted small">{{ $data->kontak ?? '' }} {{ !empty($data->email) ? '• ' . $data->email : '' }}</p>
                         </div>
                     </div>
-                    <button type="button" id="btnEnableSound" class="btn btn-outline-teal btn-sm rounded-pill px-3" onclick="enableAudio()">
-                        <i class="ti ti-volume me-1"></i> Aktifkan Suara
+                    <button type="button" id="btnEnableSound" class="btn btn-teal text-white btn-sm rounded-pill px-3" onclick="toggleAudio()" title="Klik untuk mematikan / menyalakan suara panggilan">
+                        <i class="ti ti-volume me-1"></i> Suara Aktif
                     </button>
                 </div>
             </div>
@@ -101,11 +101,17 @@
 @push('script')
 <script>
     let lastCallSignature = '';
-    let audioEnabled = false;
+    let audioEnabled = true;
     let speechQueue = [];
     let isSpeaking = false;
+    let sharedAudioCtx = null;
 
     $(document).ready(function () {
+        // Buka kunci AudioContext otomatis jika ada klik/sentuhan di mana saja pada halaman
+        $(document).one('click touchstart keydown', function () {
+            unlockAudioContext();
+        });
+
         // Load video antrean
         $.get("{{ url('/setting/antrean/video') }}").done(function (response) {
             if (response && response.content) {
@@ -129,20 +135,52 @@
         setInterval(pollDisplayData, 2500);
     });
 
-    function enableAudio() {
-        audioEnabled = true;
-        $('#btnEnableSound')
-            .removeClass('btn-outline-teal')
-            .addClass('btn-teal text-white')
-            .html('<i class="ti ti-volume me-1"></i> Suara Aktif');
-        playChime();
+    function unlockAudioContext() {
+        try {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtx) return;
+            if (!sharedAudioCtx) {
+                sharedAudioCtx = new AudioCtx();
+            }
+            if (sharedAudioCtx.state === 'suspended') {
+                sharedAudioCtx.resume();
+            }
+        } catch (e) {}
+    }
+
+    function toggleAudio() {
+        audioEnabled = !audioEnabled;
+        if (audioEnabled) {
+            unlockAudioContext();
+            $('#btnEnableSound')
+                .removeClass('btn-outline-secondary')
+                .addClass('btn-teal text-white')
+                .html('<i class="ti ti-volume me-1"></i> Suara Aktif');
+            playChime();
+        } else {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+            speechQueue = [];
+            isSpeaking = false;
+            $('#btnEnableSound')
+                .removeClass('btn-teal text-white')
+                .addClass('btn-outline-secondary')
+                .html('<i class="ti ti-volume-off me-1"></i> Suara Mati');
+        }
     }
 
     function playChime() {
         try {
             const AudioCtx = window.AudioContext || window.webkitAudioContext;
             if (!AudioCtx) return;
-            const ctx = new AudioCtx();
+            if (!sharedAudioCtx) {
+                sharedAudioCtx = new AudioCtx();
+            }
+            if (sharedAudioCtx.state === 'suspended') {
+                sharedAudioCtx.resume();
+            }
+            const ctx = sharedAudioCtx;
             const now = ctx.currentTime;
 
             [523.25, 659.25, 783.99].forEach((freq, idx) => {
@@ -237,3 +275,4 @@
     }
 </script>
 @endpush
+
