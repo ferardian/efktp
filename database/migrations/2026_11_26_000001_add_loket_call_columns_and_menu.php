@@ -52,13 +52,7 @@ return new class extends Migration
                     ],
                 ];
 
-                $roleIds = [];
-                if (Schema::hasTable('roles')) {
-                    $roleIds = DB::table('roles')
-                        ->whereIn('name', ['admin', 'petugas', 'owner'])
-                        ->pluck('id')
-                        ->toArray();
-                }
+                $roles = ['admin', 'petugas', 'owner', 'dokter', 'apoteker'];
 
                 foreach ($menusToAdd as $menuData) {
                     $existingId = DB::table('menus')->where('url', $menuData['url'])->value('id');
@@ -71,18 +65,12 @@ return new class extends Migration
                         $menuId = $existingId;
                     }
 
-                    if (Schema::hasTable('menu_role') && !empty($roleIds)) {
-                        foreach ($roleIds as $roleId) {
-                            $existsRole = DB::table('menu_role')
-                                ->where('menu_id', $menuId)
-                                ->where('role_id', $roleId)
-                                ->exists();
-                            if (!$existsRole) {
-                                DB::table('menu_role')->insert([
-                                    'menu_id' => $menuId,
-                                    'role_id' => $roleId,
-                                ]);
-                            }
+                    if (Schema::hasTable('menu_role')) {
+                        foreach ($roles as $role) {
+                            DB::table('menu_role')->insertOrIgnore([
+                                'menu_id' => $menuId,
+                                'role'    => $role,
+                            ]);
                         }
                     }
                 }
@@ -119,3 +107,4 @@ return new class extends Migration
         }
     }
 };
+

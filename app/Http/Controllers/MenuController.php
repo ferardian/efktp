@@ -632,6 +632,44 @@ class MenuController extends Controller
                 }
             }
 
+            // Ensure Antrean Loket submenus under Antrean
+            $antreanParent = Menu::where('name', 'Antrean')->whereNull('parent_id')->first();
+            if ($antreanParent) {
+                $loketMenus = [
+                    [
+                        'name'      => 'Pemanggil Antrean Loket',
+                        'url'       => 'antrean/loket/panggil',
+                        'icon'      => 'ti ti-speakerphone',
+                        'order_num' => 1,
+                        'target'    => '_self',
+                    ],
+                    [
+                        'name'      => 'Display Antrean Loket',
+                        'url'       => 'antrean/loket',
+                        'icon'      => 'ti ti-device-tv',
+                        'order_num' => 2,
+                        'target'    => '_blank',
+                    ],
+                ];
+                foreach ($loketMenus as $lm) {
+                    $m = Menu::where('url', $lm['url'])->first();
+                    if (!$m) {
+                        $m = Menu::create([
+                            'name'      => $lm['name'],
+                            'url'       => $lm['url'],
+                            'icon'      => $lm['icon'],
+                            'parent_id' => $antreanParent->id,
+                            'order_num' => $lm['order_num'],
+                            'target'    => $lm['target'],
+                            'position'  => 'navbar',
+                        ]);
+                    }
+                    foreach (['admin', 'petugas', 'owner', 'dokter', 'apoteker'] as $r) {
+                        MenuRole::firstOrCreate(['menu_id' => $m->id, 'role' => $r]);
+                    }
+                }
+            }
+
             $newRolesDefaults = [
                 'perawat' => [
                     Menu::where('url', '/')->value('id'),
