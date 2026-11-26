@@ -410,6 +410,17 @@
         toast.show();
     }
 
+    @if(session('error'))
+        document.addEventListener('DOMContentLoaded', function () {
+            showToast(@json(session('error')), 'error', 5000);
+        });
+    @endif
+    @if(session('success'))
+        document.addEventListener('DOMContentLoaded', function () {
+            showToast(@json(session('success')), 'success', 4000);
+        });
+    @endif
+
     //Script main
     let tanggal = "{{ date('d-m-Y') }}"
     let url = "{{ url('') }}"

@@ -65,7 +65,7 @@ class KasirHelper
             return false;
         }
 
-        // 4. Jika enable_menu_role non-aktif, hanya kasir/keuangan/admin/owner (atau dokter praktek mandiri)
-        return false;
+        // 4. Jika enable_menu_role non-aktif, izinkan juga role petugas (sesuai menu statis eFKTP)
+        return $role === 'petugas';
     }
 }
