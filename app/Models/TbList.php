@@ -22,5 +22,7 @@ class TbList extends Model
         'antrian',
         'kd_loket',
         'status',
+        'called_at',
+        'call_count',
     ];
 }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Anjungan\AnjunganController;
+use App\Http\Controllers\AntreanLoketController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BahasaPasienController;
 use App\Http\Controllers\Bridging as Bridging;
@@ -838,6 +839,13 @@ Route::middleware('auth:web,admin')->group(function () {
 	// ANTREAN BPJS (ANTROL)
 	Route::post('/bridging/antrean/add', [Bridging\Antrian::class, 'add']);
 	Route::post('/bridging/antrean/batal', [Bridging\Antrian::class, 'batal']);
+
+	// PEMANGGIL ANTREAN LOKET (tb_list)
+	Route::get('/antrean/loket/panggil', [AntreanLoketController::class, 'caller'])->name('antrean.loket.panggil');
+	Route::post('/antrean/loket/call-next', [AntreanLoketController::class, 'callNext'])->name('antrean.loket.call-next');
+	Route::post('/antrean/loket/recall', [AntreanLoketController::class, 'recall'])->name('antrean.loket.recall');
+	Route::post('/antrean/loket/finish', [AntreanLoketController::class, 'finish'])->name('antrean.loket.finish');
+	Route::post('/antrean/loket/skip', [AntreanLoketController::class, 'skip'])->name('antrean.loket.skip');
 
 	// KUNJUNGAN
 	Route::get('/bridging/pcare/kunjungan/nokunjungan', [Bridging\Kunjungan::class, 'getNoKunjungan']);

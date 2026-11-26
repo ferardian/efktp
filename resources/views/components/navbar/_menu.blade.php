@@ -332,6 +332,12 @@
                     <a href="{{ route('anjungan.index') }}" target="_blank" class="dropdown-item fw-bold text-teal">
                         <i class="ti ti-device-touch me-1"></i> Anjungan Mandiri (APM)
                     </a>
+                    <a href="{{ url('antrean/loket/panggil') }}" class="dropdown-item fw-semibold text-primary">
+                        <i class="ti ti-speakerphone me-1"></i> Pemanggil Antrean Loket
+                    </a>
+                    <a href="{{ url('antrean/loket') }}" target="_blank" class="dropdown-item">
+                        <i class="ti ti-device-tv me-1"></i> Display Antrean Loket
+                    </a>
                     <a href="{{ url('antrean/poliklinik') }}" target="_blank" class="dropdown-item">
                         Poliklinik
                     </a>
