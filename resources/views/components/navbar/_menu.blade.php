@@ -70,7 +70,15 @@
                                     @php
                                         $subUrl = !empty($submenu->url) ? ($submenu->url === '#' ? '#' : url($submenu->url)) : 'javascript:void(0);';
                                         $subClean = ltrim($submenu->url ?? '', '/');
-                                        $isSubActive = !empty($subClean) && (Request::is($subClean) || Request::is($subClean . '/*'));
+                                        $hasMoreSpecificMatch = $menu->submenus->contains(function ($other) use ($subClean) {
+                                            $otherClean = ltrim($other->url ?? '', '/');
+                                            return strlen($otherClean) > strlen($subClean)
+                                                && !empty($otherClean)
+                                                && (Request::is($otherClean) || Request::is($otherClean . '/*'));
+                                        });
+                                        $isSubActive = !empty($subClean)
+                                            && !$hasMoreSpecificMatch
+                                            && (Request::is($subClean) || Request::is($subClean . '/*'));
                                     @endphp
                                     <a href="{{ $subUrl }}" target="{{ $submenu->target ?? '_self' }}" class="dropdown-item {{ $isSubActive ? 'active' : '' }}">
                                         {{ $submenu->name }}
