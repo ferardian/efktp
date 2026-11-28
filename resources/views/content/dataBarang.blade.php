@@ -2,22 +2,32 @@
 
 @section('body')
     <style>
-        /* Sticky Column untuk Checkbox, Kode, & Nama Obat */
+        /* Sticky Header & Sticky Column untuk Checkbox, Kode, & Nama Obat dalam 1 tabel utuh */
+        #tabelBarangObat thead th {
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 4 !important;
+            background-color: #f8fafc !important;
+            white-space: nowrap;
+        }
         #tabelBarangObat th:nth-child(1), #tabelBarangObat td:nth-child(1) {
             position: sticky !important;
             left: 0 !important;
+            min-width: 36px;
+            width: 36px;
             z-index: 2 !important;
             background-color: #ffffff !important;
         }
         #tabelBarangObat th:nth-child(2), #tabelBarangObat td:nth-child(2) {
             position: sticky !important;
-            left: 32px !important;
+            left: 36px !important;
+            min-width: 100px;
             z-index: 2 !important;
             background-color: #ffffff !important;
         }
         #tabelBarangObat th:nth-child(3), #tabelBarangObat td:nth-child(3) {
             position: sticky !important;
-            left: 110px !important;
+            left: 136px !important;
             z-index: 2 !important;
             background-color: #ffffff !important;
             box-shadow: 4px 0 6px -2px rgba(0, 0, 0, 0.12) !important;
@@ -26,7 +36,7 @@
         #tabelBarangObat thead th:nth-child(2),
         #tabelBarangObat thead th:nth-child(3) {
             background-color: #f8fafc !important;
-            z-index: 3 !important;
+            z-index: 5 !important;
         }
         #tabelBarangObat tbody tr:nth-child(even) td:nth-child(1),
         #tabelBarangObat tbody tr:nth-child(even) td:nth-child(2),
@@ -61,7 +71,7 @@
                         </div>
                     </div>
                     <div class="card-body" style="flex: 1; min-height: 0; overflow: hidden;">
-                        <div id="table-default" class="table-responsive h-100" style="overflow-y: auto;">
+                        <div id="table-default" class="table-responsive h-100" style="overflow: auto;">
                             <table class="table table-striped table-hover nowrap" id="tabelBarangObat" width="100%">
                                 <thead>
                                     <tr>
@@ -335,8 +345,6 @@
                 processing: true,
                 serverSide: true,
                 autoWidth: false,
-                scrollY: 'calc(100vh - 380px)',
-                scrollX: true,
                 ajax: {
                     url: `{{ url('/barang/get') }}`,
                     type: 'get',
