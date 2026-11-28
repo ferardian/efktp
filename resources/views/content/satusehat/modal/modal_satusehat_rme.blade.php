@@ -26,7 +26,7 @@
                         <i class="ti ti-refresh"></i>
                         <span>Refresh</span>
                     </button>
-                    <button type="button" class="btn-close btn-close-white ms-2" data-bs-dismiss="modal" aria-label="Close" style="font-size: 11px;"></button>
+                    <button type="button" class="btn-close btn-close-white ms-1" data-bs-dismiss="modal" aria-label="Close" style="position: static; width: 28px; height: 28px; padding: 0; margin: 0; font-size: 11px;"></button>
                 </div>
             </div>
 
