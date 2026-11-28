@@ -827,6 +827,7 @@ Route::middleware('auth:web,admin')->group(function () {
 	// EFKTP
 	Route::post('pasien/alergi', [EfktpPcareAlergiController::class, 'create']);
 	Route::get('pasien/alergi', [EfktpPcareAlergiController::class, 'get']);
+	Route::post('pasien/catatan', [PasienController::class, 'saveCatatan'])->name('pasien.catatan.save');
 
 	// BRIDGING
 	Route::get('/bridging/pcare/dokter/{start?}/{limit?}', [Bridging\Dokter::class, 'dokter']);

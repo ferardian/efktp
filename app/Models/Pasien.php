@@ -40,6 +40,10 @@ class Pasien extends Model
     {
         return $this->hasOne(EfktpPasienProlanisPrb::class, 'no_peserta', 'no_peserta');
     }
+    function catatanPasien()
+    {
+        return $this->hasOne(CatatanPasien::class, 'no_rkm_medis', 'no_rkm_medis');
+    }
     function kel()
     {
         return $this->belongsTo(Kelurahan::class, 'kd_kel', 'kd_kel');

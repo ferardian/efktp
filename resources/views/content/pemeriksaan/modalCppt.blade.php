@@ -349,6 +349,7 @@
                 formCpptRajal.find('input[name=kd_poli]').val(`${response.kd_poli}`)
                 formCpptRajal.find('input[name=nm_poli]').val(`${poliklinik.nm_poli}`)
                 formCpptRajal.find('input[name=kd_poli_pcare]').val(`${poliklinik.maping?.kd_poli_pcare}`)
+                $('#inputCatatanPasienRajal').val(pasien.catatan_pasien?.catatan || '')
                 if (typeof formKunjunganPcare !== 'undefined' && formKunjunganPcare && typeof formKunjunganPcare.find === 'function') {
                     formKunjunganPcare.find('input[name=tgl_daftar]').val(`${splitTanggal(response.tgl_registrasi)}`)
                     formKunjunganPcare.find('input[name=nm_poli_pcare]').val(`${poliklinik.maping?.nm_poli_pcare}`)

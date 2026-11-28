@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Traits\Track;
 use App\Models\Pasien;
+use App\Models\CatatanPasien;
 use Illuminate\Http\Request;
 use App\Models\setNoRkmMedis;
 use Yajra\DataTables\DataTables;
@@ -347,5 +348,53 @@ class PasienController extends Controller
         } catch (QueryException $e) {
             return response()->json($e->getMessage(), 500);
         }
+    }
+
+    /**
+     * Simpan atau perbarui catatan khusus pasien pada tabel catatan_pasien
+     */
+    public function saveCatatan(Request $request)
+    {
+        $request->validate([
+            'no_rkm_medis' => 'required|string',
+            'catatan'      => 'nullable|string',
+        ]);
+
+        $noRkmMedis = trim((string) $request->no_rkm_medis);
+        $catatan = trim((string) ($request->catatan ?? ''));
+
+        if ($catatan === '' || $catatan === '-') {
+            DB::transaction(function () use ($noRkmMedis) {
+                $exists = CatatanPasien::where('no_rkm_medis', $noRkmMedis)->exists();
+                if ($exists) {
+                    CatatanPasien::where('no_rkm_medis', $noRkmMedis)->delete();
+                    $this->deleteSql(new CatatanPasien(), ['no_rkm_medis' => $noRkmMedis]);
+                }
+            });
+
+            return response()->json([
+                'status'  => 'success',
+                'message' => 'Catatan pasien dikosongkan.',
+                'catatan' => '',
+            ]);
+        }
+
+        DB::transaction(function () use ($noRkmMedis, $catatan) {
+            $exists = CatatanPasien::where('no_rkm_medis', $noRkmMedis)->exists();
+            if ($exists) {
+                CatatanPasien::where('no_rkm_medis', $noRkmMedis)->update(['catatan' => $catatan]);
+                $this->updateSql(new CatatanPasien(), ['catatan' => $catatan], ['no_rkm_medis' => $noRkmMedis]);
+            } else {
+                $data = ['no_rkm_medis' => $noRkmMedis, 'catatan' => $catatan];
+                CatatanPasien::create($data);
+                $this->insertSql(new CatatanPasien(), $data);
+            }
+        });
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Catatan pasien berhasil disimpan.',
+            'catatan' => $catatan,
+        ]);
     }
 }

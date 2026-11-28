@@ -43,6 +43,17 @@
                 <select class="form-control" name="alergi" multiple="multiple" id="alergi" style="width:100%"></select>
             </div>
         </div>
+        <div class="col-md-12 col-xl-12 col-lg-12">
+            <div class="mb-1">
+                <label class="form-label" for="inputCatatanPasienRanap">Catatan Pasien</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="inputCatatanPasienRanap" placeholder="Catatan khusus pasien (nama panggilan, wali, domisili, dll)...">
+                    <button type="button" class="btn btn-outline-teal px-2" onclick="simpanCatatanPasienRanap()" title="Simpan Catatan Pasien">
+                        <i class="ti ti-device-floppy"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
     <fieldset class="form-fieldset">
         <div class="row">

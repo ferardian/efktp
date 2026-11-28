@@ -51,10 +51,21 @@
                 <input class="form-control" type="text" id="png_jawab" name="png_jawab" readonly>
             </div>
         </div>
-        <div class="col-md-12 col-xl-12 col-lg-12">
+        <div class="col-md-6 col-xl-6 col-lg-6">
             <div class="mb-1">
                 <label class="form-label">Alergi</label>
                 <select class="form-control" name="alergi" multiple="multiple" id="alergi" style="width:100%"></select>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-6 col-lg-6">
+            <div class="mb-1">
+                <label class="form-label" for="inputCatatanPasienRajal">Catatan Pasien</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="inputCatatanPasienRajal" placeholder="Nama panggilan, wali, domisili, dll...">
+                    <button type="button" class="btn btn-outline-teal px-2" onclick="simpanCatatanPasienRajal()" title="Simpan Catatan Pasien">
+                        <i class="ti ti-device-floppy"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -348,6 +359,11 @@
                     no_rkm_medis: data['no_rkm_medis'],
                     alergi: alergi
                 })
+                $.post(`{{ route('pasien.catatan.save') }}`, {
+                    _token: "{{ csrf_token() }}",
+                    no_rkm_medis: data['no_rkm_medis'],
+                    catatan: $('#inputCatatanPasienRajal').val() || ''
+                });
                 if (pembiayaan === 'BPJS') {
                     Swal.fire({
                         title: "Informasi",
@@ -400,6 +416,22 @@
 
         function isAlergi(data) {
             return isAlegi = data || data == '-' ? true : false;
+        }
+
+        function simpanCatatanPasienRajal() {
+            const noRkmMedis = $('#formCpptRajal input[name=no_rkm_medis]').val();
+            const catatan = $('#inputCatatanPasienRajal').val() || '';
+            if (!noRkmMedis || noRkmMedis === '-') return;
+
+            $.post(`{{ route('pasien.catatan.save') }}`, {
+                _token: "{{ csrf_token() }}",
+                no_rkm_medis: noRkmMedis,
+                catatan: catatan
+            }).done((res) => {
+                showToast(res.message || 'Catatan pasien berhasil disimpan');
+            }).fail((xhr) => {
+                alertErrorAjax(xhr);
+            });
         }
 
         function selectAlergi(element, parent) {

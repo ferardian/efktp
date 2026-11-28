@@ -408,6 +408,7 @@
                 pegawai.append(setPetugas).trigger('change');
 
                 setSelectAlergi(response.pasien.alergi, alergi)
+                $('#inputCatatanPasienRanap').val(response.pasien?.catatan_pasien?.catatan || '')
             })
         }
 
@@ -530,11 +531,33 @@
             }
         }
 
+        function simpanCatatanPasienRanap() {
+            const noRkmMedis = formCpptRanap.find('input[name=no_rkm_medis]').val();
+            const catatan = $('#inputCatatanPasienRanap').val() || '';
+            if (!noRkmMedis || noRkmMedis === '-') return;
+
+            $.post(`{{ route('pasien.catatan.save') }}`, {
+                _token: "{{ csrf_token() }}",
+                no_rkm_medis: noRkmMedis,
+                catatan: catatan
+            }).done((res) => {
+                showToast(res.message || 'Catatan pasien berhasil disimpan');
+            }).fail((xhr) => {
+                alertErrorAjax(xhr);
+            });
+        }
+
         function createCpptRanap() {
             const data = getDataForm('formCpptRanap', ['input', 'select', 'textarea']);
             delete data[""];
             data['alergi'] = alergi.val() ? alergi.val().map((item) => item).join(', ') : '';
+            const catatanRanapVal = $('#inputCatatanPasienRanap').val() || '';
             $.post(`pemeriksaan/ranap`, data).done((response) => {
+                $.post(`{{ route('pasien.catatan.save') }}`, {
+                    _token: "{{ csrf_token() }}",
+                    no_rkm_medis: data['no_rkm_medis'],
+                    catatan: catatanRanapVal
+                });
                 alertSuccessAjax().then(() => {
                     createAlergi({
                         no_rkm_medis: data['no_rkm_medis'],

@@ -42,6 +42,7 @@ class RegPeriksaController extends Controller
 			'dokter.maping',
 			'pcarePendaftaran',
 			'pasien.alergi',
+			'pasien.catatanPasien',
 			'pasien.prolanisPrb',
 			'pcareRujukSubspesialis',
 			'pasien.cacatFisik',
