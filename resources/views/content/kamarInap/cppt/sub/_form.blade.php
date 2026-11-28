@@ -46,10 +46,10 @@
         <div class="col-md-6 col-xl-6 col-lg-6">
             <div class="mb-2">
                 <label class="form-label" for="inputCatatanPasienRanap">Catatan Pasien</label>
-                <div class="input-group" style="height: 36px;">
-                    <input type="text" class="form-control" id="inputCatatanPasienRanap" style="height: 36px;" placeholder="Nama panggilan, wali, domisili, dll...">
-                    <button type="button" class="btn btn-outline-teal px-2" style="height: 36px;" onclick="simpanCatatanPasienRanap()" title="Simpan Catatan Pasien">
-                        <i class="ti ti-device-floppy me-1"></i> Simpan
+                <div class="input-group" style="height: 38px;">
+                    <input type="text" class="form-control" id="inputCatatanPasienRanap" style="height: 38px;" placeholder="Nama panggilan, wali, domisili, dll...">
+                    <button type="button" class="btn btn-outline-teal px-2 d-flex align-items-center justify-content-center" style="height: 38px; width: 38px;" onclick="simpanCatatanPasienRanap()" title="Simpan Catatan Pasien">
+                        <i class="ti ti-device-floppy fs-3"></i>
                     </button>
                 </div>
             </div>
