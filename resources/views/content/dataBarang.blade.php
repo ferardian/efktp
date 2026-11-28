@@ -36,11 +36,11 @@
     </style>
     <div class="container-fluid">
         <div class="row gy-2">
-            <div class="col-xl-8 col-lg-8 col-md-12 col-sm-12">
+            <div class="col-12">
                 <div class="card" style="height: calc(100vh - 170px); display: flex; flex-direction: column;">
-                    <div class="card-header d-flex justify-content-between align-items-center py-2 bg-light-lt">
-                        <h3 class="card-title text-primary"><i class="ti ti-pill me-2"></i> Daftar Obat / Barang</h3>
-                        <div class="d-flex align-items-center gap-2">
+                    <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2 py-2 bg-light-lt">
+                        <h3 class="card-title text-primary mb-0"><i class="ti ti-pill me-2"></i> Daftar Obat / Barang</h3>
+                        <div class="d-flex flex-wrap align-items-center gap-2">
                             <select class="form-select form-select-sm" id="filter_status" style="width: 140px;">
                                 <option value="1" selected>Status: Aktif</option>
                                 <option value="0">Status: Non-Aktif</option>
@@ -54,6 +54,9 @@
                             </button>
                             <button type="button" class="btn btn-danger btn-sm d-none" id="btnBatchDeactivate" onclick="batchDeactivateBarang()">
                                 <i class="ti ti-trash-off me-1"></i> Non-aktifkan Terpilih
+                            </button>
+                            <button type="button" class="btn btn-primary btn-sm shadow-sm" onclick="openModalTambahBarang()">
+                                <i class="ti ti-plus me-1"></i> Tambah Obat
                             </button>
                         </div>
                     </div>
@@ -70,6 +73,9 @@
                                         <th>Stok</th>
                                         <th>Harga Beli</th>
                                         <th>Harga Ralan</th>
+                                        <th>Kelas 1</th>
+                                        <th>Kelas 2</th>
+                                        <th>Kelas 3</th>
                                         <th>Kandungan</th>
                                         <th>Jenis</th>
                                         <th>Kategori</th>
@@ -85,12 +91,22 @@
                     </div>
                 </div>
             </div>
-            <div class="col-xl-4 col-lg-4 col-md-12 col-sm-12">
+        </div>
+    </div>
+
+    <!-- Modal Tambah / Edit Data Obat / Barang -->
+    <div class="modal fade" id="modalFormBarang" tabindex="-1" aria-labelledby="modalFormBarangTitle" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-primary text-white py-2">
+                    <h5 class="modal-title fw-bold mb-0" id="modalFormBarangTitle">
+                        <i class="ti ti-pill me-1"></i> Form Data Obat / Barang
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
                 <form id="formBarangObat">
                     @csrf
-                    <div class="card" style="height: calc(100vh - 170px); overflow-y: auto;">
-                        <div class="card-body">
-                            <h5 class="card-title">Form Data Obat / Barang</h5>
+                    <div class="modal-body p-3">
                             
                             <div class="mb-2">
                                 <label class="form-label">Kode Barang</label>
@@ -307,15 +323,17 @@
                                 </div>
                             </div>
 
-                            <div class="mt-3 d-flex gap-2">
-                                <button type="button" class="btn btn-secondary w-50" onclick="resetFormBarang()">
-                                    <i class="ti ti-plus me-2"></i> Tambah Baru
-                                </button>
-                                <button type="button" class="btn btn-success w-50" id="btnSimpanBarang" onclick="simpanBarang()">
-                                    <i class="ti ti-device-floppy me-2"></i> Simpan
-                                </button>
-                            </div>
-                        </div>
+                    </div>
+                    <div class="modal-footer bg-light py-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">
+                            <i class="ti ti-x me-1"></i> Batal
+                        </button>
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="resetFormBarang()">
+                            <i class="ti ti-refresh me-1"></i> Reset
+                        </button>
+                        <button type="button" class="btn btn-sm btn-success" id="btnSimpanBarang" onclick="simpanBarang()">
+                            <i class="ti ti-device-floppy me-1"></i> Simpan
+                        </button>
                     </div>
                 </form>
             </div>
@@ -456,8 +474,8 @@
                         defaultContent: '0',
                         className: 'text-end',
                         render: (data) => {
-                            const val = parseFloat(data) || 0;
-                            return `<span class="text-secondary fw-medium">Rp ${val.toLocaleString('id-ID')}</span>`;
+                            const val = Math.round((parseFloat(data) || 0) * 100) / 100;
+                            return `<span class="text-secondary fw-medium">Rp ${val.toLocaleString('id-ID', { maximumFractionDigits: 2 })}</span>`;
                         }
                     },
                     {
@@ -500,6 +518,27 @@
                                 </div>
                             `;
                         }
+                    },
+                    {
+                        data: 'kelas1',
+                        name: 'kelas1',
+                        defaultContent: '0',
+                        className: 'text-end',
+                        render: (data) => `<span>Rp ${(parseFloat(data) || 0).toLocaleString('id-ID')}</span>`
+                    },
+                    {
+                        data: 'kelas2',
+                        name: 'kelas2',
+                        defaultContent: '0',
+                        className: 'text-end',
+                        render: (data) => `<span>Rp ${(parseFloat(data) || 0).toLocaleString('id-ID')}</span>`
+                    },
+                    {
+                        data: 'kelas3',
+                        name: 'kelas3',
+                        defaultContent: '0',
+                        className: 'text-end',
+                        render: (data) => `<span>Rp ${(parseFloat(data) || 0).toLocaleString('id-ID')}</span>`
                     },
                     {
                         data: 'letak_barang',
@@ -623,10 +662,17 @@
             })
         }
 
+        function openModalTambahBarang() {
+            resetFormBarang();
+            $('#modalFormBarangTitle').html('<i class="ti ti-plus me-1"></i> Tambah Data Obat / Barang');
+            $('#modalFormBarang').modal('show');
+        }
+
         function resetFormBarang() {
             $('#formBarangObat').trigger('reset');
             $('#kode_brng').prop('readonly', false);
-            $('#btnSimpanBarang').removeClass('btn-warning').addClass('btn-success').html('<i class="ti ti-device-floppy me-2"></i> Simpan');
+            $('#modalFormBarangTitle').html('<i class="ti ti-plus me-1"></i> Tambah Data Obat / Barang');
+            $('#btnSimpanBarang').removeClass('btn-warning').addClass('btn-success').html('<i class="ti ti-device-floppy me-1"></i> Simpan');
             
             $.get("{{ url('/barang/get-next-kode') }}").done((response) => {
                 $('#kode_brng').val(response.next_kode);
@@ -653,7 +699,8 @@
                 success: (response) => {
                     showToast(response.message);
                     tabelBarangObat.DataTable().ajax.reload(null, false);
-                    if (!isEdit) resetFormBarang();
+                    $('#modalFormBarang').modal('hide');
+                    resetFormBarang();
                 },
                 error: (xhr) => {
                     showToast(xhr.responseJSON.message || 'Gagal memproses data obat', 'error');
@@ -694,8 +741,10 @@
                 $('#jualbebas').val(data.jualbebas);
                 $('#beliluar').val(data.beliluar);
 
-                $('#btnSimpanBarang').removeClass('btn-success').addClass('btn-warning').html('<i class="ti ti-pencil me-2"></i> Update');
+                $('#btnSimpanBarang').removeClass('btn-success').addClass('btn-warning').html('<i class="ti ti-pencil me-1"></i> Update');
+                $('#modalFormBarangTitle').html(`<i class="ti ti-edit me-1"></i> Edit Data Obat: ${data.nama_brng}`);
                 Swal.close();
+                $('#modalFormBarang').modal('show');
             }).fail((xhr) => {
                 showToast('Gagal mengambil data obat', 'error');
                 Swal.close();
