@@ -568,7 +568,10 @@ Route::middleware('auth:web,admin')->group(function () {
 
 		Route::get('/jenis/get', [JnsPerawatanLabController::class, 'get']);
 		Route::get('/jenis/template/get', [JnsPerawatanLabController::class, 'getTemplate']);
+		Route::get('/periksa', [PeriksaLabController::class, 'index']);
+		Route::get('/periksa/list', [PeriksaLabController::class, 'listDataTable']);
 		Route::get('/periksa/get', [PeriksaLabController::class, 'get']);
+		Route::get('/periksa/cetak', [PeriksaLabController::class, 'cetakHasilPeriksa']);
 
 		Route::group(['prefix' => 'permintaan'], function () {
 			Route::get('/', [PermintaanLabController::class, 'index']);
