@@ -43,7 +43,7 @@
         <div class="row g-2 align-items-center">
             <div class="col">
                 <div class="page-pretitle text-muted small">
-                    <i class="ti ti-building-hospital me-1"></i> Rawat Inap &bull; SIMRS Khanza DlgKamar
+                    <i class="ti ti-building-hospital me-1"></i> Rawat Inap &bull; Pengelolaan Ruangan & Tempat Tidur
                 </div>
                 <h2 class="page-title text-primary fw-bold mb-0">
                     <i class="ti ti-bed me-2"></i> Manajemen Kamar & Bed
@@ -241,11 +241,11 @@
                         <label class="form-label fw-bold small text-muted required">Nomer Bed / Kode Kamar</label>
                         <div class="input-group input-group-sm">
                             <input type="text" id="inputKdKamar" name="kd_kamar" class="form-control fw-bold text-uppercase" placeholder="Contoh: K1.01 atau K000001" required maxlength="15">
-                            <button class="btn btn-outline-secondary" type="button" onclick="generateAutoKode()" title="Generate Nomor Otomatis Standar Khanza">
+                            <button class="btn btn-outline-secondary" type="button" onclick="generateAutoKode()" title="Generate Nomor Kamar Otomatis">
                                 <i class="ti ti-sparkles me-1 text-warning"></i> Auto Nomor
                             </button>
                         </div>
-                        <div class="form-text small" style="font-size: 11px;">Maksimal 15 karakter sesuai kolom <code>kamar.kd_kamar</code> standar Khanza.</div>
+                        <div class="form-text small" style="font-size: 11px;">Maksimal 15 karakter.</div>
                     </div>
 
                     <div class="mb-3">
