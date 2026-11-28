@@ -96,7 +96,7 @@
 
     <!-- Modal Tambah / Edit Data Obat / Barang -->
     <div class="modal fade" id="modalFormBarang" tabindex="-1" aria-labelledby="modalFormBarangTitle" aria-hidden="true" data-bs-backdrop="static">
-        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" style="max-width: 1180px;">
             <div class="modal-content border-0 shadow-lg">
                 <div class="modal-header bg-primary text-white py-2">
                     <h5 class="modal-title fw-bold mb-0" id="modalFormBarangTitle">
@@ -107,222 +107,178 @@
                 <div class="modal-body p-3">
                     <form id="formBarangObat">
                         @csrf
-                            
-                            <div class="mb-2">
-                                <label class="form-label">Kode Barang</label>
-                                <input type="text" class="form-control" id="kode_brng" name="kode_brng" placeholder="Contoh: 00001">
-                            </div>
-                            
-                            <div class="mb-2">
-                                <label class="form-label">Nama Barang/Obat</label>
-                                <input type="text" class="form-control" id="nama_brng" name="nama_brng">
-                            </div>
-
-                            <div class="row">
-                                <div class="col-6">
-                                    <div class="mb-2">
-                                        <label class="form-label">Kapasitas / Dosis</label>
-                                        <input type="text" class="form-control" id="kapasitas" name="kapasitas">
+                        <div class="row g-3">
+                            <!-- Kolom Kiri: Identitas & Klasifikasi Obat -->
+                            <div class="col-lg-6 border-end-lg pe-lg-3">
+                                <h6 class="text-primary fw-bold border-bottom pb-1 mb-2">
+                                    <i class="ti ti-info-circle me-1"></i> Identitas &amp; Klasifikasi Obat
+                                </h6>
+                                <div class="row g-2 mb-2">
+                                    <div class="col-sm-4">
+                                        <label class="form-label mb-1">Kode Barang</label>
+                                        <input type="text" class="form-control form-control-sm fw-bold" id="kode_brng" name="kode_brng" placeholder="Contoh: 00001">
+                                    </div>
+                                    <div class="col-sm-8">
+                                        <label class="form-label mb-1">Nama Barang/Obat</label>
+                                        <input type="text" class="form-control form-control-sm" id="nama_brng" name="nama_brng">
                                     </div>
                                 </div>
-                                <div class="col-6">
-                                    <div class="mb-2">
-                                        <label class="form-label">Isi</label>
-                                        <input type="number" class="form-control" id="isi" name="isi" value="1">
-                                    </div>
-                                </div>
-                            </div>
 
-                            <div class="row">
-                                <div class="col-6">
-                                    <div class="mb-2">
-                                        <label class="form-label">Satuan Kecil</label>
-                                        <select class="form-select" id="kode_sat" name="kode_sat">
+                                <div class="row g-2 mb-2">
+                                    <div class="col-sm-4">
+                                        <label class="form-label mb-1">Kapasitas / Dosis</label>
+                                        <input type="text" class="form-control form-control-sm" id="kapasitas" name="kapasitas">
+                                    </div>
+                                    <div class="col-sm-2">
+                                        <label class="form-label mb-1">Isi</label>
+                                        <input type="number" class="form-control form-control-sm" id="isi" name="isi" value="1">
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <label class="form-label mb-1">Satuan Kecil</label>
+                                        <select class="form-select form-select-sm" id="kode_sat" name="kode_sat">
+                                            @foreach($satuan as $s)
+                                                <option value="{{ $s->kode_sat }}">{{ $s->satuan }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <label class="form-label mb-1">Satuan Besar</label>
+                                        <select class="form-select form-select-sm" id="kode_satbesar" name="kode_satbesar">
                                             @foreach($satuan as $s)
                                                 <option value="{{ $s->kode_sat }}">{{ $s->satuan }}</option>
                                             @endforeach
                                         </select>
                                     </div>
                                 </div>
-                                <div class="col-6">
-                                    <div class="mb-2">
-                                        <label class="form-label">Satuan Besar</label>
-                                        <select class="form-select" id="kode_satbesar" name="kode_satbesar">
-                                            @foreach($satuan as $s)
-                                                <option value="{{ $s->kode_sat }}">{{ $s->satuan }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
+
+                                <div class="mb-2">
+                                    <label class="form-label mb-1">Kandungan / Letak</label>
+                                    <input type="text" class="form-control form-control-sm" id="letak_barang" name="letak_barang">
                                 </div>
-                            </div>
 
-                            <div class="mb-2">
-                                <label class="form-label">Kandungan / Letak</label>
-                                <input type="text" class="form-control" id="letak_barang" name="letak_barang">
-                            </div>
-
-                            <div class="row">
-                                <div class="col-6">
-                                    <div class="mb-2">
-                                        <label class="form-label">Jenis</label>
-                                        <select class="form-select" id="kdjns" name="kdjns">
+                                <div class="row g-2 mb-2">
+                                    <div class="col-6">
+                                        <label class="form-label mb-1">Jenis</label>
+                                        <select class="form-select form-select-sm" id="kdjns" name="kdjns">
                                             @foreach($jenis as $j)
                                                 <option value="{{ $j->kdjns }}">{{ $j->nama }}</option>
                                             @endforeach
                                         </select>
                                     </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="mb-2">
-                                        <label class="form-label">Kategori</label>
-                                        <select class="form-select" id="kode_kategori" name="kode_kategori">
+                                    <div class="col-6">
+                                        <label class="form-label mb-1">Kategori</label>
+                                        <select class="form-select form-select-sm" id="kode_kategori" name="kode_kategori">
                                             @foreach($kategori as $k)
                                                 <option value="{{ $k->kode }}">{{ $k->nama }}</option>
                                             @endforeach
                                         </select>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div class="row">
-                                <div class="col-6">
-                                    <div class="mb-2">
-                                        <label class="form-label">Golongan</label>
-                                        <select class="form-select" id="kode_golongan" name="kode_golongan">
+                                <div class="row g-2 mb-2">
+                                    <div class="col-6">
+                                        <label class="form-label mb-1">Golongan</label>
+                                        <select class="form-select form-select-sm" id="kode_golongan" name="kode_golongan">
                                             @foreach($golongan as $g)
                                                 <option value="{{ $g->kode }}">{{ $g->nama }}</option>
                                             @endforeach
                                         </select>
                                     </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="mb-2">
-                                        <label class="form-label">Industri / Produsen</label>
-                                        <select class="form-select" id="kode_industri" name="kode_industri">
+                                    <div class="col-6">
+                                        <label class="form-label mb-1">Industri / Produsen</label>
+                                        <select class="form-select form-select-sm" id="kode_industri" name="kode_industri">
                                             @foreach($industri as $i)
                                                 <option value="{{ $i->kode_industri }}">{{ $i->nama_industri }}</option>
                                             @endforeach
                                         </select>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div class="row">
-                                <div class="col-6">
-                                    <div class="mb-2">
-                                        <label class="form-label">Stok Minimal</label>
-                                        <input type="number" class="form-control" id="stokminimal" name="stokminimal" value="0">
+                                <div class="row g-2">
+                                    <div class="col-4">
+                                        <label class="form-label mb-1">Stok Minimal</label>
+                                        <input type="number" class="form-control form-control-sm" id="stokminimal" name="stokminimal" value="0">
                                     </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="mb-2">
-                                        <label class="form-label">Status</label>
-                                        <select class="form-select" id="status" name="status">
+                                    <div class="col-4">
+                                        <label class="form-label mb-1">Status</label>
+                                        <select class="form-select form-select-sm" id="status" name="status">
                                             <option value="1">Aktif</option>
                                             <option value="0">Non-Aktif</option>
                                         </select>
                                     </div>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-6">
-                                    <div class="mb-2">
-                                        <label class="form-label">Expire Date</label>
-                                        <input type="date" class="form-control" id="expire" name="expire" value="1900-01-01">
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="mb-2">
-                                        <label class="form-label">Harga Dasar</label>
-                                        <input type="number" class="form-control" id="dasar" name="dasar" value="0">
+                                    <div class="col-4">
+                                        <label class="form-label mb-1">Expire Date</label>
+                                        <input type="date" class="form-control form-control-sm" id="expire" name="expire" value="1900-01-01">
                                     </div>
                                 </div>
                             </div>
 
-                            <h6 class="mt-3 mb-2 text-primary border-bottom pb-1">Harga Jual & Beli</h6>
-
-                            <div class="row">
-                                <div class="col-6">
-                                    <div class="mb-2">
-                                        <label class="form-label">Harga Beli</label>
-                                        <input type="number" class="form-control" id="h_beli" name="h_beli" value="0">
+                            <!-- Kolom Kanan: Harga Beli, Harga Jual & Kelas Rawat -->
+                            <div class="col-lg-6 ps-lg-3">
+                                <h6 class="text-primary fw-bold border-bottom pb-1 mb-2">
+                                    <i class="ti ti-currency-dollar me-1"></i> Harga Dasar, Beli &amp; Tarif Jual
+                                </h6>
+                                <div class="row g-2 mb-2">
+                                    <div class="col-4">
+                                        <label class="form-label mb-1">Harga Dasar</label>
+                                        <input type="number" class="form-control form-control-sm" id="dasar" name="dasar" value="0">
+                                    </div>
+                                    <div class="col-4">
+                                        <label class="form-label mb-1">Harga Beli</label>
+                                        <input type="number" class="form-control form-control-sm" id="h_beli" name="h_beli" value="0">
+                                    </div>
+                                    <div class="col-4">
+                                        <label class="form-label mb-1 text-success fw-bold">Harga Ralan</label>
+                                        <input type="number" class="form-control form-control-sm border-success" id="ralan" name="ralan" value="0">
                                     </div>
                                 </div>
-                                <div class="col-6">
-                                    <div class="mb-2">
-                                        <label class="form-label">Harga Ralan</label>
-                                        <input type="number" class="form-control" id="ralan" name="ralan" value="0">
+
+                                <div class="row g-2 mb-2">
+                                    <div class="col-4">
+                                        <label class="form-label mb-1">Kelas 1</label>
+                                        <input type="number" class="form-control form-control-sm" id="kelas1" name="kelas1" value="0">
+                                    </div>
+                                    <div class="col-4">
+                                        <label class="form-label mb-1">Kelas 2</label>
+                                        <input type="number" class="form-control form-control-sm" id="kelas2" name="kelas2" value="0">
+                                    </div>
+                                    <div class="col-4">
+                                        <label class="form-label mb-1">Kelas 3</label>
+                                        <input type="number" class="form-control form-control-sm" id="kelas3" name="kelas3" value="0">
+                                    </div>
+                                </div>
+
+                                <div class="row g-2 mb-2">
+                                    <div class="col-4">
+                                        <label class="form-label mb-1">Utama</label>
+                                        <input type="number" class="form-control form-control-sm" id="utama" name="utama" value="0">
+                                    </div>
+                                    <div class="col-4">
+                                        <label class="form-label mb-1">VIP</label>
+                                        <input type="number" class="form-control form-control-sm" id="vip" name="vip" value="0">
+                                    </div>
+                                    <div class="col-4">
+                                        <label class="form-label mb-1">VVIP</label>
+                                        <input type="number" class="form-control form-control-sm" id="vvip" name="vvip" value="0">
+                                    </div>
+                                </div>
+
+                                <div class="row g-2">
+                                    <div class="col-4">
+                                        <label class="form-label mb-1">Karyawan</label>
+                                        <input type="number" class="form-control form-control-sm" id="karyawan" name="karyawan" value="0">
+                                    </div>
+                                    <div class="col-4">
+                                        <label class="form-label mb-1">Jual Bebas</label>
+                                        <input type="number" class="form-control form-control-sm" id="jualbebas" name="jualbebas" value="0">
+                                    </div>
+                                    <div class="col-4">
+                                        <label class="form-label mb-1">Beli Luar</label>
+                                        <input type="number" class="form-control form-control-sm" id="beliluar" name="beliluar" value="0">
                                     </div>
                                 </div>
                             </div>
-
-                            <div class="row">
-                                <div class="col-6">
-                                    <div class="mb-2">
-                                        <label class="form-label">Kelas 1</label>
-                                        <input type="number" class="form-control" id="kelas1" name="kelas1" value="0">
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="mb-2">
-                                        <label class="form-label">Kelas 2</label>
-                                        <input type="number" class="form-control" id="kelas2" name="kelas2" value="0">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-6">
-                                    <div class="mb-2">
-                                        <label class="form-label">Kelas 3</label>
-                                        <input type="number" class="form-control" id="kelas3" name="kelas3" value="0">
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="mb-2">
-                                        <label class="form-label">Utama</label>
-                                        <input type="number" class="form-control" id="utama" name="utama" value="0">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-6">
-                                    <div class="mb-2">
-                                        <label class="form-label">VIP</label>
-                                        <input type="number" class="form-control" id="vip" name="vip" value="0">
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="mb-2">
-                                        <label class="form-label">VVIP</label>
-                                        <input type="number" class="form-control" id="vvip" name="vvip" value="0">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-4">
-                                    <div class="mb-2">
-                                        <label class="form-label">Karyawan</label>
-                                        <input type="number" class="form-control" id="karyawan" name="karyawan" value="0">
-                                    </div>
-                                </div>
-                                <div class="col-4">
-                                    <div class="mb-2">
-                                        <label class="form-label">Jual Bebas</label>
-                                        <input type="number" class="form-control" id="jualbebas" name="jualbebas" value="0">
-                                    </div>
-                                </div>
-                                <div class="col-4">
-                                    <div class="mb-2">
-                                        <label class="form-label">Beli Luar</label>
-                                        <input type="number" class="form-control" id="beliluar" name="beliluar" value="0">
-                                    </div>
-                                </div>
-                            </div>
-
+                        </div>
                     </form>
                 </div>
                 <div class="modal-footer bg-light py-2">
