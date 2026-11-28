@@ -60,6 +60,11 @@
                                         </a>
                                     </li>
                                     <li class="nav-item" role="presentation">
+                                        <a href="#tabs-diagnosa-ranap" class="nav-link" data-bs-toggle="tab" aria-selected="false" role="tab" tabindex="-1">
+                                            <i class="ti ti-stethoscope me-1"></i> Diagnosa &amp; Prosedur
+                                        </a>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
                                         <a href="#tabs-permintaan-lab" class="nav-link" data-bs-toggle="tab" aria-selected="false" role="tab" tabindex="-1">
                                             <i class="ti ti-flask me-1"></i> Permintaan Lab
                                         </a>
@@ -92,6 +97,9 @@
                                     </div>
                                     <div class="tab-pane fade" id="tabs-tindakan-ranap" role="tabpanel">
                                         @include('content.kamarInap.cppt.sub._tindakan')
+                                    </div>
+                                    <div class="tab-pane fade" id="tabs-diagnosa-ranap" role="tabpanel">
+                                        @include('content.kamarInap.cppt.sub._diagnosaProsedur')
                                     </div>
                                     <div class="tab-pane fade" id="tabs-permintaan-lab" role="tabpanel">
                                         @include('content.laboratorium.sub._formPermintaanTab')
@@ -433,6 +441,9 @@
             $('#jam_tindakan').val(`${jam}:${menit}:${detik}`);
             $('#selectTindakanRanap').val(null).trigger('change');
             loadRiwayatTindakan(no_rawat);
+            if (typeof loadDiagnosaProsedurRanap === 'function') {
+                loadDiagnosaProsedurRanap(no_rawat);
+            }
 
             modalCpptRanap.modal('show');
         }
