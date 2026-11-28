@@ -64,31 +64,31 @@
 
                     <div class="mb-2">
                         <label class="form-label small fw-semibold mb-2">Pilihan Perhitungan Pindah Kamar</label>
-                        <div class="border rounded p-2 bg-light-lt">
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="radio" name="mode" id="pindah_mode_1" value="1">
-                                <label class="form-check-label small" for="pindah_mode_1">
-                                    1. Kamar inap sebelumnya dihapus dan pasien dihitung menginap mulai saat ini (kamar lama dihapus dari billing)
-                                </label>
-                            </div>
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="radio" name="mode" id="pindah_mode_2" value="2">
-                                <label class="form-check-label small" for="pindah_mode_2">
-                                    2. Kamar inap sebelumnya diganti kamarnya dengan kamar baru dan harga kamar menyesuaikan harga baru
-                                </label>
-                            </div>
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="radio" name="mode" id="pindah_mode_3" value="3" checked>
-                                <label class="form-check-label small fw-semibold text-primary" for="pindah_mode_3">
-                                    3. Kamar inap sebelumnya distatuskan pindah, lama inap dihitung dan pasien dimasukkan ke kamar inap yang baru
-                                </label>
-                            </div>
-                            <div class="form-check mb-0">
-                                <input class="form-check-input" type="radio" name="mode" id="pindah_mode_4" value="4">
-                                <label class="form-check-label small" for="pindah_mode_4">
-                                    4. Seperti nomor 3, kamar inap sebelumnya mengikuti harga tertinggi
-                                </label>
-                            </div>
+                        <div class="list-group">
+                            <label class="list-group-item list-group-item-action d-flex align-items-start gap-2 py-2 cursor-pointer">
+                                <input class="form-check-input flex-shrink-0 mt-1" type="radio" name="mode" id="pindah_mode_1" value="1">
+                                <span class="small text-dark">
+                                    <strong>1. Hapus kamar sebelumnya</strong> — Kamar lama dihapus dari billing dan pasien dihitung menginap mulai saat ini di kamar baru.
+                                </span>
+                            </label>
+                            <label class="list-group-item list-group-item-action d-flex align-items-start gap-2 py-2 cursor-pointer">
+                                <input class="form-check-input flex-shrink-0 mt-1" type="radio" name="mode" id="pindah_mode_2" value="2">
+                                <span class="small text-dark">
+                                    <strong>2. Ganti kamar langsung</strong> — Data kamar sebelumnya diganti ke kamar baru dan tarif menyesuaikan harga kamar baru.
+                                </span>
+                            </label>
+                            <label class="list-group-item list-group-item-action d-flex align-items-start gap-2 py-2 cursor-pointer bg-primary-lt">
+                                <input class="form-check-input flex-shrink-0 mt-1" type="radio" name="mode" id="pindah_mode_3" value="3" checked>
+                                <span class="small text-dark">
+                                    <strong class="text-primary">3. Pindah kamar standar (Rekomendasi)</strong> — Kamar lama distatuskan <em>Pindah Kamar</em>, lama inap dihitung, lalu masuk kamar baru.
+                                </span>
+                            </label>
+                            <label class="list-group-item list-group-item-action d-flex align-items-start gap-2 py-2 cursor-pointer">
+                                <input class="form-check-input flex-shrink-0 mt-1" type="radio" name="mode" id="pindah_mode_4" value="4">
+                                <span class="small text-dark">
+                                    <strong>4. Pindah kamar tarif tertinggi</strong> — Seperti nomor 3, tetapi tarif kamar sebelumnya mengikuti harga tertinggi.
+                                </span>
+                            </label>
                         </div>
                     </div>
                 </form>
@@ -138,6 +138,11 @@
         }).on('select2:clear', function () {
             $('#pindah_trf_kamar_baru').val('');
         });
+
+        $('input[name="mode"]').on('change', function () {
+            $('#formPindahKamar .list-group-item').removeClass('bg-primary-lt');
+            $(this).closest('.list-group-item').addClass('bg-primary-lt');
+        });
     });
 
     function pindahKamarPasien(no_rawat, kd_kamar, tgl_masuk, jam_masuk) {
@@ -166,7 +171,7 @@
             $('#pindah_jam_pindah').val('{{ date("H:i:s") }}');
             $('#pindah_kd_kamar_baru').val(null).trigger('change');
             $('#pindah_trf_kamar_baru').val('');
-            $('#pindah_mode_3').prop('checked', true);
+            $('#pindah_mode_3').prop('checked', true).trigger('change');
 
             $('#modalPindahKamar').modal('show');
         });
@@ -201,3 +206,4 @@
     }
 </script>
 @endpush
+
