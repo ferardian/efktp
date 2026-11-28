@@ -310,38 +310,39 @@
                                         <tr>
                                             <th class="py-2 px-3">Kategori & Rincian Layanan / Item</th>
                                             <th class="py-2 px-3 text-center" style="width: 70px;">Qty</th>
-                                            <th class="py-2 px-3 text-end" style="width: 140px;">Tarif (Rp)</th>
-                                            <th class="py-2 px-3 text-end" style="width: 160px;">Subtotal (Rp)</th>
+                                            <th class="py-2 px-3 text-end" style="width: 130px;">Tarif (Rp)</th>
+                                            <th class="py-2 px-3 text-end" style="width: 120px;">Tambahan (Rp)</th>
+                                            <th class="py-2 px-3 text-end" style="width: 150px;">Subtotal (Rp)</th>
                                         </tr>
                                     </thead>
                                     <tbody id="tbodyBillingRanap">
-                                        <tr><td colspan="4" class="text-center p-3 text-muted">Memuat data rincian billing...</td></tr>
+                                        <tr><td colspan="5" class="text-center p-3 text-muted">Memuat data rincian billing...</td></tr>
                                     </tbody>
                                     <tfoot id="tfootBillingRanap">
                                         <tr class="bg-light fw-bold" id="rowTotalBiayaLayanan">
-                                            <th colspan="3" class="py-2 px-3 text-uppercase text-dark">JUMLAH TOTAL BIAYA LAYANAN</th>
+                                            <th colspan="4" class="py-2 px-3 text-uppercase text-dark">JUMLAH TOTAL BIAYA LAYANAN</th>
                                             <th class="py-2 px-3 text-end text-dark fs-3" id="tableTotalBiayaLayanan">Rp 0</th>
                                         </tr>
                                         <tr class="bg-light fw-bold text-danger d-none" id="rowPotonganBiaya">
-                                            <th colspan="3" class="py-2 px-3 text-uppercase text-danger">
+                                            <th colspan="4" class="py-2 px-3 text-uppercase text-danger">
                                                 <i class="ti ti-discount-2 me-1"></i> POTONGAN BIAYA (DISKON)
                                             </th>
                                             <th class="py-2 px-3 text-end text-danger fs-3" id="tablePotonganBiaya">- Rp 0</th>
                                         </tr>
                                         <tr class="bg-primary-lt fw-bold text-primary" id="rowGrandTotalBiaya">
-                                            <th colspan="3" class="py-2 px-3 text-uppercase text-primary fs-3">
+                                            <th colspan="4" class="py-2 px-3 text-uppercase text-primary fs-3">
                                                 TOTAL AKHIR (JADINYA)
                                             </th>
                                             <th class="py-2 px-3 text-end text-primary fs-2" id="tableSubtotalBiaya">Rp 0</th>
                                         </tr>
                                         <tr class="bg-light fw-bold text-azure d-none" id="rowDepositBiaya">
-                                            <th colspan="3" class="py-2 px-3 text-uppercase text-azure">
+                                            <th colspan="4" class="py-2 px-3 text-uppercase text-azure">
                                                 <i class="ti ti-coin me-1"></i> TITIPAN UANG MUKA / DEPOSIT
                                             </th>
                                             <th class="py-2 px-3 text-end text-azure fs-4" id="tableDepositBiaya">- Rp 0</th>
                                         </tr>
                                         <tr class="bg-success-lt fw-bold text-success d-none" id="rowNetTotalBiaya">
-                                            <th colspan="3" class="py-2 px-3 text-uppercase text-success fs-3">
+                                            <th colspan="4" class="py-2 px-3 text-uppercase text-success fs-3">
                                                 SISA TAGIHAN BERSIH (YANG HARUS DIBAYAR)
                                             </th>
                                             <th class="py-2 px-3 text-end text-success fs-2" id="tableNetTotalBiaya">Rp 0</th>
@@ -687,7 +688,7 @@
                 if (cat.items && cat.items.length > 0) {
                     html += `
                         <tr class="bg-light fw-bold">
-                            <td colspan="3" class="px-3 text-primary text-uppercase" style="font-size: 0.78rem;">
+                            <td colspan="4" class="px-3 text-primary text-uppercase" style="font-size: 0.78rem;">
                                 <i class="ti ti-chevron-right me-1"></i> ${cat.label}
                             </td>
                             <td class="px-3 text-end text-primary fw-bold" style="font-size: 0.85rem;">
@@ -698,11 +699,16 @@
 
                     cat.items.forEach(item => {
                         const isNegative = item.subtotal < 0;
+                        const tambahanVal = parseFloat(item.tambahan || 0);
+                        const tambahanText = tambahanVal > 0
+                            ? new Intl.NumberFormat('id-ID').format(tambahanVal)
+                            : '<span class="text-muted">-</span>';
                         html += `
                             <tr>
                                 <td class="px-3 ps-4 small ${isNegative ? 'text-danger' : 'text-dark'}">${item.item}</td>
                                 <td class="px-3 text-center small text-muted">${item.qty}</td>
                                 <td class="px-3 text-end small text-muted">${new Intl.NumberFormat('id-ID').format(item.tarif)}</td>
+                                <td class="px-3 text-end small text-muted">${tambahanText}</td>
                                 <td class="px-3 text-end small fw-500 ${isNegative ? 'text-danger' : 'text-dark'}">
                                     ${new Intl.NumberFormat('id-ID').format(item.subtotal)}
                                 </td>
@@ -714,7 +720,7 @@
         }
 
         if (!html) {
-            html = '<tr><td colspan="4" class="text-center p-3 text-muted">Belum ada rincian tindakan atau layanan tercatat.</td></tr>';
+            html = '<tr><td colspan="5" class="text-center p-3 text-muted">Belum ada rincian tindakan atau layanan tercatat.</td></tr>';
         }
 
         $('#tbodyBillingRanap').html(html);

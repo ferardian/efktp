@@ -285,14 +285,15 @@
                                     <tr>
                                         <th class="py-2 px-3">Deskripsi Item / Layanan</th>
                                         <th class="py-2 px-3 text-center" width="60">Qty</th>
-                                        <th class="py-2 px-3 text-end" width="120">Tarif (Rp)</th>
-                                        <th class="py-2 px-3 text-end" width="140">Subtotal (Rp)</th>
+                                        <th class="py-2 px-3 text-end" width="110">Tarif (Rp)</th>
+                                        <th class="py-2 px-3 text-end" width="115">Tambahan (Rp)</th>
+                                        <th class="py-2 px-3 text-end" width="130">Subtotal (Rp)</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
                                 <tfoot>
                                     <tr class="bg-primary text-white">
-                                        <th colspan="3" class="py-2 px-3 fw-bold text-uppercase">TOTAL ESTIMASI BIAYA SELURUHNYA</th>
+                                        <th colspan="4" class="py-2 px-3 fw-bold text-uppercase">TOTAL ESTIMASI BIAYA SELURUHNYA</th>
                                         <th class="py-2 px-3 text-end fw-bold fs-3" id="grandTotalBillingKasir">Rp. 0</th>
                                     </tr>
                                 </tfoot>
@@ -771,16 +772,21 @@
                 response.categories.forEach(cat => {
                     if (cat.items.length > 0) {
                         html += `<tr class="bg-light fw-bold">
-                                    <td colspan="3" class="px-3 text-primary text-uppercase" style="font-size: 0.75rem;">${cat.label}</td>
+                                    <td colspan="4" class="px-3 text-primary text-uppercase" style="font-size: 0.75rem;">${cat.label}</td>
                                     <td class="px-3 text-end text-primary">${new Intl.NumberFormat('id-ID').format(cat.total)}</td>
                                  </tr>`;
                         cat.items.forEach(item => {
                             const isNegative = item.subtotal < 0;
+                            const tambahanVal = parseFloat(item.tambahan || 0);
+                            const tambahanText = tambahanVal > 0
+                                ? new Intl.NumberFormat('id-ID').format(tambahanVal)
+                                : '<span class="text-muted">-</span>';
                             html += `
                                 <tr>
                                     <td class="px-3 ps-4 small ${isNegative ? 'text-danger' : ''}">${item.item}</td>
                                     <td class="px-3 text-center small">${item.qty}</td>
                                     <td class="px-3 text-end small">${new Intl.NumberFormat('id-ID').format(item.tarif)}</td>
+                                    <td class="px-3 text-end small">${tambahanText}</td>
                                     <td class="px-3 text-end small fw-500 ${isNegative ? 'text-danger' : ''}">
                                         ${new Intl.NumberFormat('id-ID').format(item.subtotal)}
                                     </td>
@@ -790,7 +796,7 @@
                 });
 
                 if (!html) {
-                    html = '<tr><td colspan="4" class="text-center p-3 text-muted">Belum ada rincian tindakan / obat</td></tr>';
+                    html = '<tr><td colspan="5" class="text-center p-3 text-muted">Belum ada rincian tindakan / obat</td></tr>';
                 }
 
                 tbody.html(html);

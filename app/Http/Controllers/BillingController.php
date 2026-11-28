@@ -231,8 +231,23 @@ class BillingController extends Controller
         $detail_obat = DB::table('detail_pemberian_obat')
             ->join('databarang', 'detail_pemberian_obat.kode_brng', '=', 'databarang.kode_brng')
             ->where('no_rawat', $no_rawat)
-            ->select('databarang.nama_brng', 'detail_pemberian_obat.tgl_perawatan', 'detail_pemberian_obat.jml', 'detail_pemberian_obat.biaya_obat', 'detail_pemberian_obat.total')
-            ->get()->map(fn($item) => ['item' => $item->nama_brng, 'tgl' => $item->tgl_perawatan, 'qty' => floatval($item->jml), 'tarif' => floatval($item->biaya_obat), 'subtotal' => floatval($item->total)]);
+            ->select(
+                'databarang.nama_brng',
+                'detail_pemberian_obat.tgl_perawatan',
+                'detail_pemberian_obat.jml',
+                'detail_pemberian_obat.biaya_obat',
+                'detail_pemberian_obat.embalase',
+                'detail_pemberian_obat.tuslah',
+                'detail_pemberian_obat.total'
+            )
+            ->get()->map(fn($item) => [
+                'item'     => $item->nama_brng,
+                'tgl'      => $item->tgl_perawatan,
+                'qty'      => floatval($item->jml),
+                'tarif'    => floatval($item->biaya_obat),
+                'tambahan' => floatval($item->embalase ?? 0) + floatval($item->tuslah ?? 0),
+                'subtotal' => floatval($item->total),
+            ]);
         $total_obat = $detail_obat->sum('subtotal');
 
         // 5. Biaya Laboratorium
@@ -407,8 +422,23 @@ class BillingController extends Controller
         $detail_obat = DB::table('detail_pemberian_obat')
             ->join('databarang', 'detail_pemberian_obat.kode_brng', '=', 'databarang.kode_brng')
             ->where('no_rawat', $no_rawat)
-            ->select('databarang.nama_brng', 'detail_pemberian_obat.tgl_perawatan', 'detail_pemberian_obat.jml', 'detail_pemberian_obat.biaya_obat', 'detail_pemberian_obat.total')
-            ->get()->map(fn($item) => ['item' => $item->nama_brng, 'tgl' => $item->tgl_perawatan, 'qty' => $item->jml, 'tarif' => $item->biaya_obat, 'subtotal' => $item->total]);
+            ->select(
+                'databarang.nama_brng',
+                'detail_pemberian_obat.tgl_perawatan',
+                'detail_pemberian_obat.jml',
+                'detail_pemberian_obat.biaya_obat',
+                'detail_pemberian_obat.embalase',
+                'detail_pemberian_obat.tuslah',
+                'detail_pemberian_obat.total'
+            )
+            ->get()->map(fn($item) => [
+                'item'     => $item->nama_brng,
+                'tgl'      => $item->tgl_perawatan,
+                'qty'      => floatval($item->jml),
+                'tarif'    => floatval($item->biaya_obat),
+                'tambahan' => floatval($item->embalase ?? 0) + floatval($item->tuslah ?? 0),
+                'subtotal' => floatval($item->total),
+            ]);
         $total_obat = $detail_obat->sum('subtotal');
 
         // 4. Biaya Laboratorium
