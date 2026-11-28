@@ -634,6 +634,12 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::post('kamar/restore/{kd_kamar}', [\App\Http\Controllers\KamarController::class, 'restore']);
 	Route::get('kamar/bangsal', [\App\Http\Controllers\KamarController::class, 'getBangsal']);
 
+	// MASTER BANGSAL
+	Route::get('bangsal/list', [\App\Http\Controllers\BangsalController::class, 'index'])->name('bangsal.list');
+	Route::post('bangsal/store', [\App\Http\Controllers\BangsalController::class, 'store'])->name('bangsal.store');
+	Route::put('bangsal/update/{kd_bangsal}', [\App\Http\Controllers\BangsalController::class, 'update'])->name('bangsal.update');
+	Route::delete('bangsal/destroy/{kd_bangsal}', [\App\Http\Controllers\BangsalController::class, 'destroy'])->name('bangsal.destroy');
+
 	Route::get('pemeriksaan/ranap', [PemeriksaanRanapController::class, 'get']);
 	Route::get('pemeriksaan/ranap/print/{no_rawat?}', [PemeriksaanRanapController::class, 'printCppt'])->where('no_rawat', '.*');
 	Route::post('pemeriksaan/ranap', [PemeriksaanRanapController::class, 'create']);

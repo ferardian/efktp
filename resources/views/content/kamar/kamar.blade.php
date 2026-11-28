@@ -49,13 +49,16 @@
                     <i class="ti ti-bed me-2"></i> Manajemen Kamar & Bed
                 </h2>
             </div>
-            <div class="col-auto ms-auto d-flex gap-2">
+            <div class="col-auto ms-auto d-flex flex-wrap gap-2">
                 <a href="{{ url('setting/jam-ranap') }}" class="btn btn-outline-secondary btn-sm" title="Pengaturan Jam Minimal & Ubah Status Kamar">
                     <i class="ti ti-clock-cog me-1"></i> Set Jam Ranap
                 </a>
                 <a href="{{ url('ranap') }}" class="btn btn-outline-primary btn-sm" title="Kembali ke Pasien Rawat Inap">
                     <i class="ti ti-users me-1"></i> Pasien Ranap
                 </a>
+                <button type="button" class="btn btn-outline-teal btn-sm" onclick="openModalBangsal(false)" title="Tambah atau Kelola Data Bangsal / Ruangan">
+                    <i class="ti ti-building-hospital me-1"></i> Kelola Bangsal
+                </button>
                 <button type="button" class="btn btn-primary btn-sm shadow-sm" onclick="openModalTambah()">
                     <i class="ti ti-plus me-1"></i> Tambah Kamar / Bed
                 </button>
@@ -247,12 +250,17 @@
 
                     <div class="mb-3">
                         <label class="form-label fw-bold small text-muted required">Bangsal / Ruangan</label>
-                        <select id="inputKdBangsal" name="kd_bangsal" class="form-select form-select-sm" required onchange="onBangsalChange()">
-                            <option value="">-- Pilih Bangsal / Ruangan --</option>
-                            @foreach($bangsal as $b)
-                                <option value="{{ $b->kd_bangsal }}">{{ $b->nm_bangsal }} ({{ $b->kd_bangsal }})</option>
-                            @endforeach
-                        </select>
+                        <div class="input-group input-group-sm">
+                            <select id="inputKdBangsal" name="kd_bangsal" class="form-select form-select-sm" required onchange="onBangsalChange()">
+                                <option value="">-- Pilih Bangsal / Ruangan --</option>
+                                @foreach($bangsal as $b)
+                                    <option value="{{ $b->kd_bangsal }}">{{ $b->nm_bangsal }} ({{ $b->kd_bangsal }})</option>
+                                @endforeach
+                            </select>
+                            <button class="btn btn-outline-teal" type="button" onclick="openModalBangsal(true)" title="Tambah Bangsal Baru">
+                                <i class="ti ti-plus me-1"></i> Bangsal
+                            </button>
+                        </div>
                     </div>
 
                     <div class="row g-2 mb-3">
@@ -292,6 +300,83 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Kelola / Tambah Data Bangsal -->
+<div class="modal fade" id="modalBangsal" tabindex="-1" aria-labelledby="modalBangsalTitle" aria-hidden="true" data-bs-backdrop="static" style="z-index: 1065;">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-teal text-white py-2">
+                <h5 class="modal-title fw-bold" id="modalBangsalTitle">
+                    <i class="ti ti-building-hospital me-1"></i> Manajemen Data Bangsal / Ruangan
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-3">
+                <!-- Form Tambah / Edit Bangsal -->
+                <form id="formBangsal" onsubmit="saveBangsal(event)" class="card bg-light border mb-3">
+                    <div class="card-body p-3">
+                        <input type="hidden" id="bangsalMode" value="create">
+                        <input type="hidden" id="origKdBangsal" value="">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-bold small text-teal" id="formBangsalHeading">
+                                <i class="ti ti-plus me-1"></i> Tambah Bangsal Baru
+                            </span>
+                            <button type="button" class="btn btn-xs btn-outline-secondary d-none" id="btnResetBangsal" onclick="resetFormBangsal()">
+                                <i class="ti ti-x me-1"></i> Batal Edit
+                            </button>
+                        </div>
+                        <div class="row g-2 align-items-end">
+                            <div class="col-12 col-sm-3">
+                                <label class="form-label fw-bold small text-muted required">Kode Bangsal</label>
+                                <input type="text" id="inputMasterKdBangsal" class="form-control form-control-sm text-uppercase fw-bold" placeholder="Misal: K1 / VIP" maxlength="5" required>
+                                <div class="form-text" style="font-size: 10px;">Maks 5 karakter</div>
+                            </div>
+                            <div class="col-12 col-sm-5">
+                                <label class="form-label fw-bold small text-muted required">Nama Bangsal / Ruangan</label>
+                                <input type="text" id="inputMasterNmBangsal" class="form-control form-control-sm" placeholder="Misal: Kamar Melati / VIP" maxlength="30" required>
+                                <div class="form-text" style="font-size: 10px;">Maks 30 karakter</div>
+                            </div>
+                            <div class="col-6 col-sm-2">
+                                <label class="form-label fw-bold small text-muted">Status</label>
+                                <select id="inputMasterStatusBangsal" class="form-select form-select-sm">
+                                    <option value="1">Aktif</option>
+                                    <option value="0">Nonaktif</option>
+                                </select>
+                            </div>
+                            <div class="col-6 col-sm-2 d-grid">
+                                <button type="submit" class="btn btn-sm btn-teal fw-semibold" id="btnSubmitBangsal">
+                                    <i class="ti ti-device-floppy me-1"></i> Simpan
+                                </button>
+                                <div class="form-text" style="font-size: 10px;">&nbsp;</div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Tabel Daftar Bangsal -->
+                <div class="table-responsive" style="max-height: 320px; overflow-y: auto;">
+                    <table class="table table-sm table-vcenter table-hover border mb-0">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th width="15%">Kode</th>
+                                <th>Nama Bangsal / Ruangan</th>
+                                <th class="text-center" width="15%">Jumlah Bed</th>
+                                <th class="text-center" width="14%">Status</th>
+                                <th class="text-end" width="16%">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyBangsal">
+                            <tr><td colspan="5" class="text-center text-muted py-3">Memuat data bangsal...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer bg-light py-2">
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Tutup</button>
+            </div>
         </div>
     </div>
 </div>
@@ -751,6 +836,188 @@
                         Swal.fire('Gagal', msg, 'error');
                     }
                 });
+            }
+        });
+    }
+
+    // =====================================================
+    // MANAJEMEN DATA BANGSAL
+    // =====================================================
+    let openedBangsalFromKamar = false;
+
+    function openModalBangsal(fromKamarModal = false) {
+        openedBangsalFromKamar = fromKamarModal;
+        resetFormBangsal();
+        loadBangsalTable();
+        $('#modalBangsal').modal('show');
+    }
+
+    function resetFormBangsal() {
+        $('#bangsalMode').val('create');
+        $('#origKdBangsal').val('');
+        $('#inputMasterKdBangsal').val('').prop('readonly', false).focus();
+        $('#inputMasterNmBangsal').val('');
+        $('#inputMasterStatusBangsal').val('1');
+        $('#formBangsalHeading').html('<i class="ti ti-plus me-1"></i> Tambah Bangsal Baru');
+        $('#btnResetBangsal').addClass('d-none');
+    }
+
+    function loadBangsalTable() {
+        $.get("{{ route('bangsal.list') }}").done(function (data) {
+            if (!data || data.length === 0) {
+                $('#tbodyBangsal').html('<tr><td colspan="5" class="text-center text-muted py-3">Belum ada data bangsal</td></tr>');
+                return;
+            }
+            let html = '';
+            data.forEach(function (b) {
+                const badgeStatus = b.status == '1'
+                    ? '<span class="badge bg-success-lt text-success">Aktif</span>'
+                    : '<span class="badge bg-secondary-lt text-secondary">Nonaktif</span>';
+                const safeNm = $('<div>').text(b.nm_bangsal).html();
+                html += `
+                    <tr>
+                        <td><span class="badge bg-teal-lt text-teal fw-bold">${b.kd_bangsal}</span></td>
+                        <td class="fw-semibold">${safeNm}</td>
+                        <td class="text-center">${b.jumlah_kamar || 0}</td>
+                        <td class="text-center">${badgeStatus}</td>
+                        <td class="text-end">
+                            <div class="btn-list justify-content-end flex-nowrap">
+                                <button type="button" class="btn btn-xs btn-outline-primary" onclick="editBangsal('${b.kd_bangsal}', '${safeNm.replace(/'/g, "\\'")}', '${b.status}')" title="Edit Bangsal">
+                                    <i class="ti ti-edit"></i>
+                                </button>
+                                <button type="button" class="btn btn-xs btn-outline-danger" onclick="deleteBangsal('${b.kd_bangsal}', '${safeNm.replace(/'/g, "\\'")}')" title="Nonaktifkan / Hapus Bangsal">
+                                    <i class="ti ti-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            $('#tbodyBangsal').html(html);
+        }).fail(function () {
+            $('#tbodyBangsal').html('<tr><td colspan="5" class="text-center text-danger py-3">Gagal memuat data bangsal</td></tr>');
+        });
+    }
+
+    function editBangsal(kdBangsal, nmBangsal, status) {
+        $('#bangsalMode').val('edit');
+        $('#origKdBangsal').val(kdBangsal);
+        $('#inputMasterKdBangsal').val(kdBangsal).prop('readonly', true);
+        $('#inputMasterNmBangsal').val(nmBangsal).focus();
+        $('#inputMasterStatusBangsal').val(status);
+        $('#formBangsalHeading').html(`<i class="ti ti-edit me-1"></i> Edit Bangsal: <b>${kdBangsal}</b>`);
+        $('#btnResetBangsal').removeClass('d-none');
+    }
+
+    function saveBangsal(e) {
+        e.preventDefault();
+        const mode = $('#bangsalMode').val();
+        const kdBangsal = $('#inputMasterKdBangsal').val().trim().toUpperCase();
+        const nmBangsal = $('#inputMasterNmBangsal').val().trim();
+        const status = $('#inputMasterStatusBangsal').val();
+
+        if (!kdBangsal || !nmBangsal) {
+            Swal.fire('Perhatian', 'Kode dan Nama Bangsal wajib diisi.', 'warning');
+            return;
+        }
+
+        const isEdit = mode === 'edit';
+        const url = isEdit
+            ? "{{ url('bangsal/update') }}/" + encodeURIComponent($('#origKdBangsal').val())
+            : "{{ route('bangsal.store') }}";
+        const method = isEdit ? 'PUT' : 'POST';
+
+        $('#btnSubmitBangsal').prop('disabled', true);
+        $.ajax({
+            url: url,
+            type: method,
+            data: {
+                _token: "{{ csrf_token() }}",
+                kd_bangsal: kdBangsal,
+                nm_bangsal: nmBangsal,
+                status: status
+            },
+            success: function (res) {
+                if (typeof showToast === 'function') {
+                    showToast(res.message || 'Data bangsal disimpan', 'success');
+                }
+                loadBangsalTable();
+                refreshBangsalDropdowns(isEdit ? null : kdBangsal);
+                resetFormBangsal();
+
+                if (!isEdit && openedBangsalFromKamar) {
+                    $('#modalBangsal').modal('hide');
+                }
+            },
+            error: function (xhr) {
+                let msg = xhr.responseJSON?.message || 'Gagal menyimpan data bangsal.';
+                if (xhr.responseJSON?.errors) {
+                    msg = Object.values(xhr.responseJSON.errors).flat().join('<br>');
+                }
+                Swal.fire('Gagal', msg, 'error');
+            },
+            complete: function () {
+                $('#btnSubmitBangsal').prop('disabled', false);
+            }
+        });
+    }
+
+    function deleteBangsal(kdBangsal, nmBangsal) {
+        Swal.fire({
+            title: 'Nonaktifkan / Hapus Bangsal?',
+            html: `Bangsal <b>${nmBangsal} (${kdBangsal})</b> akan dihapus atau dinonaktifkan jika sudah terhubung ke data kamar/stok.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d63939',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Ya, Lanjutkan',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: "{{ url('bangsal/destroy') }}/" + encodeURIComponent(kdBangsal),
+                    type: 'DELETE',
+                    data: {
+                        _token: "{{ csrf_token() }}"
+                    },
+                    success: function (res) {
+                        if (typeof showToast === 'function') {
+                            showToast(res.message || 'Bangsal diperbarui', 'success');
+                        }
+                        loadBangsalTable();
+                        refreshBangsalDropdowns();
+                        reloadTable();
+                    },
+                    error: function (xhr) {
+                        Swal.fire('Gagal', xhr.responseJSON?.message || 'Gagal memproses bangsal.', 'error');
+                    }
+                });
+            }
+        });
+    }
+
+    function refreshBangsalDropdowns(selectKdBangsal = null) {
+        $.get("{{ url('kamar/bangsal') }}").done(function (list) {
+            const currentFilter = $('#filterBangsal').val();
+            const currentInput = selectKdBangsal || $('#inputKdBangsal').val();
+
+            let filterHtml = '<option value="">-- Semua Bangsal --</option>';
+            let inputHtml = '<option value="">-- Pilih Bangsal / Ruangan --</option>';
+
+            (list || []).forEach(function (b) {
+                filterHtml += `<option value="${b.kd_bangsal}">${b.nm_bangsal}</option>`;
+                inputHtml += `<option value="${b.kd_bangsal}">${b.nm_bangsal} (${b.kd_bangsal})</option>`;
+            });
+
+            $('#filterBangsal').html(filterHtml);
+            if (currentFilter) $('#filterBangsal').val(currentFilter);
+
+            $('#inputKdBangsal').html(inputHtml);
+            if (currentInput) {
+                $('#inputKdBangsal').val(currentInput);
+                if (selectKdBangsal && typeof onBangsalChange === 'function') {
+                    onBangsalChange();
+                }
             }
         });
     }
