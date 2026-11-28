@@ -330,27 +330,29 @@
                         </div>
                         <div class="row g-2 align-items-end">
                             <div class="col-12 col-sm-3">
-                                <label class="form-label fw-bold small text-muted required">Kode Bangsal</label>
-                                <input type="text" id="inputMasterKdBangsal" class="form-control form-control-sm text-uppercase fw-bold" placeholder="Misal: K1 / VIP" maxlength="5" required>
-                                <div class="form-text" style="font-size: 10px;">Maks 5 karakter</div>
+                                <label class="form-label fw-bold small text-muted required mb-1">
+                                    Kode Bangsal <span class="fw-normal">(maks 5)</span>
+                                </label>
+                                <input type="text" id="inputMasterKdBangsal" class="form-control form-control-sm text-uppercase fw-bold" style="height: 32px;" placeholder="K1 / VIP" maxlength="5" required>
                             </div>
                             <div class="col-12 col-sm-5">
-                                <label class="form-label fw-bold small text-muted required">Nama Bangsal / Ruangan</label>
-                                <input type="text" id="inputMasterNmBangsal" class="form-control form-control-sm" placeholder="Misal: Kamar Melati / VIP" maxlength="30" required>
-                                <div class="form-text" style="font-size: 10px;">Maks 30 karakter</div>
+                                <label class="form-label fw-bold small text-muted required mb-1">
+                                    Nama Bangsal / Ruangan <span class="fw-normal">(maks 30)</span>
+                                </label>
+                                <input type="text" id="inputMasterNmBangsal" class="form-control form-control-sm" style="height: 32px;" placeholder="Kamar Melati / VIP" maxlength="30" required>
                             </div>
                             <div class="col-6 col-sm-2">
-                                <label class="form-label fw-bold small text-muted">Status</label>
-                                <select id="inputMasterStatusBangsal" class="form-select form-select-sm">
+                                <label class="form-label fw-bold small text-muted mb-1">Status</label>
+                                <select id="inputMasterStatusBangsal" class="form-select form-select-sm" style="height: 32px;">
                                     <option value="1">Aktif</option>
                                     <option value="0">Nonaktif</option>
                                 </select>
                             </div>
-                            <div class="col-6 col-sm-2 d-grid">
-                                <button type="submit" class="btn btn-sm btn-teal fw-semibold" id="btnSubmitBangsal">
+                            <div class="col-6 col-sm-2">
+                                <label class="form-label small mb-1 d-none d-sm-block">&nbsp;</label>
+                                <button type="submit" class="btn btn-sm btn-teal fw-semibold w-100" style="height: 32px;" id="btnSubmitBangsal">
                                     <i class="ti ti-device-floppy me-1"></i> Simpan
                                 </button>
-                                <div class="form-text" style="font-size: 10px;">&nbsp;</div>
                             </div>
                         </div>
                     </div>
