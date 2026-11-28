@@ -225,9 +225,14 @@
 
                             <!-- Kolom Kanan: Harga Beli, Harga Jual & Kelas Rawat -->
                             <div class="col-lg-6 ps-lg-3">
-                                <h6 class="text-primary fw-bold border-bottom pb-1 mb-2">
-                                    <i class="ti ti-currency-dollar me-1"></i> Harga Dasar, Beli &amp; Tarif Jual
-                                </h6>
+                                <div class="d-flex justify-content-between align-items-center border-bottom pb-1 mb-2">
+                                    <h6 class="text-primary fw-bold mb-0">
+                                        <i class="ti ti-currency-dollar me-1"></i> Harga Dasar, Beli &amp; Tarif Jual
+                                    </h6>
+                                    <span class="badge bg-teal-lt text-teal" id="badgeMarginInfo" style="font-size: 10px;">
+                                        Margin Otomatis Aktif
+                                    </span>
+                                </div>
                                 <div class="row g-2 mb-2">
                                     <div class="col-4">
                                         <label class="form-label mb-1">Harga Dasar</label>
@@ -310,10 +315,72 @@
 @push('script')
     <script>
         const tabelBarangObat = $('#tabelBarangObat')
+        const HARGA_CONFIG = {
+            ppnRate: {{ ($setHargaObat && $setHargaObat->ppn === 'Yes') ? 0.11 : 0.0 }},
+            setharga: @json($setHargaObat->setharga ?? 'Umum'),
+            umum: @json($marginUmum),
+            perJenis: @json($marginPerJenis),
+            perBarang: @json($marginPerBarang),
+        };
+
+        function getActiveMarginForForm() {
+            const kodeBrng = ($('#kode_brng').val() || '').trim();
+            const kdjns = $('#kdjns').val();
+
+            if (kodeBrng && HARGA_CONFIG.perBarang && HARGA_CONFIG.perBarang[kodeBrng]) {
+                return { source: 'Khusus Obat', margin: HARGA_CONFIG.perBarang[kodeBrng] };
+            }
+            if (kdjns && HARGA_CONFIG.perJenis && HARGA_CONFIG.perJenis[kdjns]) {
+                return { source: 'Per Jenis', margin: HARGA_CONFIG.perJenis[kdjns] };
+            }
+            if (HARGA_CONFIG.umum) {
+                return { source: 'Margin Umum', margin: HARGA_CONFIG.umum };
+            }
+            return { source: 'Default (0%)', margin: null };
+        }
+
+        function roundUpHarga(val, step = 100) {
+            if (!val || val <= 0) return 0;
+            return Math.ceil(val / step) * step;
+        }
+
+        function applyMarginFromHargaBeli() {
+            const hBeli = parseFloat($('#h_beli').val()) || 0;
+            if (hBeli <= 0) {
+                $('#dasar, #ralan, #kelas1, #kelas2, #kelas3, #utama, #vip, #vvip, #karyawan, #jualbebas, #beliluar').val(0);
+                return;
+            }
+
+            const hDasar = Math.round((hBeli + (hBeli * HARGA_CONFIG.ppnRate)) * 100) / 100;
+            $('#dasar').val(hDasar);
+
+            const { source, margin } = getActiveMarginForForm();
+            const ppnLabel = HARGA_CONFIG.ppnRate > 0 ? ' + PPN 11%' : '';
+            $('#badgeMarginInfo').text(`${source}${ppnLabel}`);
+
+            if (!margin) return;
+
+            const fields = ['ralan', 'kelas1', 'kelas2', 'kelas3', 'utama', 'vip', 'vvip', 'karyawan', 'jualbebas', 'beliluar'];
+            fields.forEach((f) => {
+                const pct = parseFloat(margin[f] ?? 0) || 0;
+                const calculated = roundUpHarga(hDasar + (hDasar * (pct / 100)), 100);
+                $('#' + f).val(calculated);
+            });
+        }
 
         $(document).ready(() => {
             renderTabelBarang();
             resetFormBarang();
+
+            $('#h_beli').on('input', function () {
+                applyMarginFromHargaBeli();
+            });
+
+            $('#kdjns').on('change', function () {
+                if ((parseFloat($('#h_beli').val()) || 0) > 0) {
+                    applyMarginFromHargaBeli();
+                }
+            });
 
             // Reload table on status filter change
             $('#filter_status').on('change', () => {

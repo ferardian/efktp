@@ -16,7 +16,22 @@ class DataBarangController extends Controller
         $kategori = \App\Models\KategoriBarang::orderBy('nama', 'ASC')->get();
         $golongan = \App\Models\GolonganBarang::orderBy('nama', 'ASC')->get();
 
-        return view('content.dataBarang', compact('satuan', 'jenis', 'industri', 'kategori', 'golongan'));
+        $setHargaObat = \App\Models\SetHargaObat::first();
+        $marginUmum = \App\Models\SetPenjualanUmum::first();
+        $marginPerJenis = \App\Models\SetPenjualan::all()->keyBy('kdjns');
+        $marginPerBarang = \App\Models\SetPenjualanPerBarang::all()->keyBy('kode_brng');
+
+        return view('content.dataBarang', compact(
+            'satuan',
+            'jenis',
+            'industri',
+            'kategori',
+            'golongan',
+            'setHargaObat',
+            'marginUmum',
+            'marginPerJenis',
+            'marginPerBarang'
+        ));
     }
 
     public function get(Request $request)
