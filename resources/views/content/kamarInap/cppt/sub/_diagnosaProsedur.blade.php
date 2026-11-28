@@ -10,16 +10,9 @@
             </div>
             <div class="card-body p-3">
                 <div class="row g-2 align-items-end mb-3">
-                    <div class="col-md-7">
+                    <div class="col-md-10">
                         <label class="form-label fw-semibold small">Cari Penyakit / Kode ICD-10</label>
                         <select class="form-select" id="selectDiagnosaRanap" style="width: 100%;"></select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label fw-semibold small">Status Kasus</label>
-                        <select class="form-select" id="selectStatusPenyakitRanap">
-                            <option value="Baru">Baru</option>
-                            <option value="Lama">Lama</option>
-                        </select>
                     </div>
                     <div class="col-md-2 d-grid">
                         <button type="button" class="btn btn-primary fw-semibold" id="btnAddDiagnosaRanap" onclick="tambahDiagnosaRanap()">
@@ -235,7 +228,6 @@
     function tambahDiagnosaRanap() {
         const noRawat = formCpptRanap.find('input[name=no_rawat]').val();
         const kdPenyakit = $('#selectDiagnosaRanap').val();
-        const statusPenyakit = $('#selectStatusPenyakitRanap').val() || 'Baru';
 
         if (!noRawat) return;
         if (!kdPenyakit) {
@@ -259,7 +251,7 @@
                 kd_penyakit: kdPenyakit,
                 status: 'Ranap',
                 prioritas: nextPrioritas,
-                status_penyakit: statusPenyakit,
+                status_penyakit: 'auto',
             }]
         }).done(function () {
             showToast('Diagnosa Rawat Inap berhasil ditambahkan');
@@ -361,3 +353,4 @@
     }
 </script>
 @endpush
+

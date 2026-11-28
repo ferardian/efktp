@@ -21,10 +21,27 @@ class DiagnosaPasienController extends Controller
         $data = $request->data;
 
         for ($i = 0; $i < count($data); $i++) {
+            $row = $data[$i];
+            if (empty($row['status_penyakit']) || $row['status_penyakit'] === 'auto') {
+                $noRkmMedis = DB::table('reg_periksa')
+                    ->where('no_rawat', $row['no_rawat'])
+                    ->value('no_rkm_medis');
+                $hasPrior = false;
+                if ($noRkmMedis && !empty($row['kd_penyakit'])) {
+                    $hasPrior = DB::table('diagnosa_pasien as dp')
+                        ->join('reg_periksa as rp', 'rp.no_rawat', '=', 'dp.no_rawat')
+                        ->where('rp.no_rkm_medis', $noRkmMedis)
+                        ->where('dp.kd_penyakit', $row['kd_penyakit'])
+                        ->where('dp.no_rawat', '!=', $row['no_rawat'])
+                        ->exists();
+                }
+                $row['status_penyakit'] = $hasPrior ? 'Lama' : 'Baru';
+            }
+
             try {
-                $diagnosa = DiagnosaPasien::create($data[$i]);
+                $diagnosa = DiagnosaPasien::create($row);
                 if ($diagnosa) {
-                    $this->insertSql(new DiagnosaPasien(), $data[$i]);
+                    $this->insertSql(new DiagnosaPasien(), $row);
                 }
             } catch (QueryException $e) {
                 return response()->json($e->errorInfo, 500);
