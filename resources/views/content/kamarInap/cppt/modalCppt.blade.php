@@ -1,18 +1,18 @@
 <div class="modal modal-blur fade" id="modalCpptRanap" tabindex="-1" aria-modal="true" role="dialog">
     <div class="modal-dialog modalCpptRanap modal-fullscreen modal-dialog-scrollable" role="document">
         <div class="modal-content">
-            <div class="modal-header d-flex align-items-center justify-content-between">
-                <h5 class="modal-title mb-0">Pemeriksaan / CPPT</h5>
-                <div class="d-flex align-items-center gap-2 ms-auto me-2">
+            <div class="modal-header d-flex align-items-center">
+                <div class="d-flex flex-wrap align-items-center gap-3">
+                    <h5 class="modal-title mb-0">Pemeriksaan / CPPT</h5>
                     <div class="btn-group">
-                        <button type="button" class="btn btn-sm btn-outline-teal fw-semibold d-inline-flex align-items-center gap-1" onclick="openSatuSehatRme(0)" title="Akses Rekam Medis Nasional SATUSEHAT (SSRME)">
+                        <button type="button" class="btn btn-sm btn-teal fw-semibold d-inline-flex align-items-center gap-1 shadow-sm" onclick="openSatuSehatRme(0)" title="Akses Rekam Medis Nasional SATUSEHAT (SSRME)">
                             <i class="ti ti-shield-check"></i>
                             <span>RME SATUSEHAT</span>
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline-teal dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false" title="Pilih Mode Akses RME SATUSEHAT">
+                        <button type="button" class="btn btn-sm btn-teal dropdown-toggle dropdown-toggle-split shadow-sm" data-bs-toggle="dropdown" aria-expanded="false" title="Pilih Mode Akses RME SATUSEHAT">
                             <span class="visually-hidden">Pilih Mode</span>
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
+                        <ul class="dropdown-menu">
                             <li>
                                 <a class="dropdown-item d-flex align-items-center gap-2" href="javascript:void(0)" onclick="openSatuSehatRme(0)">
                                     <i class="ti ti-shield-check text-teal"></i>
@@ -28,7 +28,7 @@
                         </ul>
                     </div>
                 </div>
-                <button type="button" class="btn-close m-0" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
 

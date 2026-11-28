@@ -1,7 +1,13 @@
 <div class="card">
     <div class="card-status-top bg-success"></div>
     <div class="card-body">
-        <h5 class="card-title">RIWAYAT PERIKSA</h5>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 class="card-title mb-0">RIWAYAT PERIKSA</h5>
+            <button type="button" class="btn btn-sm btn-outline-teal fw-semibold d-inline-flex align-items-center gap-1" onclick="openSatuSehatRme(0)" title="Lihat Riwayat Medis Nasional dari SATUSEHAT">
+                <i class="ti ti-shield-check"></i>
+                <span>Riwayat SATUSEHAT</span>
+            </button>
+        </div>
         <div class="accordion" id="listRiwayat" style="max-height: 72vh;overflow:scroll">
 
         </div>

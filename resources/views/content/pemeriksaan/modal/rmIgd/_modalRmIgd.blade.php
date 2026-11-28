@@ -1,19 +1,21 @@
 <div class="modal modal-blur fade" id="modalRmIgd" tabindex="-1" aria-modal="false" role="dialog" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl" role="document">
         <div class="modal-content rounded-3">
-            <div class="modal-header d-flex align-items-center justify-content-between">
-                <h5 class="modal-title m-0">RM Gawat Darurat (Triase & Asesmen Medis IGD)</h5>
-                <div class="d-flex align-items-center gap-2 ms-auto me-2">
-                    <button type="button" class="btn btn-sm btn-danger fw-semibold d-inline-flex align-items-center gap-1" onclick="openSatuSehatRme(1)" title="Akses Emergency RME SATUSEHAT (Bypass Kode Akses Pasien)">
-                        <i class="ti ti-alert-triangle"></i>
-                        <span>RME Emergency</span>
-                    </button>
-                    <button type="button" class="btn btn-sm btn-outline-teal fw-semibold d-inline-flex align-items-center gap-1" onclick="openSatuSehatRme(0)" title="Akses Reguler RME SATUSEHAT (Consent Pasien)">
-                        <i class="ti ti-shield-check"></i>
-                        <span>RME Reguler</span>
-                    </button>
+            <div class="modal-header d-flex align-items-center">
+                <div class="d-flex flex-wrap align-items-center gap-3">
+                    <h5 class="modal-title m-0">RM Gawat Darurat (Triase & Asesmen Medis IGD)</h5>
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-sm btn-danger fw-semibold d-inline-flex align-items-center gap-1 shadow-sm" onclick="openSatuSehatRme(1)" title="Akses Emergency RME SATUSEHAT (Bypass Kode Akses Pasien)">
+                            <i class="ti ti-alert-triangle"></i>
+                            <span>RME Emergency</span>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-teal fw-semibold d-inline-flex align-items-center gap-1 shadow-sm" onclick="openSatuSehatRme(0)" title="Akses Reguler RME SATUSEHAT (Consent Pasien)">
+                            <i class="ti ti-shield-check"></i>
+                            <span>RME Reguler</span>
+                        </button>
+                    </div>
                 </div>
-                <button type="button" class="btn-close m-0" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form action="" id="formRmIgd">
