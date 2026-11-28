@@ -119,11 +119,16 @@ class KamarInapController extends Controller
 
     function getKamarKosong(Request $request) {
         $search = $request->search;
-        $kamar = \App\Models\Kamar::with('bangsal')
-            ->where(function($q) {
+        $kamar = \App\Models\Kamar::with('bangsal');
+
+        if ($request->boolean('only_kosong')) {
+            $kamar->where('status', 'KOSONG');
+        } else {
+            $kamar->where(function($q) {
                 $q->where('status', 'ISI')
                   ->orWhere('status', 'KOSONG');
             });
+        }
 
         $kamar = $kamar->where(function($q) use ($search) {
              $q->where('kd_kamar', 'like', "%$search%")
@@ -201,6 +206,127 @@ class KamarInapController extends Controller
         } catch (\Exception $e) {
             \DB::rollBack();
             return response()->json(['message' => $e->getMessage()], 500);
+        }
+    }
+
+    function pindahKamar(Request $request)
+    {
+        $request->validate([
+            'no_rawat'       => 'required|string',
+            'kd_kamar_lama'  => 'required|string',
+            'tgl_masuk_lama' => 'required|string',
+            'jam_masuk_lama' => 'required|string',
+            'kd_kamar_baru'  => 'required|string',
+            'tgl_pindah'     => 'required|string',
+            'jam_pindah'     => 'required|string',
+            'mode'           => 'required|in:1,2,3,4',
+        ]);
+
+        if ($request->kd_kamar_baru === $request->kd_kamar_lama) {
+            return response()->json(['message' => 'Kamar tujuan tidak boleh sama dengan kamar asal'], 422);
+        }
+
+        \DB::beginTransaction();
+        try {
+            $oldQuery = \DB::table('kamar_inap')
+                ->where('no_rawat', $request->no_rawat)
+                ->where('kd_kamar', $request->kd_kamar_lama)
+                ->where('tgl_masuk', $request->tgl_masuk_lama)
+                ->where('jam_masuk', $request->jam_masuk_lama);
+
+            $old = $oldQuery->first();
+            if (!$old) {
+                \DB::rollBack();
+                return response()->json(['message' => 'Data kamar inap asal tidak ditemukan'], 404);
+            }
+
+            $kamarBaru = \App\Models\Kamar::where('kd_kamar', $request->kd_kamar_baru)->first();
+            if (!$kamarBaru) {
+                \DB::rollBack();
+                return response()->json(['message' => 'Kamar tujuan tidak ditemukan'], 404);
+            }
+
+            if (strtoupper($kamarBaru->status) !== 'KOSONG') {
+                \DB::rollBack();
+                return response()->json(['message' => 'Maaf, status kamar tujuan sudah terisi. Silahkan pilih kamar kosong.'], 422);
+            }
+
+            $tglPindah = date('Y-m-d', strtotime($request->tgl_pindah));
+            $jamPindah = $request->jam_pindah;
+            $trfBaru   = $request->filled('trf_kamar_baru')
+                ? (float) str_replace(['.', ','], ['', '.'], $request->trf_kamar_baru)
+                : (float) $kamarBaru->trf_kamar;
+
+            $mode = (string) $request->mode;
+
+            if ($mode === '1') {
+                // 1. Hapus kamar inap lama dari billing, mulai menginap di kamar baru
+                \DB::table('kamar_inap')->insert([
+                    'no_rawat'       => $old->no_rawat,
+                    'kd_kamar'       => $request->kd_kamar_baru,
+                    'trf_kamar'      => $trfBaru,
+                    'diagnosa_awal'  => $old->diagnosa_awal,
+                    'diagnosa_akhir' => $old->diagnosa_akhir ?: '-',
+                    'tgl_masuk'      => $tglPindah,
+                    'jam_masuk'      => $jamPindah,
+                    'tgl_keluar'     => '0000-00-00',
+                    'jam_keluar'     => '00:00:00',
+                    'lama'           => 0,
+                    'ttl_biaya'      => 0,
+                    'stts_pulang'    => '-',
+                ]);
+
+                $oldQuery->delete();
+            } elseif ($mode === '2') {
+                // 2. Ganti kamar pada record lama & sesuaikan tarif ke tarif baru
+                $lama = SetJamMinimal::hitungLama($old->tgl_masuk, $old->jam_masuk);
+                $oldQuery->update([
+                    'kd_kamar'  => $request->kd_kamar_baru,
+                    'trf_kamar' => $trfBaru,
+                    'lama'      => $lama,
+                    'ttl_biaya' => $lama * $trfBaru,
+                ]);
+            } else {
+                // 3 & 4. Tutup record lama dengan status 'Pindah Kamar', buat record baru
+                $lamaLama = SetJamMinimal::hitungLama($old->tgl_masuk, $old->jam_masuk, $tglPindah, $jamPindah);
+                $trfLamaDipakai = ($mode === '4')
+                    ? max((float) $old->trf_kamar, $trfBaru)
+                    : (float) $old->trf_kamar;
+
+                $oldQuery->update([
+                    'trf_kamar'   => $trfLamaDipakai,
+                    'tgl_keluar'  => $tglPindah,
+                    'jam_keluar'  => $jamPindah,
+                    'lama'        => $lamaLama,
+                    'ttl_biaya'   => $lamaLama * $trfLamaDipakai,
+                    'stts_pulang' => 'Pindah Kamar',
+                ]);
+
+                \DB::table('kamar_inap')->insert([
+                    'no_rawat'       => $old->no_rawat,
+                    'kd_kamar'       => $request->kd_kamar_baru,
+                    'trf_kamar'      => $trfBaru,
+                    'diagnosa_awal'  => $old->diagnosa_awal,
+                    'diagnosa_akhir' => '-',
+                    'tgl_masuk'      => $tglPindah,
+                    'jam_masuk'      => $jamPindah,
+                    'tgl_keluar'     => '0000-00-00',
+                    'jam_keluar'     => '00:00:00',
+                    'lama'           => 0,
+                    'ttl_biaya'      => 0,
+                    'stts_pulang'    => '-',
+                ]);
+            }
+
+            // Update status kamar lama -> KOSONG & kamar baru -> ISI
+            \App\Models\Kamar::where('kd_kamar', $request->kd_kamar_lama)->update(['status' => 'KOSONG']);
+            \App\Models\Kamar::where('kd_kamar', $request->kd_kamar_baru)->update(['status' => 'ISI']);
+
+            \DB::commit();
+            return response()->json(['message' => 'Berhasil memindahkan kamar pasien']);
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            return response()->json(['message' => 'Gagal pindah kamar: ' . $e->getMessage()], 500);
         }
     }
 }

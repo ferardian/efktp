@@ -69,6 +69,7 @@
     @include('content.kamarInap.cppt.modalCppt')
     @include('content.kamarInap.resume.modalResumeMedis')
     @include('content.kamarInap._modalPulang')
+    @include('content.kamarInap._modalPindahKamar')
     @include('content.registrasi._modalSuratSakit')
     @include('content.registrasi._modalRiwayat')
     @include('content.laboratorium.modal._modalPermintaanLab')
@@ -207,6 +208,7 @@
                                     <button class="btn btn-success btn-sm" type="button" onclick="cpptRanap('${data}')" title="Buka / Input CPPT"><i class="ti ti-pencil"></i></button>
                                     <a class="btn btn-outline-danger btn-sm" href="/pemeriksaan/ranap/print/${data}" target="_blank" title="Cetak Lembar CPPT Terintegrasi (PDF)"><i class="ti ti-printer"></i></a>
                                     <button class="btn btn-primary btn-sm" type="button" onclick="riwayat('${row.reg_periksa?.no_rkm_medis || ''}')" title="Riwayat Perawatan"><i class="ti ti-folder-open"></i></button>
+                                    ${row.stts_pulang === '-' ? `<button class="btn btn-warning btn-sm" type="button" onclick="pindahKamarPasien('${row.no_rawat}', '${row.kd_kamar}', '${row.tgl_masuk}', '${row.jam_masuk}')" title="Pindah Kamar"><i class="ti ti-arrows-exchange"></i></button>` : ''}
                                     <div class="dropdown">
                                         <button class="btn btn-sm ${btnErmClass} dropdown-toggle px-2 d-inline-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Menu ERM & Dokumen Klinis ${hasErm ? '(' + totalErmCount + ' Dokumen)' : ''}">
                                             <i class="ti ti-notes"></i>${badgeBtn}

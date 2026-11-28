@@ -622,6 +622,7 @@ Route::middleware('auth:web,admin')->group(function () {
 	Route::get('kamar/inap/get', [KamarInapController::class, 'get']);
 	Route::get('kamar/inap/detail', [KamarInapController::class, 'getDetail']);
 	Route::post('kamar/inap/pulangkan', [KamarInapController::class, 'pulangkan']);
+	Route::post('kamar/inap/pindah', [KamarInapController::class, 'pindahKamar']);
 	Route::post('kamar/inap/create', [KamarInapController::class, 'create']);
 	Route::get('kamar/ketersediaan', [KamarInapController::class, 'getKamarKosong']);
 

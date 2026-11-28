@@ -1813,6 +1813,14 @@ $.contextMenu({
                     }
                 },
                 "sep": "---------",
+                "pindahKamar": {
+                    name: "Pindah Kamar",
+                    icon: "fas fa-exchange-alt",
+                    visible: (key, opt) => stts_pulang === '-',
+                    callback: function (item, option, e, x, y) {
+                        pindahKamarPasien(no_rawat, kd_kamar, tgl_masuk, jam_masuk)
+                    }
+                },
                 "pulangkan": {
                     name: "Pulangkan Pasien",
                     icon: "fas fa-share-from-square",
