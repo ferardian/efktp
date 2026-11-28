@@ -3,10 +3,26 @@
     <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-2">
             <h5 class="card-title mb-0">RIWAYAT PERIKSA</h5>
-            <button type="button" class="btn btn-sm btn-outline-teal fw-semibold d-inline-flex align-items-center gap-1" onclick="openSatuSehatRme(0)" title="Lihat Riwayat Medis Nasional dari SATUSEHAT">
-                <i class="ti ti-shield-check"></i>
-                <span>Riwayat SATUSEHAT</span>
-            </button>
+            <div class="dropdown">
+                <button type="button" class="btn btn-sm btn-outline-teal fw-semibold dropdown-toggle d-inline-flex align-items-center gap-1" data-bs-toggle="dropdown" aria-expanded="false" title="Pilih Mode Akses Riwayat Medis Nasional SATUSEHAT">
+                    <i class="ti ti-shield-check"></i>
+                    <span>Riwayat SATUSEHAT</span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center gap-2" href="javascript:void(0)" onclick="openSatuSehatRme(0)">
+                            <i class="ti ti-shield-check text-teal"></i>
+                            <span>Akses Reguler (Consent Pasien)</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center gap-2 text-danger" href="javascript:void(0)" onclick="openSatuSehatRme(1)">
+                            <i class="ti ti-alert-triangle text-danger"></i>
+                            <span>Akses Emergency (Kedaruratan)</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </div>
         <div class="accordion" id="listRiwayat" style="max-height: 72vh;overflow:scroll">
 

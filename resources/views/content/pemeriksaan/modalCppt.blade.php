@@ -4,13 +4,10 @@
             <div class="modal-header d-flex align-items-center">
                 <div class="d-flex flex-wrap align-items-center gap-3">
                     <h5 class="modal-title mb-0">Pemeriksaan / CPPT</h5>
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-sm btn-teal fw-semibold d-inline-flex align-items-center gap-1 shadow-sm" onclick="openSatuSehatRme(0)" title="Akses Rekam Medis Nasional SATUSEHAT (SSRME)">
+                    <div class="dropdown">
+                        <button type="button" class="btn btn-sm btn-teal fw-semibold dropdown-toggle d-inline-flex align-items-center gap-1 shadow-sm" data-bs-toggle="dropdown" aria-expanded="false" title="Pilih Mode Akses Rekam Medis Nasional SATUSEHAT (SSRME)">
                             <i class="ti ti-shield-check"></i>
                             <span>RME SATUSEHAT</span>
-                        </button>
-                        <button type="button" class="btn btn-sm btn-teal dropdown-toggle dropdown-toggle-split shadow-sm" data-bs-toggle="dropdown" aria-expanded="false" title="Pilih Mode Akses RME SATUSEHAT">
-                            <span class="visually-hidden">Pilih Mode</span>
                         </button>
                         <ul class="dropdown-menu">
                             <li>
