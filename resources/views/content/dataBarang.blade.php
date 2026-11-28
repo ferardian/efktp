@@ -104,9 +104,9 @@
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form id="formBarangObat">
-                    @csrf
-                    <div class="modal-body p-3">
+                <div class="modal-body p-3">
+                    <form id="formBarangObat">
+                        @csrf
                             
                             <div class="mb-2">
                                 <label class="form-label">Kode Barang</label>
@@ -323,19 +323,19 @@
                                 </div>
                             </div>
 
-                    </div>
-                    <div class="modal-footer bg-light py-2">
-                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">
-                            <i class="ti ti-x me-1"></i> Batal
-                        </button>
-                        <button type="button" class="btn btn-sm btn-secondary" onclick="resetFormBarang()">
-                            <i class="ti ti-refresh me-1"></i> Reset
-                        </button>
-                        <button type="button" class="btn btn-sm btn-success" id="btnSimpanBarang" onclick="simpanBarang()">
-                            <i class="ti ti-device-floppy me-1"></i> Simpan
-                        </button>
-                    </div>
-                </form>
+                    </form>
+                </div>
+                <div class="modal-footer bg-light py-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">
+                        <i class="ti ti-x me-1"></i> Batal
+                    </button>
+                    <button type="button" class="btn btn-sm btn-secondary" onclick="resetFormBarang()">
+                        <i class="ti ti-refresh me-1"></i> Reset
+                    </button>
+                    <button type="button" class="btn btn-sm btn-success" id="btnSimpanBarang" onclick="simpanBarang()">
+                        <i class="ti ti-device-floppy me-1"></i> Simpan
+                    </button>
+                </div>
             </div>
         </div>
     </div>
