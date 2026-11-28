@@ -334,10 +334,12 @@ class SatuSehatEpisodeOfCareService
         // Cek apakah pasien sudah memiliki EpisodeOfCare aktif untuk tipe ini
         $activeId = $this->getActiveEpisode($row->no_rkm_medis, $tipe);
         if ($activeId) {
+            $linked = $this->linkEncounterToEpisode($row->no_rawat, $activeId);
             return [
                 'success'            => true,
                 'id_episode_of_care' => $activeId,
-                'message'            => "Pasien sudah memiliki EpisodeOfCare {$tipe} aktif ({$activeId})"
+                'encounter_linked'   => $linked,
+                'message'            => "Pasien sudah memiliki EpisodeOfCare {$tipe} aktif ({$activeId})" . ($linked ? ' dan Encounter telah ditautkan' : '')
             ];
         }
 
@@ -420,10 +422,13 @@ class SatuSehatEpisodeOfCareService
                     ]
                 );
 
+                $linked = $this->linkEncounterToEpisode($row->no_rawat, $episodeId);
+
                 return [
                     'success'            => true,
                     'id_episode_of_care' => $episodeId,
-                    'message'            => "EpisodeOfCare {$tipe} berhasil disinkronkan"
+                    'encounter_linked'   => $linked,
+                    'message'            => "EpisodeOfCare {$tipe} berhasil disinkronkan" . ($linked ? ' & Encounter ditautkan' : '')
                 ];
             }
 
@@ -448,10 +453,13 @@ class SatuSehatEpisodeOfCareService
                         ]
                     );
 
+                    $linked = $this->linkEncounterToEpisode($row->no_rawat, $existingId);
+
                     return [
                         'success'            => true,
                         'id_episode_of_care' => $existingId,
-                        'message'            => "EpisodeOfCare {$tipe} berhasil dipulihkan dari SatuSehat"
+                        'encounter_linked'   => $linked,
+                        'message'            => "EpisodeOfCare {$tipe} berhasil dipulihkan dari SatuSehat" . ($linked ? ' & Encounter ditautkan' : '')
                     ];
                 }
             }
@@ -521,4 +529,59 @@ class SatuSehatEpisodeOfCareService
 
         return $results;
     }
+
+    /**
+     * Tautkan Encounter yang sudah terkirim ke SatuSehat dengan EpisodeOfCare (PUT Encounter/{id})
+     */
+    public function linkEncounterToEpisode(string $noRawat, string $episodeId): bool
+    {
+        $idEncounter = DB::table('satu_sehat_encounter')
+            ->where('no_rawat', $noRawat)
+            ->value('id_encounter');
+
+        if (!$idEncounter) {
+            Log::channel('satusehat')->info("[EpisodeOfCare {$noRawat}] Encounter belum terkirim ke SatuSehat, linking ditunda.");
+            return false;
+        }
+
+        try {
+            $res = $this->ss->get("Encounter/{$idEncounter}");
+            $encounter = data_get($res, 'data') ?? $res;
+
+            if (!is_array($encounter) || ($encounter['resourceType'] ?? '') !== 'Encounter') {
+                Log::channel('satusehat')->warning("[EpisodeOfCare {$noRawat}] Gagal mengambil data Encounter/{$idEncounter}");
+                return false;
+            }
+
+            foreach ($encounter['episodeOfCare'] ?? [] as $eocRef) {
+                if (($eocRef['reference'] ?? '') === "EpisodeOfCare/{$episodeId}") {
+                    return true;
+                }
+            }
+
+            $encounter['episodeOfCare'] = [
+                [
+                    'reference' => "EpisodeOfCare/{$episodeId}"
+                ]
+            ];
+
+            $putRes = $this->ss->put("Encounter/{$idEncounter}", $encounter);
+            $returnedId = data_get($putRes, 'data.id') ?? data_get($putRes, 'id');
+
+            usleep(350000);
+
+            if ($returnedId) {
+                Log::channel('satusehat')->info("[EpisodeOfCare {$noRawat}] Encounter {$idEncounter} BERHASIL ditautkan ke EpisodeOfCare/{$episodeId}");
+                return true;
+            }
+
+            $errorMsg = data_get($putRes, 'data.issue.0.details.text') ?? data_get($putRes, 'message') ?? 'Gagal menautkan Encounter';
+            Log::channel('satusehat')->error("[EpisodeOfCare {$noRawat}] Gagal menautkan Encounter ke EpisodeOfCare: {$errorMsg}");
+            return false;
+        } catch (\Throwable $e) {
+            Log::channel('satusehat')->error("[EpisodeOfCare {$noRawat}] Exception linkEncounterToEpisode: " . $e->getMessage());
+            return false;
+        }
+    }
 }
+
