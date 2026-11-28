@@ -51,19 +51,19 @@
                 <input class="form-control" type="text" id="png_jawab" name="png_jawab" readonly>
             </div>
         </div>
-        <div class="col-12">
+        <div class="col-md-6 col-xl-6 col-lg-6">
             <div class="mb-2">
                 <label class="form-label">Alergi</label>
                 <select class="form-control" name="alergi" multiple="multiple" id="alergi" style="width:100%"></select>
             </div>
         </div>
-        <div class="col-12">
+        <div class="col-md-6 col-xl-6 col-lg-6">
             <div class="mb-2">
                 <label class="form-label" for="inputCatatanPasienRajal">Catatan Pasien</label>
-                <div class="input-group">
-                    <input type="text" class="form-control" id="inputCatatanPasienRajal" placeholder="Catatan khusus pasien (nama panggilan, wali, domisili, dll)...">
-                    <button type="button" class="btn btn-outline-teal px-3" onclick="simpanCatatanPasienRajal()" title="Simpan Catatan Pasien Sekarang">
-                        <i class="ti ti-device-floppy me-1"></i> Simpan Catatan
+                <div class="input-group" style="height: 36px;">
+                    <input type="text" class="form-control" id="inputCatatanPasienRajal" style="height: 36px;" placeholder="Nama panggilan, wali, domisili, dll...">
+                    <button type="button" class="btn btn-outline-teal px-2" style="height: 36px;" onclick="simpanCatatanPasienRajal()" title="Simpan Catatan Pasien">
+                        <i class="ti ti-device-floppy me-1"></i> Simpan
                     </button>
                 </div>
             </div>
